@@ -2,12 +2,13 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var campaignStore = NativeCampaignStore()
-    @State private var didApplyScreenshotSeed = false
+    @State private var didApplyLaunchConfiguration = false
 
     var body: some View {
         Group {
             if campaignStore.selectedCountry != nil {
                 NativeGameView(store: campaignStore)
+                    .environmentObject(campaignStore)
             } else {
                 CountrySelectionView(
                     countries: CountryCatalog.all,
@@ -17,22 +18,28 @@ struct ContentView: View {
                     scenarios: NativeScenarioCatalog.all,
                     selectedLanguage: campaignStore.selectedLanguage,
                     selectedScenarioID: campaignStore.selectedScenarioID,
-                    onSelect: campaignStore.choose
+                    onSelect: campaignStore.choose,
+                    activeCampaignState: campaignStore.state,
+                    onResumeCampaign: campaignStore.resumeActiveCampaign
                 )
             }
         }
-        .onAppear(perform: applyScreenshotSeedIfNeeded)
+        .onAppear(perform: applyLaunchConfigurationIfNeeded)
         .background(Color.black)
         .preferredColorScheme(.dark)
     }
 
-    private func applyScreenshotSeedIfNeeded() {
+    private func applyLaunchConfigurationIfNeeded() {
         #if DEBUG
-        guard !didApplyScreenshotSeed else { return }
-        didApplyScreenshotSeed = true
+        guard !didApplyLaunchConfiguration else { return }
+        didApplyLaunchConfiguration = true
 
         let environment = ProcessInfo.processInfo.environment
         let arguments = ProcessInfo.processInfo.arguments
+        if environment["PAX_HISTORIA_UI_TEST_RESET"] == "1" || arguments.contains("--pax-historia-ui-test-reset") {
+            campaignStore.resetSelection()
+        }
+
         guard environment["PAX_HISTORIA_SCREENSHOT_SEED"] == "1" || arguments.contains("--pax-historia-screenshot-seed") else {
             return
         }

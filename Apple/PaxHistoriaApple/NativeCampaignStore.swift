@@ -1,12 +1,18 @@
 import Foundation
 import OSLog
 
+/// Main actor owner for native campaign state.
+///
+/// SwiftUI views should call methods on this store rather than mutating
+/// `NativeCampaignState` directly. The store centralizes persistence, async
+/// generation state, stale-response rejection, import/export, and recovery
+/// notices so every user-visible mutation follows the same safety path.
 @MainActor
 final class NativeCampaignStore: ObservableObject {
     @Published private(set) var selectedCountry: PlayerCountry?
     @Published private(set) var selectedLanguage: NativeGameLanguage
     @Published private(set) var selectedScenarioID: String
-    @Published private(set) var state: NativeCampaignState?
+    @Published var state: NativeCampaignState?
     @Published var draftAction = ""
     @Published var draftAdvisorQuestion = ""
     @Published var draftDiplomaticMessage = ""
@@ -20,6 +26,8 @@ final class NativeCampaignStore: ObservableObject {
     @Published private(set) var lastError: String?
     @Published private(set) var lastRecoveryNotice: String?
     @Published private(set) var lastSuggestionError: String?
+    @Published private(set) var turnProgress: NativeTurnProgress?
+    @Published var lastTurnReport: NativeGeneratedTurn? = nil
 
     private let defaults: UserDefaults
     private let encoder: JSONEncoder
@@ -27,6 +35,9 @@ final class NativeCampaignStore: ObservableObject {
     private let aiService: any NativeAIService
     private let persistenceDirectory: URL
     private let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeCampaignStore")
+    // Incremented whenever local state changes in a way that makes in-flight AI
+    // work obsolete. Async methods capture the value before awaiting and refuse
+    // to write results if a newer user action has moved the campaign on.
     private var stateVersion = 0
 
     private static let selectedCountryKey = "pax-historia.native.selected-country.v1"
@@ -38,13 +49,38 @@ final class NativeCampaignStore: ObservableObject {
     private static let campaignStateEnvelopeFileName = "campaign-state-envelope-v2.json"
     private static let campaignStateBackupFileName = "campaign-state-backup-v2.json"
     private static let campaignStateLegacyFileName = "campaign-state-legacy-v1.json"
-    private static let maxImportedCampaignBytes = 1_500_000
+
+    private static var uiTestResetRequested: Bool {
+        #if DEBUG
+        let environment = ProcessInfo.processInfo.environment
+        let arguments = ProcessInfo.processInfo.arguments
+        return environment["PAX_HISTORIA_UI_TEST_RESET"] == "1" || arguments.contains("--pax-historia-ui-test-reset")
+        #else
+        return false
+        #endif
+    }
+
+    private static func removePersistedCampaignState(defaults: UserDefaults, persistenceDirectory: URL) {
+        defaults.removeObject(forKey: selectedCountryKey)
+        defaults.removeObject(forKey: selectedLanguageKey)
+        defaults.removeObject(forKey: selectedScenarioKey)
+        defaults.removeObject(forKey: campaignStateKey)
+        defaults.removeObject(forKey: campaignStateEnvelopeKey)
+        defaults.removeObject(forKey: campaignStateBackupKey)
+
+        for fileName in [campaignStateEnvelopeFileName, campaignStateBackupFileName, campaignStateLegacyFileName] {
+            try? FileManager.default.removeItem(at: persistenceDirectory.appendingPathComponent(fileName))
+        }
+    }
 
     private struct CampaignLoadResult {
         let state: NativeCampaignState?
         let notice: String?
     }
 
+    /// Versioned save wrapper. The raw `NativeCampaignState` is still mirrored
+    /// as a legacy fallback, but the envelope is the primary format because it
+    /// gives future migrations an explicit schema boundary.
     private struct CampaignStateEnvelope: Codable {
         let schemaVersion: Int
         let savedAt: String
@@ -67,6 +103,11 @@ final class NativeCampaignStore: ObservableObject {
         self.decoder = decoder
         self.aiService = aiService
         self.persistenceDirectory = persistenceDirectory ?? Self.defaultPersistenceDirectory()
+        #if DEBUG
+        if Self.uiTestResetRequested {
+            Self.removePersistedCampaignState(defaults: defaults, persistenceDirectory: self.persistenceDirectory)
+        }
+        #endif
         selectedCountry = Self.loadSelectedCountry(from: defaults, decoder: decoder)
         let loadResult = Self.loadCampaignState(
             from: defaults,
@@ -125,6 +166,8 @@ final class NativeCampaignStore: ObservableObject {
         lastError = nil
         lastRecoveryNotice = nil
         lastSuggestionError = nil
+        lastTurnReport = nil
+        turnProgress = nil
 
         if let selectedCountry {
             state = NativeGameEngine.initialState(for: selectedCountry, scenario: scenario, language: selectedLanguage)
@@ -144,6 +187,8 @@ final class NativeCampaignStore: ObservableObject {
         lastDiplomacyError = nil
         lastRecoveryNotice = nil
         lastSuggestionError = nil
+        lastTurnReport = nil
+        turnProgress = nil
         selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: state)
         defaults.set(selectedLanguage.rawValue, forKey: Self.selectedLanguageKey)
         defaults.set(selectedScenarioID, forKey: Self.selectedScenarioKey)
@@ -167,12 +212,86 @@ final class NativeCampaignStore: ObservableObject {
         lastError = nil
         lastRecoveryNotice = nil
         lastSuggestionError = nil
+        lastTurnReport = nil
+        turnProgress = nil
         defaults.removeObject(forKey: Self.selectedCountryKey)
         defaults.removeObject(forKey: Self.campaignStateKey)
         defaults.removeObject(forKey: Self.campaignStateEnvelopeKey)
         defaults.removeObject(forKey: Self.campaignStateBackupKey)
         removePersistedCampaignFiles()
         logger.info("Native campaign selection reset")
+    }
+
+    func switchCountry(to newCountry: PlayerCountry) {
+        guard var currentState = state else { return }
+        invalidateInFlightWork()
+
+        selectedCountry = newCountry
+        currentState.country = newCountry
+
+        if let existingLedger = currentState.economicLedgers[newCountry.code] {
+            currentState.economicLedger = existingLedger
+        } else {
+            let scenario = NativeScenarioCatalog.scenario(for: currentState.scenarioID)
+            let newLedger = NativeStrategyContextDatabase.startingEconomicLedger(for: newCountry, scenario: scenario)
+            currentState.economicLedger = newLedger
+            currentState.economicLedgers[newCountry.code] = newLedger
+        }
+
+        selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: currentState)
+        currentState.lastSummary = "\(newCountry.name) leadership assumed. Turn intent into concrete plans."
+
+        draftAction = ""
+        draftAdvisorQuestion = ""
+        draftDiplomaticMessage = ""
+
+        self.state = currentState
+
+        if let data = try? encoder.encode(newCountry) {
+            defaults.set(data, forKey: Self.selectedCountryKey)
+        }
+
+        persistState()
+        logger.info("Switched country to \(newCountry.code)")
+
+        Task { await refreshSuggestedActions(force: true) }
+    }
+
+    func manualSaveCampaign() {
+        persistState()
+        lastRecoveryNotice = "Campaign manually saved successfully."
+        logger.info("Campaign manually saved")
+    }
+
+    func exitToMainMenu() {
+        invalidateInFlightWork()
+        selectedCountry = nil
+        defaults.removeObject(forKey: Self.selectedCountryKey)
+        logger.info("Exited to main menu (campaign state retained for resume)")
+    }
+
+    func resumeActiveCampaign() {
+        guard let state = state else { return }
+        invalidateInFlightWork()
+        selectedCountry = state.country
+        selectedScenarioID = state.scenarioID
+        selectedLanguage = state.language
+        selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: state)
+        if let data = try? encoder.encode(state.country) {
+            defaults.set(data, forKey: Self.selectedCountryKey)
+        }
+        defaults.set(state.scenarioID, forKey: Self.selectedScenarioKey)
+        defaults.set(state.language.rawValue, forKey: Self.selectedLanguageKey)
+        logger.info("Resumed active campaign as \(state.country.code)")
+    }
+
+    func setGameMode(_ mode: NativeGameMode) {
+        guard var currentState = state else { return }
+        invalidateInFlightWork()
+        currentState.gameMode = mode
+        self.state = currentState
+        persistState()
+        logger.info("Game mode changed to \(mode.rawValue)")
     }
 
     var campaignExportFilename: String {
@@ -197,10 +316,6 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func importCampaignData(_ data: Data) throws {
-        guard data.count <= Self.maxImportedCampaignBytes else {
-            throw NativeCampaignStoreError.importTooLarge(maximumBytes: Self.maxImportedCampaignBytes)
-        }
-
         let imported = try decoder.decode(NativeCampaignState.self, from: data)
         let normalized = Self.normalizedLoadedState(imported)
         invalidateInFlightWork()
@@ -217,6 +332,8 @@ final class NativeCampaignStore: ObservableObject {
         lastError = nil
         lastRecoveryNotice = nil
         lastSuggestionError = nil
+        lastTurnReport = nil
+        turnProgress = nil
 
         if let data = try? encoder.encode(normalized.country) {
             defaults.set(data, forKey: Self.selectedCountryKey)
@@ -229,11 +346,23 @@ final class NativeCampaignStore: ObservableObject {
 
     func addDraftAction() {
         guard var state else { return }
+        let cost = NativeGameEngine.estimateDirectiveCost(for: draftAction)
+        if state.administrativeCapacity < cost {
+            lastError = "Insufficient administrative capacity. This directive requires \(cost) capacity."
+            return
+        }
         let action = NativeGameEngine.action(from: draftAction, date: state.gameDate)
         guard let action else { return }
 
         invalidateInFlightWork()
+        state.administrativeCapacity -= cost
         state.plannedActions.insert(action, at: 0)
+        state.actionMemory = NativeStrategyContextDatabase.remember(
+            action: action,
+            in: state.actionMemory,
+            source: "manual",
+            state: state
+        )
         state.lastSummary = Self.plannedOrderSummary(for: action, language: state.language)
         self.state = state
         draftAction = ""
@@ -243,6 +372,11 @@ final class NativeCampaignStore: ObservableObject {
 
     func addSuggestedAction(_ suggestion: NativeSuggestedAction) {
         guard var state else { return }
+        let cost = NativeGameEngine.estimateDirectiveCost(for: suggestion.detail)
+        if state.administrativeCapacity < cost {
+            lastError = "Insufficient administrative capacity. This suggestion requires \(cost) capacity."
+            return
+        }
         let detail = sanitizeFoundationModelText(suggestion.detail)
         guard !detail.isEmpty else { return }
         let title = sanitizeFoundationModelText(suggestion.title)
@@ -257,7 +391,14 @@ final class NativeCampaignStore: ObservableObject {
             title: title
         )
         invalidateInFlightWork()
+        state.administrativeCapacity -= cost
         state.plannedActions.insert(action, at: 0)
+        state.actionMemory = NativeStrategyContextDatabase.remember(
+            action: action,
+            in: state.actionMemory,
+            source: "apple-suggestion",
+            state: state
+        )
         state.suggestedActions.removeAll { $0.id == suggestion.id }
         state.lastSummary = Self.acceptedSuggestionSummary(for: action, language: state.language)
         self.state = state
@@ -268,7 +409,15 @@ final class NativeCampaignStore: ObservableObject {
     func deleteAction(id: String) {
         guard var state else { return }
         invalidateInFlightWork()
-        state.plannedActions.removeAll { $0.id == id }
+        if let idx = state.plannedActions.firstIndex(where: { $0.id == id }) {
+            let action = state.plannedActions[idx]
+            if action.status == .planned {
+                let cost = NativeGameEngine.estimateDirectiveCost(for: action.detail)
+                state.administrativeCapacity = min(100, state.administrativeCapacity + cost)
+            }
+            state.plannedActions.remove(at: idx)
+        }
+        state.actionMemory.removeAll { $0.actionID == id && $0.status == .planned }
         self.state = state
         persistState()
         logger.info("Native action deleted")
@@ -277,9 +426,18 @@ final class NativeCampaignStore: ObservableObject {
     func deleteActions(at offsets: IndexSet) {
         guard var state else { return }
         invalidateInFlightWork()
+        let removedIDs = offsets.compactMap { index in
+            state.plannedActions.indices.contains(index) ? state.plannedActions[index].id : nil
+        }
         for index in offsets.sorted(by: >) where state.plannedActions.indices.contains(index) {
+            let action = state.plannedActions[index]
+            if action.status == .planned {
+                let cost = NativeGameEngine.estimateDirectiveCost(for: action.detail)
+                state.administrativeCapacity = min(100, state.administrativeCapacity + cost)
+            }
             state.plannedActions.remove(at: index)
         }
+        state.actionMemory.removeAll { removedIDs.contains($0.actionID) && $0.status == .planned }
         self.state = state
         persistState()
         logger.info("Native actions deleted count=\(offsets.count, privacy: .public)")
@@ -331,7 +489,6 @@ final class NativeCampaignStore: ObservableObject {
                 ),
                 at: 0
             )
-            nextState.advisorMessages = Array(nextState.advisorMessages.prefix(40))
             nextState.aiReadiness = .available(tokenBudget: "advisor context=4096, maxResponse=220")
             invalidateInFlightWork()
             state = nextState
@@ -420,15 +577,44 @@ final class NativeCampaignStore: ObservableObject {
         }
 
         isAdvancing = true
-        defer { isAdvancing = false }
+        defer {
+            isAdvancing = false
+            turnProgress = nil
+        }
         lastError = nil
+        // `currentState` is the input snapshot for generation. If the player
+        // imports, resets, changes language, or edits actions while the model is
+        // running, `requestVersion` prevents this older result from overwriting
+        // the newer campaign.
         let requestVersion = stateVersion
+        let laneCount = NativeStrategyContextDatabase.estimatedLaneCount(for: currentState)
+        turnProgress = NativeTurnProgress(
+            completedLanes: 0,
+            detail: "Preparing local facts, action memory, and economic ledger.",
+            phase: "Preparing turn",
+            totalLanes: laneCount
+        )
         var shouldRefreshSuggestions = false
 
         do {
-            let generated = try await aiService.generateTurn(for: currentState, months: months)
+            let generated = try await aiService.generateTurn(for: currentState, months: months) { [weak self] progress in
+                guard let self, self.isCurrentStateVersion(requestVersion) else { return }
+                self.turnProgress = progress
+            }
             guard isCurrentStateVersion(requestVersion) else { return }
+            turnProgress = NativeTurnProgress(
+                completedLanes: max(0, laneCount - 1),
+                detail: "Checking dates, linked actions, and visible consequences.",
+                phase: "Validating turn",
+                totalLanes: laneCount
+            )
             let validated = try NativeGameEngine.validated(generated, state: currentState, months: months)
+            turnProgress = NativeTurnProgress(
+                completedLanes: laneCount,
+                detail: "Updating budgets, fiscal space, action memory, and campaign effects.",
+                phase: "Applying economics",
+                totalLanes: laneCount
+            )
             currentState = NativeGameEngine.apply(
                 validated,
                 to: currentState,
@@ -437,6 +623,7 @@ final class NativeCampaignStore: ObservableObject {
 
             invalidateInFlightWork()
             state = currentState
+            lastTurnReport = validated
             lastError = nil
             persistState()
             shouldRefreshSuggestions = true
@@ -503,6 +690,10 @@ final class NativeCampaignStore: ObservableObject {
             return
         }
 
+        // Persistence is deliberately redundant: primary versioned envelope,
+        // last-good envelope backup, and a direct legacy state blob. The read
+        // path tries them in that order so corrupt primary data can be recovered
+        // without losing old-save compatibility.
         let envelope = CampaignStateEnvelope(
             schemaVersion: 2,
             savedAt: NativeGameEngine.todayStamp(),
@@ -806,6 +997,74 @@ final class NativeCampaignStore: ObservableObject {
             }
             return action
         }
+        state.actionMemory = deduped(state.actionMemory, fallbackPrefix: "action-memory") { memory in
+            memory.id
+        } transform: { memory, id in
+            var memory = memory
+            memory.id = id
+            memory.actionID = sanitizeFoundationModelText(memory.actionID)
+            memory.title = sanitizeFoundationModelText(memory.title)
+            memory.detail = sanitizeFoundationModelText(memory.detail)
+            memory.economicSummary = sanitizeFoundationModelText(memory.economicSummary)
+            memory.source = sanitizeFoundationModelText(memory.source)
+            memory.ruleIDs = Array(Set(memory.ruleIDs.map(sanitizeFoundationModelText).filter { !$0.isEmpty })).sorted()
+            guard !memory.actionID.isEmpty else { return nil }
+            if memory.title.isEmpty {
+                memory.title = state.plannedActions.first { $0.id == memory.actionID }?.title ?? "Recorded order"
+            }
+            if memory.createdAt.isEmpty || !NativeGameEngine.isValidDate(memory.createdAt) {
+                memory.createdAt = state.gameDate
+            }
+            if let resolvedAt = memory.resolvedAt, !NativeGameEngine.isValidDate(resolvedAt) {
+                memory.resolvedAt = nil
+                memory.status = .planned
+            }
+            if memory.economicSummary.isEmpty || containsFoundationPlaceholderText(memory.economicSummary) {
+                memory.economicSummary = "Awaiting economic assessment."
+            }
+            if memory.source.isEmpty {
+                memory.source = "loaded"
+            }
+            return memory
+        }
+        if state.actionMemory.isEmpty {
+            for action in state.plannedActions.reversed() {
+                state.actionMemory = NativeStrategyContextDatabase.remember(
+                    action: action,
+                    in: state.actionMemory,
+                    source: "loaded",
+                    state: state
+                )
+            }
+        }
+        state.economicLedger = NativeStrategyContextDatabase.normalizedEconomicLedger(
+            state.economicLedger,
+            for: state.country,
+            scenario: scenario
+        )
+        var normalizedLedgers: [String: NativeEconomicLedger] = [:]
+        for (code, ledger) in state.economicLedgers {
+            let dummyCountry = PlayerCountry(code: code, name: code)
+            normalizedLedgers[code] = NativeStrategyContextDatabase.normalizedEconomicLedger(
+                ledger,
+                for: dummyCountry,
+                scenario: scenario
+            )
+        }
+        for code in NativeStrategyContextDatabase.strategicCountryCodes(for: state) {
+            if normalizedLedgers[code] == nil {
+                let dummyCountry = PlayerCountry(code: code, name: code)
+                normalizedLedgers[code] = NativeStrategyContextDatabase.startingEconomicLedger(for: dummyCountry, scenario: scenario)
+            }
+        }
+        normalizedLedgers[state.country.code] = state.economicLedger
+        state.economicLedgers = normalizedLedgers
+        state.regionConflicts = normalizedRegionConflicts(
+            state.regionConflicts,
+            occupations: state.regionOccupations,
+            falloutRegions: state.nuclearFalloutRegions,
+            gameDate: state.gameDate
+        )
         state.timeline = deduped(state.timeline, fallbackPrefix: "event") { event in
             event.id
         } transform: { event, id in
@@ -883,7 +1142,65 @@ final class NativeCampaignStore: ObservableObject {
             }
             return effect
         }
+        if state.aiCountryStates.isEmpty {
+            state.aiCountryStates = NativeStrategyContextDatabase.initialAICountryStates(for: state.scenarioID)
+        }
         return state
+    }
+
+    private static func normalizedRegionConflicts(
+        _ conflicts: [String: NativeRegionConflictState],
+        occupations: [String: String],
+        falloutRegions: [String],
+        gameDate: String
+    ) -> [String: NativeRegionConflictState] {
+        var next = conflicts
+        for (regionID, controllerCode) in occupations where next[regionID] == nil {
+            let originalCode = NativeRegionConflictState.countryCode(fromLegacyRegionID: regionID)
+            let mode: NativeRegionConflictMode = controllerCode == "REB" ? .guerrillaControl : .conventionalOccupation
+            next[regionID] = NativeRegionConflictState(
+                controllerCode: controllerCode,
+                intensity: controllerCode == "REB" ? 4 : 3,
+                mode: mode,
+                originalCountryCode: originalCode,
+                regionID: regionID,
+                summary: "Recovered from legacy occupation map state.",
+                updatedAt: gameDate
+            )
+        }
+        for regionID in falloutRegions {
+            let originalCode = NativeRegionConflictState.countryCode(fromLegacyRegionID: regionID)
+            let existingUpdatedAt = next[regionID]?.updatedAt ?? ""
+            let recoveredUpdatedAt = existingUpdatedAt.isEmpty ? gameDate : existingUpdatedAt
+            next[regionID] = NativeRegionConflictState(
+                controllerCode: occupations[regionID] ?? next[regionID]?.controllerCode ?? originalCode,
+                intensity: 5,
+                mode: .nuclearFallout,
+                originalCountryCode: originalCode,
+                regionID: regionID,
+                summary: next[regionID]?.summary ?? "Recovered from legacy nuclear fallout map state.",
+                updatedAt: recoveredUpdatedAt
+            )
+        }
+        return next.compactMapValues { conflict in
+            var conflict = conflict
+            conflict.regionID = sanitizeFoundationModelText(conflict.regionID)
+            conflict.controllerCode = sanitizeFoundationModelText(conflict.controllerCode)
+            conflict.originalCountryCode = sanitizeFoundationModelText(conflict.originalCountryCode)
+            conflict.sourceEventID = sanitizeFoundationModelText(conflict.sourceEventID)
+            conflict.summary = sanitizeFoundationModelText(conflict.summary)
+            conflict.intensity = Swift.max(1, Swift.min(5, conflict.intensity))
+            if conflict.regionID.isEmpty || conflict.controllerCode.isEmpty {
+                return nil
+            }
+            if conflict.originalCountryCode.isEmpty {
+                conflict.originalCountryCode = NativeRegionConflictState.countryCode(fromLegacyRegionID: conflict.regionID)
+            }
+            if conflict.updatedAt.isEmpty || !NativeGameEngine.isValidDate(conflict.updatedAt) {
+                conflict.updatedAt = gameDate
+            }
+            return conflict
+        }
     }
 
     private static func plannedOrderSummary(for action: NativePlannedAction, language: NativeGameLanguage) -> String {
@@ -936,17 +1253,214 @@ final class NativeCampaignStore: ObservableObject {
         selectedDiplomaticPartnerCode = fallback.code
         return fallback
     }
+
+    func updateBudgetSliders(military: Double, services: Double, diplomacy: Double) {
+        guard var state = self.state else { return }
+        state.budgetMilitarySlider = military
+        state.budgetServicesSlider = services
+        state.budgetDiplomacySlider = diplomacy
+        self.state = state
+        persistState()
+    }
+
+    func acceptDiplomaticOffer(id: String) {
+        guard var state = self.state else { return }
+        guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        var offer = state.activeOffers[idx]
+        offer.status = .accepted
+        state.activeOffers[idx] = offer
+
+        state.stability = max(0, min(100, state.stability - offer.stabilityCost))
+
+        if var proposerState = state.aiCountryStates[offer.proposerCode] {
+            let currentVal = proposerState.relationshipScores[state.country.code] ?? 0
+            proposerState.relationshipScores[state.country.code] = max(-100, min(100, currentVal + offer.relationshipEffect))
+            state.aiCountryStates[offer.proposerCode] = proposerState
+        }
+
+        if var pLedger = state.economicLedgers[state.country.code] {
+            pLedger.realGrowthPercent = max(-12.0, min(16.0, pLedger.realGrowthPercent + offer.growthDelta))
+
+            var secDelta = 0.0
+            var tradeDelta = 0.0
+            if offer.type == .militaryAlliance {
+                secDelta = 5.0
+                pLedger.securityIndex = max(0.0, min(100.0, pLedger.securityIndex + secDelta))
+            } else if offer.type == .nonAggressionPact {
+                secDelta = 1.0
+                pLedger.securityIndex = max(0.0, min(100.0, pLedger.securityIndex + secDelta))
+            } else if offer.type == .tradeAgreement {
+                tradeDelta = 1.2
+                pLedger.tradeBalancePercentGDP = max(-20.0, min(20.0, pLedger.tradeBalancePercentGDP + tradeDelta))
+            }
+
+            let acceptEntry = NativeEconomicLedgerEntry(
+                budgetBalanceDelta: 0.0,
+                debtDelta: 0.0,
+                eventID: "offer-accept-\(id)",
+                fiscalSpaceDelta: 0,
+                growthDelta: offer.growthDelta,
+                id: "ledger-entry-offer-accept-\(UUID().uuidString.lowercased())",
+                inflationDelta: 0.0,
+                ruleID: "diplomatic-treaty",
+                summary: "Accepted offer: \(offer.type.displayName) with \(offer.proposerCode)",
+                tradeBalanceDelta: tradeDelta,
+                turnDate: state.gameDate,
+                securityDelta: secDelta,
+                rebelDelta: 0.0
+            )
+            pLedger.entries.insert(acceptEntry, at: 0)
+            state.economicLedgers[state.country.code] = pLedger
+            state.economicLedger = pLedger
+        }
+
+        let acceptEvent = NativeCampaignEvent(
+            date: state.gameDate,
+            description: "TREATY SIGNED: We have accepted the \(offer.type.displayName) proposal from \(offer.proposerCode). Effects: \(offer.description)",
+            id: "offer-accept-event-\(id)-\(UUID().uuidString.lowercased())",
+            importance: .major,
+            kind: .diplomacy,
+            linkedActionIDs: [],
+            notable: true,
+            playerRelated: true,
+            strategicEffects: [],
+            title: "Treaty Signed with \(offer.proposerCode)"
+        )
+        state.timeline.insert(acceptEvent, at: 0)
+        self.state = state
+        persistState()
+    }
+
+    func rejectDiplomaticOffer(id: String) {
+        guard var state = self.state else { return }
+        guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        var offer = state.activeOffers[idx]
+        offer.status = .rejected
+        state.activeOffers[idx] = offer
+
+        if var proposerState = state.aiCountryStates[offer.proposerCode] {
+            let currentVal = proposerState.relationshipScores[state.country.code] ?? 0
+            proposerState.relationshipScores[state.country.code] = max(-100, min(100, currentVal - 5))
+            state.aiCountryStates[offer.proposerCode] = proposerState
+        }
+
+        let rejectEvent = NativeCampaignEvent(
+            date: state.gameDate,
+            description: "PROPOSAL REJECTED: We declined the \(offer.type.displayName) proposal from \(offer.proposerCode). Relations deteriorated slightly.",
+            id: "offer-reject-event-\(id)-\(UUID().uuidString.lowercased())",
+            importance: .minor,
+            kind: .diplomacy,
+            linkedActionIDs: [],
+            notable: false,
+            playerRelated: true,
+            strategicEffects: [],
+            title: "Declined Proposal from \(offer.proposerCode)"
+        )
+        state.timeline.insert(rejectEvent, at: 0)
+        self.state = state
+        persistState()
+    }
+
+    func counterDiplomaticOffer(id: String) {
+        guard var state = self.state else { return }
+        guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        var offer = state.activeOffers[idx]
+
+        let proposerCode = offer.proposerCode
+        let relations = state.aiCountryStates[proposerCode]?.relationshipScores[state.country.code] ?? 0
+        let threshold = 20 + (state.worldTension / 2)
+        if relations >= threshold {
+            offer.status = .accepted
+            offer.growthDelta *= 1.25
+            offer.relationshipEffect = Int(Double(offer.relationshipEffect) * 1.25)
+            state.activeOffers[idx] = offer
+
+            state.stability = max(0, min(100, state.stability - offer.stabilityCost))
+
+            if var proposerState = state.aiCountryStates[proposerCode] {
+                let currentVal = proposerState.relationshipScores[state.country.code] ?? 0
+                proposerState.relationshipScores[state.country.code] = max(-100, min(100, currentVal + offer.relationshipEffect))
+                state.aiCountryStates[proposerCode] = proposerState
+            }
+
+            if var pLedger = state.economicLedgers[state.country.code] {
+                pLedger.realGrowthPercent = max(-12.0, min(16.0, pLedger.realGrowthPercent + offer.growthDelta))
+
+                var secDelta = 0.0
+                var tradeDelta = 0.0
+                if offer.type == .militaryAlliance {
+                    secDelta = 6.25
+                    pLedger.securityIndex = max(0.0, min(100.0, pLedger.securityIndex + secDelta))
+                } else if offer.type == .nonAggressionPact {
+                    secDelta = 1.25
+                    pLedger.securityIndex = max(0.0, min(100.0, pLedger.securityIndex + secDelta))
+                } else if offer.type == .tradeAgreement {
+                    tradeDelta = 1.5
+                    pLedger.tradeBalancePercentGDP = max(-20.0, min(20.0, pLedger.tradeBalancePercentGDP + tradeDelta))
+                }
+
+                let acceptEntry = NativeEconomicLedgerEntry(
+                    budgetBalanceDelta: 0.0,
+                    debtDelta: 0.0,
+                    eventID: "offer-counter-accept-\(id)",
+                    fiscalSpaceDelta: 0,
+                    growthDelta: offer.growthDelta,
+                    id: "ledger-entry-offer-counter-accept-\(UUID().uuidString.lowercased())",
+                    inflationDelta: 0.0,
+                    ruleID: "diplomatic-treaty",
+                    summary: "Accepted counter-offer: \(offer.type.displayName) with \(offer.proposerCode)",
+                    tradeBalanceDelta: tradeDelta,
+                    turnDate: state.gameDate,
+                    securityDelta: secDelta,
+                    rebelDelta: 0.0
+                )
+                pLedger.entries.insert(acceptEntry, at: 0)
+                state.economicLedgers[state.country.code] = pLedger
+                state.economicLedger = pLedger
+            }
+
+            let acceptEvent = NativeCampaignEvent(
+                date: state.gameDate,
+                description: "COUNTER-PROPOSAL ACCEPTED: \(proposerCode) accepted our counter-terms for the \(offer.type.displayName). Benefits improved by 25%!",
+                id: "offer-counter-accept-event-\(id)-\(UUID().uuidString.lowercased())",
+                importance: .major,
+                kind: .diplomacy,
+                linkedActionIDs: [],
+                notable: true,
+                playerRelated: true,
+                strategicEffects: [],
+                title: "Counter-Proposal Accepted by \(proposerCode)"
+            )
+            state.timeline.insert(acceptEvent, at: 0)
+        } else {
+            offer.status = .countered
+            state.activeOffers[idx] = offer
+
+            let rejectEvent = NativeCampaignEvent(
+                date: state.gameDate,
+                description: "COUNTER-PROPOSAL REJECTED: \(proposerCode) declined our counter-terms for the \(offer.type.displayName). Negotiations broke down and the proposal was cancelled.",
+                id: "offer-counter-reject-event-\(id)-\(UUID().uuidString.lowercased())",
+                importance: .major,
+                kind: .diplomacy,
+                linkedActionIDs: [],
+                notable: true,
+                playerRelated: true,
+                strategicEffects: [],
+                title: "Counter-Proposal Declined by \(proposerCode)"
+            )
+            state.timeline.insert(rejectEvent, at: 0)
+        }
+
+        self.state = state
+        persistState()
+    }
 }
 
 enum NativeCampaignStoreError: LocalizedError {
-    case importTooLarge(maximumBytes: Int)
     case noCampaignToExport
 
     var errorDescription: String? {
         switch self {
-        case .importTooLarge(let maximumBytes):
-            let megabytes = Double(maximumBytes) / 1_000_000
-            return String(format: "The campaign file is too large. Keep imports under %.1f MB.", megabytes)
         case .noCampaignToExport:
             return "There is no native campaign to export yet."
         }
@@ -971,7 +1485,6 @@ private extension NativeCampaignState {
         } else {
             diplomaticThreads.insert(thread, at: 0)
         }
-        diplomaticThreads = Array(diplomaticThreads.prefix(12))
     }
 }
 

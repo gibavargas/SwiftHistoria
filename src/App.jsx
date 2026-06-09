@@ -60,6 +60,9 @@ function App() {
     let isActive = true;
     let frameId = 0;
 
+    // The legacy web shell gates UI display on both asset preload and the first
+    // map idle event. This avoids showing controls over a blank map while still
+    // respecting a fixed startup budget if MapLibre never reports idle.
     const frame = () => {
       if (!isActive) return;
       const elapsedMs = Math.min(

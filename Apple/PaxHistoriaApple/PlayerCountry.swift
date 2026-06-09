@@ -11,6 +11,7 @@ struct PlayerCountry: Codable, Hashable, Identifiable {
 
 enum CountryCatalog {
     static let all: [PlayerCountry] = CountryCodePair.all
+        .filter { Native2010WorldModel.isSelectableCountryCode($0.alpha3) }
         .map { pair in
             PlayerCountry(
                 code: pair.alpha3,

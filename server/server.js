@@ -1,3 +1,6 @@
+// Reference-only web server: SwiftHistoria is being developed as a
+// Swift-native Apple app under Apple/. Keep this server for legacy behavior,
+// asset, or inspiration checks unless a task explicitly targets web support.
 import express from "express";
 import fs from "fs";
 import path from "path";
@@ -48,6 +51,9 @@ const sendError = (res, statusCode, error) => {
   res.status(statusCode).json({ error: message });
 };
 
+// PMTiles and uploaded bundles can be large, so the reference server supports
+// byte-range reads. Keep this behavior if the web runtime is used for asset
+// inspection or local scenario editing.
 const streamBinaryFile = (req, res, sourcePath, contentType = "application/octet-stream") => {
   const stats = fs.statSync(sourcePath);
   const totalSize = stats.size;

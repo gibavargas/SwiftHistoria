@@ -11,6 +11,10 @@ const nativeStore = readFileSync("Apple/PaxHistoriaApple/NativeCampaignStore.swi
 const nativeTests = readFileSync("Apple/PaxHistoriaAppleTests/NativeBackendTests.swift", "utf8");
 const nativeView = readFileSync("Apple/PaxHistoriaApple/NativeGameView.swift", "utf8");
 const nativeShell = readFileSync("Apple/PaxHistoriaApple/NativeGameShell.swift", "utf8");
+const native2010 = readFileSync("Apple/PaxHistoriaApple/Native2010WorldModel.swift", "utf8");
+const nativeStrategyContext = readFileSync("Apple/PaxHistoriaApple/NativeStrategyContextDatabase.swift", "utf8");
+const nativeIOSTests = readFileSync("Apple/PaxHistoriaAppleUITests/PaxHistoriaiOSUITests.swift", "utf8");
+const countrySelectionView = readFileSync("Apple/PaxHistoriaApple/CountrySelectionView.swift", "utf8");
 const nativeCoordinates = readFileSync("Apple/PaxHistoriaApple/NativeCountryCoordinates.swift", "utf8");
 const playerCountry = readFileSync("Apple/PaxHistoriaApple/PlayerCountry.swift", "utf8");
 const buildAppleScript = readFileSync("script/build_apple.sh", "utf8");
@@ -23,6 +27,9 @@ const nativeSources = [
   nativeStore,
   nativeView,
   nativeShell,
+  native2010,
+  nativeStrategyContext,
+  countrySelectionView,
   nativeCoordinates,
 ].join("\n");
 
@@ -38,6 +45,8 @@ test("Apple targets are SwiftUI-native and no longer build the WebView shell", (
   assert.match(contentView, /NativeGameView/);
   assert.match(project, /NativeGameShell\.swift in Sources/);
   assert.match(project, /NativeCountryCoordinates\.swift in Sources/);
+  assert.match(project, /Native2010WorldModel\.swift in Sources/);
+  assert.match(project, /NativeStrategyContextDatabase\.swift in Sources/);
 });
 
 test("native Apple game calls Foundation Models directly without responder fallback", () => {
@@ -69,6 +78,18 @@ test("native Apple game uses strict JSON generation inside the Apple context win
   assert.match(nativeService, /AppleNativeGeneratedEventDraft\.schemaInstructions/);
   assert.match(nativeService, /AppleNativeTurnSummary\.schemaInstructions/);
   assert.match(nativeService, /makeSuggestionPrompt/);
+  assert.match(nativeService, /mechanicsContract\(for state: NativeCampaignState\)/);
+  assert.match(nativeService, /Mechanics checklist/);
+  assert.match(nativeService, /planned actions\/action memory/);
+  assert.match(nativeService, /economic ledger/);
+  assert.match(nativeService, /public security/);
+  assert.match(nativeService, /insurgency pressure/);
+  assert.match(nativeService, /map conflict/);
+  assert.match(nativeService, /regionConflicts/);
+  assert.match(nativeService, /diplomacy\/global friction/);
+  assert.match(nativeService, /hexLeverCode/);
+  assert.match(nativeService, /primary affected mechanic/);
+  assert.match(nativeService, /secondary mechanic/);
   assert.match(nativeService, /AppleNativeSuggestedAction\.schemaInstructions/);
   assert.match(nativeService, /Return one strict JSON object only/);
   assert.match(nativeService, /session\.respond\(/);
@@ -121,6 +142,96 @@ test("native event engine enforces world events and strategic consequences", () 
   assert.match(nativeEngine, /internalStability/);
 });
 
+test("native Apple game locks a real 2010 opening baseline", () => {
+  assert.match(nativeModels, /gameDate: "2010-01-15"/);
+  assert.match(nativeModels, /startDate: "2010-01-01"/);
+  assert.match(native2010, /historicalStartDate = "2010-01-01"/);
+  assert.match(native2010, /openingGameDate = "2010-01-15"/);
+  assert.match(native2010, /canonNotice/);
+  assert.match(native2010, /unavailableAtStart = Set\(\["SSD"\]\)/);
+  assert.match(native2010, /nominalGDPTrillions/);
+  assert.match(native2010, /alignments\(for state: NativeCampaignState\)/);
+  assert.match(native2010, /riskSignals\(for state: NativeCampaignState\)/);
+  assert.match(native2010, /commitments\(for state: NativeCampaignState\)/);
+  assert.match(native2010, /promptContext\(for state: NativeCampaignState\)/);
+  assert.match(nativeEngine, /Native2010WorldModel\.stability\(for: country, scenario: scenario\)/);
+  assert.match(nativeEngine, /Native2010WorldModel\.worldTension\(for: country, scenario: scenario\)/);
+  assert.match(nativeEngine, /Native2010WorldModel\.openingSummary\(for: country, language: language\)/);
+  assert.match(playerCountry, /filter \{ Native2010WorldModel\.isSelectableCountryCode\(\$0\.alpha3\) \}/);
+  assert.match(nativeView, /Native2010WorldModel\.mapSectors\(for: state\)/);
+  assert.match(nativeView, /2010 political baseline/);
+  assert.match(nativeView, /2010 alignments/);
+  assert.match(nativeShell, /Native2010WorldModel\.gdpMetric\(for: state\)/);
+  assert.match(nativeShell, /Native2010WorldModel\.alignments\(for: state\)/);
+  assert.match(nativeShell, /2010 DIPLOMATIC ALIGNMENT/);
+  assert.match(nativeShell, /2010 TENSION SIGNALS/);
+  assert.match(nativeShell, /2010 COMMITMENTS/);
+  assert.match(nativeShell, /ECONOMIC LEDGER/);
+  assert.match(nativeShell, /Energy/);
+  assert.match(nativeShell, /Food/);
+  assert.match(nativeShell, /Nuclear/);
+  assert.match(nativeService, /Native2010WorldModel\.promptContext\(for: state\)/);
+  assert.match(nativeService, /Selected country code/);
+  assert.match(nativeService, /post-start-date facts/);
+  assert.doesNotMatch(nativeShell, /Volkan|Kansak|Sundar|Pacifika|Northland|Eastern Bloc/);
+  assert.doesNotMatch(nativeService, /Fictional selected region code|fictional turn-based game/);
+});
+
+test("native Apple game has action memory, parallel Foundation lanes, progress, and a detailed economic ledger", () => {
+  assert.match(nativeStrategyContext, /enum NativeFoundationTurnLane/);
+  assert.match(nativeStrategyContext, /struct NativeTurnProgress: Codable, Hashable/);
+  assert.match(nativeStrategyContext, /struct NativeFactRecord: Codable, Hashable, Identifiable/);
+  assert.match(nativeStrategyContext, /struct NativeConsequenceRule: Codable, Hashable, Identifiable/);
+  assert.match(nativeStrategyContext, /struct NativeEconomicLedger: Codable, Hashable/);
+  assert.match(nativeStrategyContext, /budgetBalancePercentGDP/);
+  assert.match(nativeStrategyContext, /publicDebtPercentGDP/);
+  assert.match(nativeStrategyContext, /tradeBalancePercentGDP/);
+  assert.match(nativeStrategyContext, /unemploymentPercent/);
+  assert.match(nativeStrategyContext, /defaultStrategicCountryCodes/);
+  assert.match(nativeStrategyContext, /public security/);
+  assert.match(nativeStrategyContext, /insurgency pressure/);
+  assert.match(nativeStrategyContext, /conflictNudgeLabel/);
+  assert.match(nativeStrategyContext, /struct NativeActionMemory: Codable, Hashable, Identifiable/);
+  assert.match(nativeStrategyContext, /promptPacket\(for state: NativeCampaignState, months: Int, action: NativePlannedAction\? = nil\)/);
+  assert.match(nativeStrategyContext, /updatedEconomicLedger/);
+  assert.match(nativeStrategyContext, /normalizedEconomicLedger/);
+  assert.match(nativeModels, /var actionMemory: \[NativeActionMemory\]/);
+  assert.match(nativeModels, /var economicLedger: NativeEconomicLedger/);
+  assert.match(nativeModels, /enum NativeRegionConflictMode/);
+  assert.match(nativeModels, /struct NativeRegionConflictState: Codable, Hashable, Identifiable/);
+  assert.match(nativeModels, /var regionConflicts: \[String: NativeRegionConflictState\]/);
+  assert.match(nativeModels, /decodeIfPresent\(\[NativeActionMemory\]\.self/);
+  assert.match(nativeModels, /decodeIfPresent\(NativeEconomicLedger\.self/);
+  assert.match(nativeStore, /@Published private\(set\) var turnProgress: NativeTurnProgress\?/);
+  assert.match(nativeStore, /NativeStrategyContextDatabase\.remember/);
+  assert.match(nativeStore, /NativeStrategyContextDatabase\.normalizedEconomicLedger/);
+  assert.match(nativeStore, /aiService\.generateTurn\(for: currentState, months: months\) \{ \[weak self\] progress in/);
+  assert.match(nativeEngine, /NativeStrategyContextDatabase\.updatedEconomicLedger/);
+  assert.match(nativeEngine, /NativeStrategyContextDatabase\.updatedActionMemory/);
+  assert.match(nativeEngine, /processTacticalNudges/);
+  assert.match(nativeEngine, /\.conventionalOccupation/);
+  assert.match(nativeEngine, /\.guerrillaControl/);
+  assert.match(nativeEngine, /\.nuclearFallout/);
+  assert.match(nativeEngine, /\.contestedBorder/);
+  assert.match(nativeService, /progress: @escaping @MainActor \(NativeTurnProgress\) -> Void/);
+  assert.match(nativeService, /withThrowingTaskGroup\(of: LaneResult\.self\)/);
+  assert.match(nativeService, /group\.addTask/);
+  assert.match(nativeService, /case \.independent\(let draft\)/);
+  assert.match(nativeService, /case \.economic\(let draft\)/);
+  assert.match(nativeService, /case \.domestic\(let draft\)/);
+  assert.match(nativeService, /makeEconomicEventPrompt/);
+  assert.match(nativeService, /NativeStrategyContextDatabase\.promptPacket/);
+  assert.match(nativeShell, /NativeTurnProgressPanel/);
+  assert.match(nativeShell, /ProgressView\(value: progress\.fraction\)/);
+  assert.match(nativeShell, /native-turn-progress-panel/);
+  assert.match(nativeShell, /Budget Balance/);
+  assert.match(nativeShell, /Public Debt/);
+  assert.match(nativeShell, /Fiscal Space/);
+  assert.match(nativeShell, /Inflation/);
+  assert.match(native2010, /Current alternate-history ledger/);
+  assert.match(native2010, /state\.economicLedger/);
+});
+
 test("native Swift hardens edge cases without JavaScript fallback", () => {
   const staleGuards = [...nativeStore.matchAll(/guard isCurrentStateVersion\(requestVersion\) else \{ return \}/g)];
 
@@ -140,8 +251,7 @@ test("native Swift hardens edge cases without JavaScript fallback", () => {
   assert.match(nativeStore, /writePersistenceData/);
   assert.match(nativeStore, /options: \[\.atomic\]/);
   assert.match(nativeStore, /lastRecoveryNotice/);
-  assert.match(nativeStore, /maxImportedCampaignBytes/);
-  assert.match(nativeStore, /importTooLarge/);
+  assert.doesNotMatch(nativeStore, /maxImportedCampaignBytes|importTooLarge/);
   assert.match(nativeStore, /NativeGameEngine\.validated\(generated/);
   assert.match(nativeStore, /if state\.timeline\.isEmpty/);
   assert.match(nativeStore, /state\.lastSummary = initialState\.lastSummary/);
@@ -153,7 +263,12 @@ test("native Swift hardens edge cases without JavaScript fallback", () => {
   assert.match(nativeService, /Logger\(subsystem: "com\.gibavargas\.SwiftHistoria", category: "NativeFoundationModelService"\)/);
   assert.match(nativeService, /readiness available/);
   assert.match(nativeService, /turn generation validated/);
+  assert.match(nativeEngine, /timeline: generatedEvents \+ state\.timeline/);
+  assert.match(nativeEngine, /worldEffects: allEffects \+ state\.worldEffects/);
+  assert.doesNotMatch(nativeEngine, /timeline: .*prefix\(80\)/);
+  assert.doesNotMatch(nativeEngine, /worldEffects: .*prefix\(160\)/);
   assert.match(nativeTests, /testLiveFoundationModelsGenerateValidNativeTurnWhenEnabled/);
+  assert.match(nativeTests, /testHighDiplomacyOutreachDoesNotDoubleCountAcceptedTreatyPartners/);
   assert.match(nativeTests, /PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS/);
   assert.match(nativeTests, /#if PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS/);
   assert.match(nativeTests, /campaign-state-envelope-v2\.json/);
@@ -163,8 +278,15 @@ test("native Swift hardens edge cases without JavaScript fallback", () => {
 test("native Apple game renders a map and Apple-generated action suggestions", () => {
   assert.match(nativeView, /import MapKit/);
   assert.match(nativeView, /NativeGameShell/);
-  assert.match(nativeView, /Map\(position:/);
+  assert.match(nativeView, /Canvas \{ context, size in/);
+  assert.match(nativeView, /GeopoliticalMapData\.regions/);
   assert.match(nativeView, /native-strategic-map/);
+  assert.match(nativeView, /drawConflictRoutes/);
+  assert.match(nativeView, /drawContestedBorder/);
+  assert.match(nativeView, /drawStabilizationOverlay/);
+  assert.match(nativeView, /regionConflicts/);
+  assert.match(nativeView, /INSURGENCY/);
+  assert.match(nativeView, /NUCLEAR/);
   assert.match(nativeView, /StrategicMapGrid/);
   assert.match(nativeShell, /enum NativeGameTab/);
   assert.match(nativeShell, /case map/);
@@ -175,8 +297,17 @@ test("native Apple game renders a map and Apple-generated action suggestions", (
   assert.match(nativeShell, /selectedIntelSection = \.diplomacy/);
   assert.match(nativeShell, /NativeIntelSectionSelector/);
   assert.match(nativeShell, /native-intel-section-selector/);
+  assert.match(nativeShell, /\.contentShape\(Capsule\(\)\)/);
   assert.match(nativeShell, /enum NativeMacDestination/);
   assert.match(nativeShell, /NavigationSplitView/);
+  assert.match(nativeShell, /List\(selection: \$selectedDestination\)/);
+  assert.match(nativeShell, /\.tag\(destination\)/);
+  assert.match(nativeShell, /\.listStyle\(\.sidebar\)/);
+  assert.doesNotMatch(nativeShell, /\.tag\(destination as NativeMacDestination\?\)/);
+  assert.match(nativeShell, /\.frame\(maxWidth: \.infinity, minHeight: 44, alignment: \.leading\)/);
+  assert.match(nativeShell, /\.contentShape\(Rectangle\(\)\)/);
+  assert.match(countrySelectionView, /\.frame\(maxWidth: \.infinity, minHeight: 44, alignment: \.leading\)/);
+  assert.match(countrySelectionView, /\.contentShape\(RoundedRectangle\(cornerRadius: 12, style: \.continuous\)\)/);
   assert.match(nativeShell, /NativeMapScreen/);
   assert.match(nativeShell, /NativeOrdersScreen/);
   assert.match(nativeShell, /NativeIntelScreen/);
@@ -206,6 +337,15 @@ test("native Apple game renders a map and Apple-generated action suggestions", (
   assert.match(nativeShell, /keyboardShortcut/);
   assert.match(nativeShell, /accessibilityReduceMotion/);
   assert.match(nativeShell, /colorSchemeContrast/);
+  assert.match(project, /PaxHistoriaiOSUITests/);
+  assert.match(project, /com\.apple\.product-type\.bundle\.ui-testing/);
+  assert.match(project, /TestTargetID = A10000000000000000000061/);
+  assert.match(contentView, /PAX_HISTORIA_UI_TEST_RESET/);
+  assert.match(nativeIOSTests, /XCUIApplication/);
+  assert.match(nativeIOSTests, /native-country-option-BRA/);
+  assert.match(nativeIOSTests, /native-map-screen/);
+  assert.match(nativeIOSTests, /Strategic map/);
+  assert.match(nativeIOSTests, /native-orders-screen/);
   assert.match(nativeStore, /lastSuggestionError/);
   assert.match(nativeStore, /manual civic proposals remain available/);
   assert.match(nativeStore, /\.suggestionFailure\(error\)/);

@@ -35,6 +35,14 @@
 
 ---
 
+## Development Direction
+
+SwiftHistoria is being developed as a Swift-native Apple app in [`Apple/`](Apple/). Treat the legacy React/Vite web app in [`src/`](src/) and the Express server in [`server/`](server/) as reference material only. They can be useful for product inspiration, old behavior checks, or asset context, but new product work should land in the Swift-native implementation unless a task explicitly says otherwise.
+
+For architectural orientation, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). For future AI coding agents, see [`docs/LLM_MAINTENANCE_GUIDE.md`](docs/LLM_MAINTENANCE_GUIDE.md).
+
+---
+
 ## ✨ Features
 
 - __interactive world map:__ watch territory, borders, and nations shift as history unfolds

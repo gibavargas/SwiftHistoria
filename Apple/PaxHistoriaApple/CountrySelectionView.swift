@@ -9,16 +9,25 @@ struct CountrySelectionView: View {
     let selectedLanguage: NativeGameLanguage
     let selectedScenarioID: String
     let onSelect: (PlayerCountry) -> Void
+    let activeCampaignState: NativeCampaignState?
+    let onResumeCampaign: () -> Void
 
     @State private var query = ""
+    @State private var setupStep = 0 // 0: Scenario/Language; 1: Choose Country
 
     private var filteredCountries: [PlayerCountry] {
+        let mapped = countries.map { country -> PlayerCountry in
+            if country.code == "RUS" && selectedScenarioID == "soviet-triumph" {
+                return PlayerCountry(code: "RUS", name: "Soviet Union")
+            }
+            return country
+        }
         let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedQuery.isEmpty else {
-            return countries
+            return mapped
         }
 
-        return countries.filter { country in
+        return mapped.filter { country in
             country.name.localizedCaseInsensitiveContains(normalizedQuery) ||
                 country.code.localizedCaseInsensitiveContains(normalizedQuery)
         }
@@ -47,10 +56,66 @@ struct CountrySelectionView: View {
             #else
             NavigationStack {
                 VStack(spacing: 0) {
-                    setupPanel
-                    countryList
+                    if setupStep == 0 {
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 20) {
+                                header
+                                scenarioDeck
+                                languageDeck
+                                simulationGuide
+
+                                Button {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                        setupStep = 1
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text("Continue to Choose Country")
+                                            .fontWeight(.bold)
+                                        Image(systemName: "arrow.right")
+                                    }
+                                    .frame(maxWidth: .infinity, minHeight: 46)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(selectedScenarioAccentColor)
+                                .padding(.top, 10)
+                                .accessibilityIdentifier("native-country-continue")
+                            }
+                            .padding(20)
+                            .frame(maxWidth: 520, alignment: .leading)
+                        }
+                    } else {
+                        VStack(spacing: 0) {
+                            HStack {
+                                Button {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                        setupStep = 0
+                                    }
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "chevron.left")
+                                            .fontWeight(.bold)
+                                        Text("Scenario Setup")
+                                            .fontWeight(.semibold)
+                                    }
+                                    .font(.subheadline)
+                                    .foregroundStyle(selectedScenarioAccentColor)
+                                }
+                                Spacer()
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 16)
+                            .padding(.bottom, 12)
+
+                            searchField
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 12)
+
+                            countryList
+                        }
+                    }
                 }
-                .navigationTitle("New Campaign")
+                .navigationTitle(setupStep == 0 ? "New Campaign" : "Choose Country")
                 .navigationBarTitleDisplayMode(.inline)
             }
             #endif
@@ -103,7 +168,7 @@ struct CountrySelectionView: View {
                             onSelect(country)
                         } label: {
                             CountryRow(country: country)
-                                .frame(minHeight: 44)
+                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("\(country.name), ISO code \(country.code)")
@@ -117,17 +182,63 @@ struct CountrySelectionView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Color.black.opacity(0.35))
+        .background(Color.black.opacity(0.25))
         .accessibilityIdentifier("native-country-list")
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("SwiftHistoria")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(Color.glowingCyan)
                 .textCase(.uppercase)
                 .tracking(2.6)
+
+            if let activeState = activeCampaignState {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Image(systemName: "play.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(Color.glowingCyan)
+                        Text("RESUME SAVED CAMPAIGN")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.glowingCyan)
+                            .tracking(1.2)
+                        Spacer()
+                    }
+
+                    let activeCountryName = activeState.country.code == "RUS" && activeState.scenarioID == "soviet-triumph" ? "Soviet Union" : activeState.country.name
+                    Text("\(activeCountryName) (\(activeState.country.code))")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+
+                    Text("\(activeState.scenarioName) · Round \(activeState.round) · \(activeState.gameDate)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    Button {
+                        onResumeCampaign()
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.right.circle.fill")
+                            Text("Resume Campaign")
+                                .fontWeight(.bold)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 38)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Color.glowingCyan.opacity(0.3))
+                    .foregroundStyle(Color.glowingCyan)
+                }
+                .padding(14)
+                .background(Color.white.opacity(0.06))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.glowingCyan.opacity(0.3), lineWidth: 1)
+                }
+                .padding(.bottom, 6)
+            }
 
             Text("Choose your country")
                 .font(.largeTitle.weight(.bold))
@@ -143,19 +254,20 @@ struct CountrySelectionView: View {
     }
 
     private var scenarioDeck: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Label("Scenario", systemImage: "square.stack.3d.up")
-                    .font(.headline)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(Color.iceBlue)
                     .accessibilityIdentifier("native-scenario-library")
                 Spacer()
                 Text(NativeScenarioCatalog.scenario(for: selectedScenarioID).name)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(selectedScenarioAccentColor)
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
+                HStack(spacing: 12) {
                     ForEach(scenarios) { scenario in
                         Button {
                             onScenarioSelect(scenario.id)
@@ -164,7 +276,7 @@ struct CountrySelectionView: View {
                                 scenario: scenario,
                                 selected: scenario.id == selectedScenarioID
                             )
-                            .frame(width: 220)
+                            .frame(width: 210)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("\(scenario.name), \(scenario.subtitle)")
@@ -176,19 +288,20 @@ struct CountrySelectionView: View {
                 .padding(.vertical, 2)
             }
         }
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .padding(14)
+        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
     }
 
     private var languageDeck: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Label("Language", systemImage: "character.bubble")
-                    .font(.headline)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(Color.iceBlue)
                 Spacer()
                 Text(selectedLanguage.label)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(selectedScenarioAccentColor)
             }
 
             Picker(
@@ -205,35 +318,141 @@ struct CountrySelectionView: View {
             .pickerStyle(.segmented)
             .accessibilityIdentifier("native-language-picker")
         }
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .padding(14)
+        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
     }
 
     private var searchField: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Label("Find a country", systemImage: "magnifyingglass")
-                .font(.headline)
-            TextField("Search country or ISO code", text: $query)
-                .textFieldStyle(.roundedBorder)
-                .accessibilityLabel("Search country or ISO code")
-                .accessibilityIdentifier("native-country-search")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(Color.iceBlue)
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
+                TextField("Search country or ISO code", text: $query)
+                    .textFieldStyle(.plain)
+                    .autocorrectionDisabled()
+                    .accessibilityIdentifier("native-country-search")
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
+                if !query.isEmpty {
+                    Button {
+                        query = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    .accessibilityLabel("Clear search")
+                }
+            }
+            .padding(10)
+            .background(Color.deepSlate.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            }
+            .accessibilityLabel("Search country or ISO code")
         }
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .padding(14)
+        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
+    }
+
+    private var simulationGuide: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("TRANSMISSION PROTOCOL", systemImage: "info.circle")
+                .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.glowingCyan)
+
+            VStack(alignment: .leading, spacing: 8) {
+                GuideStepRow(number: "01", text: "Select a geopolitical scenario from the stack above.")
+                GuideStepRow(number: "02", text: "Choose the nation you wish to direct in the simulator.")
+                GuideStepRow(number: "03", text: "Draft enqueued policy orders or leverage advisor intelligence.")
+                GuideStepRow(number: "04", text: "Advance rounds to trigger strategic consequences and read the timeline.")
+            }
+        }
+        .padding(14)
+        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
+    }
+}
+
+private struct GuideStepRow: View {
+    let number: String
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(number)
+                .font(.system(.caption, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.neonTeal)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.neonTeal.opacity(0.12), in: RoundedRectangle(cornerRadius: 4))
+
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 
 private struct CountrySelectionBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.02, green: 0.018, blue: 0.015),
-                Color(red: 0.08, green: 0.06, blue: 0.035),
-                Color.black,
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(hex: "#040812"),
+                    Color(hex: "#07111c"),
+                    Color.spaceBlack
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            Canvas { context, size in
+                let gridSpacing: CGFloat = 40
+                var path = Path()
+
+                for x in stride(from: CGFloat(0), to: size.width, by: gridSpacing) {
+                    path.move(to: CGPoint(x: x, y: 0))
+                    path.addLine(to: CGPoint(x: x, y: size.height))
+                }
+
+                for y in stride(from: CGFloat(0), to: size.height, by: gridSpacing) {
+                    path.move(to: CGPoint(x: 0, y: y))
+                    path.addLine(to: CGPoint(x: size.width, y: y))
+                }
+
+                context.stroke(path, with: .color(Color.iceBlue.opacity(0.025)), lineWidth: 0.75)
+            }
+
+            RadialGradient(
+                colors: [Color.glowingCyan.opacity(0.05), Color.clear],
+                center: .topLeading,
+                startRadius: 0,
+                endRadius: 300
+            )
+
+            RadialGradient(
+                colors: [Color.neonTeal.opacity(0.04), Color.clear],
+                center: .bottomTrailing,
+                startRadius: 0,
+                endRadius: 400
+            )
+
+            VStack {
+                HStack {
+                    Spacer()
+                    OrbitRingsView()
+                        .offset(x: 50, y: -50)
+                        .opacity(0.7)
+                }
+                Spacer()
+            }
+        }
         .ignoresSafeArea()
     }
 }
@@ -244,24 +463,32 @@ private struct CountryRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(country.name)
-                    .font(.body.weight(.medium))
+                    .font(.body.weight(.bold))
                     .foregroundStyle(isHovered ? Color.accentColor : Color.primary)
-
-                Text(country.code)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             Spacer()
 
+            Text(country.code)
+                .font(.system(.caption2, design: .monospaced).weight(.bold))
+                .foregroundStyle(isHovered ? Color.accentColor : .secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.05), in: Capsule())
+                .overlay {
+                    Capsule()
+                        .stroke(isHovered ? Color.accentColor.opacity(0.3) : Color.white.opacity(0.06), lineWidth: 1)
+                }
+
             Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(isHovered ? Color.accentColor : Color.secondary)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(isHovered ? Color.accentColor : Color.secondary.opacity(0.5))
         }
         .contentShape(Rectangle())
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
         .accessibilityElement(children: .combine)
         .onHover { hovering in
             withAnimation(.easeOut(duration: 0.15)) {
@@ -280,28 +507,30 @@ private struct ScenarioSelectionCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
                 Text(scenario.name)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(selected ? .primary : .secondary)
                     .lineLimit(1)
                 Spacer()
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                    .font(.subheadline)
                     .foregroundStyle(selected ? accent : .secondary)
             }
             Text(scenario.subtitle)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(selected ? accent.opacity(0.8) : .secondary)
                 .lineLimit(2)
             Text(scenario.heroSubtitle)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .lineLimit(3)
         }
-        .padding(12)
+        .padding(14)
         .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
-        .background(selected ? accent.opacity(0.12) : .white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(selected ? accent.opacity(0.8) : .white.opacity(0.12), lineWidth: selected ? 2 : 1)
-        }
+        .glassmorphicCard(
+            borderColor: selected ? accent.opacity(0.8) : .white.opacity(0.08),
+            cornerRadius: 12
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .hoverScale(1.02)
     }
 }
@@ -309,6 +538,14 @@ private struct ScenarioSelectionCard: View {
 // MARK: - Helper Extensions
 
 extension Color {
+    static let spaceBlack = Color(hex: "#02050a")
+    static let deepSlate = Color(hex: "#07111c")
+    static let iceBlue = Color(hex: "#8abeff")
+    static let glowingCyan = Color(hex: "#33c9ff")
+    static let neonTeal = Color(hex: "#4ad4a0")
+    static let alertGold = Color(hex: "#f4c96d")
+    static let softRed = Color(hex: "#ff5777")
+
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
@@ -334,6 +571,79 @@ extension Color {
     }
 }
 
+struct GlassmorphicCardModifier: ViewModifier {
+    var borderColor: Color
+    var cornerRadius: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .background(.ultraThinMaterial)
+            .background(Color.deepSlate.opacity(0.4))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(borderColor, lineWidth: 1)
+            }
+            .shadow(color: Color.black.opacity(0.4), radius: 8, x: 0, y: 4)
+    }
+}
+
+struct OrbitRingsView: View {
+    @State private var rotationLarge: Double = 0
+    @State private var rotationSmall: Double = 0
+    @State private var pulse: CGFloat = 0.85
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(
+                    Color.glowingCyan.opacity(0.10),
+                    style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [40, 150])
+                )
+                .frame(width: 200, height: 200)
+                .rotationEffect(.degrees(rotationLarge))
+
+            Circle()
+                .stroke(
+                    Color.neonTeal.opacity(0.15),
+                    style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [20, 80])
+                )
+                .frame(width: 120, height: 120)
+                .rotationEffect(.degrees(rotationSmall))
+
+            Circle()
+                .stroke(
+                    Color.iceBlue.opacity(0.04),
+                    style: StrokeStyle(lineWidth: 4, lineCap: .butt, dash: [2, 8])
+                )
+                .frame(width: 160, height: 160)
+
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [Color.glowingCyan.opacity(0.35), Color.clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 30
+                    )
+                )
+                .frame(width: 60, height: 60)
+                .scaleEffect(pulse)
+        }
+        .onAppear {
+            withAnimation(.linear(duration: 25).repeatForever(autoreverses: false)) {
+                rotationLarge = 360
+            }
+            withAnimation(.linear(duration: 15).repeatForever(autoreverses: false)) {
+                rotationSmall = -360
+            }
+            withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
+                pulse = 1.15
+            }
+        }
+    }
+}
+
 struct HoverScaleModifier: ViewModifier {
     @State private var isHovered = false
     let scale: CGFloat
@@ -351,5 +661,9 @@ struct HoverScaleModifier: ViewModifier {
 extension View {
     func hoverScale(_ scale: CGFloat = 1.02) -> some View {
         self.modifier(HoverScaleModifier(scale: scale))
+    }
+
+    func glassmorphicCard(borderColor: Color = .white.opacity(0.12), cornerRadius: CGFloat = 12) -> some View {
+        self.modifier(GlassmorphicCardModifier(borderColor: borderColor, cornerRadius: cornerRadius))
     }
 }

@@ -13,6 +13,9 @@ export const APPLE_FOUNDATION_STATUS_KEY = "pax_apple_foundation_status_v1";
 const pendingRequests = new Map();
 let installed = false;
 
+// Legacy WebKit bridge contract for the old web-hosted Apple runtime. The
+// native Swift app now calls Foundation Models directly; keep this file as
+// reference behavior for browser tests and historical save/runtime support.
 const normalizeHistory = (history) =>
   (Array.isArray(history) ? history : [])
     .slice(-12)

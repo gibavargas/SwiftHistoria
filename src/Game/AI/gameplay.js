@@ -91,6 +91,9 @@ const APPLE_LONG_CONTEXT_KEYS = [
   "worldSummaryNoCity",
 ];
 
+// The web reference runtime has to compact long context before routing through
+// the old Apple bridge. The native Swift service has its own sliced generation
+// path; this compaction remains useful documentation for the legacy prompt flow.
 const DEFAULT_SUGGESTION_TOPICS = [
   {
     title: "Stabilize the domestic front",

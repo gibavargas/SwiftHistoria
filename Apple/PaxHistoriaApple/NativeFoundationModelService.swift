@@ -9,11 +9,45 @@ import FoundationModels
 protocol NativeAIService {
     func checkReadiness() async -> NativeAIReadiness
     func generateTurn(for state: NativeCampaignState, months: Int) async throws -> NativeGeneratedTurn
+    func generateTurn(
+        for state: NativeCampaignState,
+        months: Int,
+        progress: @escaping @MainActor (NativeTurnProgress) -> Void
+    ) async throws -> NativeGeneratedTurn
     func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction]
     func generateAdvisorBrief(for state: NativeCampaignState, question: String) async throws -> String
     func generateDiplomaticReply(for state: NativeCampaignState, thread: NativeDiplomaticThread, message: String) async throws -> String
 }
 
+extension NativeAIService {
+    func generateTurn(
+        for state: NativeCampaignState,
+        months: Int,
+        progress: @escaping @MainActor (NativeTurnProgress) -> Void
+    ) async throws -> NativeGeneratedTurn {
+        let total = NativeStrategyContextDatabase.estimatedLaneCount(for: state)
+        progress(NativeTurnProgress(
+            completedLanes: 0,
+            detail: "Generating the turn from the current campaign state.",
+            phase: "Consulting Apple Foundation",
+            totalLanes: total
+        ))
+        let generated = try await generateTurn(for: state, months: months)
+        progress(NativeTurnProgress(
+            completedLanes: max(0, total - 1),
+            detail: "Turn generation completed; preparing validation.",
+            phase: "Synthesizing turn",
+            totalLanes: total
+        ))
+        return generated
+    }
+}
+
+/// Native Apple Foundation Models implementation.
+///
+/// This service owns prompt construction, schema-oriented generation, repair
+/// attempts, and text sanitization. It does not own campaign mutation; accepted
+/// turns still have to pass through `NativeGameEngine.validated` and `apply`.
 @MainActor
 final class NativeFoundationModelService: NativeAIService {
     private let promptCharacterLimit = 8_500
@@ -37,10 +71,18 @@ final class NativeFoundationModelService: NativeAIService {
     }
 
     func generateTurn(for state: NativeCampaignState, months: Int) async throws -> NativeGeneratedTurn {
+        try await generateTurn(for: state, months: months) { _ in }
+    }
+
+    func generateTurn(
+        for state: NativeCampaignState,
+        months: Int,
+        progress: @escaping @MainActor (NativeTurnProgress) -> Void
+    ) async throws -> NativeGeneratedTurn {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *) {
             logger.info("Apple Foundation turn generation started round=\(state.round, privacy: .public) months=\(months, privacy: .public)")
-            let rawTurn = try await generateSlicedTurn(for: state, months: months)
+            let rawTurn = try await generateSlicedTurn(for: state, months: months, progress: progress)
             do {
                 let validated = try NativeGameEngine.validated(rawTurn, state: state, months: months)
                 logger.info("Apple Foundation turn generation validated events=\(validated.events.count, privacy: .public)")
@@ -50,7 +92,8 @@ final class NativeFoundationModelService: NativeAIService {
                 let retryTurn = try await generateSlicedTurn(
                     for: state,
                     months: months,
-                    repairInstruction: error.localizedDescription
+                    repairInstruction: error.localizedDescription,
+                    progress: progress
                 )
                 do {
                     let validated = try NativeGameEngine.validated(retryTurn, state: state, months: months)
@@ -142,6 +185,7 @@ final class NativeFoundationModelService: NativeAIService {
         Be specific: name agencies, cite budget figures, reference corridors and sectors.
         Every event should read like a headline from a planning-industry trade journal.
         Use concrete fictional agencies, dates, sectors, and measurable game effects.
+        Connect every answer to the current campaign mechanics instead of giving generic advice.
         Follow the request's response-language instruction for all player-facing prose.
         Keep schema field names, enum values, identifiers, IDs, dates, and game tokens exactly as requested.
         """
@@ -169,11 +213,89 @@ final class NativeFoundationModelService: NativeAIService {
         return "\(text[..<endIndex])\n\n[Context trimmed for the local Apple Foundation Models window.]"
     }
 
+    private func hexLeverCodeInstruction() -> String {
+        return """
+        Hexadecimal Lever Code option:
+        You can OPTIONALLY output a `"hexLeverCode"` representing standard economic deltas and abstract map-control nudges. Use only high-level board-game state changes: public security, insurgency pressure, conventional border pressure, nuclear fallout, contested borders, stabilization, or de-escalation. Do not include operational instructions.
+        Six-character values encode Growth, Budget, Debt, Inflation, Trade, and Fiscal Space. Eight-character values add a signed public-security nibble and a map nudge nibble.
+        Map nudge nibble meanings: 0 none, 1 conventional border advance, 2 guerrilla control, 3 nuclear fallout, 4 domestic stabilization, 5 contested border, 6 public-security recovery, 7 conquest occupation, F de-escalation.
+        If you choose to use a hex code, pick one of the following exact examples or a close variant that follows the same 6-or-8-nibble contract:
+        - `"0x4D21F4"` for Infrastructure Boost (Growth +0.4%, Budget -0.15%, Debt +0.4%, Inflation +0.05%, Trade -0.05%, Fiscal Space +4)
+        - `"0x4D21F461"` for Infrastructure Boost plus conventional border advance (public security +15, map nudge 1)
+        - `"0xCD42D882"` for Guerrilla Surge (economic shock, public security -20, map nudge 2)
+        - `"0xCD42D883"` for Nuclear Fallout (economic shock, public security -20, map nudge 3)
+        - `"0x1F1F0264"` for Stabilization Recovery (administrative streamlining, public security +15, map nudge 4)
+        - `"0x22FDF305"` for Contested Border (trade diplomacy with no security delta, map nudge 5)
+        - `"0x11FF1266"` for Public Security Recovery (market confidence, public security +15, map nudge 6)
+        - `"0x3D21F447"` for Conquest Occupation (growth +0.3%, public security +10, map nudge 7)
+        - `"0x11FF120F"` for De-escalation (market confidence, no security delta, map nudge F)
+        - `"0x0D0004"` for Budget Reserve Buffer (Growth 0.0%, Budget -0.15%, Debt 0.0%, Inflation 0.0%, Trade 0.0%, Fiscal Space +4)
+        - `"0x1F1F02"` for Administrative Streamlining (Growth +0.1%, Budget -0.05%, Debt +0.2%, Inflation -0.05%, Trade 0.0%, Fiscal Space +2)
+        - `"0x22FDF3"` for Trade Diplomacy (Growth +0.2%, Budget +0.1%, Debt -0.2%, Inflation -0.1%, Trade +0.25%, Fiscal Space +3)
+        - `"0x11FF12"` for Market confidence signaling (Growth +0.1%, Budget +0.05%, Debt -0.2%, Inflation -0.05%, Trade +0.05%, Fiscal Space +2)
+        - `"0xCD42D8"` for External Shock/Recession (Growth -0.4%, Budget -0.15%, Debt +0.8%, Inflation +0.1%, Trade -0.15%, Fiscal Space -3)
+        Otherwise, set `"hexLeverCode"` to null.
+        """
+    }
+
+    private func promptPercent(_ value: Double) -> String {
+        String(format: "%.1f%%", value)
+    }
+
+    private func promptSignedPercent(_ value: Double) -> String {
+        String(format: "%+.2f%%", value)
+    }
+
+    private func mechanicsContract(for state: NativeCampaignState) -> String {
+        let ledger = state.economicLedger
+        let conflictLines = state.regionConflicts.values
+            .sorted { lhs, rhs in lhs.regionID < rhs.regionID }
+            .prefix(5)
+            .map { conflict in
+                "- \(conflict.regionID): \(conflict.mode.displayName), controller \(conflict.controllerCode), intensity \(conflict.intensity)/5, \(sanitizeFoundationModelText(conflict.summary))"
+            }
+            .joined(separator: "\n")
+        let diplomacyLines = state.diplomaticThreads
+            .prefix(4)
+            .map { thread in
+                "- \(thread.participant.code): \(sanitizeFoundationModelText(thread.summary))"
+            }
+            .joined(separator: "\n")
+        let pendingCount = state.plannedActions.filter { $0.status == .planned }.count
+        let suggestedCount = state.suggestedActions.count
+
+        return """
+        Mechanics checklist:
+        - Tie every event, suggestion, advisor answer, or diplomatic reply to at least one stored mechanic: planned actions/action memory, economic ledger, public security, insurgency pressure, map conflict, diplomacy/global friction, timeline/world effects, scenario canon, language, or AI readiness.
+        - Economy mechanics include GDP, growth, inflation, budget balance, public debt, trade balance, unemployment, and fiscal space.
+        - Security mechanics include public security, insurgency pressure, stabilization, contested borders, conventional occupation, guerrilla control, nuclear fallout, and de-escalation as abstract board-game states.
+        - Map mechanics are stored in regionOccupations, nuclearFalloutRegions, and regionConflicts; prose should explain the strategic state, while events can use hexLeverCode for bounded map nudges.
+        - Suggestions must name the primary mechanic they intend to improve and a secondary mechanic that may trade off or benefit.
+        - Advisor and diplomacy replies must read the same mechanics instead of inventing new hidden systems.
+
+        Current selected ledger:
+        GDP \(String(format: "$%.2fT", ledger.nominalGDPTrillions)); growth \(promptSignedPercent(ledger.realGrowthPercent)); inflation \(promptPercent(ledger.inflationPercent)); budget \(promptSignedPercent(ledger.budgetBalancePercentGDP)) of GDP; debt \(promptPercent(ledger.publicDebtPercentGDP)) of GDP; trade \(promptSignedPercent(ledger.tradeBalancePercentGDP)) of GDP; unemployment \(promptPercent(ledger.unemploymentPercent)); fiscal space \(ledger.fiscalSpaceIndex)/100; public security \(String(format: "%.1f", ledger.securityIndex))/100; insurgency pressure \(String(format: "%.1f%%", ledger.rebelControlPercent)).
+
+        Current map conflict state:
+        \(conflictLines.isEmpty ? "- No active region conflict records." : conflictLines)
+
+        Current diplomacy state:
+        \(diplomacyLines.isEmpty ? "- No active diplomatic threads." : diplomacyLines)
+
+        Current action/suggestion state:
+        pending planned actions \(pendingCount); visible suggestions \(suggestedCount).
+        """
+    }
+
     private func languageInstruction(for state: NativeCampaignState) -> String {
         state.language.promptInstruction
     }
 
     private func recentContext(for state: NativeCampaignState) -> String {
+        // The local model should see a compact evidence packet rather than the
+        // full save file. This keeps prompts inside the local context window and
+        // makes generated events traceable to stored facts, action memory, and
+        // ledger state.
         let recent = state.timeline
             .prefix(4)
             .map { event in
@@ -199,16 +321,27 @@ final class NativeFoundationModelService: NativeAIService {
             .prefix(4)
             .map { sanitizeFoundationModelText($0.title) }
             .filter { !$0.isEmpty }
+        let canonContext = state.startDate == Native2010WorldModel.historicalStartDate
+            ? Native2010WorldModel.promptContext(for: state)
+            : "Scenario canon: respect the selected scenario start date \(state.startDate) as the authoritative opening state."
 
         return """
         Scenario: \(state.scenarioName)
         Scenario premise: \(state.scenarioDescription)
         Language: \(state.language.rawValue)
         \(languageInstruction(for: state))
-        Fictional selected region code: \(state.country.code)
+        Selected country code: \(state.country.code)
         Date: \(state.gameDate)
         Stability: \(state.stability)/100
         Global friction index: \(state.worldTension)/100
+
+        \(mechanicsContract(for: state))
+
+        Historical/campaign canon:
+        \(canonContext)
+
+        Strategy database:
+        \(NativeStrategyContextDatabase.promptPacket(for: state, months: 1))
 
         Planned civic proposals:
         \(planned.isEmpty ? "No planned actions." : planned)
@@ -235,6 +368,63 @@ final class NativeFoundationModelService: NativeAIService {
         \(repairLine(repairInstruction))
 
         \(independentEventExamples(for: state.language))
+
+        \(recentContext(for: state))
+        """)
+    }
+
+    func makeGlobalAIActionsPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
+        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
+
+        let aiDetails = state.aiCountryStates.sorted(by: { $0.key < $1.key }).map { code, aiState in
+            "- \(code): doctrine=\(aiState.doctrine.rawValue), agenda=\"\(aiState.multiTurnAgenda)\""
+        }.joined(separator: "\n")
+
+        return clampedFoundationPrompt("""
+        Create one geopolitical or economic action event initiated by one of the autonomous non-player countries.
+        \(languageInstruction(for: state))
+        Look at their doctrines and multi-turn agendas:
+        \(aiDetails)
+
+        Author an event representing an action taken by one of these countries to advance their agenda.
+        The event must target the initiator country or one of its rivals, altering market confidence, global friction, or stability.
+
+        Use the 'hexLeverCode' to nudge conflict borders or economic ledgers for the initiator or target.
+        The period starts on \(state.gameDate) and ends on \(targetDate).
+        \(repairLine(repairInstruction))
+
+        \(hexLeverCodeInstruction())
+
+        Examples:
+        [Example 1]
+        {"title":"China Secures Highland Resource Access","description":"China completes a transit corridor integration with neighboring highland districts, securing primary resource inputs to advance its mercantile doctrine.","kind":"world","importance":"major","notable":true,"effectTarget":"CHN","effectTrack":"economic-resilience","effectMagnitude":2,"effectSummary":"Corridor integration secures resource supply, raising economic resilience.","hexLeverCode":"0x120004"}
+        [Example 2]
+        {"title":"US Reinforces Pacific Maritime Security","description":"The United States deploys logistics units to Pacific trade corridors to counter competitor maritime pressure, reinforcing its collaborative defense doctrine.","kind":"world","importance":"major","notable":true,"effectTarget":"USA","effectTrack":"market-confidence","effectMagnitude":1,"effectSummary":"Logistics patrols stabilize maritime trade routes, bolstering confidence.","hexLeverCode":"0x0D0004"}
+
+        \(recentContext(for: state))
+        """)
+    }
+
+    func makeEconomicEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
+        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
+        return clampedFoundationPrompt("""
+        Create one selected-region economic assessment event for a SwiftHistoria board-game turn.
+        \(languageInstruction(for: state))
+        Focus on budget surplus or deficit, fiscal space, debt pressure, inflation, growth, trade balance, unemployment, and the cost of planned commitments.
+        Include one measurable game effect using either market-confidence or economic-resilience.
+        The period starts on \(state.gameDate) and ends on \(targetDate).
+        \(repairLine(repairInstruction))
+
+        \(hexLeverCodeInstruction())
+
+        Economic examples:
+        [Example 1]
+        {"title":"Quarterly Fiscal Outlook Narrows","description":"The treasury office updates its revenue forecast after weaker customs intake and higher service commitments, trimming available fiscal space for the next planning period.","kind":"economy","importance":"major","notable":true,"effectTarget":"\(state.country.code)","effectTrack":"market-confidence","effectMagnitude":-1,"effectSummary":"A narrower budget balance weighs on market confidence and slows discretionary spending.","hexLeverCode":"0x0D0004"}
+        [Example 2]
+        {"title":"Investment Pipeline Lifts Growth Estimate","description":"Regional finance agencies approve a sequenced capital pipeline that spreads costs over two budget cycles while improving logistics capacity for export sectors.","kind":"economy","importance":"minor","notable":false,"effectTarget":"\(state.country.code)","effectTrack":"economic-resilience","effectMagnitude":1,"effectSummary":"Phased investment preserves fiscal space while raising expected growth resilience.","hexLeverCode":"0x4D21F4"}
+
+        Current strategy database for this turn:
+        \(NativeStrategyContextDatabase.promptPacket(for: state, months: months))
 
         \(recentContext(for: state))
         """)
@@ -284,6 +474,11 @@ final class NativeFoundationModelService: NativeAIService {
         The period starts on \(state.gameDate) and ends on \(targetDate).
         \(repairLine(repairInstruction))
 
+        \(hexLeverCodeInstruction())
+
+        Action-specific facts and consequence ranges:
+        \(NativeStrategyContextDatabase.promptPacket(for: state, months: months, action: action))
+
         \(actionEventExamples(for: state.language, countryCode: state.country.code))
 
         \(recentContext(for: state))
@@ -329,6 +524,8 @@ final class NativeFoundationModelService: NativeAIService {
         \(languageInstruction(for: state))
         The period starts on \(state.gameDate) and ends on \(targetDate).
         \(repairLine(repairInstruction))
+
+        \(hexLeverCodeInstruction())
 
         \(domesticEventExamples(for: state.language, countryCode: state.country.code))
 
@@ -386,10 +583,16 @@ final class NativeFoundationModelService: NativeAIService {
         Summarize this SwiftHistoria period and estimate aggregate deltas.
         \(languageInstruction(for: state))
         Keep it concise and focused on fictional board-game planning.
+        Connect the summary deltas to the same mechanics contract used by generated events.
         The period starts on \(state.gameDate) and ends on \(targetDate).
         If you mention a date, use only the exact period dates above.
         Scenario: \(state.scenarioName)
         Selected region code: \(state.country.code)
+
+        \(mechanicsContract(for: state))
+
+        Current strategy database:
+        \(NativeStrategyContextDatabase.promptPacket(for: state, months: months))
 
         \(summaryExamples(for: state.language))
 
@@ -430,6 +633,7 @@ final class NativeFoundationModelService: NativeAIService {
         \(languageInstruction(for: state))
         Focus area \(index): \(focus).
         The detail must include instrument, target agency or sector, timing, and expected game effect.
+        The rationale must explicitly name the primary affected mechanic and one connected secondary mechanic.
         Prefer neutral terms like volatility, pressure, capacity gap, or opportunity when interpreting numeric effects.
 
         \(suggestionExamples(for: state.language))
@@ -443,23 +647,23 @@ final class NativeFoundationModelService: NativeAIService {
         case .portuguese:
             return """
             [Example 1]
-            {"title":"Estabelecer Reservas Logísticas","description":"Expandir buffers de armazenamento em pontos de trânsito regionais durante o próximo período para absorver lacunas de capacidade nos fluxos comerciais.","rationale":"O fortalecimento das margens de trânsito contra a volatilidade da confiança do mercado estabiliza indicadores comerciais.","urgency":"soon"}
+            {"title":"Estabelecer Reservas Logísticas","detail":"Expandir buffers de armazenamento em pontos de trânsito regionais durante o próximo período; mecânica primária: trade balance; mecânica secundária: market confidence.","rationale":"O fortalecimento das margens de trânsito responde ao saldo comercial atual e reduz volatilidade na confiança do mercado.","urgency":"soon"}
             [Example 2]
-            {"title":"Lançar Auditoria de Eficiência Energética","description":"Contratar uma agência independente para auditar subestações regionais e publicar recomendações de redundância até o final do próximo período.","rationale":"A transparência da rede constrói confiança institucional e antecipa requisitos de adaptação.","urgency":"immediate"}
+            {"title":"Lançar Auditoria de Eficiência Energética","detail":"Contratar uma agência independente para auditar subestações regionais e publicar recomendações até o final do próximo período; mecânica primária: economic resilience; mecânica secundária: fiscal space.","rationale":"A transparência da rede melhora resiliência econômica sem ocultar o custo fiscal de adaptação.","urgency":"immediate"}
             """
         case .spanish:
             return """
             [Example 1]
-            {"title":"Establecer Reservas Logísticas","description":"Expandir buffers de almacenamiento en puntos de tránsito regionales durante el próximo período para absorber brechas de capacidad en flujos comerciales.","rationale":"El fortalecimiento de los márgenes de tránsito contra la volatilidad de la confianza del mercado estabiliza indicadores comerciales.","urgency":"soon"}
+            {"title":"Establecer Reservas Logísticas","detail":"Expandir buffers de almacenamiento en puntos de tránsito regionales durante el próximo período; mecánica primaria: trade balance; mecánica secundaria: market confidence.","rationale":"El fortalecimiento de los márgenes de tránsito responde al saldo comercial actual y reduce volatilidad en la confianza del mercado.","urgency":"soon"}
             [Example 2]
-            {"title":"Lanzar Auditoría de Eficiencia Energética","description":"Contratar una agencia independiente para auditar subestaciones regionales y publicar recomendaciones de redundancia antes del final del próximo período.","rationale":"La transparencia de la red construye confianza institucional y anticipa requisitos de adaptación.","urgency":"immediate"}
+            {"title":"Lanzar Auditoría de Eficiencia Energética","detail":"Contratar una agencia independiente para auditar subestaciones regionales y publicar recomendaciones antes del final del próximo período; mecánica primaria: economic resilience; mecánica secundaria: fiscal space.","rationale":"La transparencia de la red mejora la resiliencia económica sin ocultar el costo fiscal de adaptación.","urgency":"immediate"}
             """
         case .english:
             return """
             [Example 1]
-            {"title":"Establish Logistics Reserves","description":"Expand storage buffers at regional transit points over the next period to absorb capacity gaps in trade flows.","rationale":"Strengthening transit margins directly counters market-confidence volatility and stabilizes trade indicators.","urgency":"soon"}
+            {"title":"Establish Logistics Reserves","detail":"Expand storage buffers at regional transit points over the next period; primary mechanic: trade balance; secondary mechanic: market confidence.","rationale":"Strengthening transit margins fits the current trade balance and reduces market-confidence volatility.","urgency":"soon"}
             [Example 2]
-            {"title":"Launch Energy Efficiency Audit","description":"Commission an independent agency to audit regional substations and publish redundancy recommendations by end of next period.","rationale":"Grid transparency builds institutional trust and front-loads adaptation requirements.","urgency":"immediate"}
+            {"title":"Launch Energy Efficiency Audit","detail":"Commission an independent agency to audit regional substations and publish recommendations by end of next period; primary mechanic: economic resilience; secondary mechanic: fiscal space.","rationale":"Grid transparency improves economic resilience while making the fiscal-space tradeoff visible.","urgency":"immediate"}
             """
         }
     }
@@ -477,12 +681,13 @@ final class NativeFoundationModelService: NativeAIService {
             .joined(separator: "\n")
 
         return clampedFoundationPrompt("""
-        You are the native SwiftHistoria strategic advisor for a fictional turn-based game.
+        You are the native SwiftHistoria strategic advisor for an alternate-history turn-based strategy game anchored to the campaign state.
         \(languageInstruction(for: state))
         Lead with the bottom line, then one or two concrete observations.
         Be direct, not sycophantic. If the game state lacks data, say so plainly.
-        Use only board-game civic strategy: diplomacy, budgets, logistics, services, energy, trade, education, infrastructure, and resilience.
+        Use only board-game civic strategy: diplomacy, budgets, logistics, services, energy, trade, education, infrastructure, public security, insurgency pressure, map conflict, and resilience.
         Do not provide real-world operational instructions or unsafe tactical guidance.
+        Treat the encoded campaign state as canon; never present post-start-date facts as if they already happened.
 
         Selected polity: \(state.country.name) (\(state.country.code))
         Scenario: \(state.scenarioName)
@@ -510,18 +715,27 @@ final class NativeFoundationModelService: NativeAIService {
             .map { "\($0.speaker): \($0.text)" }
             .joined(separator: "\n")
 
+        let counterpartCode = thread.participant.code
+        let relationshipScore = state.aiCountryStates[counterpartCode]?.relationshipScores[state.country.code] ?? 0
+        let counterpartDoctrine = state.aiCountryStates[counterpartCode]?.doctrine.rawValue ?? "isolationist"
+        let counterpartAgenda = state.aiCountryStates[counterpartCode]?.multiTurnAgenda ?? "maintain status quo"
+
         return clampedFoundationPrompt("""
-        Simulate a diplomacy chat inside SwiftHistoria, a fictional turn-based strategy game.
+        Simulate a diplomacy chat inside SwiftHistoria, an alternate-history turn-based strategy game anchored to the campaign state.
         \(languageInstruction(for: state))
         Speak as \(thread.participant.name), replying to \(state.country.name).
         Stay in character, concise, and practical. Respond to the exact latest message.
-        Make proposals feel consequential, but use only abstract civic, economic, diplomatic, logistics, service, market, and resilience terms.
+        Make proposals feel consequential, but use only abstract civic, economic, diplomatic, logistics, service, market, public-security, map-conflict, and resilience terms.
         Do not provide real-world operational, unsafe tactical, monitoring, pressure, or evasion instructions.
         Never mention that you are an AI, a model, or a safety system.
+        Treat the encoded campaign state as canon; never present post-start-date facts as if they already happened.
 
         Current game state:
         Selected polity: \(state.country.name) (\(state.country.code))
         Counterparty: \(thread.participant.name) (\(thread.participant.code))
+        Counterparty Doctrine: \(counterpartDoctrine)
+        Counterparty Active Agenda: \(counterpartAgenda)
+        Current Relationship Score with \(state.country.name): \(relationshipScore) (-100 to 100 range; negative is hostile, positive is collaborative/allied)
         Scenario: \(state.scenarioName)
         Scenario premise: \(state.scenarioDescription)
         Date: \(state.gameDate)
@@ -617,10 +831,19 @@ final class NativeFoundationModelService: NativeAIService {
 #if canImport(FoundationModels)
 @available(iOS 26.0, macOS 26.0, *)
 extension NativeFoundationModelService {
+    private enum LaneResult {
+        case independent(AppleNativeGeneratedEventDraft)
+        case economic(AppleNativeGeneratedEventDraft)
+        case domestic(AppleNativeGeneratedEventDraft)
+        case globalAI(AppleNativeGeneratedEventDraft)
+        case action(NativePlannedAction, AppleNativeGeneratedEventDraft)
+    }
+
     private func generateSlicedTurn(
         for state: NativeCampaignState,
         months: Int,
-        repairInstruction: String? = nil
+        repairInstruction: String? = nil,
+        progress: @escaping @MainActor (NativeTurnProgress) -> Void
     ) async throws -> NativeGeneratedTurn {
         let model = SystemLanguageModel.default
         guard model.isAvailable else {
@@ -628,46 +851,117 @@ extension NativeFoundationModelService {
             throw NativeFoundationModelError.modelUnavailable(String(describing: model.availability))
         }
 
-        var events: [NativeCampaignEvent] = []
-        let independentDraft = try await generateEventDraft(
-            model: model,
-            prompt: makeIndependentEventPrompt(for: state, months: months, repairInstruction: repairInstruction),
-            state: state
-        )
-        events.append(independentDraft.toNativeEvent(
-            state: state,
-            months: months,
-            index: events.count,
-            linkedActionID: nil,
-            playerRelated: false
+        let plannedActions = Array(state.plannedActions
+            .filter { $0.status == .planned }
+            .prefix(3))
+        let totalLanes = NativeStrategyContextDatabase.estimatedLaneCount(for: state)
+        var completedLanes = 0
+        progress(NativeTurnProgress(
+            completedLanes: completedLanes,
+            detail: "Launching external, economic, domestic, and action Foundation lanes in parallel.",
+            phase: "Consulting Apple Foundation",
+            totalLanes: totalLanes
         ))
 
-        let plannedActions = state.plannedActions
-            .filter { $0.status == .planned }
-            .prefix(3)
+        var independentDraft: AppleNativeGeneratedEventDraft?
+        var economicDraft: AppleNativeGeneratedEventDraft?
+        var domesticDraft: AppleNativeGeneratedEventDraft?
+        var globalAIDraft: AppleNativeGeneratedEventDraft?
+        var actionDrafts: [String: AppleNativeGeneratedEventDraft] = [:]
 
-        for action in plannedActions {
-            let draft = try await generateEventDraft(
-                model: model,
-                prompt: makeActionEventPrompt(for: state, action: action, months: months, repairInstruction: repairInstruction),
-                state: state
-            )
-            events.append(draft.toNativeEvent(
+        try await withThrowingTaskGroup(of: LaneResult.self) { group in
+            group.addTask {
+                let draft = try await self.generateEventDraft(
+                    model: model,
+                    prompt: self.makeIndependentEventPrompt(for: state, months: months, repairInstruction: repairInstruction),
+                    state: state
+                )
+                return .independent(draft)
+            }
+            group.addTask {
+                let draft = try await self.generateEventDraft(
+                    model: model,
+                    prompt: self.makeEconomicEventPrompt(for: state, months: months, repairInstruction: repairInstruction),
+                    state: state
+                )
+                return .economic(draft)
+            }
+            group.addTask {
+                let draft = try await self.generateEventDraft(
+                    model: model,
+                    prompt: self.makeDomesticEventPrompt(for: state, months: months, repairInstruction: repairInstruction),
+                    state: state
+                )
+                return .domestic(draft)
+            }
+            group.addTask {
+                let draft = try await self.generateEventDraft(
+                    model: model,
+                    prompt: self.makeGlobalAIActionsPrompt(for: state, months: months, repairInstruction: repairInstruction),
+                    state: state
+                )
+                return .globalAI(draft)
+            }
+            for action in plannedActions {
+                group.addTask {
+                    let draft = try await self.generateEventDraft(
+                        model: model,
+                        prompt: self.makeActionEventPrompt(for: state, action: action, months: months, repairInstruction: repairInstruction),
+                        state: state
+                    )
+                    return .action(action, draft)
+                }
+            }
+
+            for try await result in group {
+                completedLanes += 1
+                let phase: String
+                let detail: String
+
+                switch result {
+                case .independent(let draft):
+                    independentDraft = draft
+                    phase = NativeFoundationTurnLane.external.title
+                    detail = "External facts lane completed: \(sanitizeFoundationModelText(draft.title))"
+                case .economic(let draft):
+                    economicDraft = draft
+                    phase = NativeFoundationTurnLane.economy.title
+                    detail = "Economic consequences lane completed: \(sanitizeFoundationModelText(draft.title))"
+                case .domestic(let draft):
+                    domesticDraft = draft
+                    phase = NativeFoundationTurnLane.domestic.title
+                    detail = "Domestic response lane completed: \(sanitizeFoundationModelText(draft.title))"
+                case .globalAI(let draft):
+                    globalAIDraft = draft
+                    phase = NativeFoundationTurnLane.external.title
+                    detail = "Global AI Action lane completed: \(sanitizeFoundationModelText(draft.title))"
+                case .action(let action, let draft):
+                    actionDrafts[action.id] = draft
+                    phase = NativeFoundationTurnLane.actionConsequence.title
+                    detail = "Resolved \(sanitizeFoundationModelText(action.title)): \(sanitizeFoundationModelText(draft.title))"
+                }
+
+                progress(NativeTurnProgress(
+                    completedLanes: completedLanes,
+                    detail: detail,
+                    phase: phase,
+                    totalLanes: totalLanes
+                ))
+            }
+        }
+
+        var events: [NativeCampaignEvent] = []
+        if let independent = independentDraft {
+            events.append(independent.toNativeEvent(
                 state: state,
                 months: months,
                 index: events.count,
-                linkedActionID: action.id,
-                playerRelated: true
+                linkedActionID: nil,
+                playerRelated: false
             ))
         }
-
-        if events.count < 2 {
-            let draft = try await generateEventDraft(
-                model: model,
-                prompt: makeDomesticEventPrompt(for: state, months: months, repairInstruction: repairInstruction),
-                state: state
-            )
-            events.append(draft.toNativeEvent(
+        if let economic = economicDraft {
+            events.append(economic.toNativeEvent(
                 state: state,
                 months: months,
                 index: events.count,
@@ -675,8 +969,50 @@ extension NativeFoundationModelService {
                 playerRelated: true
             ))
         }
+        if let domestic = domesticDraft {
+            events.append(domestic.toNativeEvent(
+                state: state,
+                months: months,
+                index: events.count,
+                linkedActionID: nil,
+                playerRelated: true
+            ))
+        }
+        if let globalAI = globalAIDraft {
+            events.append(globalAI.toNativeEvent(
+                state: state,
+                months: months,
+                index: events.count,
+                linkedActionID: nil,
+                playerRelated: false
+            ))
+        }
+        for action in plannedActions {
+            if let draft = actionDrafts[action.id] {
+                events.append(draft.toNativeEvent(
+                    state: state,
+                    months: months,
+                    index: events.count,
+                    linkedActionID: action.id,
+                    playerRelated: true
+                ))
+            }
+        }
+
+        progress(NativeTurnProgress(
+            completedLanes: max(0, totalLanes - 1),
+            detail: "Synthesizing lane outputs into one validated turn.",
+            phase: NativeFoundationTurnLane.summary.title,
+            totalLanes: totalLanes
+        ))
 
         let summary = try await generateTurnSummary(model: model, state: state, months: months, events: events)
+        progress(NativeTurnProgress(
+            completedLanes: totalLanes,
+            detail: "Apple Foundation turn synthesis completed.",
+            phase: NativeFoundationTurnLane.summary.title,
+            totalLanes: totalLanes
+        ))
         logger.info("Apple Foundation sliced turn assembled events=\(events.count, privacy: .public)")
 
         return NativeGeneratedTurn(
@@ -806,12 +1142,12 @@ extension NativeFoundationModelService {
         }
 
         let focusAreas = [
-            "fiscal buffers and community services",
-            "trade facilitation and regional logistics",
-            "infrastructure, energy, and climate resilience",
-            "education, service access, and administrative capacity",
-            "transport bottlenecks and service continuity",
-            "regional relations and market confidence",
+            "fiscal ledger, budget balance, debt, and market confidence",
+            "public security, insurgency pressure, and stabilization capacity",
+            "map conflict, border pressure, regional logistics, and service corridors",
+            "diplomacy, trade balance, global friction, and regional relations",
+            "infrastructure, energy, climate resilience, and unemployment",
+            "education, service access, administrative capacity, and action memory",
         ]
 
         var suggestions: [NativeSuggestedAction] = []
@@ -1043,6 +1379,7 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
     var effectTrack: String
     var effectMagnitude: Int
     var effectSummary: String
+    var hexLeverCode: String?
 
     static let schemaInstructions = """
     {
@@ -1054,7 +1391,8 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
       "effectTarget": "Target region, agency, sector, or external system",
       "effectTrack": "economic-resilience, internal-stability, or market-confidence",
       "effectMagnitude": 0,
-      "effectSummary": "One concrete sentence explaining the mechanical consequence. No placeholder or draft text."
+      "effectSummary": "One concrete sentence explaining the mechanical consequence. No placeholder or draft text.",
+      "hexLeverCode": "Optional 6-or-8-character hexadecimal lever code starting with 0x. Six nibbles represent Growth, Budget, Debt, Inflation, Trade, and Fiscal Space; optional seventh and eighth nibbles represent public-security delta and abstract map-control nudge."
     }
     """
 
@@ -1068,6 +1406,7 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
         case effectTrack
         case effectMagnitude
         case effectSummary
+        case hexLeverCode
     }
 
     init(from decoder: Decoder) throws {
@@ -1081,6 +1420,7 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
         effectTrack = try container.decodeIfPresent(String.self, forKey: .effectTrack) ?? ""
         effectMagnitude = try container.decodeIfPresent(Int.self, forKey: .effectMagnitude) ?? 0
         effectSummary = try container.decodeIfPresent(String.self, forKey: .effectSummary) ?? ""
+        hexLeverCode = try container.decodeIfPresent(String.self, forKey: .hexLeverCode)
     }
 
     var hasConcreteContent: Bool {
@@ -1138,7 +1478,8 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
                     track: safeTrack
                 ),
             ],
-            title: sanitizeFoundationModelText(title)
+            title: sanitizeFoundationModelText(title),
+            hexLeverCode: hexLeverCode
         )
     }
 }
@@ -1233,8 +1574,8 @@ private struct AppleNativeSuggestedAction: Decodable {
     static let schemaInstructions = """
     {
       "title": "Short imperative title for the civic proposal.",
-      "detail": "Concrete board-game planning proposal with instrument, generic agency or sector, timing, and intended game effect.",
-      "rationale": "Why this civic proposal fits the current campaign state.",
+      "detail": "Concrete board-game planning proposal with instrument, generic agency or sector, timing, primary mechanic, secondary mechanic, and intended game effect.",
+      "rationale": "Why this civic proposal fits the current campaign state, explicitly naming the primary affected mechanic and one connected secondary mechanic.",
       "urgency": "immediate, soon, or opportunistic"
     }
     """

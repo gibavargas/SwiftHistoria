@@ -1,6 +1,11 @@
 import { JSON_URLS, readJson, writeJson } from "./assets.js";
 import { normalizeGameLanguage } from "./languages.js";
 
+// Legacy web save-state normalization.
+//
+// These helpers intentionally accept strings, partial objects, old property
+// names, and malformed arrays. The web runtime is reference-only now, but its
+// saves and tests still depend on this tolerant boundary.
 export const GAME_DEFAULTS = {
   country: "",
   difficulty: "standard",

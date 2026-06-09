@@ -10,6 +10,7 @@ enum NativeIntelSection: String, CaseIterable, Hashable, Identifiable {
     case advisor
     case diplomacy
     case events
+    case worldEconomics
     case library
     case settings
 
@@ -20,6 +21,7 @@ enum NativeIntelSection: String, CaseIterable, Hashable, Identifiable {
         case .advisor: "Advisor"
         case .diplomacy: "Diplomacy"
         case .events: "Events"
+        case .worldEconomics: "Economics"
         case .library: "Library"
         case .settings: "Settings"
         }
@@ -30,6 +32,7 @@ enum NativeIntelSection: String, CaseIterable, Hashable, Identifiable {
         case .advisor: "brain.head.profile"
         case .diplomacy: "bubble.left.and.bubble.right"
         case .events: "clock"
+        case .worldEconomics: "chart.bar.xaxis"
         case .library: "folder"
         case .settings: "slider.horizontal.3"
         }
@@ -47,6 +50,7 @@ enum NativeMacDestination: String, CaseIterable, Hashable, Identifiable {
     case advisor
     case diplomacy
     case events
+    case worldEconomics
     case library
     case settings
 
@@ -59,6 +63,7 @@ enum NativeMacDestination: String, CaseIterable, Hashable, Identifiable {
         case .advisor: "Advisor"
         case .diplomacy: "Diplomacy"
         case .events: "Events"
+        case .worldEconomics: "Economics"
         case .library: "Library"
         case .settings: "Settings"
         }
@@ -71,6 +76,7 @@ enum NativeMacDestination: String, CaseIterable, Hashable, Identifiable {
         case .advisor: "brain.head.profile"
         case .diplomacy: "bubble.left.and.bubble.right"
         case .events: "clock"
+        case .worldEconomics: "chart.bar.xaxis"
         case .library: "folder"
         case .settings: "slider.horizontal.3"
         }
@@ -81,6 +87,180 @@ enum NativeMacDestination: String, CaseIterable, Hashable, Identifiable {
     }
 }
 #endif
+
+enum ConsoleTab: String, CaseIterable, Identifiable {
+    case orders = "orders"
+    case suggestions = "suggestions"
+    case advisor = "advisor"
+    case diplomacy = "diplomacy"
+    case events = "events"
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .orders: "Directives"
+        case .suggestions: "Suggestions"
+        case .advisor: "Advisor"
+        case .diplomacy: "Diplomacy"
+        case .events: "Events"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .orders: "checklist"
+        case .suggestions: "sparkles"
+        case .advisor: "brain.head.profile"
+        case .diplomacy: "bubble.left.and.bubble.right"
+        case .events: "clock"
+        }
+    }
+}
+
+func getGDP(state: NativeCampaignState) -> (value: String, delta: String) {
+    Native2010WorldModel.gdpMetric(for: state)
+}
+
+func getInfluence(state: NativeCampaignState) -> (value: String, delta: String) {
+    Native2010WorldModel.influenceMetric(for: state)
+}
+
+func getTechLevel(state: NativeCampaignState) -> (value: String, delta: String) {
+    Native2010WorldModel.techMetric(for: state)
+}
+
+func getEnergySecurity(state: NativeCampaignState) -> String {
+    Native2010WorldModel.energyMetric(for: state)
+}
+
+func getFoodSecurity(state: NativeCampaignState) -> String {
+    Native2010WorldModel.foodMetric(for: state)
+}
+
+func getNuclearStatus(state: NativeCampaignState) -> String {
+    Native2010WorldModel.nuclearMetric(for: state)
+}
+
+func native2010RelationColor(_ relation: Native2010Relation) -> Color {
+    switch relation {
+    case .ally, .partner:
+        return Color.neonTeal
+    case .neutral, .watch:
+        return Color.alertGold
+    case .rival:
+        return Color.softRed
+    }
+}
+
+func native2010SignalColor(_ level: Native2010SignalLevel) -> Color {
+    switch level {
+    case .low:
+        return Color.neonTeal
+    case .medium, .watch:
+        return Color.alertGold
+    case .high:
+        return Color.softRed
+    }
+}
+
+struct NativeLatestIntelTicker: View {
+    let latestEvent: NativeCampaignEvent?
+    @State private var pulse = false
+
+    var body: some View {
+        Group {
+            if let event = latestEvent {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(event.importance == .severe ? Color.softRed : Color.alertGold)
+                        .frame(width: 6, height: 6)
+                        .opacity(pulse ? 0.3 : 1.0)
+                        .scaleEffect(pulse ? 1.2 : 1.0)
+                        .onAppear {
+                            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                                pulse = true
+                            }
+                        }
+
+                    Text("LATEST SIGNAL //")
+                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.glowingCyan)
+
+                    Text(event.title.uppercased())
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+
+                    Spacer()
+
+                    if let firstEffect = event.strategicEffects.first {
+                        let isPos = firstEffect.magnitude >= 0
+                        Text("\(isPos ? "+" : "")\(firstEffect.magnitude) \(firstEffect.track.displayName.uppercased())")
+                            .font(.system(.caption2, design: .monospaced).weight(.bold))
+                            .foregroundStyle(isPos ? Color.neonTeal : Color.softRed)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .glassmorphicCard(borderColor: Color.white.opacity(0.1), cornerRadius: 8)
+            } else {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(Color.iceBlue.opacity(0.4))
+                        .frame(width: 6, height: 6)
+                    Text("NO GEOPOLITICAL SIGNALS LOGGED YET")
+                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .glassmorphicCard(borderColor: Color.white.opacity(0.08), cornerRadius: 8)
+            }
+        }
+    }
+}
+
+struct NativeTurnProgressPanel: View {
+    let progress: NativeTurnProgress
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                ProgressView()
+                    .controlSize(.small)
+                    .tint(Color.glowingCyan)
+                Text(progress.phase.uppercased())
+                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.glowingCyan)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
+                Spacer()
+                Text("\(progress.completedLanes)/\(progress.totalLanes)")
+                    .font(.system(.caption2, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.iceBlue)
+            }
+            Text(progress.detail)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+            ProgressView(value: progress.fraction)
+                .tint(Color.glowingCyan)
+                .accessibilityIdentifier("native-turn-progress-bar")
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.spaceBlack.opacity(0.86), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Color.glowingCyan.opacity(0.28), lineWidth: 1)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("native-turn-progress-panel")
+    }
+}
 
 struct NativeGameShell: View {
     @ObservedObject var store: NativeCampaignStore
@@ -111,13 +291,17 @@ struct NativeGameShell: View {
                 }
             )
             .tag(NativeGameTab.map)
-            .tabItem { Label("Map", systemImage: "globe.europe.africa") }
-            .accessibilityIdentifier("native-map-tab")
+            .tabItem {
+                Label("Map", systemImage: "globe.europe.africa")
+                    .accessibilityIdentifier("native-map-tab")
+            }
 
             NativeOrdersScreen(store: store)
                 .tag(NativeGameTab.orders)
-                .tabItem { Label("Orders", systemImage: "checklist") }
-                .accessibilityIdentifier("native-orders-tab")
+                .tabItem {
+                    Label("Orders", systemImage: "checklist")
+                        .accessibilityIdentifier("native-orders-tab")
+                }
 
             NativeIntelScreen(
                 store: store,
@@ -127,8 +311,10 @@ struct NativeGameShell: View {
                 onImportCampaign: onImportCampaign
             )
             .tag(NativeGameTab.intel)
-            .tabItem { Label("Intel", systemImage: "person.text.rectangle") }
-            .accessibilityIdentifier("native-intel-tab")
+            .tabItem {
+                Label("Intel", systemImage: "person.text.rectangle")
+                    .accessibilityIdentifier("native-intel-tab")
+            }
         }
         .background(.black)
         .transaction { transaction in
@@ -143,11 +329,12 @@ struct NativeGameShell: View {
                 Section("Campaign") {
                     ForEach(NativeMacDestination.allCases) { destination in
                         Label(destination.title, systemImage: destination.systemImage)
-                            .tag(destination as NativeMacDestination?)
+                            .tag(destination)
                             .accessibilityIdentifier(destination.accessibilityIdentifier)
                     }
                 }
             }
+            .listStyle(.sidebar)
             .navigationTitle("SwiftHistoria")
             .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 320)
         } detail: {
@@ -198,31 +385,41 @@ struct NativeMapScreen: View {
     let onShowDiplomacy: () -> Void
 
     @Environment(\.colorSchemeContrast) private var contrast
+    @State private var isConsoleExpanded = true
 
     var body: some View {
         Group {
             if let state = store.state {
-                GeometryReader { proxy in
-                    ZStack(alignment: .bottom) {
-                        NativeWorldMap(state: state, minHeight: max(360, proxy.size.height))
-                            .ignoresSafeArea()
-                            .id(state.country.code)
+                ZStack(alignment: .top) {
+                    NativeWorldMap(state: state, minHeight: 360)
+                        .ignoresSafeArea()
+                        .id(state.country.code)
 
-                        VStack(spacing: 0) {
-                            NativeMapHUD(state: state)
-                                .padding(.horizontal, 14)
-                                .padding(.top, 12)
-                            Spacer(minLength: 12)
-                            NativeMapCommandBar(
-                                store: store,
-                                highContrast: contrast == .increased,
-                                onShowOrders: onShowOrders,
-                                onShowAdvisor: onShowAdvisor,
-                                onShowDiplomacy: onShowDiplomacy
-                            )
-                            .padding(.horizontal, 12)
-                            .padding(.bottom, 10)
+                    // Top Floating HUD
+                    VStack(spacing: 8) {
+                        NativeMapHUD(state: state)
+                        NativeLatestIntelTicker(latestEvent: state.timeline.first)
+                        if let progress = store.turnProgress {
+                            NativeTurnProgressPanel(progress: progress)
                         }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.top, 12)
+
+                    // Bottom Floating Console Drawer & Advance Button
+                    VStack(spacing: 12) {
+                        Spacer()
+
+                        HStack {
+                            Spacer()
+                            NativeFloatingAdvanceButton(store: store)
+                                .padding(.trailing, 16)
+                        }
+
+                        CommandConsoleDrawer(store: store, isExpanded: $isConsoleExpanded)
+                            .padding(.horizontal, 14)
+                            .padding(.bottom, 10)
                     }
                 }
                 .task(id: "\(state.country.code)-\(state.round)") {
@@ -238,17 +435,597 @@ struct NativeMapScreen: View {
     }
 }
 
+struct CommandConsoleDrawer: View {
+    @ObservedObject var store: NativeCampaignStore
+    @Binding var isExpanded: Bool
+    @State private var selectedConsoleTab: ConsoleTab = .orders
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Button {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.up")
+                        .font(.headline)
+                        .foregroundStyle(Color.glowingCyan)
+
+                    Text(isExpanded ? "COLLAPSE DIRECTIVES" : "COMMAND CONSOLE")
+                        .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                        .foregroundStyle(.white)
+
+                    if let state = store.state {
+                        let plannedCount = state.plannedActions.filter { $0.status == .planned }.count
+                        Text("// \(plannedCount) DIRECTIVES")
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundStyle(plannedCount > 0 ? Color.neonTeal : .secondary)
+                    }
+
+                    Spacer()
+
+                    Circle()
+                        .fill(isExpanded ? Color.glowingCyan : Color.neonTeal)
+                        .frame(width: 8, height: 8)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(Color.deepSlate.opacity(0.95))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isExpanded ? "Collapse directives console" : "Expand directives console")
+
+            if isExpanded {
+                Divider()
+                    .background(Color.white.opacity(0.1))
+
+                // Tab Selection Strip
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(ConsoleTab.allCases) { tab in
+                            Button {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                    selectedConsoleTab = tab
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: tab.systemImage)
+                                        .font(.caption)
+                                    Text(tab.title.uppercased())
+                                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    selectedConsoleTab == tab
+                                    ? Color.glowingCyan.opacity(0.18)
+                                    : Color.white.opacity(0.04),
+                                    in: Capsule()
+                                )
+                                .overlay {
+                                    Capsule()
+                                        .stroke(
+                                            selectedConsoleTab == tab
+                                            ? Color.glowingCyan.opacity(0.4)
+                                            : Color.white.opacity(0.08),
+                                            lineWidth: 1
+                                        )
+                                }
+                                .foregroundStyle(selectedConsoleTab == tab ? Color.glowingCyan : .secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Select \(tab.title) operations")
+                            .accessibilityIdentifier("console-tab-\(tab.rawValue)")
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                }
+                .background(Color.spaceBlack.opacity(0.95))
+
+                Divider()
+                    .background(Color.white.opacity(0.06))
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        switch selectedConsoleTab {
+                        case .orders:
+                            NativeOrdersEditorPanel(store: store)
+                        case .suggestions:
+                            NativeSuggestedActionsPanel(store: store)
+                        case .advisor:
+                            NativeAdvisorPanel(store: store)
+                        case .diplomacy:
+                            NativeDiplomacyPanel(store: store)
+                        case .events:
+                            NativeEventsPanel(state: store.state)
+                        }
+                    }
+                    .padding(16)
+                }
+                .frame(maxHeight: 280)
+                .background(Color.spaceBlack.opacity(0.95))
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        }
+        .shadow(color: Color.black.opacity(0.5), radius: 10, x: 0, y: -4)
+    }
+}
+
+struct BattleRow: View {
+    let name: String
+    let intensity: String
+    let color: Color
+
+    var body: some View {
+        HStack {
+            Text(name)
+                .font(.caption)
+                .foregroundStyle(.primary)
+            Spacer()
+            Text(intensity.uppercased())
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .foregroundStyle(color)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(color.opacity(0.12), in: Capsule())
+                .overlay {
+                    Capsule().stroke(color.opacity(0.3), lineWidth: 1)
+                }
+        }
+    }
+}
+
+struct TroopRow: View {
+    let name: String
+    let count: String
+    let status: String
+    let color: Color
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.primary)
+                Text(count)
+                    .font(.system(size: 8, design: .monospaced))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(status.uppercased())
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundStyle(color)
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+struct EconomicRow: View {
+    let name: String
+    let value: String
+    let direction: EconomicDirection
+    let color: Color
+
+    var body: some View {
+        HStack {
+            Text(name)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Image(systemName: direction == .up ? "arrow.up.right" : "arrow.down.right")
+                .font(.caption)
+                .foregroundStyle(color)
+            Text(value)
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundStyle(.primary)
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+struct NativeTimelineFooter: View {
+    @ObservedObject var store: NativeCampaignStore
+    let currentYear: Int
+    let baseYear: Int
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Text("TIMELINE")
+                .font(.system(.caption, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.glowingCyan)
+
+            ZStack(alignment: .leading) {
+                Rectangle()
+                    .fill(Color.white.opacity(0.15))
+                    .frame(height: 2)
+
+                if store.state != nil {
+                    let totalYears = 9
+                    let step = (currentYear - baseYear)
+                    let clampStep = max(0, min(totalYears - 1, step))
+
+                    GeometryReader { geo in
+                        let yearWidth = geo.size.width / CGFloat(totalYears - 1)
+                        let offset = CGFloat(clampStep) * yearWidth
+
+                        Circle()
+                            .fill(Color.glowingCyan)
+                            .frame(width: 8, height: 8)
+                            .position(x: offset, y: geo.size.height / 2)
+                            .shadow(color: Color.glowingCyan, radius: 4)
+                    }
+                    .frame(height: 10)
+                }
+
+                HStack {
+                    ForEach(0..<9) { i in
+                        let year = baseYear + i
+                        VStack(spacing: 4) {
+                            Text("\(year)")
+                                .font(.system(size: 9, design: .monospaced).weight(.bold))
+                                .foregroundStyle(currentYear == year ? Color.glowingCyan : .secondary)
+                            Circle()
+                                .fill(currentYear == year ? Color.glowingCyan : Color.white.opacity(0.2))
+                                .frame(width: 4, height: 4)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+
+            Button("EVENTS") {
+                // Toggles history list or similar
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+            NativeFloatingAdvanceButton(store: store)
+        }
+        .padding(12)
+        .glassmorphicCard(borderColor: Color.white.opacity(0.1), cornerRadius: 12)
+    }
+}
+
 struct NativeOverviewScreen: View {
     @ObservedObject var store: NativeCampaignStore
 
+    private func getCampaignYear(state: NativeCampaignState) -> Int {
+        let pattern = "\\b(19|20)\\d{2}\\b"
+        if let regex = try? NSRegularExpression(pattern: pattern),
+           let match = regex.firstMatch(in: state.gameDate, range: NSRange(state.gameDate.startIndex..., in: state.gameDate)),
+           let range = Range(match.range, in: state.gameDate),
+           let year = Int(state.gameDate[range]) {
+            return year
+        }
+        return 2028
+    }
+
+    private func getStartYear(state: NativeCampaignState) -> Int {
+        let pattern = "\\b(19|20)\\d{2}\\b"
+        if let regex = try? NSRegularExpression(pattern: pattern),
+           let match = regex.firstMatch(in: state.startDate, range: NSRange(state.startDate.startIndex..., in: state.startDate)),
+           let range = Range(match.range, in: state.startDate),
+           let year = Int(state.startDate[range]) {
+            return year
+        }
+        return 2024
+    }
+
     var body: some View {
-        NativeDetailScroll(accessibilityIdentifier: "native-overview-screen") {
+        Group {
             if let state = store.state {
-                NativeHeroHeader(state: state)
-                NativeWorldMap(state: state, minHeight: 360)
-                    .id(state.country.code)
-                NativeMetricsGrid(state: state)
-                NativeStateNotices(store: store)
+                #if os(macOS)
+                HStack(alignment: .top, spacing: 0) {
+                    // LEFT COLUMN: AI COMMAND
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 18) {
+                            HStack {
+                                Text("AI COMMAND")
+                                    .font(.system(.headline, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(Color.glowingCyan)
+                                Spacer()
+                                Text("BETA")
+                                    .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                    .padding(.horizontal, 4)
+                                    .padding(.vertical, 1)
+                                    .background(Color.glowingCyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 3))
+                                    .foregroundStyle(Color.glowingCyan)
+                            }
+                            .padding(.bottom, 2)
+
+                            // Text Field to Conduct the Game
+                            VStack(alignment: .leading, spacing: 10) {
+                                TextEditor(text: $store.draftAction)
+                                    .font(.body)
+                                    .frame(height: 72)
+                                    .padding(8)
+                                    .scrollContentBackground(.hidden)
+                                    .background(Color.deepSlate.opacity(0.5))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                                    }
+
+                                Button {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                        store.addDraftAction()
+                                    }
+                                } label: {
+                                    HStack {
+                                        Spacer()
+                                        Image(systemName: "paperplane.fill")
+                                        Text("ENQUEUE DIRECTIVE")
+                                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                                        Spacer()
+                                    }
+                                    .frame(minHeight: 32)
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.vertical, 6)
+                                .background(Color.iceBlue)
+                                .foregroundStyle(.black)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                .disabled(store.draftAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            }
+
+                            NativeSuggestedActionsPanel(store: store)
+
+                            // Command History
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("COMMAND HISTORY")
+                                    .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(Color.iceBlue)
+
+                                let resolved = state.plannedActions.filter { $0.status == .resolved }
+                                if resolved.isEmpty {
+                                    Text("No historical directives logged.")
+                                        .font(.system(.caption, design: .monospaced))
+                                        .foregroundStyle(.secondary)
+                                } else {
+                                    VStack(spacing: 8) {
+                                        ForEach(resolved.suffix(4)) { action in
+                                            HStack {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .foregroundStyle(Color.neonTeal)
+                                                    .font(.caption)
+                                                Text(action.title)
+                                                    .font(.caption)
+                                                    .foregroundStyle(.primary)
+                                                    .lineLimit(1)
+                                                Spacer()
+                                                Text("Advanced")
+                                                    .font(.system(size: 8, design: .monospaced))
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                            .padding(8)
+                                            .glassmorphicCard(borderColor: Color.white.opacity(0.06), cornerRadius: 6)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .padding(16)
+                    }
+                    .frame(width: 320)
+                    .background(Color.spaceBlack.opacity(0.95))
+
+                    Divider()
+                        .background(Color.white.opacity(0.12))
+
+                    // CENTER COLUMN: MAP, HUD, TIMELINE
+                    VStack(spacing: 0) {
+                        // Top HUD Bar
+                        NativeMapHUD(state: state)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 14)
+
+                        NativeLatestIntelTicker(latestEvent: state.timeline.first)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 8)
+
+                        if let progress = store.turnProgress {
+                            NativeTurnProgressPanel(progress: progress)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 8)
+                        }
+
+                        // Map view
+                        NativeWorldMap(state: state, minHeight: 320)
+                            .padding(16)
+                            .id(state.country.code)
+
+                        Spacer()
+
+                        // Timeline Footer at bottom of center column
+                        let currentYear = getCampaignYear(state: state)
+                        let startYear = getStartYear(state: state)
+                        NativeTimelineFooter(store: store, currentYear: currentYear, baseYear: startYear)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 14)
+                    }
+                    .frame(maxWidth: .infinity)
+
+                    Divider()
+                        .background(Color.white.opacity(0.12))
+
+                    // RIGHT COLUMN: CONSEQUENCES
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 18) {
+                            HStack {
+                                Text("CONSEQUENCES")
+                                    .font(.system(.headline, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(Color.softRed)
+                                Spacer()
+                                Image(systemName: "chart.bar.xaxis")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.softRed)
+                            }
+                            .padding(.bottom, 2)
+
+                            let alignments = Native2010WorldModel.alignments(for: state)
+                            let riskSignals = Native2010WorldModel.riskSignals(for: state)
+                            let commitments = Native2010WorldModel.commitments(for: state)
+                            let opinion = Native2010WorldModel.publicOpinion(for: state)
+                            let pressures = Native2010WorldModel.economicPressures(for: state)
+
+                            // Diplomacy List
+                            VStack(alignment: .leading, spacing: 10) {
+                                Label("2010 DIPLOMATIC ALIGNMENT", systemImage: "bubble.left.and.bubble.right")
+                                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(Color.neonTeal)
+
+                                VStack(spacing: 6) {
+                                    ForEach(alignments) { item in
+                                        let color = native2010RelationColor(item.relation)
+                                        HStack {
+                                            Circle()
+                                                .fill(color)
+                                                .frame(width: 6, height: 6)
+                                            Text(item.name)
+                                                .font(.caption)
+                                                .foregroundStyle(.primary)
+                                            Spacer()
+                                            Text(item.stance)
+                                                .font(.system(size: 8, design: .monospaced).weight(.bold))
+                                                .foregroundStyle(color)
+                                            Text("\(item.score)")
+                                                .font(.system(size: 10, design: .monospaced).weight(.bold))
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        .padding(8)
+                                        .glassmorphicCard(borderColor: Color.white.opacity(0.06), cornerRadius: 6)
+                                    }
+                                }
+                            }
+
+                            // Active Battles Fronts
+                            VStack(alignment: .leading, spacing: 10) {
+                                Label("2010 TENSION SIGNALS", systemImage: "flame")
+                                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(Color.softRed)
+
+                                VStack(spacing: 6) {
+                                    ForEach(riskSignals) { signal in
+                                        BattleRow(name: signal.name, intensity: signal.intensity, color: native2010SignalColor(signal.level))
+                                    }
+                                }
+                            }
+
+                            // Troop Movements
+                            VStack(alignment: .leading, spacing: 10) {
+                                Label("2010 COMMITMENTS", systemImage: "shield.fill")
+                                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(Color.iceBlue)
+
+                                VStack(spacing: 6) {
+                                    ForEach(commitments) { commitment in
+                                        TroopRow(
+                                            name: commitment.name,
+                                            count: commitment.countLabel,
+                                            status: commitment.status,
+                                            color: native2010SignalColor(commitment.level)
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Public Opinion Curve
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Label("PUBLIC OPINION", systemImage: "person.3.sequence.fill")
+                                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                                        .foregroundStyle(Color.glowingCyan)
+                                    Spacer()
+                                    Text("\(opinion.support)%")
+                                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                                        .foregroundStyle(Color.neonTeal)
+                                }
+
+                                // Glowing sparkline graph
+                                Path { path in
+                                    let width: CGFloat = 260
+                                    let height: CGFloat = 32
+                                    path.move(to: CGPoint(x: 0, y: height * 0.75))
+                                    path.addCurve(to: CGPoint(x: width * 0.3, y: height * 0.45), control1: CGPoint(x: width * 0.1, y: height * 0.8), control2: CGPoint(x: width * 0.2, y: height * 0.35))
+                                    path.addCurve(to: CGPoint(x: width * 0.6, y: height * 0.65), control1: CGPoint(x: width * 0.45, y: height * 0.55), control2: CGPoint(x: width * 0.5, y: height * 0.75))
+                                    path.addCurve(to: CGPoint(x: width, y: height * (1.0 - CGFloat(opinion.support) / 100.0)), control1: CGPoint(x: width * 0.8, y: height * 0.45), control2: CGPoint(x: width * 0.9, y: height * 0.25))
+                                }
+                                .stroke(Color.glowingCyan, lineWidth: 1.5)
+                                .frame(height: 32)
+                                .background(Color.white.opacity(0.02))
+                                .overlay {
+                                    Path { path in
+                                        let width: CGFloat = 260
+                                        let height: CGFloat = 32
+                                        path.move(to: CGPoint(x: 0, y: height * 0.75))
+                                        path.addCurve(to: CGPoint(x: width * 0.3, y: height * 0.45), control1: CGPoint(x: width * 0.1, y: height * 0.8), control2: CGPoint(x: width * 0.2, y: height * 0.35))
+                                        path.addCurve(to: CGPoint(x: width * 0.6, y: height * 0.65), control1: CGPoint(x: width * 0.45, y: height * 0.55), control2: CGPoint(x: width * 0.5, y: height * 0.75))
+                                        path.addCurve(to: CGPoint(x: width, y: height * (1.0 - CGFloat(opinion.support) / 100.0)), control1: CGPoint(x: width * 0.8, y: height * 0.45), control2: CGPoint(x: width * 0.9, y: height * 0.25))
+                                    }
+                                    .stroke(Color.glowingCyan.opacity(0.4), lineWidth: 4)
+                                    .blur(radius: 2)
+                                }
+
+                                HStack {
+                                    Text("Support \(opinion.support)%")
+                                        .font(.system(size: 8))
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text("Neutral \(opinion.neutral)%")
+                                        .font(.system(size: 8))
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text("Oppose \(opinion.oppose)%")
+                                        .font(.system(size: 8))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+
+                            // Economic Resilience
+                            VStack(alignment: .leading, spacing: 10) {
+                                Label("ECONOMIC LEDGER", systemImage: "chart.line.uptrend.xyaxis")
+                                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(Color.alertGold)
+
+                                VStack(spacing: 6) {
+                                    ForEach(pressures) { pressure in
+                                        EconomicRow(
+                                            name: pressure.name,
+                                            value: pressure.value,
+                                            direction: pressure.direction,
+                                            color: native2010SignalColor(pressure.level)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        .padding(16)
+                    }
+                    .frame(width: 320)
+                    .background(Color.spaceBlack.opacity(0.95))
+                }
+                .background(.black.opacity(0.94))
+                #else
+                NativeDetailScroll(accessibilityIdentifier: "native-overview-screen") {
+                    NativeHeroHeader(state: state)
+                    NativeLatestIntelTicker(latestEvent: state.timeline.first)
+                    if let progress = store.turnProgress {
+                        NativeTurnProgressPanel(progress: progress)
+                    }
+                    NativeWorldMap(state: state, minHeight: 360)
+                        .id(state.country.code)
+                    NativeMetricsGrid(state: state)
+                    NativeStateNotices(store: store)
+                }
+                #endif
             } else {
                 ContentUnavailableView("No campaign loaded", systemImage: "globe", description: Text("Choose a country to begin."))
             }
@@ -300,6 +1077,12 @@ struct NativeIntelScreen: View {
                 NativeDiplomacyPanel(store: store)
             case .events:
                 NativeEventsPanel(state: store.state)
+            case .worldEconomics:
+                if let state = store.state {
+                    NativeWorldEconomicsPanel(store: store, state: state)
+                } else {
+                    Text("No campaign loaded.")
+                }
             case .library:
                 NativeLibraryPanel(
                     message: libraryMessage,
@@ -329,6 +1112,7 @@ struct NativeIntelSectionSelector: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 8)
                             .background(section == selectedSection ? Color.accentColor.opacity(0.22) : Color.white.opacity(0.07), in: Capsule())
+                            .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(section == selectedSection ? [.isSelected] : [])
@@ -367,6 +1151,14 @@ struct NativeMacDetailScreen: View {
             case .events:
                 NativeDetailScroll(accessibilityIdentifier: "native-events-screen") {
                     NativeEventsPanel(state: store.state)
+                }
+            case .worldEconomics:
+                NativeDetailScroll(accessibilityIdentifier: "native-world-economics-screen") {
+                    if let state = store.state {
+                        NativeWorldEconomicsPanel(store: store, state: state)
+                    } else {
+                        Text("No campaign loaded.")
+                    }
                 }
             case .library:
                 NativeDetailScroll(accessibilityIdentifier: "native-library-screen") {
@@ -414,43 +1206,118 @@ struct NativeMapHUD: View {
     let state: NativeCampaignState
 
     private var stabilityTint: Color {
-        if state.stability >= 70 { return .green }
-        if state.stability >= 40 { return .orange }
-        return .red
+        if state.stability >= 70 { return Color.neonTeal }
+        if state.stability >= 40 { return Color.alertGold }
+        return Color.softRed
     }
 
     private var tensionTint: Color {
-        if state.worldTension >= 70 { return .red }
-        if state.worldTension >= 45 { return .orange }
-        return .green
+        if state.worldTension >= 70 { return Color.softRed }
+        if state.worldTension >= 45 { return Color.alertGold }
+        return Color.neonTeal
     }
 
     private var aiTint: Color {
-        return state.aiReadiness.ok ? .blue : .red
+        return state.aiReadiness.ok ? Color.glowingCyan : Color.softRed
     }
 
     var body: some View {
+        let gdp = getGDP(state: state)
+        let influence = getInfluence(state: state)
+        let tech = getTechLevel(state: state)
+        let energy = getEnergySecurity(state: state)
+        let food = getFoodSecurity(state: state)
+        let nuclear = getNuclearStatus(state: state)
+        let ledger = state.economicLedger
+        let budgetTint = ledger.budgetBalancePercentGDP >= -3 ? Color.neonTeal : (ledger.budgetBalancePercentGDP >= -7 ? Color.alertGold : Color.softRed)
+        let debtTint = ledger.publicDebtPercentGDP <= 70 ? Color.neonTeal : (ledger.publicDebtPercentGDP <= 110 ? Color.alertGold : Color.softRed)
+        let inflationTint = ledger.inflationPercent <= 4 ? Color.neonTeal : (ledger.inflationPercent <= 8 ? Color.alertGold : Color.softRed)
+
         VStack(alignment: .leading, spacing: 10) {
-            Text(state.country.name)
-                .font(.title2.weight(.bold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.78)
+            HStack {
+                Text(state.country.name.uppercased())
+                    .font(.system(.title3, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.glowingCyan)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
+                Spacer()
+                Image(systemName: "satellite.fill")
+                    .foregroundStyle(Color.iceBlue)
+                    .font(.caption)
+            }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    NativeStatusChip(text: "Round \(state.round)", systemImage: "number")
-                    NativeStatusChip(text: state.gameDate, systemImage: "calendar")
-                    NativeStatusChip(text: "Stability \(state.stability)", systemImage: "building.columns", tintColor: stabilityTint)
-                    NativeStatusChip(text: "Tension \(state.worldTension)", systemImage: "waveform.path.ecg", tintColor: tensionTint)
-                    NativeStatusChip(text: nativeFormatAvailability(state.aiReadiness.availability), systemImage: "brain", tintColor: aiTint)
+                    NativeStatusChip(text: "Capacity \(state.administrativeCapacity)/100", systemImage: "sparkles", tintColor: state.administrativeCapacity >= 30 ? Color.glowingCyan : Color.softRed)
+                    NativeStatusChip(text: "Round \(state.round)", systemImage: "number", tintColor: Color.iceBlue)
+                    NativeStatusChip(text: state.gameDate, systemImage: "calendar", tintColor: Color.iceBlue)
+                    NativeStatusChip(text: "GDP \(gdp.value) (\(gdp.delta))", systemImage: "dollarsign.circle", tintColor: Color.neonTeal)
+                    NativeStatusChip(text: "Budget \(nativeFormatSignedPercent(ledger.budgetBalancePercentGDP))", systemImage: "banknote", tintColor: budgetTint)
+                    NativeStatusChip(text: "Debt \(nativeFormatPercent(ledger.publicDebtPercentGDP))", systemImage: "creditcard", tintColor: debtTint)
+                    NativeStatusChip(text: "Inflation \(nativeFormatPercent(ledger.inflationPercent))", systemImage: "chart.line.uptrend.xyaxis", tintColor: inflationTint)
+                    NativeStatusChip(text: "Stability \(state.stability)%", systemImage: "building.columns", tintColor: stabilityTint)
+                    NativeStatusChip(text: "Influence \(influence.value) (\(influence.delta))", systemImage: "person.line.dotted.person", tintColor: Color.iceBlue)
+                    NativeStatusChip(text: "Tech Lvl \(tech.value)", systemImage: "cpu", tintColor: Color.glowingCyan)
+                    NativeStatusChip(text: "Energy \(energy)", systemImage: "bolt.circle", tintColor: Color.alertGold)
+                    NativeStatusChip(text: "Food \(food)", systemImage: "leaf.circle", tintColor: Color.neonTeal)
+                    NativeStatusChip(text: "Nuclear \(nuclear)", systemImage: "atom", tintColor: Color.iceBlue)
+                    NativeStatusChip(text: "Tension \(state.worldTension)%", systemImage: "waveform.path.ecg", tintColor: tensionTint)
+                    NativeStatusChip(text: nativeFormatHUDAvailability(state.aiReadiness.availability), systemImage: "brain", tintColor: aiTint)
                 }
                 .padding(.vertical, 2)
             }
         }
-        .padding(12)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .glassmorphicCard(borderColor: .white.opacity(0.12), cornerRadius: 14)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("native-map-hud")
+    }
+}
+
+struct NativeFloatingAdvanceButton: View {
+    @ObservedObject var store: NativeCampaignStore
+
+    var body: some View {
+        Menu {
+            Button("Advance 1 Month") { Task { await store.advance(months: 1) } }
+                .accessibilityIdentifier("native-advance-1")
+            Button("Advance 3 Months") { Task { await store.advance(months: 3) } }
+                .accessibilityIdentifier("native-advance-3")
+            Button("Advance 1 Year") { Task { await store.advance(months: 12) } }
+                .accessibilityIdentifier("native-advance-12")
+        } label: {
+            HStack(spacing: 8) {
+                if store.isAdvancing {
+                    ProgressView()
+                        .tint(.white)
+                        .controlSize(.small)
+                    Text((store.turnProgress?.phase ?? "Advancing...").uppercased())
+                        .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                } else {
+                    Image(systemName: "calendar.badge.clock")
+                        .font(.headline)
+                        .foregroundStyle(Color.glowingCyan)
+                    Text("ADVANCE TURN")
+                        .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                        .foregroundStyle(.white)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.deepSlate.opacity(0.85))
+            .clipShape(Capsule())
+            .overlay {
+                Capsule()
+                    .stroke(Color.glowingCyan.opacity(0.35), lineWidth: 1.5)
+            }
+            .shadow(color: Color.glowingCyan.opacity(0.25), radius: 10, x: 0, y: 0)
+        }
+        .disabled(store.isAdvancing)
+        .accessibilityLabel("Advance time menu")
+        .accessibilityIdentifier("native-advance-menu")
     }
 }
 
@@ -510,8 +1377,14 @@ struct NativeAdvanceMenu: View {
                 .accessibilityIdentifier("native-advance-12")
         } label: {
             if store.isAdvancing {
-                ProgressView()
-                    .frame(minWidth: 52, minHeight: 44)
+                VStack(spacing: 2) {
+                    ProgressView()
+                    Text(store.turnProgress?.phase ?? "Advancing")
+                        .font(.system(size: 8, design: .monospaced).weight(.bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+                .frame(minWidth: 52, minHeight: 44)
             } else {
                 Label("Advance", systemImage: "calendar.badge.clock")
                     .labelStyle(.iconOnly)
@@ -530,13 +1403,14 @@ struct NativeHeroHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Native Strategy Room")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+            Text("SWIFT HISTORIA COMMAND CENTER")
+                .font(.system(.caption, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.glowingCyan)
                 .textCase(.uppercase)
                 .tracking(2)
             Text(state.lastSummary)
-                .font(.title2.weight(.semibold))
+                .font(.title2.weight(.bold))
+                .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
@@ -551,9 +1425,11 @@ struct NativeSectionHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(title, systemImage: systemImage)
-                .font(.title2.weight(.bold))
+            Label(title.uppercased(), systemImage: systemImage)
+                .font(.system(.title2, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.iceBlue)
             Text(subtitle)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -567,6 +1443,10 @@ struct NativeMetricsGrid: View {
     var body: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 12)], spacing: 12) {
             MetricCard(title: "Planned Actions", value: "\(state.plannedActions.filter { $0.status == .planned }.count)", systemImage: "checklist")
+            MetricCard(title: "Budget Balance", value: nativeFormatSignedPercent(state.economicLedger.budgetBalancePercentGDP), systemImage: "banknote")
+            MetricCard(title: "Public Debt", value: nativeFormatPercent(state.economicLedger.publicDebtPercentGDP), systemImage: "creditcard")
+            MetricCard(title: "Fiscal Space", value: "\(state.economicLedger.fiscalSpaceIndex)/100", systemImage: "gauge.with.dots.needle.67percent")
+            MetricCard(title: "Inflation", value: nativeFormatPercent(state.economicLedger.inflationPercent), systemImage: "chart.line.uptrend.xyaxis")
             MetricCard(title: "Strategic Effects", value: "\(state.worldEffects.count)", systemImage: "chart.line.uptrend.xyaxis")
             MetricCard(title: "Independent Events", value: "\(state.timeline.filter { !$0.playerRelated }.count)", systemImage: "globe.europe.africa")
             MetricCard(title: "AI Status", value: nativeFormatAvailability(state.aiReadiness.availability), systemImage: "brain")
@@ -597,7 +1477,8 @@ struct NativeSuggestedActionsPanel: View {
         NativePanel(accessibilityIdentifier: "native-suggested-actions-panel") {
             HStack {
                 Label("Apple-suggested actions", systemImage: "sparkles")
-                    .font(.headline)
+                    .font(.system(.headline, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.glowingCyan)
                 Spacer()
                 if store.isLoadingSuggestions {
                     ProgressView().controlSize(.small)
@@ -605,9 +1486,11 @@ struct NativeSuggestedActionsPanel: View {
                     Button {
                         Task { await store.refreshSuggestedActions(force: true) }
                     } label: {
-                        Label("Refresh", systemImage: "arrow.clockwise")
+                        Image(systemName: "arrow.clockwise")
+                            .font(.subheadline)
                     }
                     .buttonStyle(.bordered)
+                    .accessibilityLabel("Refresh suggestions")
                     .accessibilityIdentifier("native-refresh-suggestions")
                 }
             }
@@ -625,12 +1508,12 @@ struct NativeSuggestedActionsPanel: View {
                     }
                 }
             } else if store.isLoadingSuggestions {
-                Text("Asking Apple Foundation Models for concrete orders...")
-                    .font(.callout)
+                Text("Analyzing campaign tracks via Apple Intelligence...")
+                    .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             } else {
-                Text("No suggestions yet. Manual orders remain available.")
-                    .font(.callout)
+                Text("No advisory suggestions available.")
+                    .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
         }
@@ -642,17 +1525,59 @@ struct NativeOrdersEditorPanel: View {
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-orders-editor") {
-            Text("Order composer")
-                .font(.headline)
-            Text("Write concrete instruments, not vague wishes. The next time jump turns them into consequences.")
+            Text("ORDER COMPOSER")
+                .font(.system(.headline, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.iceBlue)
+
+            if let state = store.state {
+                HStack {
+                    Text("CIVIC CAPACITY //")
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.glowingCyan)
+
+                    ProgressView(value: Double(state.administrativeCapacity), total: 100)
+                        .tint(state.administrativeCapacity >= 30 ? Color.neonTeal : Color.softRed)
+                        .frame(width: 80)
+
+                    Text("\(state.administrativeCapacity)/100")
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(state.administrativeCapacity >= 30 ? Color.neonTeal : Color.softRed)
+
+                    Spacer()
+
+                    let currentCost = NativeGameEngine.estimateDirectiveCost(for: store.draftAction)
+                    Text("Cost: \(currentCost > 0 ? "\(currentCost)" : "30") Capacity")
+                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        .foregroundStyle(currentCost > state.administrativeCapacity ? Color.softRed : Color.iceBlue.opacity(0.8))
+                }
+                .padding(.vertical, 4)
+            }
+            Text("Draft precise geopolitical directives. They will execute upon the next turn leap.")
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Directives should describe concrete policy, investment, or diplomatic initiatives.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("e.g., \"Fund grid modernization\" or \"Establish logistics buffers with neighboring states.\"")
+                    .font(.caption.italic())
+                    .foregroundStyle(.secondary)
+            }
+            .fixedSize(horizontal: false, vertical: true)
+
             TextEditor(text: $store.draftAction)
+                .font(.body)
                 .frame(minHeight: 96)
                 .padding(8)
                 .scrollContentBackground(.hidden)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color.deepSlate.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                }
                 .accessibilityLabel("Draft order")
                 .accessibilityHint("Describe a concrete policy, investment, or diplomatic action.")
                 .accessibilityIdentifier("native-action-editor")
@@ -662,16 +1587,22 @@ struct NativeOrdersEditorPanel: View {
                     store.addDraftAction()
                 }
             } label: {
-                Label("Add order", systemImage: "plus")
-                    .frame(minHeight: 44)
+                HStack {
+                    Image(systemName: "plus")
+                    Text("ENQUEUE DIRECTIVE")
+                        .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                }
+                .frame(maxWidth: .infinity, minHeight: 44)
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color.iceBlue)
+            .foregroundStyle(.black)
             .disabled(store.draftAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .keyboardShortcut("n", modifiers: [.command])
             .accessibilityIdentifier("native-add-order")
 
             if let state = store.state, !state.plannedActions.isEmpty {
-                LazyVStack(spacing: 8) {
+                LazyVStack(spacing: 10) {
                     ForEach(state.plannedActions) { action in
                         ActionRow(action: action) {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
@@ -681,8 +1612,8 @@ struct NativeOrdersEditorPanel: View {
                     }
                 }
             } else {
-                Text("No planned orders yet.")
-                    .font(.callout)
+                Text("No directives enqueued.")
+                    .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
         }
@@ -695,33 +1626,57 @@ struct NativeAdvisorPanel: View {
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-advisor-panel") {
             HStack {
-                Label("Advisor", systemImage: "person.text.rectangle")
-                    .font(.headline)
+                Label("STRATEGIC ADVISOR", systemImage: "brain.head.profile")
+                    .font(.system(.headline, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.glowingCyan)
                 Spacer()
                 if store.isLoadingAdvisor {
                     ProgressView().controlSize(.small)
                 }
             }
 
-            Text("Ask for a blunt strategic read on the current campaign state.")
+            Text("Request an assessment of the current geopolitical environment.")
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Inquiries can focus on stability, tension, threat levels, or advisor recommendations.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("e.g., \"What economic threats should we prioritize?\" or \"Is world tension stable?\"")
+                    .font(.caption.italic())
+                    .foregroundStyle(.secondary)
+            }
+            .fixedSize(horizontal: false, vertical: true)
+
             TextEditor(text: $store.draftAdvisorQuestion)
+                .font(.system(.body, design: .monospaced))
                 .frame(minHeight: 88)
                 .padding(8)
                 .scrollContentBackground(.hidden)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color.deepSlate.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                }
                 .accessibilityLabel("Advisor question")
                 .accessibilityIdentifier("native-advisor-question")
 
             Button {
                 Task { await store.askAdvisor() }
             } label: {
-                Label("Ask advisor", systemImage: "brain.head.profile")
-                    .frame(minHeight: 44)
+                HStack {
+                    Image(systemName: "brain.head.profile")
+                    Text("TRANSMIT INQUIRY")
+                        .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                }
+                .frame(maxWidth: .infinity, minHeight: 44)
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color.glowingCyan)
+            .foregroundStyle(.black)
             .disabled(store.isLoadingAdvisor || store.draftAdvisorQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .keyboardShortcut("a", modifiers: [.command, .shift])
             .accessibilityIdentifier("native-ask-advisor")
@@ -731,14 +1686,14 @@ struct NativeAdvisorPanel: View {
             }
 
             if let state = store.state, !state.advisorMessages.isEmpty {
-                LazyVStack(spacing: 8) {
+                LazyVStack(spacing: 12) {
                     ForEach(Array(state.advisorMessages.prefix(8))) { message in
                         AdvisorMessageRow(message: message)
                     }
                 }
             } else {
-                Text("No advisor briefings yet.")
-                    .font(.callout)
+                Text("No communications logged.")
+                    .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
         }
@@ -751,8 +1706,9 @@ struct NativeDiplomacyPanel: View {
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-diplomacy-panel") {
             HStack {
-                Label("Diplomacy", systemImage: "bubble.left.and.bubble.right")
-                    .font(.headline)
+                Label("DIPLOMATIC CHANNELS", systemImage: "bubble.left.and.bubble.right")
+                    .font(.system(.headline, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.neonTeal)
                 Spacer()
                 if store.isLoadingDiplomacy {
                     ProgressView().controlSize(.small)
@@ -761,29 +1717,58 @@ struct NativeDiplomacyPanel: View {
 
             if let state = store.state {
                 let partners = CountryCatalog.all.filter { $0.code != state.country.code }
-                Picker("Counterparty", selection: $store.selectedDiplomaticPartnerCode) {
-                    ForEach(partners) { country in
-                        Text(country.name).tag(country.code)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("SELECT RECIPIENT NATION")
+                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        .foregroundStyle(.secondary)
+
+                    Picker("Counterparty", selection: $store.selectedDiplomaticPartnerCode) {
+                        ForEach(partners) { country in
+                            Text(country.name).tag(country.code)
+                        }
                     }
+                    .pickerStyle(.menu)
+                    .accessibilityIdentifier("native-diplomacy-partner")
                 }
-                .pickerStyle(.menu)
-                .accessibilityIdentifier("native-diplomacy-partner")
 
                 TextEditor(text: $store.draftDiplomaticMessage)
+                    .font(.body)
                     .frame(minHeight: 88)
                     .padding(8)
                     .scrollContentBackground(.hidden)
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .background(Color.deepSlate.opacity(0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    }
                     .accessibilityLabel("Diplomatic message")
                     .accessibilityIdentifier("native-diplomacy-message")
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Diplomatic directives can coordinate resources, trade corridors, or border stability.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("e.g., \"Propose a technology sharing treaty\" or \"Request naval cooperation.\"")
+                        .font(.caption.italic())
+                        .foregroundStyle(.secondary)
+                }
+                .fixedSize(horizontal: false, vertical: true)
 
                 Button {
                     Task { await store.sendDiplomaticMessage() }
                 } label: {
-                    Label("Send message", systemImage: "paperplane")
-                        .frame(minHeight: 44)
+                    HStack {
+                        Image(systemName: "paperplane.fill")
+                        Text("INITIATE TRANSMISSION")
+                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(Color.neonTeal)
+                .foregroundStyle(.black)
                 .disabled(store.isLoadingDiplomacy || store.draftDiplomaticMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .keyboardShortcut("d", modifiers: [.command, .shift])
                 .accessibilityIdentifier("native-send-diplomacy")
@@ -792,9 +1777,86 @@ struct NativeDiplomacyPanel: View {
                     SuggestionWarning(message: diplomacyError)
                 }
 
+                if !state.activeOffers.isEmpty {
+                    let pendingOffers = state.activeOffers.filter { $0.status == .pending }
+                    if !pendingOffers.isEmpty {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("INCOMING TREATIES & PROPOSALS")
+                                .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                                .foregroundStyle(Color.neonTeal)
+                                .tracking(1.2)
+                                .padding(.top, 8)
+
+                            ForEach(pendingOffers) { offer in
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        Text(offer.proposerCode)
+                                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                                            .foregroundStyle(Color.neonTeal)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color.neonTeal.opacity(0.12), in: Capsule())
+
+                                        Text(offer.type.displayName.uppercased())
+                                            .font(.system(.caption2, design: .monospaced).weight(.bold))
+                                            .foregroundStyle(.white)
+
+                                        Spacer()
+                                    }
+
+                                    Text(offer.description)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+
+                                    HStack(spacing: 8) {
+                                        Button {
+                                            store.acceptDiplomaticOffer(id: offer.id)
+                                        } label: {
+                                            Text("Accept")
+                                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                .padding(.horizontal, 10)
+                                                .padding(.vertical, 4)
+                                                .background(Color.neonTeal.opacity(0.2), in: Capsule())
+                                                .foregroundStyle(Color.neonTeal)
+                                        }
+                                        .buttonStyle(.plain)
+
+                                        Button {
+                                            store.counterDiplomaticOffer(id: offer.id)
+                                        } label: {
+                                            Text("Counter")
+                                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                .padding(.horizontal, 10)
+                                                .padding(.vertical, 4)
+                                                .background(Color.alertGold.opacity(0.2), in: Capsule())
+                                                .foregroundStyle(Color.alertGold)
+                                        }
+                                        .buttonStyle(.plain)
+
+                                        Button {
+                                            store.rejectDiplomaticOffer(id: offer.id)
+                                        } label: {
+                                            Text("Reject")
+                                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                .padding(.horizontal, 10)
+                                                .padding(.vertical, 4)
+                                                .background(Color.softRed.opacity(0.2), in: Capsule())
+                                                .foregroundStyle(Color.softRed)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .padding(10)
+                                .glassmorphicCard(borderColor: Color.white.opacity(0.08), cornerRadius: 8)
+                            }
+                        }
+                    }
+                }
+
                 if let thread = state.diplomaticThreads.first(where: { $0.participant.code == store.selectedDiplomaticPartnerCode }),
                    !thread.messages.isEmpty {
-                    LazyVStack(spacing: 8) {
+                    LazyVStack(spacing: 12) {
                         ForEach(Array(thread.messages.reversed().prefix(8))) { message in
                             DiplomacyMessageRow(
                                 message: message,
@@ -803,8 +1865,8 @@ struct NativeDiplomacyPanel: View {
                         }
                     }
                 } else {
-                    Text("No messages with this counterparty yet.")
-                        .font(.callout)
+                    Text("No transmission logs found.")
+                        .font(.system(.callout, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -817,17 +1879,18 @@ struct NativeEventsPanel: View {
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-events-panel") {
-            Label("Events", systemImage: "clock")
-                .font(.headline)
+            Label("TRANSMISSION HISTORY", systemImage: "clock")
+                .font(.system(.headline, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.iceBlue)
             if let state, !state.timeline.isEmpty {
-                LazyVStack(spacing: 10) {
+                LazyVStack(spacing: 12) {
                     ForEach(state.timeline) { event in
                         EventCard(event: event)
                     }
                 }
             } else {
-                Text("No events recorded yet.")
-                    .font(.callout)
+                Text("No signals logged yet.")
+                    .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
         }
@@ -841,24 +1904,29 @@ struct NativeLibraryPanel: View {
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-campaign-library") {
-            Label("Library", systemImage: "folder")
-                .font(.headline)
-            HStack {
-                Button {
-                    onExportCampaign()
-                } label: {
-                    Label("Export campaign", systemImage: "square.and.arrow.up")
-                        .frame(minHeight: 44)
+            Label("CAMPAIGN ARCHIVE", systemImage: "folder")
+                .font(.system(.headline, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.iceBlue)
+            HStack(spacing: 12) {
+                Button(action: onExportCampaign) {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("EXPORT CAMPAIGN")
+                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .buttonStyle(.bordered)
                 .keyboardShortcut("e", modifiers: [.command, .shift])
                 .accessibilityIdentifier("native-export-campaign")
 
-                Button {
-                    onImportCampaign()
-                } label: {
-                    Label("Import campaign", systemImage: "square.and.arrow.down")
-                        .frame(minHeight: 44)
+                Button(action: onImportCampaign) {
+                    HStack {
+                        Image(systemName: "square.and.arrow.down")
+                        Text("IMPORT CAMPAIGN")
+                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .buttonStyle(.bordered)
                 .keyboardShortcut("i", modifiers: [.command, .shift])
@@ -867,8 +1935,8 @@ struct NativeLibraryPanel: View {
 
             if let message, !message.isEmpty {
                 Text(message)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(Color.alertGold)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("native-library-message")
             }
@@ -881,16 +1949,46 @@ struct NativeSettingsPanel: View {
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-settings-panel") {
-            Label("Campaign settings", systemImage: "slider.horizontal.3")
-                .font(.headline)
+            Label("SYSTEM DIAGNOSTICS", systemImage: "slider.horizontal.3")
+                .font(.system(.headline, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.iceBlue)
 
             if let state = store.state {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("\(state.country.name) · \(state.country.code) · Round \(state.round)")
-                        .font(.subheadline.weight(.semibold))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("\(state.country.name) · \(state.country.code) · ROUND \(state.round)")
+                        .font(.system(.subheadline, design: .monospaced).weight(.semibold))
+                        .foregroundStyle(Color.glowingCyan)
                     Text(state.scenarioDescription)
-                        .font(.callout)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Divider()
+                    .background(Color.white.opacity(0.12))
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("CAMPAIGN DIFFICULTY")
+                        .font(.system(.subheadline, design: .monospaced).weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Picker(
+                        "Difficulty",
+                        selection: Binding(
+                            get: { state.gameMode },
+                            set: { store.setGameMode($0) }
+                        )
+                    ) {
+                        ForEach(NativeGameMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("native-difficulty-picker")
+
+                    Text(state.gameMode.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .italic()
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -901,17 +1999,65 @@ struct NativeSettingsPanel: View {
                 Button {
                     Task { await store.checkAppleStatus() }
                 } label: {
-                    Label("Check Apple status", systemImage: "cpu")
-                        .frame(minHeight: 44)
+                    HStack {
+                        Image(systemName: "cpu")
+                        Text("POLL MODEL STATUS")
+                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("native-apple-status-check")
 
+                if state.gameMode == .ironman {
+                    HStack {
+                        Image(systemName: "lock.shield.fill")
+                            .foregroundStyle(Color.softRed)
+                        Text("AUTO-SAVE ONLY (IRON MAN)")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .background(Color.white.opacity(0.04))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                } else {
+                    Button {
+                        store.manualSaveCampaign()
+                    } label: {
+                        HStack {
+                            Image(systemName: "square.and.arrow.down")
+                            Text("SAVE CAMPAIGN")
+                                .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Color.neonTeal.opacity(0.3))
+                    .accessibilityIdentifier("native-save-campaign")
+                }
+
+                Button {
+                    store.exitToMainMenu()
+                } label: {
+                    HStack {
+                        Image(systemName: "arrow.left.circle")
+                        Text("EXIT TO MAIN MENU")
+                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityIdentifier("native-exit-to-menu")
+
                 Button(role: .destructive) {
                     store.resetSelection()
                 } label: {
-                    Label("Change country", systemImage: "flag")
-                        .frame(minHeight: 44)
+                    HStack {
+                        Image(systemName: "flag.fill")
+                        Text("RESET & DELETE SAVE")
+                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .accessibilityIdentifier("native-change-country")
             }
@@ -925,8 +2071,9 @@ struct NativeLanguagePicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Language")
-                .font(.subheadline.weight(.semibold))
+            Text("INTERFACE LANGUAGE")
+                .font(.system(.subheadline, design: .monospaced).weight(.semibold))
+                .foregroundStyle(.secondary)
             Picker(
                 "Language",
                 selection: Binding(
@@ -954,26 +2101,29 @@ struct NativeScenarioPicker: View {
     @ObservedObject var store: NativeCampaignStore
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Scenarios")
-                .font(.subheadline.weight(.semibold))
+        VStack(alignment: .leading, spacing: 10) {
+            Text("SCENARIOS")
+                .font(.system(.subheadline, design: .monospaced).weight(.semibold))
+                .foregroundStyle(.secondary)
                 .accessibilityIdentifier("native-scenario-library")
             ForEach(NativeScenarioCatalog.all) { scenario in
                 Button {
                     store.selectScenario(id: scenario.id)
                 } label: {
-                    HStack(alignment: .top, spacing: 8) {
+                    HStack(alignment: .center, spacing: 10) {
                         Image(systemName: scenario.id == store.selectedScenarioID ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(scenario.id == store.selectedScenarioID ? .green : .secondary)
+                            .foregroundStyle(scenario.id == store.selectedScenarioID ? Color.neonTeal : Color.iceBlue.opacity(0.4))
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(scenario.name).fontWeight(.semibold)
+                            Text(scenario.name)
+                                .font(.body.weight(.bold))
                             Text(scenario.subtitle)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
                     }
-                    .frame(minHeight: 44)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(scenario.name), \(scenario.subtitle)")
@@ -986,18 +2136,66 @@ struct NativeScenarioPicker: View {
 
 struct NativeAIStatusPanel: View {
     let readiness: NativeAIReadiness
+    @State private var pulsing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label(nativeFormatAvailability(readiness.availability), systemImage: readiness.ok ? "checkmark.seal" : "exclamationmark.triangle")
-                .font(.subheadline.weight(.semibold))
-            Text(readiness.checkedAt.isEmpty ? "Not checked yet" : "Checked \(readiness.checkedAt)")
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(readiness.ok ? Color.neonTeal : Color.softRed)
+                    .frame(width: 8, height: 8)
+                    .opacity(pulsing ? 0.4 : 1.0)
+                    .scaleEffect(pulsing ? 1.2 : 1.0)
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                            pulsing = true
+                        }
+                    }
+
+                Text("APPLE FM ENGINE // STATUS")
+                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("AVAILABILITY:")
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                    Text(nativeFormatAvailability(readiness.availability).uppercased())
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(readiness.ok ? Color.neonTeal : Color.softRed)
+                }
+
+                HStack {
+                    Text("LAST DIAGNOSTIC:")
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                    Text(readiness.checkedAt.isEmpty ? "NEVER" : readiness.checkedAt.uppercased())
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.iceBlue)
+                }
+            }
+            .padding(10)
+            .background(Color.white.opacity(0.03))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
+            }
+
             if !readiness.recoverySuggestion.isEmpty {
                 Text(readiness.recoverySuggestion)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.alertGold)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(8)
+                    .background(Color.alertGold.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.alertGold.opacity(0.24), lineWidth: 1)
+                    }
             }
         }
         .accessibilityIdentifier("native-ai-status-panel")
@@ -1014,12 +2212,12 @@ struct NativePanel<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             content
         }
-        .padding()
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
@@ -1031,16 +2229,14 @@ struct NativeStatusChip: View {
 
     var body: some View {
         Label(text, systemImage: systemImage)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(tintColor ?? .primary)
+            .font(.system(.caption, design: .monospaced).weight(.bold))
+            .foregroundStyle(tintColor ?? Color.iceBlue)
             .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background((tintColor?.opacity(0.12) ?? .clear), in: Capsule())
-            .background(.thinMaterial, in: Capsule())
+            .padding(.vertical, 6)
+            .background((tintColor ?? Color.iceBlue).opacity(0.08), in: Capsule())
             .overlay {
-                if let tintColor {
-                    Capsule().stroke(tintColor.opacity(0.24), lineWidth: 1)
-                }
+                Capsule()
+                    .stroke((tintColor ?? Color.iceBlue).opacity(0.24), lineWidth: 1)
             }
             .accessibilityElement(children: .combine)
     }
@@ -1056,4 +2252,19 @@ func nativeFormatAvailability(_ value: String) -> String {
     case "unsupported-os": "Unsupported OS"
     default: value.isEmpty ? "Unknown" : value
     }
+}
+
+func nativeFormatHUDAvailability(_ value: String) -> String {
+    switch value {
+    case "available": "Simulation Link Online"
+    default: "Simulation Link Offline"
+    }
+}
+
+func nativeFormatPercent(_ value: Double) -> String {
+    String(format: "%.1f%%", value)
+}
+
+func nativeFormatSignedPercent(_ value: Double) -> String {
+    String(format: "%+.1f%%", value)
 }

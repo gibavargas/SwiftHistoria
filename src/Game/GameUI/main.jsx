@@ -120,6 +120,9 @@ const Main = ({
   setIsGlobeEnabled,
   setIsTerrainEnabled,
 }) => {
+  // This file is the legacy browser HUD coordinator. It owns panel visibility
+  // and settings form state, while persistent game data flows through
+  // runtime/gameState.js. Native Apple UI lives in Apple/PaxHistoriaApple.
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAdvisorOpen, setIsAdvisorOpen] = useState(false);
   const [isCountryChooserOpen, setIsCountryChooserOpen] = useState(false);

@@ -1,11 +1,156 @@
 import Foundation
 
+/// Player-selectable campaign mode. The enum is persisted, so raw values should
+/// stay stable unless an explicit save migration is added.
+enum NativeGameMode: String, Codable, CaseIterable, Identifiable, Hashable {
+    case sandbox = "Sandbox"
+    case normal = "Normal"
+    case ironman = "Iron Man"
+
+    var id: String { rawValue }
+
+    var description: String {
+        switch self {
+        case .sandbox: return "Unlimited administrative freedom and light consequences."
+        case .normal: return "Standard campaign conditions with active crisis events."
+        case .ironman: return "Sovereign risks are doubled, and reloading is disabled."
+        }
+    }
+}
+
+enum NativeRegionConflictMode: String, Codable, CaseIterable, Identifiable, Hashable {
+    case contestedBorder = "contested-border"
+    case conventionalOccupation = "conventional-occupation"
+    case guerrillaControl = "guerrilla-control"
+    case nuclearFallout = "nuclear-fallout"
+    case stabilization = "stabilization"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .contestedBorder:
+            return "Contested border"
+        case .conventionalOccupation:
+            return "Conventional occupation"
+        case .guerrillaControl:
+            return "Guerrilla control"
+        case .nuclearFallout:
+            return "Nuclear fallout"
+        case .stabilization:
+            return "Stabilization corridor"
+        }
+    }
+}
+
+/// Region-level conflict metadata used by the native strategic map.
+///
+/// `regionOccupations` and `nuclearFalloutRegions` remain the compact legacy
+/// rendering indexes. This richer record explains why a region is drawn as
+/// occupied, contested, insurgent-held, or devastated so future prompts and UI
+/// can reason about the state without inferring too much from color alone.
+struct NativeRegionConflictState: Codable, Hashable, Identifiable {
+    var controllerCode: String
+    var intensity: Int
+    var mode: NativeRegionConflictMode
+    var originalCountryCode: String
+    var rebelDelta: Double
+    var regionID: String
+    var securityDelta: Double
+    var sourceEventID: String
+    var summary: String
+    var updatedAt: String
+
+    var id: String { regionID }
+
+    init(
+        controllerCode: String,
+        intensity: Int,
+        mode: NativeRegionConflictMode,
+        originalCountryCode: String,
+        rebelDelta: Double = 0,
+        regionID: String,
+        securityDelta: Double = 0,
+        sourceEventID: String = "",
+        summary: String = "",
+        updatedAt: String = ""
+    ) {
+        self.controllerCode = controllerCode
+        self.intensity = max(1, min(5, intensity))
+        self.mode = mode
+        self.originalCountryCode = originalCountryCode
+        self.rebelDelta = rebelDelta
+        self.regionID = regionID
+        self.securityDelta = securityDelta
+        self.sourceEventID = sourceEventID
+        self.summary = summary
+        self.updatedAt = updatedAt
+    }
+
+    static func countryCode(fromLegacyRegionID regionID: String) -> String {
+        let prefix = regionID.split(separator: "_").first.map(String.init) ?? regionID
+        return prefix.isEmpty ? regionID : prefix
+    }
+}
+
+enum NativeAIDoctrine: String, Codable, CaseIterable, Identifiable, Hashable {
+    case mercantile = "mercantile"
+    case expansionist = "expansionist"
+    case isolationist = "isolationist"
+    case defensive = "defensive"
+    case collaborative = "collaborative"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .mercantile: return "Mercantile"
+        case .expansionist: return "Expansionist"
+        case .isolationist: return "Isolationist"
+        case .defensive: return "Defensive"
+        case .collaborative: return "Collaborative"
+        }
+    }
+}
+
+enum NativeAIBudgetPriority: String, Codable, CaseIterable, Identifiable, Hashable {
+    case growth = "growth"
+    case stability = "stability"
+    case military = "military"
+    case diplomacy = "diplomacy"
+
+    var id: String { rawValue }
+}
+
+struct NativeAICountryState: Codable, Hashable, Identifiable {
+    var countryCode: String
+    var doctrine: NativeAIDoctrine
+    var budgetPriority: NativeAIBudgetPriority
+    var relationshipScores: [String: Int] // target -> score (-100 to 100)
+    var multiTurnAgenda: String
+    var agendaProgress: Int // 0 to 100
+
+    var id: String { countryCode }
+}
+
+/// The complete persisted native campaign snapshot.
+///
+/// This type is intentionally tolerant when decoding: old saves may be missing
+/// newer systems such as action memory, economic ledgers, diplomacy, or
+/// language. Add new fields with defaults in `init(from:)` so existing campaign
+/// files remain loadable.
 struct NativeCampaignState: Codable, Hashable {
+    var actionMemory: [NativeActionMemory]
     var advisorMessages: [NativeAdvisorMessage]
     var aiReadiness: NativeAIReadiness
     var country: PlayerCountry
     var diplomaticThreads: [NativeDiplomaticThread]
+    var economicLedger: NativeEconomicLedger
+    var economicLedgers: [String: NativeEconomicLedger]
+    var aiCountryStates: [String: NativeAICountryState]
+
     var gameDate: String
+    var gameMode: NativeGameMode
     var lastSummary: String
     var language: NativeGameLanguage
     var plannedActions: [NativePlannedAction]
@@ -19,13 +164,29 @@ struct NativeCampaignState: Codable, Hashable {
     var timeline: [NativeCampaignEvent]
     var worldTension: Int
     var worldEffects: [NativeStrategicEffect]
+    var regionOccupations: [String: String]
+    var nuclearFalloutRegions: [String]
+    var regionConflicts: [String: NativeRegionConflictState]
+
+    // New Grand Strategy Layer fields
+    var administrativeCapacity: Int
+    var victoryStatus: NativeVictoryStatus
+    var activeOffers: [NativeDiplomaticOffer]
+    var budgetMilitarySlider: Double
+    var budgetServicesSlider: Double
+    var budgetDiplomacySlider: Double
 
     init(
+        actionMemory: [NativeActionMemory] = [],
         advisorMessages: [NativeAdvisorMessage] = [],
         aiReadiness: NativeAIReadiness,
         country: PlayerCountry,
         diplomaticThreads: [NativeDiplomaticThread] = [],
+        economicLedger: NativeEconomicLedger? = nil,
+        economicLedgers: [String: NativeEconomicLedger]? = nil,
+        aiCountryStates: [String: NativeAICountryState]? = nil,
         gameDate: String,
+        gameMode: NativeGameMode = .normal,
         lastSummary: String,
         language: NativeGameLanguage = .english,
         plannedActions: [NativePlannedAction],
@@ -38,13 +199,41 @@ struct NativeCampaignState: Codable, Hashable {
         startDate: String,
         timeline: [NativeCampaignEvent],
         worldTension: Int,
-        worldEffects: [NativeStrategicEffect]
+        worldEffects: [NativeStrategicEffect],
+        regionOccupations: [String: String] = [:],
+        nuclearFalloutRegions: [String] = [],
+        regionConflicts: [String: NativeRegionConflictState] = [:],
+        administrativeCapacity: Int = 100,
+        victoryStatus: NativeVictoryStatus = .ongoing,
+        activeOffers: [NativeDiplomaticOffer] = [],
+        budgetMilitarySlider: Double = 0.33,
+        budgetServicesSlider: Double = 0.34,
+        budgetDiplomacySlider: Double = 0.33
     ) {
+        self.actionMemory = actionMemory
         self.advisorMessages = advisorMessages
         self.aiReadiness = aiReadiness
         self.country = country
         self.diplomaticThreads = diplomaticThreads
+        let computedEconomicLedger = economicLedger ?? NativeEconomicLedger.starting(
+            for: country,
+            scenario: NativeScenarioCatalog.scenario(for: scenarioID)
+        )
+        self.economicLedger = computedEconomicLedger
+        if let economicLedgers = economicLedgers {
+            self.economicLedgers = economicLedgers
+        } else {
+            var ledgers: [String: NativeEconomicLedger] = [:]
+            ledgers[country.code] = computedEconomicLedger
+            let scenarioObj = NativeScenarioCatalog.scenario(for: scenarioID)
+            for code in NativeStrategyContextDatabase.defaultStrategicCountryCodes where code != country.code {
+                ledgers[code] = NativeStrategyContextDatabase.startingEconomicLedger(forCode: code, scenario: scenarioObj)
+            }
+            self.economicLedgers = ledgers
+        }
+        self.aiCountryStates = aiCountryStates ?? [:]
         self.gameDate = gameDate
+        self.gameMode = gameMode
         self.lastSummary = lastSummary
         self.language = language
         self.plannedActions = plannedActions
@@ -58,14 +247,28 @@ struct NativeCampaignState: Codable, Hashable {
         self.timeline = timeline
         self.worldTension = worldTension
         self.worldEffects = worldEffects
+        self.regionOccupations = regionOccupations
+        self.nuclearFalloutRegions = nuclearFalloutRegions
+        self.regionConflicts = regionConflicts
+        self.administrativeCapacity = administrativeCapacity
+        self.victoryStatus = victoryStatus
+        self.activeOffers = activeOffers
+        self.budgetMilitarySlider = budgetMilitarySlider
+        self.budgetServicesSlider = budgetServicesSlider
+        self.budgetDiplomacySlider = budgetDiplomacySlider
     }
 
     private enum CodingKeys: String, CodingKey {
+        case actionMemory
         case advisorMessages
         case aiReadiness
         case country
         case diplomaticThreads
+        case economicLedger
+        case economicLedgers
+        case aiCountryStates
         case gameDate
+        case gameMode
         case lastSummary
         case language
         case plannedActions
@@ -79,6 +282,15 @@ struct NativeCampaignState: Codable, Hashable {
         case timeline
         case worldTension
         case worldEffects
+        case regionOccupations
+        case nuclearFalloutRegions
+        case regionConflicts
+        case administrativeCapacity
+        case victoryStatus
+        case activeOffers
+        case budgetMilitarySlider
+        case budgetServicesSlider
+        case budgetDiplomacySlider
     }
 
     init(from decoder: Decoder) throws {
@@ -89,7 +301,29 @@ struct NativeCampaignState: Codable, Hashable {
         diplomaticThreads = (try? container.decodeIfPresent([NativeDiplomaticThread].self, forKey: .diplomaticThreads)) ?? []
         scenarioID = (try? container.decodeIfPresent(String.self, forKey: .scenarioID)) ?? NativeScenarioCatalog.defaultScenario.id
         let decodedScenario = NativeScenarioCatalog.scenario(for: scenarioID)
+        actionMemory = (try? container.decodeIfPresent([NativeActionMemory].self, forKey: .actionMemory)) ?? []
+        let decodedLedger = (try? container.decodeIfPresent(NativeEconomicLedger.self, forKey: .economicLedger)) ?? NativeEconomicLedger.starting(for: country, scenario: decodedScenario)
+        economicLedger = decodedLedger
+        var ledgers = (try? container.decodeIfPresent([String: NativeEconomicLedger].self, forKey: .economicLedgers)) ?? [:]
+        if ledgers.isEmpty {
+            ledgers[country.code] = decodedLedger
+            for code in NativeStrategyContextDatabase.defaultStrategicCountryCodes where code != country.code {
+                ledgers[code] = NativeStrategyContextDatabase.startingEconomicLedger(forCode: code, scenario: decodedScenario)
+            }
+        }
+        economicLedgers = ledgers
+        aiCountryStates = (try? container.decodeIfPresent([String: NativeAICountryState].self, forKey: .aiCountryStates)) ?? [:]
+        regionOccupations = (try? container.decodeIfPresent([String: String].self, forKey: .regionOccupations)) ?? [:]
+        nuclearFalloutRegions = (try? container.decodeIfPresent([String].self, forKey: .nuclearFalloutRegions)) ?? []
+        regionConflicts = (try? container.decodeIfPresent([String: NativeRegionConflictState].self, forKey: .regionConflicts)) ?? [:]
+        if regionConflicts.isEmpty {
+            regionConflicts = Self.conflictsFromLegacyMapState(
+                occupations: regionOccupations,
+                falloutRegions: nuclearFalloutRegions
+            )
+        }
         gameDate = (try? container.decodeIfPresent(String.self, forKey: .gameDate)) ?? decodedScenario.gameDate
+        gameMode = (try? container.decodeIfPresent(NativeGameMode.self, forKey: .gameMode)) ?? .normal
         lastSummary = (try? container.decodeIfPresent(String.self, forKey: .lastSummary)) ?? "\(decodedScenario.openingSummary) \(country.name) needs to turn intent into concrete plans."
         language = NativeGameLanguage.normalized(try? container.decodeIfPresent(String.self, forKey: .language))
         plannedActions = (try? container.decodeIfPresent([NativePlannedAction].self, forKey: .plannedActions)) ?? []
@@ -102,9 +336,51 @@ struct NativeCampaignState: Codable, Hashable {
         timeline = (try? container.decodeIfPresent([NativeCampaignEvent].self, forKey: .timeline)) ?? []
         worldTension = (try? container.decodeIfPresent(Int.self, forKey: .worldTension)) ?? decodedScenario.baseWorldTension
         worldEffects = (try? container.decodeIfPresent([NativeStrategicEffect].self, forKey: .worldEffects)) ?? []
+
+        // Decoding new fields with defaults
+        administrativeCapacity = (try? container.decodeIfPresent(Int.self, forKey: .administrativeCapacity)) ?? 100
+        victoryStatus = (try? container.decodeIfPresent(NativeVictoryStatus.self, forKey: .victoryStatus)) ?? .ongoing
+        activeOffers = (try? container.decodeIfPresent([NativeDiplomaticOffer].self, forKey: .activeOffers)) ?? []
+        budgetMilitarySlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetMilitarySlider)) ?? 0.33
+        budgetServicesSlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetServicesSlider)) ?? 0.34
+        budgetDiplomacySlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetDiplomacySlider)) ?? 0.33
+    }
+
+    private static func conflictsFromLegacyMapState(
+        occupations: [String: String],
+        falloutRegions: [String]
+    ) -> [String: NativeRegionConflictState] {
+        var conflicts: [String: NativeRegionConflictState] = [:]
+        for (regionID, controllerCode) in occupations {
+            let originalCode = NativeRegionConflictState.countryCode(fromLegacyRegionID: regionID)
+            let mode: NativeRegionConflictMode = controllerCode == "REB" ? .guerrillaControl : .conventionalOccupation
+            conflicts[regionID] = NativeRegionConflictState(
+                controllerCode: controllerCode,
+                intensity: controllerCode == "REB" ? 4 : 3,
+                mode: mode,
+                originalCountryCode: originalCode,
+                regionID: regionID,
+                summary: "Recovered from legacy occupation map state."
+            )
+        }
+        for regionID in falloutRegions {
+            let originalCode = NativeRegionConflictState.countryCode(fromLegacyRegionID: regionID)
+            conflicts[regionID] = NativeRegionConflictState(
+                controllerCode: occupations[regionID] ?? originalCode,
+                intensity: 5,
+                mode: .nuclearFallout,
+                originalCountryCode: originalCode,
+                regionID: regionID,
+                summary: "Recovered from legacy nuclear fallout map state."
+            )
+        }
+        return conflicts
     }
 }
 
+/// User-facing language selection plus the prompt instruction used by native
+/// AI generation. Keep schema keys and identifiers out of translation; only
+/// player-visible prose should follow this value.
 enum NativeGameLanguage: String, Codable, CaseIterable, Hashable, Identifiable {
     case english = "English"
     case portuguese = "Portuguese"
@@ -180,14 +456,14 @@ enum NativeScenarioCatalog {
         accentColor: "#c49a35",
         baseStability: 62,
         baseWorldTension: 48,
-        gameDate: "2030-09-15",
-        heroSubtitle: "Modern institutions, brittle supply chains, and fast-moving regional bargains.",
+        gameDate: "2010-01-15",
+        heroSubtitle: "Post-recession recovery, rapid technological growth, and regional alignment of the early 2010s.",
         heroTitle: "Modern Day",
         id: "default",
         name: "Modern Day",
-        openingSummary: "The modern-day campaign begins with every council watching markets, services, and diplomatic room for maneuver.",
-        startDate: "2025-03-25",
-        subtitle: "Bundled save0 configuration"
+        openingSummary: "The campaign begins in 2010. Real-world challenges include post-crisis economic recovery, rising tech connectivity, and shifting geopolitical power balances.",
+        startDate: "2010-01-01",
+        subtitle: "Real-world facts starting 2010"
     )
 
     static let fragmentedMarkets = NativeScenario(
@@ -218,10 +494,85 @@ enum NativeScenarioCatalog {
         subtitle: "Long-horizon civic strategy"
     )
 
+    static let sovietTriumph = NativeScenario(
+        accentColor: "#df2a2a",
+        baseStability: 58,
+        baseWorldTension: 75,
+        gameDate: "1991-11-07",
+        heroSubtitle: "Alternate History Cold War: The Soviet Union achieved hegemony. Collectivized command networks and military pacts dominate.",
+        heroTitle: "Soviet Triumph",
+        id: "soviet-triumph",
+        name: "Soviet Triumph",
+        openingSummary: "The Soviet Union stands victorious. Direct collectivized industrial grids or manage containment strategies in a tense bipolar world.",
+        startDate: "1991-11-01",
+        subtitle: "Bipolar containment and planned hegemony"
+    )
+
+    static let paxCybernetica = NativeScenario(
+        accentColor: "#a855f7",
+        baseStability: 64,
+        baseWorldTension: 50,
+        gameDate: "2055-08-18",
+        heroSubtitle: "Decentralized algorithmic protocols and corporate sovereign networks compete for digital supremacy.",
+        heroTitle: "Pax Cybernetica",
+        id: "pax-cybernetica",
+        name: "Pax Cybernetica",
+        openingSummary: "Algorithmic DAOs and automated supply webs govern global trade. Administrative capacity represents server scale.",
+        startDate: "2055-01-01",
+        subtitle: "Corporate sovereign networks"
+    )
+
+    static let solarpunkDawn = NativeScenario(
+        accentColor: "#10b981",
+        baseStability: 68,
+        baseWorldTension: 35,
+        gameDate: "2060-03-21",
+        heroSubtitle: "Ecological restoration and cooperative bioregions strive for global climatic balance.",
+        heroTitle: "Solarpunk Dawn",
+        id: "solarpunk-dawn",
+        name: "Solarpunk Dawn",
+        openingSummary: "Cooperative bioregions focus on climate restoration, local micro-grids, and shared tech resources under resource ceilings.",
+        startDate: "2060-01-01",
+        subtitle: "Climatic balance and cooperative networks"
+    )
+
+    static let dividedSovereignty = NativeScenario(
+        accentColor: "#d97706",
+        baseStability: 60,
+        baseWorldTension: 42,
+        gameDate: "1895-06-20",
+        heroSubtitle: "Multi-polar imperial balancing, mercantilist spheres, and classic balance-of-power diplomacy.",
+        heroTitle: "Divided Sovereignty",
+        id: "divided-sovereignty",
+        name: "Divided Sovereignty",
+        openingSummary: "Direct your empire through balance-of-power alignments, coal concessions, and mercantilist treaty ports.",
+        startDate: "1895-01-01",
+        subtitle: "Imperial balance and treaty ports"
+    )
+
+    static let resourceCrucible = NativeScenario(
+        accentColor: "#ea580c",
+        baseStability: 48,
+        baseWorldTension: 80,
+        gameDate: "2035-10-31",
+        heroSubtitle: "Critical resource bottlenecks, water security friction, and heavily militarized corridors.",
+        heroTitle: "Resource Crucible",
+        id: "resource-crucible",
+        name: "Resource Crucible",
+        openingSummary: "Critical mineral bottlenecks and massive climate migrations challenge state survival as aquifers dry up.",
+        startDate: "2035-06-01",
+        subtitle: "Resource security and migration corridors"
+    )
+
     static let all: [NativeScenario] = [
         defaultScenario,
         fragmentedMarkets,
         resilienceDecade,
+        sovietTriumph,
+        paxCybernetica,
+        solarpunkDawn,
+        dividedSovereignty,
+        resourceCrucible
     ]
 
     static func scenario(for id: String?) -> NativeScenario {
@@ -271,6 +622,49 @@ enum NativeActionStatus: String, Codable, Hashable {
     case resolved
 }
 
+enum NativeVictoryStatus: String, Codable, Hashable {
+    case ongoing = "ongoing"
+    case won = "won"
+    case lostCollapse = "lost-collapse"
+    case lostTimeout = "lost-timeout"
+}
+
+enum NativeOfferType: String, Codable, Hashable {
+    case tradeAgreement = "trade-agreement"
+    case militaryAlliance = "military-alliance"
+    case nonAggressionPact = "non-aggression"
+    case territoryDemarcation = "border-deal"
+
+    var displayName: String {
+        switch self {
+        case .tradeAgreement: return "Trade Agreement"
+        case .militaryAlliance: return "Military Alliance"
+        case .nonAggressionPact: return "Non-Aggression Pact"
+        case .territoryDemarcation: return "Territory Demarcation"
+        }
+    }
+}
+
+enum NativeOfferStatus: String, Codable, Hashable {
+    case pending
+    case accepted
+    case rejected
+    case countered
+}
+
+struct NativeDiplomaticOffer: Codable, Hashable, Identifiable {
+    var id: String
+    var proposerCode: String
+    var type: NativeOfferType
+    var description: String
+    var stabilityCost: Int
+    var relationshipEffect: Int
+    var growthDelta: Double
+    var status: NativeOfferStatus
+    var turnProposed: Int
+}
+
+
 struct NativeSuggestedAction: Codable, Hashable, Identifiable {
     var detail: String
     var id: String
@@ -290,6 +684,33 @@ struct NativeCampaignEvent: Codable, Hashable, Identifiable {
     var playerRelated: Bool
     var strategicEffects: [NativeStrategicEffect]
     var title: String
+    var hexLeverCode: String?
+
+    init(
+        date: String,
+        description: String,
+        id: String,
+        importance: NativeEventImportance,
+        kind: NativeEventKind,
+        linkedActionIDs: [String],
+        notable: Bool,
+        playerRelated: Bool,
+        strategicEffects: [NativeStrategicEffect],
+        title: String,
+        hexLeverCode: String? = nil
+    ) {
+        self.date = date
+        self.description = description
+        self.id = id
+        self.importance = importance
+        self.kind = kind
+        self.linkedActionIDs = linkedActionIDs
+        self.notable = notable
+        self.playerRelated = playerRelated
+        self.strategicEffects = strategicEffects
+        self.title = title
+        self.hexLeverCode = hexLeverCode
+    }
 }
 
 enum NativeEventKind: String, Codable, Hashable {
@@ -298,6 +719,18 @@ enum NativeEventKind: String, Codable, Hashable {
     case diplomacy
     case economy
     case world
+}
+
+extension NativeEventKind {
+    var displayName: String {
+        switch self {
+        case .action: "Nation Policy"
+        case .crisis: "Crisis Action"
+        case .diplomacy: "Diplomacy"
+        case .economy: "Economic Event"
+        case .world: "Global Event"
+        }
+    }
 }
 
 enum NativeEventImportance: String, Codable, Hashable {
@@ -326,6 +759,20 @@ enum NativeStrategicTrack: String, Codable, CaseIterable, Hashable, Identifiable
     case worldTension = "world-tension"
 
     var id: String { rawValue }
+}
+
+extension NativeStrategicTrack {
+    var displayName: String {
+        switch self {
+        case .diplomaticLeverage: "Diplomatic Leverage"
+        case .economicResilience: "Economic Resilience"
+        case .internalStability: "Internal Stability"
+        case .marketConfidence: "Market Confidence"
+        case .militaryReadiness: "Military Readiness"
+        case .securityAnxiety: "Security Anxiety"
+        case .worldTension: "World Tension"
+        }
+    }
 }
 
 struct NativeAIReadiness: Codable, Hashable {
