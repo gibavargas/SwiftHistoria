@@ -252,7 +252,7 @@ struct NativeStrategyContextPacket: Hashable {
 /// consequence ranges.
 enum NativeStrategyContextDatabase {
     static var defaultStrategicCountryCodes: [String] {
-        let mappedCodes = GeopoliticalMapData.regions.map(\.countryCode)
+        let mappedCodes = GeopoliticalMapData.regions.map(\.countryCode).filter { $0 != "WATER" }
         return Array(Set(CountryCatalog.all.map(\.code) + mappedCodes + ["GLOBAL"])).sorted()
     }
 

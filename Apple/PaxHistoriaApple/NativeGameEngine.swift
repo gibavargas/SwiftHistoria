@@ -111,7 +111,35 @@ enum NativeGameEngine {
     }
 
     static func estimateDirectiveCost(for text: String) -> Int {
+        if text.hasPrefix("Invade ") {
+            return 40
+        }
         return estimateDirectiveCount(in: text) * 30
+    }
+
+    private static func stablePercentage(seed: String) -> Double {
+        var hash: UInt64 = 1469598103934665603
+        for byte in seed.utf8 {
+            hash ^= UInt64(byte)
+            hash &*= 1099511628211
+        }
+        return Double(hash % 10_001) / 100.0
+    }
+
+    private static func invasionRoll(
+        action: NativePlannedAction,
+        region: MapRegion,
+        state: NativeCampaignState,
+        targetDate: String
+    ) -> Double {
+        stablePercentage(seed: [
+            action.id,
+            action.title,
+            region.id,
+            state.country.code,
+            state.scenarioID,
+            targetDate,
+        ].joined(separator: "|"))
     }
 
     static func action(from text: String, date: String) -> NativePlannedAction? {
@@ -247,13 +275,123 @@ enum NativeGameEngine {
             normalized(event, index: index, targetDate: targetDate, country: state.country)
         }
         let linkedActionIDs = Set(generatedEvents.flatMap(\.linkedActionIDs))
-        let resolvedActions = state.plannedActions.map { action in
+        var resolvedActions = state.plannedActions.map { action in
             guard linkedActionIDs.contains(action.id), action.status == .planned else { return action }
             var next = action
             next.status = .resolved
             next.resolvedAt = targetDate
             return next
         }
+
+        var nextRegionOccupations = state.regionOccupations
+        var nextNuclearRegions = state.nuclearFalloutRegions
+        var nextRegionConflicts = state.regionConflicts
+
+        var additionalEvents: [NativeCampaignEvent] = []
+        for idx in 0..<resolvedActions.count {
+            let action = resolvedActions[idx]
+            if action.status == .planned && action.title.hasPrefix("Invade ") {
+                if let range = action.title.range(of: "(ID: "),
+                   let endRange = action.title.range(of: ")", range: range.upperBound..<action.title.endIndex) {
+                    let regionID = String(action.title[range.upperBound..<endRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                    if let region = GeopoliticalMapData.regions.first(where: { $0.id == regionID }) {
+                        var successRate: Double = 60.0
+                        switch region.terrain {
+                        case .mountain: successRate -= 30.0
+                        case .strait: successRate -= 25.0
+                        case .swamp: successRate -= 20.0
+                        case .forest: successRate -= 15.0
+                        case .city: successRate -= 15.0
+                        case .cerrado: successRate -= 10.0
+                        case .ocean, .sea: successRate -= 40.0
+                        case .plains: successRate += 10.0
+                        }
+                        successRate += state.budgetMilitarySlider * 40.0
+                        successRate = max(5.0, min(95.0, successRate))
+                        let roll = invasionRoll(action: action, region: region, state: state, targetDate: targetDate)
+                        let isSuccess = roll <= successRate
+
+                        var next = action
+                        next.status = .resolved
+                        next.resolvedAt = targetDate
+                        resolvedActions[idx] = next
+
+                        if isSuccess {
+                            nextRegionOccupations[region.id] = state.country.code
+                            nextRegionConflicts[region.id] = NativeRegionConflictState(
+                                controllerCode: state.country.code,
+                                intensity: 3,
+                                mode: .conventionalOccupation,
+                                originalCountryCode: region.countryCode,
+                                regionID: region.id,
+                                summary: "Successful border conquest through \(region.terrain.displayName.lowercased()) terrain.",
+                                updatedAt: targetDate
+                            )
+
+                            let successEvent = NativeCampaignEvent(
+                                date: targetDate,
+                                description: "Conquest of \(region.name) Successful. Our forces advanced through the \(region.terrain.displayName.lowercased()) terrain of \(region.name) and secured tactical control of the region.",
+                                id: "invasion-success-\(region.id)-\(targetDate)",
+                                importance: .major,
+                                kind: .action,
+                                linkedActionIDs: [action.id],
+                                notable: true,
+                                playerRelated: true,
+                                strategicEffects: [
+                                    NativeStrategicEffect(
+                                        date: targetDate,
+                                        eventId: "invasion-success-\(region.id)-\(targetDate)",
+                                        id: "invasion-success-effect-\(region.id)-\(targetDate)",
+                                        magnitude: 1,
+                                        summary: "Sovereign advance raises domestic stability.",
+                                        target: state.country.code,
+                                        track: .internalStability
+                                    )
+                                ],
+                                title: "Conquest of \(region.name) Successful"
+                            )
+                            additionalEvents.append(successEvent)
+                        } else {
+                            nextRegionConflicts[region.id] = NativeRegionConflictState(
+                                controllerCode: state.regionOccupations[region.id] ?? region.countryCode,
+                                intensity: 4,
+                                mode: .contestedBorder,
+                                originalCountryCode: region.countryCode,
+                                regionID: region.id,
+                                summary: "Invasion repelled by defense utilizing \(region.terrain.displayName.lowercased()) terrain.",
+                                updatedAt: targetDate
+                            )
+
+                            let failEvent = NativeCampaignEvent(
+                                date: targetDate,
+                                description: "Invasion of \(region.name) Repelled. Defensive forces utilized the local \(region.terrain.displayName.lowercased()) terrain to stall and repel our advance.",
+                                id: "invasion-fail-\(region.id)-\(targetDate)",
+                                importance: .severe,
+                                kind: .crisis,
+                                linkedActionIDs: [action.id],
+                                notable: true,
+                                playerRelated: true,
+                                strategicEffects: [
+                                    NativeStrategicEffect(
+                                        date: targetDate,
+                                        eventId: "invasion-fail-\(region.id)-\(targetDate)",
+                                        id: "invasion-fail-effect-\(region.id)-\(targetDate)",
+                                        magnitude: -2,
+                                        summary: "Military repulse inflicts domestic stability setback.",
+                                        target: state.country.code,
+                                        track: .internalStability
+                                    )
+                                ],
+                                title: "Invasion of \(region.name) Repelled"
+                            )
+                            additionalEvents.append(failEvent)
+                        }
+                    }
+                }
+            }
+        }
+
+        generatedEvents.insert(contentsOf: additionalEvents, at: 0)
         let allEffects = generatedEvents.flatMap(\.strategicEffects)
         let economicLedgers = NativeStrategyContextDatabase.updatedEconomicLedgers(
             from: state.economicLedgers,
@@ -263,9 +401,6 @@ enum NativeGameEngine {
             targetDate: targetDate
         )
 
-        var nextRegionOccupations = state.regionOccupations
-        var nextNuclearRegions = state.nuclearFalloutRegions
-        var nextRegionConflicts = state.regionConflicts
         var mutableLedgers = economicLedgers
 
         processTacticalNudges(
@@ -278,7 +413,6 @@ enum NativeGameEngine {
             economicLedgers: &mutableLedgers
         )
 
-        let economicLedger = mutableLedgers[state.country.code] ?? state.economicLedger
         let actionMemory = NativeStrategyContextDatabase.updatedActionMemory(
             state: state,
             resolvedActions: resolvedActions,

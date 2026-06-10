@@ -193,12 +193,183 @@ struct NativeWorldMap: View {
 
     @State private var selectedRegionID: String? = nil
     @State private var animationPhase: CGFloat = 0.0
+    @State private var zoomScale: CGFloat = 1.0
+    @State private var lastZoomScale: CGFloat = 1.0
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
 
     private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
     init(state: NativeCampaignState, minHeight: CGFloat = 300) {
         self.state = state
         self.minHeight = minHeight
+    }
+
+    private func clampOffset(_ offset: CGSize, size: CGSize, zoom: CGFloat) -> CGSize {
+        guard zoom > 1.0 else { return .zero }
+        let maxX = (zoom - 1.0) * size.width / 2.0 + 100.0
+        let maxY = (zoom - 1.0) * size.height / 2.0 + 100.0
+        return CGSize(
+            width: max(-maxX, min(maxX, offset.width)),
+            height: max(-maxY, min(maxY, offset.height))
+        )
+    }
+
+    private func reverseTransform(_ location: CGPoint, size: CGSize, scaleX: CGFloat, scaleY: CGFloat) -> CGPoint {
+        let pannedX = location.x - offset.width
+        let pannedY = location.y - offset.height
+
+        let centerX = size.width / 2.0
+        let centerY = size.height / 2.0
+
+        let unzoomedX = centerX + (pannedX - centerX) / zoomScale
+        let unzoomedY = centerY + (pannedY - centerY) / zoomScale
+
+        return CGPoint(
+            x: unzoomedX / scaleX,
+            y: unzoomedY / scaleY
+        )
+    }
+
+    private func drawGridLines(context: GraphicsContext, size: CGSize) {
+        let stepX: CGFloat = size.width / 12.0
+        let stepY: CGFloat = size.height / 8.0
+        var gridPath = Path()
+
+        for x in stride(from: stepX, to: size.width, by: stepX) {
+            gridPath.move(to: CGPoint(x: x, y: 0))
+            gridPath.addLine(to: CGPoint(x: x, y: size.height))
+        }
+
+        for y in stride(from: stepY, to: size.height, by: stepY) {
+            gridPath.move(to: CGPoint(x: 0, y: y))
+            gridPath.addLine(to: CGPoint(x: size.width, y: y))
+        }
+
+        context.stroke(
+            gridPath,
+            with: .color(Color.iceBlue.opacity(0.06)),
+            style: StrokeStyle(lineWidth: 1.0, dash: [4, 4])
+        )
+    }
+
+    private func drawOceanWaves(context: GraphicsContext, scaleX: CGFloat, scaleY: CGFloat) {
+        let waveCenters: [CGPoint] = [
+            CGPoint(x: 300, y: 300),
+            CGPoint(x: 100, y: 250),
+            CGPoint(x: 150, y: 400),
+            CGPoint(x: 880, y: 220),
+            CGPoint(x: 910, y: 420),
+            CGPoint(x: 650, y: 450)
+        ]
+
+        for center in waveCenters {
+            let cx = center.x * scaleX
+            let cy = center.y * scaleY
+            let drift = sin(animationPhase * 0.05) * 4.0
+
+            var wavePath = Path()
+            wavePath.move(to: CGPoint(x: cx - 15 + drift, y: cy))
+            wavePath.addQuadCurve(
+                to: CGPoint(x: cx + drift, y: cy),
+                control: CGPoint(x: cx - 7.5 + drift, y: cy - 4)
+            )
+            wavePath.addQuadCurve(
+                to: CGPoint(x: cx + 15 + drift, y: cy),
+                control: CGPoint(x: cx + 7.5 + drift, y: cy - 4)
+            )
+
+            context.stroke(
+                wavePath,
+                with: .color(Color.iceBlue.opacity(0.12)),
+                style: StrokeStyle(lineWidth: 1.2, lineCap: .round)
+            )
+        }
+    }
+
+    private func drawTerrainIcon(context: GraphicsContext, terrain: NativeTerrainType, center: CGPoint, scaleX: CGFloat, scaleY: CGFloat) {
+        let cx = center.x * scaleX
+        let cy = center.y * scaleY
+        var iconPath = Path()
+
+        switch terrain {
+        case .mountain:
+            iconPath.move(to: CGPoint(x: cx, y: cy - 8))
+            iconPath.addLine(to: CGPoint(x: cx - 8, y: cy + 6))
+            iconPath.addLine(to: CGPoint(x: cx + 8, y: cy + 6))
+            iconPath.closeSubpath()
+            iconPath.move(to: CGPoint(x: cx - 3, y: cy - 2))
+            iconPath.addLine(to: CGPoint(x: cx + 3, y: cy - 2))
+            iconPath.addLine(to: CGPoint(x: cx, y: cy - 8))
+            iconPath.closeSubpath()
+
+        case .forest:
+            iconPath.move(to: CGPoint(x: cx - 4, y: cy - 6))
+            iconPath.addLine(to: CGPoint(x: cx - 8, y: cy + 2))
+            iconPath.addLine(to: CGPoint(x: cx - 6, y: cy + 2))
+            iconPath.addLine(to: CGPoint(x: cx - 6, y: cy + 5))
+            iconPath.addLine(to: CGPoint(x: cx - 2, y: cy + 5))
+            iconPath.addLine(to: CGPoint(x: cx - 2, y: cy + 2))
+            iconPath.addLine(to: CGPoint(x: cx, y: cy + 2))
+            iconPath.closeSubpath()
+
+            iconPath.move(to: CGPoint(x: cx + 4, y: cy - 3))
+            iconPath.addLine(to: CGPoint(x: cx, y: cy + 4))
+            iconPath.addLine(to: CGPoint(x: cx + 2, y: cy + 4))
+            iconPath.addLine(to: CGPoint(x: cx + 2, y: cy + 7))
+            iconPath.addLine(to: CGPoint(x: cx + 6, y: cy + 7))
+            iconPath.addLine(to: CGPoint(x: cx + 6, y: cy + 4))
+            iconPath.addLine(to: CGPoint(x: cx + 8, y: cy + 4))
+            iconPath.closeSubpath()
+
+        case .city:
+            iconPath.move(to: CGPoint(x: cx - 8, y: cy + 6))
+            iconPath.addLine(to: CGPoint(x: cx - 8, y: cy - 2))
+            iconPath.addLine(to: CGPoint(x: cx - 4, y: cy - 2))
+            iconPath.addLine(to: CGPoint(x: cx - 4, y: cy - 6))
+            iconPath.addLine(to: CGPoint(x: cx, y: cy - 6))
+            iconPath.addLine(to: CGPoint(x: cx, y: cy + 1))
+            iconPath.addLine(to: CGPoint(x: cx + 4, y: cy + 1))
+            iconPath.addLine(to: CGPoint(x: cx + 4, y: cy - 4))
+            iconPath.addLine(to: CGPoint(x: cx + 8, y: cy - 4))
+            iconPath.addLine(to: CGPoint(x: cx + 8, y: cy + 6))
+            iconPath.closeSubpath()
+
+        case .swamp:
+            iconPath.move(to: CGPoint(x: cx - 6, y: cy))
+            iconPath.addQuadCurve(to: CGPoint(x: cx + 6, y: cy), control: CGPoint(x: cx, y: cy + 2))
+            iconPath.move(to: CGPoint(x: cx - 4, y: cy + 4))
+            iconPath.addQuadCurve(to: CGPoint(x: cx + 4, y: cy + 4), control: CGPoint(x: cx, y: cy + 6))
+            iconPath.move(to: CGPoint(x: cx, y: cy + 2))
+            iconPath.addLine(to: CGPoint(x: cx - 2, y: cy - 6))
+            iconPath.move(to: CGPoint(x: cx, y: cy + 2))
+            iconPath.addLine(to: CGPoint(x: cx + 2, y: cy - 4))
+
+        case .cerrado:
+            iconPath.move(to: CGPoint(x: cx - 4, y: cy + 5))
+            iconPath.addQuadCurve(to: CGPoint(x: cx - 2, y: cy - 5), control: CGPoint(x: cx - 5, y: cy))
+            iconPath.move(to: CGPoint(x: cx, y: cy + 5))
+            iconPath.addQuadCurve(to: CGPoint(x: cx + 1, y: cy - 7), control: CGPoint(x: cx - 1, y: cy - 1))
+            iconPath.move(to: CGPoint(x: cx + 4, y: cy + 5))
+            iconPath.addQuadCurve(to: CGPoint(x: cx + 3, y: cy - 3), control: CGPoint(x: cx + 4, y: cy + 1))
+
+        case .strait:
+            iconPath.move(to: CGPoint(x: cx - 8, y: cy))
+            iconPath.addLine(to: CGPoint(x: cx + 8, y: cy))
+            iconPath.move(to: CGPoint(x: cx - 8, y: cy))
+            iconPath.addLine(to: CGPoint(x: cx - 5, y: cy - 4))
+            iconPath.move(to: CGPoint(x: cx - 8, y: cy))
+            iconPath.addLine(to: CGPoint(x: cx - 5, y: cy + 4))
+            iconPath.move(to: CGPoint(x: cx + 8, y: cy))
+            iconPath.addLine(to: CGPoint(x: cx + 5, y: cy - 4))
+            iconPath.move(to: CGPoint(x: cx + 8, y: cy))
+            iconPath.addLine(to: CGPoint(x: cx + 5, y: cy + 4))
+
+        default:
+            return
+        }
+
+        context.stroke(iconPath, with: .color(Color.iceBlue.opacity(0.65)), lineWidth: 1.2)
     }
 
     private func sectorRelation(code: String, playerCode: String) -> SectorRelation {
@@ -349,6 +520,27 @@ struct NativeWorldMap: View {
         let relation = sectorRelation(code: occupierCode, playerCode: state.country.code)
         let stanceColor = relationColor(relation)
 
+        let isOccupied = occupierCode != reg.countryCode
+        let isContested = conflict?.mode == .contestedBorder
+
+        if reg.countryCode == "WATER" {
+            let waterBaseColor = Color(hex: "#0c1520")
+            if isOccupied {
+                let originalColor = waterBaseColor
+                drawDiagonalStripes(context: context, path: path, size: size, occupierColor: stanceColor, originalColor: originalColor)
+            } else {
+                context.fill(path, with: .color(waterBaseColor))
+            }
+
+            let strokeColor = reg.id == selectedRegionID ? Color.glowingCyan : Color.iceBlue.opacity(0.25)
+            context.stroke(path, with: .color(strokeColor), lineWidth: reg.id == selectedRegionID ? 2.0 : 1.0)
+
+            if let conflict, isContested {
+                drawContestedBorder(context: context, path: path, color: conflictColor(conflict), intensity: conflict.intensity)
+            }
+            return
+        }
+
         var fillOpacity: Double = 0.22
         if isPlayerOccupier { fillOpacity = 0.38 }
         else if isSelectedCountry { fillOpacity = 0.3 }
@@ -356,8 +548,6 @@ struct NativeWorldMap: View {
 
         let isFallout = state.nuclearFalloutRegions.contains(reg.id) || conflict?.mode == .nuclearFallout
         let isRebel = occupierCode == "REB" || conflict?.mode == .guerrillaControl
-        let isOccupied = occupierCode != reg.countryCode
-        let isContested = conflict?.mode == .contestedBorder
         let isStabilizing = conflict?.mode == .stabilization
 
         if isFallout {
@@ -445,6 +635,10 @@ struct NativeWorldMap: View {
     }
 
     private func drawMap(context: GraphicsContext, size: CGSize, scaleX: CGFloat, scaleY: CGFloat) {
+        // Draw coordinate grid lines and animated waves in the background
+        drawGridLines(context: context, size: size)
+        drawOceanWaves(context: context, scaleX: scaleX, scaleY: scaleY)
+
         // Draw continents
         for lm in GeopoliticalMapData.landmasses {
             let scaledPoints = lm.points.map { (pt: CGPoint) -> CGPoint in
@@ -473,7 +667,72 @@ struct NativeWorldMap: View {
                 selectedCountryCode: selectedCountryCode
             )
         }
+
+        // Dynamic Level of Detail (LOD) terrain icons
+        if zoomScale >= 1.5 {
+            for reg in GeopoliticalMapData.regions {
+                drawTerrainIcon(context: context, terrain: reg.terrain, center: reg.center, scaleX: scaleX, scaleY: scaleY)
+            }
+        }
+
         drawConflictRoutes(context: context, scaleX: scaleX, scaleY: scaleY)
+    }
+
+    @ViewBuilder
+    private var regionDetailsOverlay: some View {
+        if let regionID = selectedRegionID,
+           let region = GeopoliticalMapData.regions.first(where: { $0.id == regionID }) {
+            RegionDetailsCard(
+                region: region,
+                state: state,
+                store: store,
+                selectedRegionID: $selectedRegionID
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var scenarioHeaderOverlay: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(state.scenarioName)
+                .font(.caption)
+                .fontWeight(.bold)
+                .textCase(.uppercase)
+                .tracking(1.6)
+            Text("\(state.gameDate) · \(state.worldTension)/100 world tension")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(12)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(12)
+    }
+
+    @ViewBuilder
+    private var legendOverlay: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
+                LegendItem(text: "PLAYER", color: Color.glowingCyan)
+                LegendItem(text: "ALLY", color: Color.neonTeal)
+                LegendItem(text: "NEUTRAL", color: Color.alertGold)
+                LegendItem(text: "RIVAL", color: Color.softRed)
+            }
+            HStack(spacing: 12) {
+                LegendItem(text: "OCCUPIED", color: Color.softRed)
+                LegendItem(text: "INSURGENCY", color: Color.orange)
+                LegendItem(text: "NUCLEAR", color: Color.alertGold)
+                LegendItem(text: "STABILIZING", color: Color.neonTeal)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.deepSlate.opacity(0.85))
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .overlay {
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        }
+        .padding(12)
     }
 
     var body: some View {
@@ -484,20 +743,18 @@ struct NativeWorldMap: View {
                 let scaleY = size.height / 600.0
 
                 ZStack {
-                    // Map view Canvas
-                    Canvas { context, size in
-                        drawMap(context: context, size: size, scaleX: scaleX, scaleY: scaleY)
-                    }
-                    .frame(width: size.width, height: size.height)
-                    .contentShape(Rectangle())
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onEnded { gesture in
-                                let clickPt = CGPoint(
-                                    x: gesture.location.x / scaleX,
-                                    y: gesture.location.y / scaleY
-                                )
-
+                    let dragGesture = DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            let proposedOffset = CGSize(
+                                width: lastOffset.width + value.translation.width,
+                                height: lastOffset.height + value.translation.height
+                            )
+                            offset = clampOffset(proposedOffset, size: size, zoom: zoomScale)
+                        }
+                        .onEnded { value in
+                            let dragDistance = sqrt(pow(value.translation.width, 2) + pow(value.translation.height, 2))
+                            if dragDistance < 10 {
+                                let clickPt = reverseTransform(value.location, size: size, scaleX: scaleX, scaleY: scaleY)
                                 if let hitRegion = GeopoliticalMapData.regions.first(where: { region in
                                     let path = Path { p in
                                         p.addLines(region.points)
@@ -509,66 +766,120 @@ struct NativeWorldMap: View {
                                 } else {
                                     selectedRegionID = nil
                                 }
+                            } else {
+                                lastOffset = offset
                             }
+                        }
+
+                    let magnificationGesture = MagnificationGesture()
+                        .onChanged { value in
+                            zoomScale = max(1.0, min(lastZoomScale * value, 5.0))
+                        }
+                        .onEnded { value in
+                            zoomScale = max(1.0, min(zoomScale, 5.0))
+                            lastZoomScale = zoomScale
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                offset = clampOffset(offset, size: size, zoom: zoomScale)
+                                lastOffset = offset
+                            }
+                        }
+
+                    // Map view Canvas
+                    Canvas { context, size in
+                        context.drawLayer { ctx in
+                            ctx.translateBy(x: size.width / 2 + offset.width, y: size.height / 2 + offset.height)
+                            ctx.scaleBy(x: zoomScale, y: zoomScale)
+                            ctx.translateBy(x: -size.width / 2, y: -size.height / 2)
+                            drawMap(context: ctx, size: size, scaleX: scaleX, scaleY: scaleY)
+                        }
+                    }
+                    .frame(width: size.width, height: size.height)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        SimultaneousGesture(dragGesture, magnificationGesture)
                     )
+
+                    // Floating Glassmorphic Zoom Controls
+                    VStack(spacing: 8) {
+                        Button {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                zoomScale = min(zoomScale + 0.5, 5.0)
+                                lastZoomScale = zoomScale
+                            }
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 14, weight: .bold))
+                                .frame(width: 32, height: 32)
+                                .background(Color.deepSlate.opacity(0.85))
+                                .foregroundStyle(Color.iceBlue)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.white.opacity(0.15), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                zoomScale = max(zoomScale - 0.5, 1.0)
+                                lastZoomScale = zoomScale
+                                if zoomScale == 1.0 {
+                                    offset = .zero
+                                    lastOffset = .zero
+                                } else {
+                                    offset = clampOffset(offset, size: size, zoom: zoomScale)
+                                    lastOffset = offset
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "minus")
+                                .font(.system(size: 14, weight: .bold))
+                                .frame(width: 32, height: 32)
+                                .background(Color.deepSlate.opacity(0.85))
+                                .foregroundStyle(Color.iceBlue)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.white.opacity(0.15), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                zoomScale = 1.0
+                                lastZoomScale = 1.0
+                                offset = .zero
+                                lastOffset = .zero
+                            }
+                        } label: {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 12, weight: .bold))
+                                .frame(width: 32, height: 32)
+                                .background(Color.deepSlate.opacity(0.85))
+                                .foregroundStyle(Color.iceBlue)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.white.opacity(0.15), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(8)
+                    .background(Color.deepSlate.opacity(0.4).blur(radius: 0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                    .padding(16)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                 }
             }
             .frame(minHeight: minHeight)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(alignment: .bottom) {
-                if let regionID = selectedRegionID,
-                   let region = GeopoliticalMapData.regions.first(where: { $0.id == regionID }) {
-                    RegionDetailsCard(
-                        region: region,
-                        state: state,
-                        store: store,
-                        selectedRegionID: $selectedRegionID
-                    )
-                }
+                regionDetailsOverlay
             }
         }
         .frame(minHeight: minHeight)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay(alignment: .topLeading) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(state.scenarioName)
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .textCase(.uppercase)
-                    .tracking(1.6)
-                Text("\(state.gameDate) · \(state.worldTension)/100 world tension")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(12)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .padding(12)
+            scenarioHeaderOverlay
         }
         .overlay(alignment: .bottomLeading) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 12) {
-                    LegendItem(text: "PLAYER", color: Color.glowingCyan)
-                    LegendItem(text: "ALLY", color: Color.neonTeal)
-                    LegendItem(text: "NEUTRAL", color: Color.alertGold)
-                    LegendItem(text: "RIVAL", color: Color.softRed)
-                }
-                HStack(spacing: 12) {
-                    LegendItem(text: "OCCUPIED", color: Color.softRed)
-                    LegendItem(text: "INSURGENCY", color: Color.orange)
-                    LegendItem(text: "NUCLEAR", color: Color.alertGold)
-                    LegendItem(text: "STABILIZING", color: Color.neonTeal)
-                }
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(Color.deepSlate.opacity(0.85))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
-            .overlay {
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
-            }
-            .padding(12)
+            legendOverlay
         }
         .overlay {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -1221,11 +1532,24 @@ struct RegionDetailsCard: View {
     let store: NativeCampaignStore
     @Binding var selectedRegionID: String?
 
+    private func terrainModifiersText(for terrain: NativeTerrainType) -> String {
+        switch terrain {
+        case .mountain: return "Defense +30% (Invasion -30%)"
+        case .strait: return "Amphibious barrier (Invasion -25%)"
+        case .swamp: return "Attrition +20% (Invasion -20%)"
+        case .forest: return "Concealment +15% (Invasion -15%)"
+        case .city: return "Urban fortification (Invasion -15%)"
+        case .cerrado: return "Maneuver penalty (Invasion -10%)"
+        case .ocean, .sea: return "Deep water penalty (Invasion -40%)"
+        case .plains: return "Open maneuver (Invasion +10%)"
+        }
+    }
+
     var body: some View {
         let occupierCode = state.regionOccupations[region.id] ?? region.countryCode
         let conflict = state.regionConflicts[region.id]
-        let originalCountryName = region.countryCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : (CountryCatalog.all.first(where: { $0.code == region.countryCode })?.name ?? region.countryCode)
-        let occupierCountryName = occupierCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : (CountryCatalog.all.first(where: { $0.code == occupierCode })?.name ?? (occupierCode == "REB" ? "Insurgents" : occupierCode))
+        let originalCountryName = region.countryCode == "WATER" ? "International Waters" : (region.countryCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : (CountryCatalog.all.first(where: { $0.code == region.countryCode })?.name ?? region.countryCode))
+        let occupierCountryName = occupierCode == "WATER" ? "Uncontrolled" : (occupierCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : (CountryCatalog.all.first(where: { $0.code == occupierCode })?.name ?? (occupierCode == "REB" ? "Insurgents" : occupierCode)))
 
         let isOccupied = occupierCode != region.countryCode
         let isRebel = occupierCode == "REB" || conflict?.mode == .guerrillaControl
@@ -1259,6 +1583,10 @@ struct RegionDetailsCard: View {
                 .background(Color.white.opacity(0.1))
 
             VStack(alignment: .leading, spacing: 6) {
+                Text("Terrain: \(region.terrain.displayName) (\(terrainModifiersText(for: region.terrain)))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
                 Text("Original Sovereign: \(originalCountryName) (\(region.countryCode))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -1319,6 +1647,24 @@ struct RegionDetailsCard: View {
                     }
                     .buttonStyle(.bordered)
                 }
+            }
+
+            if occupierCode != state.country.code {
+                Button {
+                    store.draftAction = "Invade \(region.name) (ID: \(region.id))"
+                    store.addDraftAction()
+                    selectedRegionID = nil
+                } label: {
+                    HStack {
+                        Image(systemName: "shield.dashed")
+                        Text("Order Invasion (Cost: 40)")
+                            .fontWeight(.bold)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 32)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.softRed.opacity(0.85))
+                .disabled(state.administrativeCapacity < 40)
             }
         }
         .padding(14)

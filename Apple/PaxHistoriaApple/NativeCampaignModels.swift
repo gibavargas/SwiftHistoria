@@ -18,6 +18,34 @@ enum NativeGameMode: String, Codable, CaseIterable, Identifiable, Hashable {
     }
 }
 
+enum NativeTerrainType: String, Codable, CaseIterable, Identifiable, Hashable {
+    case ocean = "ocean"
+    case strait = "strait"
+    case sea = "sea"
+    case city = "city"
+    case forest = "forest"
+    case cerrado = "cerrado"
+    case swamp = "swamp"
+    case mountain = "mountain"
+    case plains = "plains"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .ocean: return "Ocean"
+        case .strait: return "Strait"
+        case .sea: return "Sea"
+        case .city: return "City"
+        case .forest: return "Forest"
+        case .cerrado: return "Cerrado"
+        case .swamp: return "Swamp"
+        case .mountain: return "Mountain"
+        case .plains: return "Plains"
+        }
+    }
+}
+
 enum NativeRegionConflictMode: String, Codable, CaseIterable, Identifiable, Hashable {
     case contestedBorder = "contested-border"
     case conventionalOccupation = "conventional-occupation"

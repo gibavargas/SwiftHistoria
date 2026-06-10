@@ -94,6 +94,32 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(applied.worldEffects.count, generated.events.flatMap(\.strategicEffects).count + state.worldEffects.count)
     }
 
+    func testInvasionActionsResolveDeterministically() throws {
+        var state = makeState()
+        state.budgetMilitarySlider = 0.5
+        let region = try XCTUnwrap(GeopoliticalMapData.regions.first { $0.id == "ARG" })
+        let invasion = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Invade \(region.name) (ID: \(region.id))",
+            id: "action-fixed-invasion",
+            resolvedAt: nil,
+            status: .planned,
+            title: "Invade \(region.name) (ID: \(region.id))"
+        )
+        state.plannedActions = [invasion]
+
+        let generated = NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "Leap", worldTensionDelta: 0)
+        let firstResolution = NativeGameEngine.apply(generated, to: state, months: 1)
+        let secondResolution = NativeGameEngine.apply(generated, to: state, months: 1)
+
+        XCTAssertEqual(firstResolution.plannedActions.first?.status, .resolved)
+        XCTAssertEqual(firstResolution.plannedActions.first?.resolvedAt, secondResolution.plannedActions.first?.resolvedAt)
+        XCTAssertEqual(firstResolution.regionOccupations[region.id], secondResolution.regionOccupations[region.id])
+        XCTAssertEqual(firstResolution.regionConflicts[region.id], secondResolution.regionConflicts[region.id])
+        XCTAssertEqual(firstResolution.timeline.first?.id, secondResolution.timeline.first?.id)
+        XCTAssertTrue(firstResolution.timeline.first?.linkedActionIDs.contains(invasion.id) == true)
+    }
+
     func testStateApplicationPreservesComplexCampaignArchives() throws {
         var state = makeState()
         state.timeline = (0..<125).map { index in
