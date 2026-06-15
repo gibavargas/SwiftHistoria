@@ -118,28 +118,19 @@ enum ConsoleTab: String, CaseIterable, Identifiable {
     }
 }
 
-func getGDP(state: NativeCampaignState) -> (value: String, delta: String) {
-    Native2010WorldModel.gdpMetric(for: state)
-}
-
-func getInfluence(state: NativeCampaignState) -> (value: String, delta: String) {
-    Native2010WorldModel.influenceMetric(for: state)
-}
-
-func getTechLevel(state: NativeCampaignState) -> (value: String, delta: String) {
-    Native2010WorldModel.techMetric(for: state)
-}
-
-func getEnergySecurity(state: NativeCampaignState) -> String {
-    Native2010WorldModel.energyMetric(for: state)
-}
-
-func getFoodSecurity(state: NativeCampaignState) -> String {
-    Native2010WorldModel.foodMetric(for: state)
-}
-
-func getNuclearStatus(state: NativeCampaignState) -> String {
-    Native2010WorldModel.nuclearMetric(for: state)
+extension View {
+    func standardTextEditorStyle(minHeight: CGFloat) -> some View {
+        self
+            .frame(minHeight: minHeight)
+            .padding(8)
+            .scrollContentBackground(.hidden)
+            .background(Color.deepSlate.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            }
+    }
 }
 
 func native2010RelationColor(_ relation: Native2010Relation) -> Color {
@@ -1319,12 +1310,12 @@ struct NativeMapHUD: View {
     }
 
     var body: some View {
-        let gdp = getGDP(state: state)
-        let influence = getInfluence(state: state)
-        let tech = getTechLevel(state: state)
-        let energy = getEnergySecurity(state: state)
-        let food = getFoodSecurity(state: state)
-        let nuclear = getNuclearStatus(state: state)
+        let gdp = Native2010WorldModel.gdpMetric(for: state)
+        let influence = Native2010WorldModel.influenceMetric(for: state)
+        let tech = Native2010WorldModel.techMetric(for: state)
+        let energy = Native2010WorldModel.energyMetric(for: state)
+        let food = Native2010WorldModel.foodMetric(for: state)
+        let nuclear = Native2010WorldModel.nuclearMetric(for: state)
         let ledger = state.economicLedger
         let budgetTint = ledger.budgetBalancePercentGDP >= -3 ? Color.neonTeal : (ledger.budgetBalancePercentGDP >= -7 ? Color.alertGold : Color.softRed)
         let debtTint = ledger.publicDebtPercentGDP <= 70 ? Color.neonTeal : (ledger.publicDebtPercentGDP <= 110 ? Color.alertGold : Color.softRed)
@@ -1673,15 +1664,7 @@ struct NativeOrdersEditorPanel: View {
 
             TextEditor(text: $store.draftAction)
                 .font(.body)
-                .frame(minHeight: 96)
-                .padding(8)
-                .scrollContentBackground(.hidden)
-                .background(Color.deepSlate.opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                }
+                .standardTextEditorStyle(minHeight: 96)
                 .accessibilityLabel("Draft order")
                 .accessibilityHint("Describe a concrete policy, investment, or diplomatic action.")
                 .accessibilityIdentifier("native-action-editor")
@@ -1756,15 +1739,7 @@ struct NativeAdvisorPanel: View {
 
             TextEditor(text: $store.draftAdvisorQuestion)
                 .font(.system(.body, design: .monospaced))
-                .frame(minHeight: 88)
-                .padding(8)
-                .scrollContentBackground(.hidden)
-                .background(Color.deepSlate.opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                }
+                .standardTextEditorStyle(minHeight: 88)
                 .accessibilityLabel("Advisor question")
                 .accessibilityIdentifier("native-advisor-question")
 
@@ -1838,15 +1813,7 @@ struct NativeDiplomacyPanel: View {
 
                 TextEditor(text: $store.draftDiplomaticMessage)
                     .font(.body)
-                    .frame(minHeight: 88)
-                    .padding(8)
-                    .scrollContentBackground(.hidden)
-                    .background(Color.deepSlate.opacity(0.5))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                    }
+                    .standardTextEditorStyle(minHeight: 88)
                     .accessibilityLabel("Diplomatic message")
                     .accessibilityIdentifier("native-diplomacy-message")
 

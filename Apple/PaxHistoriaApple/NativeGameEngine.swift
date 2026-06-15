@@ -118,22 +118,21 @@ enum NativeGameEngine {
         return estimateDirectiveCount(in: text) * 30
     }
 
-    private static func stablePercentage(seed: String) -> Double {
+    private static func fnv1aHash(_ seed: String) -> UInt64 {
         var hash: UInt64 = 1469598103934665603
         for byte in seed.utf8 {
             hash ^= UInt64(byte)
             hash &*= 1099511628211
         }
-        return Double(hash % 10_001) / 100.0
+        return hash
+    }
+
+    private static func stablePercentage(seed: String) -> Double {
+        Double(fnv1aHash(seed) % 10_001) / 100.0
     }
 
     private static func deterministicDie(seed: String) -> Int {
-        var hash: UInt64 = 1469598103934665603
-        for byte in seed.utf8 {
-            hash ^= UInt64(byte)
-            hash &*= 1099511628211
-        }
-        return Int(hash % 6) + 1
+        Int(fnv1aHash(seed) % 6) + 1
     }
 
     private static func rollDice(seed: String, count: Int) -> [Int] {
@@ -504,22 +503,6 @@ enum NativeGameEngine {
         }
 
         return events
-    }
-
-    private static func invasionRoll(
-        action: NativePlannedAction,
-        region: MapRegion,
-        state: NativeCampaignState,
-        targetDate: String
-    ) -> Double {
-        stablePercentage(seed: [
-            action.id,
-            action.title,
-            region.id,
-            state.country.code,
-            state.scenarioID,
-            targetDate,
-        ].joined(separator: "|"))
     }
 
     static func action(from text: String, date: String) -> NativePlannedAction? {
