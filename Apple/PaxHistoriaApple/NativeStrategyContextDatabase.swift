@@ -1,5 +1,66 @@
 import Foundation
 
+private enum NativeTinyEmbeddingModel {
+    private static let dimensions = 64
+
+    static func embed(_ text: String) -> [Float] {
+        var vector = Array(repeating: Float(0), count: dimensions)
+        for token in tokens(text) {
+            let hash = token.unicodeScalars.reduce(UInt64(5381)) { ($0 << 5) &+ $0 &+ UInt64($1.value) }
+            let index = Int(hash % UInt64(dimensions))
+            vector[index] += (hash & 1) == 0 ? 1 : -1
+        }
+        let norm = sqrt(vector.reduce(Float(0)) { $0 + $1 * $1 })
+        guard norm > 0 else { return vector }
+        return vector.map { $0 / norm }
+    }
+
+    static func cosine(_ lhs: [Float], _ rhs: [Float]) -> Double {
+        Double(zip(lhs, rhs).reduce(Float(0)) { $0 + $1.0 * $1.1 })
+    }
+
+    private static func tokens(_ text: String) -> [String] {
+        let base = text.lowercased()
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { $0.count > 2 }
+        return base.flatMap { token in [token] + aliases[token, default: []] }
+    }
+
+    private static let aliases: [String: [String]] = [
+        "airport": ["logistics", "corridor", "trade"],
+        "border": ["security", "sovereignty", "conflict"],
+        "budget": ["fiscal", "debt", "capacity"],
+        "corridor": ["logistics", "trade", "infrastructure"],
+        "debt": ["budget", "fiscal", "market"],
+        "diplomacy": ["relations", "treaty", "leverage"],
+        "education": ["services", "capacity", "stability"],
+        "energy": ["infrastructure", "resilience", "industry"],
+        "fiscal": ["budget", "debt", "capacity"],
+        "inflation": ["prices", "market", "stability"],
+        "insurgency": ["security", "stabilization", "rebel"],
+        "market": ["confidence", "trade", "growth"],
+        "port": ["logistics", "corridor", "trade"],
+        "rail": ["logistics", "corridor", "infrastructure"],
+        "rebel": ["insurgency", "security", "stabilization"],
+        "security": ["stabilization", "insurgency", "resilience"],
+        "services": ["education", "health", "stability"],
+        "stability": ["services", "security", "legitimacy"],
+        "stabilization": ["security", "insurgency", "resilience"],
+        "trade": ["corridor", "market", "diplomacy"],
+        "unemployment": ["jobs", "growth", "stability"],
+    ]
+}
+
+private extension NativeEventImportance {
+    var semanticWeight: Int {
+        switch self {
+        case .minor: 1
+        case .major: 3
+        case .severe: 5
+        }
+    }
+}
+
 enum NativeFoundationTurnLane: String, Codable, CaseIterable, Hashable, Identifiable {
     case external
     case economy
@@ -194,9 +255,11 @@ struct NativeActionMemory: Codable, Hashable, Identifiable {
 
 struct NativeStrategyContextPacket: Hashable {
     var consequenceRules: [NativeConsequenceRule]
+    var dynamicCountries: [String: String] = [:]
     var economicLedger: NativeEconomicLedger
     var facts: [NativeFactRecord]
     var recentActions: [NativeActionMemory]
+    var semanticMemories: [NativeSemanticMemory] = []
     var aiCountryStates: [String: NativeAICountryState] = [:]
 
     var promptBlock: String {
@@ -206,6 +269,12 @@ struct NativeStrategyContextPacket: Hashable {
         }.joined(separator: "\n")
         let actionLines = recentActions.prefix(5).map {
             "- \($0.status.rawValue): \($0.title) (\($0.createdAt)) rules=\($0.ruleIDs.joined(separator: ",")); \($0.economicSummary)"
+        }.joined(separator: "\n")
+        let semanticLines = semanticMemories.prefix(5).map {
+            "- \($0.date) \(foundationPromptTrackLabel($0.track)): \($0.text)"
+        }.joined(separator: "\n")
+        let dynamicCountryLines = dynamicCountries.sorted { $0.key < $1.key }.prefix(8).map {
+            "- \($0.key): \($0.value)"
         }.joined(separator: "\n")
         // Keep AI country state context compact (max 4 entries) to stay within the
         // 8,500-character Foundation Models prompt budget. Full AI state detail is
@@ -233,6 +302,12 @@ struct NativeStrategyContextPacket: Hashable {
         Immediate action memory:
         \(actionLines.isEmpty ? "- No recent action records." : actionLines)
 
+        Retrieved long-term memory:
+        \(semanticLines.isEmpty ? "- No semantically related memories." : semanticLines)
+
+        Dynamic sovereignty actors:
+        \(dynamicCountryLines.isEmpty ? "- No breakaway, merged, or newly recognized countries." : dynamicCountryLines)
+
         Current economic ledger:
         GDP \(String(format: "$%.2fT", economicLedger.nominalGDPTrillions)); growth \(economicLedger.realGrowthPercent.signedPercent); inflation \(economicLedger.inflationPercent.percent); budget balance \(economicLedger.budgetBalancePercentGDP.signedPercent) of GDP; public debt \(economicLedger.publicDebtPercentGDP.percent) of GDP; trade balance \(economicLedger.tradeBalancePercentGDP.signedPercent) of GDP; unemployment \(economicLedger.unemploymentPercent.percent); fiscal space \(economicLedger.fiscalSpaceIndex)/100; public security \(String(format: "%.1f", economicLedger.securityIndex))/100; insurgency pressure \(String(format: "%.1f%%", economicLedger.rebelControlPercent)).
 
@@ -251,13 +326,15 @@ struct NativeStrategyContextPacket: Hashable {
 /// model can influence the campaign only through validated events and approved
 /// consequence ranges.
 enum NativeStrategyContextDatabase {
+    private static let semanticMemoryLimit = 400
+
     static var defaultStrategicCountryCodes: [String] {
         let mappedCodes = GeopoliticalMapData.regions.map(\.countryCode).filter { $0 != "WATER" }
         return Array(Set(CountryCatalog.all.map(\.code) + mappedCodes + ["GLOBAL"])).sorted()
     }
 
     static func strategicCountryCodes(for state: NativeCampaignState) -> [String] {
-        Array(Set(defaultStrategicCountryCodes + Array(state.economicLedgers.keys) + [state.country.code])).sorted()
+        Array(Set(defaultStrategicCountryCodes + Array(state.dynamicCountries.keys) + Array(state.economicLedgers.keys) + [state.country.code])).sorted()
     }
 
     static func startingEconomicLedger(for country: PlayerCountry, scenario: NativeScenario) -> NativeEconomicLedger {
@@ -332,9 +409,11 @@ enum NativeStrategyContextDatabase {
     static func contextPacket(for state: NativeCampaignState, months: Int, action: NativePlannedAction? = nil) -> NativeStrategyContextPacket {
         NativeStrategyContextPacket(
             consequenceRules: consequenceRules(for: action, state: state),
+            dynamicCountries: state.dynamicCountries,
             economicLedger: state.economicLedger,
             facts: facts(for: state, action: action),
             recentActions: state.actionMemory.prefix(8).map { $0 },
+            semanticMemories: semanticMemories(for: state, action: action),
             aiCountryStates: state.aiCountryStates
         )
     }
@@ -389,6 +468,58 @@ enum NativeStrategyContextDatabase {
         return records
     }
 
+    static func updatedSemanticMemory(state: NativeCampaignState, events: [NativeCampaignEvent]) -> [NativeSemanticMemory] {
+        var records = state.semanticMemory
+        var existing = Set(records.map(\.sourceID))
+        for event in events where !existing.contains(event.id) {
+            let track = event.strategicEffects.first?.track ?? (event.playerRelated ? .internalStability : .worldTension)
+            let effects = event.strategicEffects
+                .prefix(3)
+                .map { "\(foundationPromptTrackLabel($0.track)) \($0.magnitude): \($0.summary)" }
+                .joined(separator: "; ")
+            let text = sanitizeFoundationModelText("\(event.title). \(event.description) \(effects)")
+            guard !text.isEmpty else { continue }
+            records.insert(NativeSemanticMemory(
+                date: event.date,
+                embedding: NativeTinyEmbeddingModel.embed("\(foundationPromptTrackLabel(track)) \(text)"),
+                id: "semantic-\(event.id)",
+                importance: event.importance.semanticWeight,
+                sourceID: event.id,
+                text: String(text.prefix(320)),
+                track: track
+            ), at: 0)
+            existing.insert(event.id)
+        }
+        // ponytail: O(n) local vector scan; replace this array with zvec if saves grow past a few hundred memories.
+        return Array(records.prefix(semanticMemoryLimit))
+    }
+
+    private static func semanticMemories(for state: NativeCampaignState, action: NativePlannedAction?) -> [NativeSemanticMemory] {
+        let query = [
+            state.scenarioName,
+            state.country.name,
+            state.lastSummary,
+            action?.title,
+            action?.detail,
+            state.plannedActions.prefix(3).map { "\($0.title) \($0.detail)" }.joined(separator: " "),
+        ].compactMap { $0 }.joined(separator: " ")
+        let queryEmbedding = NativeTinyEmbeddingModel.embed(query)
+        return state.semanticMemory
+            .map { memory in
+                let similarity = NativeTinyEmbeddingModel.cosine(queryEmbedding, memory.embedding)
+                let importanceBoost = Double(memory.importance) * 0.02
+                return (score: similarity + importanceBoost, memory: memory)
+            }
+            .filter { $0.score > 0.05 }
+            .sorted { $0.score > $1.score }
+            .prefix(5)
+            .map(\.memory)
+    }
+
+    // **Ledger Update Mechanic**:
+    // Processes the economic impact of events across all country ledgers.
+    // Handles AI generated rules, Hex Lever map nudges, deterministic market drift,
+    // and stability-based feedback loops that increase rebel control and drain security.
     static func updatedEconomicLedgers(
         from ledgers: [String: NativeEconomicLedger],
         state: NativeCampaignState,
@@ -688,6 +819,11 @@ enum NativeStrategyContextDatabase {
 
     private static let rulesByID = Dictionary(uniqueKeysWithValues: consequenceRules.map { ($0.id, $0) })
 
+    // **Hex Lever Decoder Mechanic**:
+    // Parses the optional 8-character hex code generated by the AI model.
+    // Nibbles 1-6 apply direct economic deltas (growth, budget, debt, inflation, trade, fiscal space).
+    // Nibbles 7-8 apply public security penalties and tactical map nudges (invasions, occupations).
+    // This allows the model to nudge deterministic state boundaries without breaking strict typing.
     static func decodeHexLever(_ hex: String) -> NativeHexLever? {
         var clean = hex.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         if clean.hasPrefix("0x") {
@@ -1107,6 +1243,13 @@ enum NativeStrategyContextDatabase {
         return states
     }
 
+    // **AI Drift & Diplomacy Mechanic**:
+    // Simulates non-player actors based on their budget priority and relationships.
+    // Over time:
+    // 1. Player budget sliders dynamically alter macro economics and security.
+    // 2. Active treaties slowly build up relationship drift and grant passive economic buffs.
+    // 3. High global tension or low relationship scores push AI into arms races and conflict.
+    // 4. Autonomous completion of AI agendas causes stability/economic effects to the player.
     static func simulateAIDrift(state: inout NativeCampaignState, months: Int) {
         let strategicCodes = defaultStrategicCountryCodes.filter { $0 != "GLOBAL" }
 

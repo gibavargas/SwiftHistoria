@@ -3,10 +3,11 @@ import OSLog
 
 /// Main actor owner for native campaign state.
 ///
-/// SwiftUI views should call methods on this store rather than mutating
-/// `NativeCampaignState` directly. The store centralizes persistence, async
-/// generation state, stale-response rejection, import/export, and recovery
-/// notices so every user-visible mutation follows the same safety path.
+/// **State Flow Mechanic**: 
+/// SwiftUI views MUST NOT mutate `NativeCampaignState` directly. Instead, views call methods on this store.
+/// The store centralizes all business logic and state transitions:
+/// View Action -> Store Method -> (Optional Async AI Call) -> Engine Validation -> State Mutation -> `persistState()` -> @Published UI Update.
+/// This single-directional data flow ensures that every user-visible mutation is validated, persisted, and safely synchronized with the UI.
 @MainActor
 final class NativeCampaignStore: ObservableObject {
     @Published private(set) var selectedCountry: PlayerCountry?
@@ -35,9 +36,12 @@ final class NativeCampaignStore: ObservableObject {
     private let aiService: any NativeAIService
     private let persistenceDirectory: URL
     private let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeCampaignStore")
-    // Incremented whenever local state changes in a way that makes in-flight AI
-    // work obsolete. Async methods capture the value before awaiting and refuse
-    // to write results if a newer user action has moved the campaign on.
+    // **Concurrency & Asynchrony Mechanic**:
+    // `stateVersion` prevents async race conditions (stale-response rejection).
+    // Incremented (`invalidateInFlightWork()`) whenever local state changes in a way that makes in-flight AI work obsolete.
+    // Async methods (like `advance(months:)` or `askAdvisor()`) capture this value before awaiting the AI service.
+    // After the await resumes, they check if `stateVersion` is still the same. If it changed (e.g. the user clicked "Reset" or advanced again),
+    // the stale result is dropped and not applied to the state, preventing ghost mutations.
     private var stateVersion = 0
 
     private static let selectedCountryKey = "pax-historia.native.selected-country.v1"
@@ -94,7 +98,7 @@ final class NativeCampaignStore: ObservableObject {
 
     init(
         defaults: UserDefaults = .standard,
-        aiService: any NativeAIService = NativeFoundationModelService(),
+        aiService: any NativeAIService = DynamicAIService(),
         persistenceDirectory: URL? = nil
     ) {
         let decoder = JSONDecoder()
@@ -675,7 +679,7 @@ final class NativeCampaignStore: ObservableObject {
             }
             invalidateInFlightWork()
             state = currentState
-            lastSuggestionError = "\(error.localizedDescription) No substitute suggestions were used; manual civic proposals remain available."
+            lastSuggestionError = error.localizedDescription
             persistState()
             logger.error("Native suggested actions refresh failed")
         }
@@ -1042,6 +1046,12 @@ final class NativeCampaignStore: ObservableObject {
             for: state.country,
             scenario: scenario
         )
+        state.dynamicCountries = Dictionary(uniqueKeysWithValues: state.dynamicCountries.compactMap { code, name in
+            let cleanCode = code.uppercased().filter { $0 >= "A" && $0 <= "Z" }
+            let cleanName = sanitizeFoundationModelText(name)
+            guard cleanCode.count >= 2, !cleanName.isEmpty else { return nil }
+            return (String(cleanCode.prefix(6)), cleanName)
+        })
         var normalizedLedgers: [String: NativeEconomicLedger] = [:]
         for (code, ledger) in state.economicLedgers {
             let dummyCountry = PlayerCountry(code: code, name: code)
@@ -1072,6 +1082,14 @@ final class NativeCampaignStore: ObservableObject {
             event.id = id
             event.title = sanitizeFoundationModelText(event.title)
             event.description = sanitizeFoundationModelText(event.description)
+            if var sovereignty = event.sovereigntyChange {
+                sovereignty.targetCode = sovereignty.targetCode.uppercased().filter { $0 >= "A" && $0 <= "Z" }
+                sovereignty.targetCode = String(sovereignty.targetCode.prefix(6))
+                sovereignty.name = sanitizeFoundationModelText(sovereignty.name)
+                sovereignty.sourceCodes = sovereignty.sourceCodes.map { $0.uppercased().filter { $0 >= "A" && $0 <= "Z" } }.filter { !$0.isEmpty }
+                sovereignty.regionIDs = sovereignty.regionIDs.map(sanitizeFoundationModelText).filter { !$0.isEmpty }
+                event.sovereigntyChange = sovereignty.targetCode.isEmpty && sovereignty.name.isEmpty ? nil : sovereignty
+            }
             guard !containsFoundationPlaceholderText(event.title), !containsFoundationPlaceholderText(event.description) else {
                 return nil
             }
@@ -1118,6 +1136,27 @@ final class NativeCampaignStore: ObservableObject {
         }
         if state.timeline.isEmpty {
             state.timeline = initialState.timeline
+        }
+        state.semanticMemory = deduped(state.semanticMemory, fallbackPrefix: "semantic-memory") { memory in
+            memory.id
+        } transform: { memory, id in
+            var memory = memory
+            memory.id = id
+            memory.sourceID = sanitizeFoundationModelText(memory.sourceID)
+            memory.text = sanitizeFoundationModelText(memory.text)
+            guard !memory.sourceID.isEmpty, !memory.text.isEmpty, memory.embedding.count == 64 else { return nil }
+            if memory.date.isEmpty || !NativeGameEngine.isValidDate(memory.date) {
+                memory.date = state.gameDate
+            }
+            memory.importance = Swift.max(1, Swift.min(5, memory.importance))
+            memory.track = foundationVisibleTrack(memory.track)
+            return memory
+        }
+        if state.semanticMemory.isEmpty {
+            state.semanticMemory = NativeStrategyContextDatabase.updatedSemanticMemory(
+                state: state,
+                events: Array(state.timeline.prefix(12))
+            )
         }
         state.worldEffects = deduped(state.worldEffects, fallbackPrefix: "world-effect") { effect in
             effect.id

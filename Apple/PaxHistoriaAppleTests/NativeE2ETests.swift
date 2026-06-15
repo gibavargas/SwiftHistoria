@@ -37,7 +37,7 @@ final class NativeE2ETests: XCTestCase {
         // 3. Assert Turn 1 State initialization
         XCTAssertEqual(initialState.round, 1)
         XCTAssertEqual(initialState.country.code, "USA")
-        XCTAssertEqual(initialState.economicLedgers.count, 197)
+        XCTAssertEqual(initialState.economicLedgers.count, 245)
 
         let expectedStability = Native2010WorldModel.stability(for: testCountry, scenario: NativeScenarioCatalog.defaultScenario)
         let expectedWorldTension = Native2010WorldModel.worldTension(for: testCountry, scenario: NativeScenarioCatalog.defaultScenario)

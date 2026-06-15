@@ -90,8 +90,10 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(applied.worldTension, 0)
         XCTAssertEqual(applied.language, .spanish)
         XCTAssertEqual(applied.scenarioID, NativeScenarioCatalog.fragmentedMarkets.id)
-        XCTAssertEqual(applied.timeline.count, generated.events.count + state.timeline.count)
-        XCTAssertEqual(applied.worldEffects.count, generated.events.flatMap(\.strategicEffects).count + state.worldEffects.count)
+        let nonPollutionTimeline = applied.timeline.filter { !$0.id.hasPrefix("512dice-") }
+        let nonPollutionEffects = applied.worldEffects.filter { !$0.eventId.hasPrefix("512dice-") }
+        XCTAssertEqual(nonPollutionTimeline.count, generated.events.count + state.timeline.count)
+        XCTAssertEqual(nonPollutionEffects.count, generated.events.flatMap(\.strategicEffects).count + state.worldEffects.count)
     }
 
     func testInvasionActionsResolveDeterministically() throws {
@@ -118,6 +120,44 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(firstResolution.regionConflicts[region.id], secondResolution.regionConflicts[region.id])
         XCTAssertEqual(firstResolution.timeline.first?.id, secondResolution.timeline.first?.id)
         XCTAssertTrue(firstResolution.timeline.first?.linkedActionIDs.contains(invasion.id) == true)
+    }
+
+    func testLinkedInvasionActionsStillRollDiceBattle() throws {
+        var state = makeState()
+        state.budgetMilitarySlider = 0.5
+        let region = try XCTUnwrap(GeopoliticalMapData.regions.first { $0.id == "ARG" })
+        let invasion = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Invade \(region.name) (ID: \(region.id))",
+            id: "action-linked-invasion",
+            resolvedAt: nil,
+            status: .planned,
+            title: "Invade \(region.name) (ID: \(region.id))"
+        )
+        state.plannedActions = [invasion]
+
+        let generated = NativeGeneratedTurn(
+            events: [
+                makeEvent(
+                    id: "ai-linked-invasion-setup",
+                    title: "Command Staff Opens Invasion File",
+                    playerRelated: true,
+                    linkedActionIDs: [invasion.id]
+                ),
+            ],
+            stabilityDelta: 0,
+            summary: "Leap",
+            worldTensionDelta: 0
+        )
+        let resolved = NativeGameEngine.apply(generated, to: state, months: 1)
+
+        XCTAssertEqual(resolved.plannedActions.first?.status, .resolved)
+        XCTAssertTrue(resolved.timeline.contains { event in
+            event.id.hasPrefix("invasion-success-\(region.id)-") ||
+                event.id.hasPrefix("invasion-fail-\(region.id)-")
+        })
+        XCTAssertTrue(resolved.timeline.contains { $0.description.contains("Dice Battle for \(region.name)") })
+        XCTAssertNotNil(resolved.regionConflicts[region.id])
     }
 
     func testStateApplicationPreservesComplexCampaignArchives() throws {
@@ -157,8 +197,10 @@ final class NativeBackendTests: XCTestCase {
 
         let applied = NativeGameEngine.apply(generated, to: state, months: 1)
 
-        XCTAssertEqual(applied.timeline.count, 127)
-        XCTAssertEqual(applied.worldEffects.count, 227)
+        let nonPollutionTimeline = applied.timeline.filter { !$0.id.hasPrefix("512dice-") }
+        let nonPollutionEffects = applied.worldEffects.filter { !$0.eventId.hasPrefix("512dice-") }
+        XCTAssertEqual(nonPollutionTimeline.count, 127)
+        XCTAssertEqual(nonPollutionEffects.count, 227)
         XCTAssertTrue(applied.timeline.contains { $0.id == "archive-event-124" })
         XCTAssertTrue(applied.worldEffects.contains { $0.id == "archive-effect-224" })
     }
@@ -802,6 +844,56 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(applied.regionOccupations.values.contains("REB"))
     }
 
+    func testSovereigntyChangeCreatesDynamicCountryActor() throws {
+        let state = makeState()
+        var event = makeEvent(id: "secession-event", playerRelated: false)
+        event.sovereigntyChange = NativeSovereigntyChange(
+            kind: .secession,
+            name: "Patagonia",
+            regionIDs: ["ARG"],
+            sourceCodes: ["ARG"],
+            targetCode: "PAT"
+        )
+
+        let applied = NativeGameEngine.apply(
+            NativeGeneratedTurn(
+                events: [event],
+                stabilityDelta: 0,
+                summary: "A formal secession creates a separate political actor.",
+                worldTensionDelta: 0
+            ),
+            to: state,
+            months: 1
+        )
+
+        XCTAssertEqual(applied.dynamicCountries["PAT"], "Patagonia")
+        XCTAssertEqual(applied.regionOccupations["ARG"], "PAT")
+        XCTAssertNotNil(applied.economicLedgers["PAT"])
+        XCTAssertNotNil(applied.aiCountryStates["PAT"])
+        XCTAssertEqual(applied.regionConflicts["ARG"]?.mode, .contestedBorder)
+    }
+
+    func testValidatedTurnKeepsOnlyOneMapNudge() throws {
+        let state = makeState()
+        var conventionalEvent = makeEvent(id: "conventional-nudge", playerRelated: false)
+        conventionalEvent.hexLeverCode = "0x00000001"
+        var guerrillaEvent = makeEvent(id: "guerrilla-nudge", playerRelated: true)
+        guerrillaEvent.hexLeverCode = "0x00000002"
+
+        let validated = try NativeGameEngine.validated(
+            NativeGeneratedTurn(
+                events: [conventionalEvent, guerrillaEvent],
+                stabilityDelta: 0,
+                summary: "Map-control nudges are reconciled before deterministic application.",
+                worldTensionDelta: 0
+            ),
+            state: state,
+            months: 3
+        )
+
+        XCTAssertEqual(validated.events.compactMap(\.hexLeverCode), ["0x00000001", "0x000000"])
+    }
+
     private var liveFoundationModelsGateEnabled: Bool {
         #if PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS
         return true
@@ -1161,8 +1253,8 @@ final class NativeBackendTests: XCTestCase {
 
         var stateTension = makeState()
         stateTension.worldTension = 10
-        stateTension.regionOccupations = ["BRA_NORTH": "CHN"] // Player country BRA has 1 occupied region
-        stateTension.nuclearFalloutRegions = ["USA_EAST", "CHN_WEST"] // 2 fallout regions globally
+        stateTension.regionOccupations = ["BRA": "CHN"] // Player country BRA has 1 occupied region
+        stateTension.nuclearFalloutRegions = ["USA", "CHN"] // 2 fallout regions globally
         let resolvedTension = NativeGameEngine.apply(generated, to: stateTension, months: 1)
 
         // Fallout and occupations should drive world tension higher than baseline
@@ -1210,7 +1302,7 @@ final class NativeBackendTests: XCTestCase {
 
         // 1 active region conflict, arms buildup (military slider = 0.50) -> tensionEscalation = 1 + 2 = 3.
         state.budgetMilitarySlider = 0.50
-        state.regionConflicts = ["BRA_NORTH": NativeRegionConflictState(controllerCode: "REB", intensity: 2, mode: .conventionalOccupation, originalCountryCode: "BRA", regionID: "BRA_NORTH")]
+        state.regionConflicts = ["BRA": NativeRegionConflictState(controllerCode: "REB", intensity: 2, mode: .conventionalOccupation, originalCountryCode: "BRA", regionID: "BRA")]
 
         let generated = NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "Leap", worldTensionDelta: 5)
         let resolved = NativeGameEngine.apply(generated, to: state, months: 1)
@@ -1267,8 +1359,8 @@ final class NativeBackendTests: XCTestCase {
 
     func testTerritorialAndRadiologicalPenalties() throws {
         var state = makeState()
-        state.regionOccupations = ["BRA_NORTH": "CHN"]
-        state.nuclearFalloutRegions = ["BRA_SOUTH"]
+        state.regionOccupations = ["BRA_Acre": "CHN"]
+        state.nuclearFalloutRegions = ["BRA_Acre"]
 
         let generated = NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "Leap", worldTensionDelta: 0)
         let resolved = NativeGameEngine.apply(generated, to: state, months: 1)
@@ -1276,6 +1368,32 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(resolved.economicLedger.realGrowthPercent, 5.0, accuracy: 0.1)
         XCTAssertEqual(resolved.economicLedger.inflationPercent, 8.0, accuracy: 0.1)
         XCTAssertEqual(resolved.stability, 67)
+    }
+
+    func test512DiceFrictionSystem() throws {
+        NativeGameEngine.force512DiceFrictionForTesting = true
+        defer { NativeGameEngine.force512DiceFrictionForTesting = false }
+
+        let state = makeState()
+        let generated = NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "Leap", worldTensionDelta: 0)
+        let resolved = NativeGameEngine.apply(generated, to: state, months: 1)
+
+        // The timeline must contain at least one 512dice event (the overall friction event or specific ones)
+        let hasFrictionEvents = resolved.timeline.contains { event in
+            event.id.hasPrefix("512dice-")
+        }
+        XCTAssertTrue(hasFrictionEvents, "Expected 512-dice friction events to be generated and added to the timeline.")
+
+        // Verify that the overall event exists
+        let overallEvent = resolved.timeline.first { $0.id.hasPrefix("512dice-overall-") }
+        XCTAssertNotNil(overallEvent, "Expected an overall turbulence event in the timeline.")
+        
+        // The economic ledger should contain entries related to the 512-dice events
+        let entries = resolved.economicLedger.entries
+        let hasFrictionLedgerEntry = entries.contains { entry in
+            entry.eventID.hasPrefix("512dice-")
+        }
+        XCTAssertTrue(hasFrictionLedgerEntry, "Expected economic ledger entries generated by 512-dice events.")
     }
 }
 

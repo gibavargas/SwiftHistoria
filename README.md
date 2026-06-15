@@ -31,13 +31,9 @@
 <br />
 <br />
 
-![SwiftHistoria screenshot](public/screenshot.png)
-
----
-
 ## Development Direction
 
-SwiftHistoria is being developed as a Swift-native Apple app in [`Apple/`](Apple/). Treat the legacy React/Vite web app in [`src/`](src/) and the Express server in [`server/`](server/) as reference material only. They can be useful for product inspiration, old behavior checks, or asset context, but new product work should land in the Swift-native implementation unless a task explicitly says otherwise.
+SwiftHistoria is being developed as a Swift-native Apple app in [`Apple/`](Apple/). The legacy React/Vite web app and Express server have been removed; new product work should land in the Swift-native implementation unless a task explicitly says otherwise.
 
 For architectural orientation, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). For future AI coding agents, see [`docs/LLM_MAINTENANCE_GUIDE.md`](docs/LLM_MAINTENANCE_GUIDE.md).
 
@@ -59,18 +55,18 @@ For architectural orientation, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md
 ### Prerequisites
 
 - [Git](https://git-scm.com/)
-- [Node.js](https://nodejs.org/en)
+- Xcode with the macOS and iOS Simulator SDKs
 
 ### Steps
 
 ```bash
 git clone https://github.com/gibavargas/SwiftHistoria.git
 cd SwiftHistoria
-git lfs install        # Set up Git LFS
-git lfs pull           # Pull large files
-npm install            # Install dependencies
-npm run build          # Build the server
-node server/server.js  # Start the server
+script/build_apple.sh
 ```
 
-Then open **http://localhost:3000** in your browser.
+To build and launch the macOS app from the command line:
+
+```bash
+script/build_and_run.sh
+```

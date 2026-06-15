@@ -36,6 +36,21 @@ final class PaxHistoriaiOSUITests: XCTestCase {
 
         XCTAssertTrue(firstElement("native-orders-screen", in: app).waitForExistence(timeout: 4))
         XCTAssertTrue(firstElement("native-orders-editor", in: app).waitForExistence(timeout: 4))
+
+        let mapTab = app.buttons["native-map-tab"]
+        XCTAssertTrue(mapTab.waitForExistence(timeout: 4))
+        mapTab.tap()
+        XCTAssertTrue(firstElement("native-map-screen", in: app).waitForExistence(timeout: 4))
+
+        let intelTab = app.buttons["native-intel-tab"]
+        XCTAssertTrue(intelTab.waitForExistence(timeout: 4))
+        intelTab.tap()
+        XCTAssertTrue(firstElement("native-intel-screen", in: app).waitForExistence(timeout: 4))
+
+        let eventsSection = firstElement("native-intel-section-events", in: app)
+        XCTAssertTrue(eventsSection.waitForExistence(timeout: 4))
+        eventsSection.tap()
+        XCTAssertTrue(firstElement("native-events-panel", in: app).waitForExistence(timeout: 4))
     }
 
     private func element(_ identifier: String, in app: XCUIApplication) -> XCUIElement {

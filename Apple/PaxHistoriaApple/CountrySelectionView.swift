@@ -240,14 +240,14 @@ struct CountrySelectionView: View {
                 .padding(.bottom, 6)
             }
 
-            Text("Choose your country")
-                .font(.largeTitle.weight(.bold))
-                .foregroundStyle(.primary)
+            Text("Open the campaign dossier")
+                .font(NativeWarRoomTheme.displayFont(.largeTitle, weight: .bold))
+                .foregroundStyle(NativeWarRoomTheme.ink)
                 .minimumScaleFactor(0.8)
 
-            Text("Pick the scenario, language, and player nation before the first turn. Nothing starts until you choose explicitly.")
-                .font(.body)
-                .foregroundStyle(.secondary)
+            Text("Select the strategic archive, operating language, and national desk before the first briefing is filed.")
+                .font(NativeWarRoomTheme.bodyFont())
+                .foregroundStyle(NativeWarRoomTheme.mutedInk)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
@@ -256,9 +256,9 @@ struct CountrySelectionView: View {
     private var scenarioDeck: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("Scenario", systemImage: "square.stack.3d.up")
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(Color.iceBlue)
+                Label("Scenario archive", systemImage: "square.stack.3d.up")
+                    .font(NativeWarRoomTheme.labelFont(.subheadline))
+                    .foregroundStyle(NativeWarRoomTheme.brass)
                     .accessibilityIdentifier("native-scenario-library")
                 Spacer()
                 Text(NativeScenarioCatalog.scenario(for: selectedScenarioID).name)
@@ -289,15 +289,15 @@ struct CountrySelectionView: View {
             }
         }
         .padding(14)
-        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
+        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.22), cornerRadius: 10)
     }
 
     private var languageDeck: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("Language", systemImage: "character.bubble")
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(Color.iceBlue)
+                Label("Dispatch language", systemImage: "character.bubble")
+                    .font(NativeWarRoomTheme.labelFont(.subheadline))
+                    .foregroundStyle(NativeWarRoomTheme.brass)
                 Spacer()
                 Text(selectedLanguage.label)
                     .font(.caption.weight(.bold))
@@ -319,14 +319,14 @@ struct CountrySelectionView: View {
             .accessibilityIdentifier("native-language-picker")
         }
         .padding(14)
-        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
+        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.18), cornerRadius: 10)
     }
 
     private var searchField: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("Find a country", systemImage: "magnifyingglass")
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(Color.iceBlue)
+            Label("Find a national desk", systemImage: "magnifyingglass")
+                .font(NativeWarRoomTheme.labelFont(.subheadline))
+                .foregroundStyle(NativeWarRoomTheme.brass)
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
@@ -348,7 +348,7 @@ struct CountrySelectionView: View {
                 }
             }
             .padding(10)
-            .background(Color.deepSlate.opacity(0.5))
+            .background(NativeWarRoomTheme.graphite.opacity(0.72))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay {
                 RoundedRectangle(cornerRadius: 8)
@@ -357,14 +357,14 @@ struct CountrySelectionView: View {
             .accessibilityLabel("Search country or ISO code")
         }
         .padding(14)
-        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
+        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.18), cornerRadius: 10)
     }
 
     private var simulationGuide: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("TRANSMISSION PROTOCOL", systemImage: "info.circle")
-                .font(.system(.subheadline, design: .monospaced).weight(.bold))
-                .foregroundStyle(Color.glowingCyan)
+            Label("BRIEFING PROTOCOL", systemImage: "info.circle")
+                .font(NativeWarRoomTheme.labelFont(.subheadline))
+                .foregroundStyle(NativeWarRoomTheme.brass)
 
             VStack(alignment: .leading, spacing: 8) {
                 GuideStepRow(number: "01", text: "Select a geopolitical scenario from the stack above.")
@@ -374,7 +374,7 @@ struct CountrySelectionView: View {
             }
         }
         .padding(14)
-        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
+        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.18), cornerRadius: 10)
     }
 }
 
@@ -404,9 +404,9 @@ private struct CountrySelectionBackground: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(hex: "#040812"),
-                    Color(hex: "#07111c"),
-                    Color.spaceBlack
+                    NativeWarRoomTheme.blackboard,
+                    NativeWarRoomTheme.graphite,
+                    NativeWarRoomTheme.archiveShadow
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -426,18 +426,18 @@ private struct CountrySelectionBackground: View {
                     path.addLine(to: CGPoint(x: size.width, y: y))
                 }
 
-                context.stroke(path, with: .color(Color.iceBlue.opacity(0.025)), lineWidth: 0.75)
+                context.stroke(path, with: .color(NativeWarRoomTheme.mapPaper.opacity(0.035)), lineWidth: 0.75)
             }
 
             RadialGradient(
-                colors: [Color.glowingCyan.opacity(0.05), Color.clear],
+                colors: [NativeWarRoomTheme.brass.opacity(0.12), Color.clear],
                 center: .topLeading,
                 startRadius: 0,
                 endRadius: 300
             )
 
             RadialGradient(
-                colors: [Color.neonTeal.opacity(0.04), Color.clear],
+                colors: [NativeWarRoomTheme.signalCyan.opacity(0.05), Color.clear],
                 center: .bottomTrailing,
                 startRadius: 0,
                 endRadius: 400
@@ -507,8 +507,8 @@ private struct ScenarioSelectionCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
                 Text(scenario.name)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(selected ? .primary : .secondary)
+                .font(NativeWarRoomTheme.labelFont(.subheadline))
+                .foregroundStyle(selected ? NativeWarRoomTheme.ink : NativeWarRoomTheme.mutedInk)
                     .lineLimit(1)
                 Spacer()
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
@@ -526,9 +526,9 @@ private struct ScenarioSelectionCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
-        .glassmorphicCard(
-            borderColor: selected ? accent.opacity(0.8) : .white.opacity(0.08),
-            cornerRadius: 12
+        .warRoomDossier(
+            borderColor: selected ? accent.opacity(0.7) : NativeWarRoomTheme.brass.opacity(0.18),
+            cornerRadius: 10
         )
         .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .hoverScale(1.02)
@@ -571,6 +571,45 @@ extension Color {
     }
 }
 
+enum NativeWarRoomTheme {
+    static let blackboard = Color(hex: "#050706")
+    static let archiveShadow = Color(hex: "#0d0c09")
+    static let graphite = Color(hex: "#171a17")
+    static let olivePanel = Color(hex: "#24251b")
+    static let mapPaper = Color(hex: "#d8c79b")
+    static let brass = Color(hex: "#c9a45b")
+    static let oxidizedBrass = Color(hex: "#8d7742")
+    static let ink = Color(hex: "#f1e6c8")
+    static let mutedInk = Color(hex: "#b8ad8e")
+    static let signalCyan = Color(hex: "#6ec7d5")
+    static let fieldGreen = Color(hex: "#7fa66a")
+    static let alertAmber = Color(hex: "#e0ae55")
+    static let threatRed = Color(hex: "#c86454")
+
+    static func statusColor(for score: Int, highIsGood: Bool = true) -> Color {
+        if highIsGood {
+            if score >= 70 { return fieldGreen }
+            if score >= 40 { return alertAmber }
+            return threatRed
+        }
+        if score >= 70 { return threatRed }
+        if score >= 45 { return alertAmber }
+        return fieldGreen
+    }
+
+    static func displayFont(_ style: Font.TextStyle, weight: Font.Weight = .semibold) -> Font {
+        .system(style, design: .serif).weight(weight)
+    }
+
+    static func bodyFont(_ style: Font.TextStyle = .body, weight: Font.Weight = .regular) -> Font {
+        .system(style, design: .serif).weight(weight)
+    }
+
+    static func labelFont(_ style: Font.TextStyle = .caption, weight: Font.Weight = .bold) -> Font {
+        .system(style, design: .monospaced).weight(weight)
+    }
+}
+
 struct GlassmorphicCardModifier: ViewModifier {
     var borderColor: Color
     var cornerRadius: CGFloat
@@ -588,7 +627,38 @@ struct GlassmorphicCardModifier: ViewModifier {
     }
 }
 
+struct WarRoomDossierModifier: ViewModifier {
+    var borderColor: Color
+    var cornerRadius: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                LinearGradient(
+                    colors: [
+                        NativeWarRoomTheme.olivePanel.opacity(0.92),
+                        NativeWarRoomTheme.archiveShadow.opacity(0.96)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(NativeWarRoomTheme.mapPaper.opacity(0.08))
+                    .frame(height: 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(borderColor, lineWidth: 1)
+            }
+            .shadow(color: Color.black.opacity(0.36), radius: 10, x: 0, y: 5)
+    }
+}
+
 struct OrbitRingsView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var rotationLarge: Double = 0
     @State private var rotationSmall: Double = 0
     @State private var pulse: CGFloat = 0.85
@@ -597,7 +667,7 @@ struct OrbitRingsView: View {
         ZStack {
             Circle()
                 .stroke(
-                    Color.glowingCyan.opacity(0.10),
+                    NativeWarRoomTheme.brass.opacity(0.16),
                     style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [40, 150])
                 )
                 .frame(width: 200, height: 200)
@@ -605,7 +675,7 @@ struct OrbitRingsView: View {
 
             Circle()
                 .stroke(
-                    Color.neonTeal.opacity(0.15),
+                    NativeWarRoomTheme.oxidizedBrass.opacity(0.22),
                     style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [20, 80])
                 )
                 .frame(width: 120, height: 120)
@@ -613,7 +683,7 @@ struct OrbitRingsView: View {
 
             Circle()
                 .stroke(
-                    Color.iceBlue.opacity(0.04),
+                    NativeWarRoomTheme.mapPaper.opacity(0.08),
                     style: StrokeStyle(lineWidth: 4, lineCap: .butt, dash: [2, 8])
                 )
                 .frame(width: 160, height: 160)
@@ -631,6 +701,7 @@ struct OrbitRingsView: View {
                 .scaleEffect(pulse)
         }
         .onAppear {
+            guard !reduceMotion else { return }
             withAnimation(.linear(duration: 25).repeatForever(autoreverses: false)) {
                 rotationLarge = 360
             }
@@ -665,5 +736,9 @@ extension View {
 
     func glassmorphicCard(borderColor: Color = .white.opacity(0.12), cornerRadius: CGFloat = 12) -> some View {
         self.modifier(GlassmorphicCardModifier(borderColor: borderColor, cornerRadius: cornerRadius))
+    }
+
+    func warRoomDossier(borderColor: Color = NativeWarRoomTheme.brass.opacity(0.22), cornerRadius: CGFloat = 10) -> some View {
+        self.modifier(WarRoomDossierModifier(borderColor: borderColor, cornerRadius: cornerRadius))
     }
 }

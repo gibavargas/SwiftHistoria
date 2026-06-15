@@ -141,7 +141,7 @@ final class NativeFoundationModelService: NativeAIService {
             logger.info("Apple Foundation advisor generation started round=\(state.round, privacy: .public)")
             let answer = try await generateTextResponse(
                 prompt: makeAdvisorPrompt(for: state, question: safeQuestion),
-                maxTokens: 220,
+                maxTokens: 520,
                 repairNote: "Answer as a blunt strategic advisor in no more than three short paragraphs."
             )
             logger.info("Apple Foundation advisor generation completed")
@@ -205,6 +205,9 @@ final class NativeFoundationModelService: NativeAIService {
         return "Repair note: \(sanitizeFoundationModelText(repairInstruction))"
     }
 
+    // **Foundation Model Prompt Handling Mechanic**:
+    // Clamps prompt text to ensure it stays within the local on-device Foundation Model context window.
+    // Over-long prompts cause catastrophic context loss.
     private func clampedFoundationPrompt(_ value: String) -> String {
         let text = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard text.count > promptCharacterLimit else { return text }
@@ -213,12 +216,19 @@ final class NativeFoundationModelService: NativeAIService {
         return "\(text[..<endIndex])\n\n[Context trimmed for the local Apple Foundation Models window.]"
     }
 
+    // **Prompt Constraints (Hex Lever) Mechanic**:
+    // Explicitly instructs the local AI how to format Hex Levers.
+    // The strict "6-or-8-nibble contract" is necessary because small, on-device models
+    // often hallucinate formatting or invent non-existent hex rules if not given
+    // very rigid and explicit prompt boundaries.
     private func hexLeverCodeInstruction() -> String {
         return """
         Hexadecimal Lever Code option:
         You can OPTIONALLY output a `"hexLeverCode"` representing standard economic deltas and abstract map-control nudges. Use only high-level board-game state changes: public security, insurgency pressure, conventional border pressure, nuclear fallout, contested borders, stabilization, or de-escalation. Do not include operational instructions.
         Six-character values encode Growth, Budget, Debt, Inflation, Trade, and Fiscal Space. Eight-character values add a signed public-security nibble and a map nudge nibble.
         Map nudge nibble meanings: 0 none, 1 conventional border advance, 2 guerrilla control, 3 nuclear fallout, 4 domestic stabilization, 5 contested border, 6 public-security recovery, 7 conquest occupation, F de-escalation.
+        Sovereignty change option:
+        Use the sovereignty fields only for formal political changes, not ordinary occupation or insurgency. Kinds: `secession` creates a breakaway country from listed regionIDs/sourceCodes; `new-country` recognizes a new country; `merge` folds sourceCodes into targetCode; `dissolution` breaks a country into contested local control. Keep sovereigntyTargetCode uppercase A-Z, 3-6 characters. Leave fields empty for normal events.
         If you choose to use a hex code, pick one of the following exact examples or a close variant that follows the same 6-or-8-nibble contract:
         - `"0x4D21F4"` for Infrastructure Boost (Growth +0.4%, Budget -0.15%, Debt +0.4%, Inflation +0.05%, Trade -0.05%, Fiscal Space +4)
         - `"0x4D21F461"` for Infrastructure Boost plus conventional border advance (public security +15, map nudge 1)
@@ -270,6 +280,7 @@ final class NativeFoundationModelService: NativeAIService {
         - Economy mechanics include GDP, growth, inflation, budget balance, public debt, trade balance, unemployment, and fiscal space.
         - Security mechanics include public security, insurgency pressure, stabilization, contested borders, conventional occupation, guerrilla control, nuclear fallout, and de-escalation as abstract board-game states.
         - Map mechanics are stored in regionOccupations, nuclearFalloutRegions, and regionConflicts; prose should explain the strategic state, while events can use hexLeverCode for bounded map nudges.
+        - Occupation, contested borders, guerrilla control, and stabilization are control changes, not new countries. Use sovereignty fields only when a polity formally secedes, is newly recognized, merges, or dissolves.
         - Suggestions must name the primary mechanic they intend to improve and a secondary mechanic that may trade off or benefit.
         - Advisor and diplomacy replies must read the same mechanics instead of inventing new hidden systems.
 
@@ -1164,8 +1175,9 @@ extension NativeFoundationModelService {
                         model: model,
                         prompt: suggestionPrompt(basePrompt, repairNotes: repairNotes),
                         schema: AppleNativeSuggestedAction.schemaInstructions,
-                        maximumResponseTokens: 180,
-                        temperature: attempt == 1 ? 0.0 : 0.18
+                        maximumResponseTokens: 360,
+                        temperature: attempt == 1 ? 0.0 : 0.18,
+                        useGuidedGeneration: false
                     )
 
                     if suggestion.hasConcreteContent {
@@ -1230,9 +1242,9 @@ extension NativeFoundationModelService {
         prompt: String,
         schema: String,
         maximumResponseTokens: Int,
-        temperature: Double
+        temperature: Double,
+        useGuidedGeneration: Bool = true
     ) async throws -> T {
-        let session = LanguageModelSession(model: model, instructions: nativeSystemPrompt)
         let guidedPrompt = clampedFoundationPrompt(prompt)
         let fallbackPrompt = clampedFoundationPrompt("""
             \(prompt)
@@ -1241,24 +1253,28 @@ extension NativeFoundationModelService {
             \(schema)
             """)
 
-        do {
-            logger.info("Apple Foundation guided structure generation started type=\(String(describing: T.self), privacy: .public)")
-            let response = try await session.respond(
-                to: guidedPrompt,
-                generating: T.self,
-                includeSchemaInPrompt: true,
-                options: GenerationOptions(
-                    sampling: .greedy,
-                    temperature: temperature,
-                    maximumResponseTokens: maximumResponseTokens
+        if useGuidedGeneration {
+            do {
+                let session = LanguageModelSession(model: model, instructions: nativeSystemPrompt)
+                logger.info("Apple Foundation guided structure generation started type=\(String(describing: T.self), privacy: .public)")
+                let response = try await session.respond(
+                    to: guidedPrompt,
+                    generating: T.self,
+                    includeSchemaInPrompt: true,
+                    options: GenerationOptions(
+                        sampling: .greedy,
+                        temperature: temperature,
+                        maximumResponseTokens: maximumResponseTokens
+                    )
                 )
-            )
-            logger.info("Apple Foundation guided structure generation completed type=\(String(describing: T.self), privacy: .public)")
-            return response.content
-        } catch {
-            logger.error("Apple Foundation guided structure generation failed; retrying text JSON fallback type=\(String(describing: T.self), privacy: .public)")
+                logger.info("Apple Foundation guided structure generation completed type=\(String(describing: T.self), privacy: .public)")
+                return response.content
+            } catch {
+                logger.error("Apple Foundation guided structure generation failed; retrying text JSON fallback type=\(String(describing: T.self), privacy: .public) error=\(error.localizedDescription, privacy: .public)")
+            }
         }
 
+        let session = LanguageModelSession(model: model, instructions: nativeSystemPrompt)
         let response = try await session.respond(
             to: fallbackPrompt,
             options: GenerationOptions(
@@ -1380,6 +1396,11 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
     var effectMagnitude: Int
     var effectSummary: String
     var hexLeverCode: String?
+    var sovereigntyKind: String?
+    var sovereigntyName: String?
+    var sovereigntyRegionIDs: String?
+    var sovereigntySourceCodes: String?
+    var sovereigntyTargetCode: String?
 
     static let schemaInstructions = """
     {
@@ -1392,7 +1413,12 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
       "effectTrack": "economic-resilience, internal-stability, or market-confidence",
       "effectMagnitude": 0,
       "effectSummary": "One concrete sentence explaining the mechanical consequence. No placeholder or draft text.",
-      "hexLeverCode": "Optional 6-or-8-character hexadecimal lever code starting with 0x. Six nibbles represent Growth, Budget, Debt, Inflation, Trade, and Fiscal Space; optional seventh and eighth nibbles represent public-security delta and abstract map-control nudge."
+      "hexLeverCode": "Optional 6-or-8-character hexadecimal lever code starting with 0x. Six nibbles represent Growth, Budget, Debt, Inflation, Trade, and Fiscal Space; optional seventh and eighth nibbles represent public-security delta and abstract map-control nudge.",
+      "sovereigntyKind": "secession, new-country, merge, dissolution, or empty",
+      "sovereigntyTargetCode": "3-6 uppercase letters or empty",
+      "sovereigntyName": "Country or breakaway polity name or empty",
+      "sovereigntySourceCodes": "Comma-separated existing country codes or empty",
+      "sovereigntyRegionIDs": "Comma-separated map region IDs or empty"
     }
     """
 
@@ -1407,6 +1433,11 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
         case effectMagnitude
         case effectSummary
         case hexLeverCode
+        case sovereigntyKind
+        case sovereigntyName
+        case sovereigntyRegionIDs
+        case sovereigntySourceCodes
+        case sovereigntyTargetCode
     }
 
     init(from decoder: Decoder) throws {
@@ -1421,6 +1452,11 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
         effectMagnitude = try container.decodeIfPresent(Int.self, forKey: .effectMagnitude) ?? 0
         effectSummary = try container.decodeIfPresent(String.self, forKey: .effectSummary) ?? ""
         hexLeverCode = try container.decodeIfPresent(String.self, forKey: .hexLeverCode)
+        sovereigntyKind = try container.decodeIfPresent(String.self, forKey: .sovereigntyKind)
+        sovereigntyName = try container.decodeIfPresent(String.self, forKey: .sovereigntyName)
+        sovereigntyRegionIDs = try container.decodeIfPresent(String.self, forKey: .sovereigntyRegionIDs)
+        sovereigntySourceCodes = try container.decodeIfPresent(String.self, forKey: .sovereigntySourceCodes)
+        sovereigntyTargetCode = try container.decodeIfPresent(String.self, forKey: .sovereigntyTargetCode)
     }
 
     var hasConcreteContent: Bool {
@@ -1479,9 +1515,41 @@ private struct AppleNativeGeneratedEventDraft: Decodable {
                 ),
             ],
             title: sanitizeFoundationModelText(title),
-            hexLeverCode: hexLeverCode
+            hexLeverCode: hexLeverCode,
+            sovereigntyChange: appleSovereigntyChange(
+                kind: sovereigntyKind,
+                name: sovereigntyName,
+                regionIDs: sovereigntyRegionIDs,
+                sourceCodes: sovereigntySourceCodes,
+                targetCode: sovereigntyTargetCode
+            )
         )
     }
+}
+
+private func appleSovereigntyChange(
+    kind: String?,
+    name: String?,
+    regionIDs: String?,
+    sourceCodes: String?,
+    targetCode: String?
+) -> NativeSovereigntyChange? {
+    let cleanKind = sanitizeFoundationModelText(kind ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+    guard let parsedKind = NativeSovereigntyChangeKind(rawValue: cleanKind), !cleanKind.isEmpty else { return nil }
+    return NativeSovereigntyChange(
+        kind: parsedKind,
+        name: sanitizeFoundationModelText(name ?? ""),
+        regionIDs: commaList(regionIDs),
+        sourceCodes: commaList(sourceCodes),
+        targetCode: sanitizeFoundationModelText(targetCode ?? "")
+    )
+}
+
+private func commaList(_ value: String?) -> [String] {
+    (value ?? "")
+        .split(separator: ",")
+        .map { sanitizeFoundationModelText(String($0)) }
+        .filter { !$0.isEmpty }
 }
 
 private func appleDraftStrategicTrack(from rawValue: String, playerRelated: Bool) -> NativeStrategicTrack {

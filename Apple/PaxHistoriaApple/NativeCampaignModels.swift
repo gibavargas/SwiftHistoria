@@ -161,6 +161,63 @@ struct NativeAICountryState: Codable, Hashable, Identifiable {
     var id: String { countryCode }
 }
 
+enum NativeSovereigntyChangeKind: String, Codable, Hashable {
+    case dissolution
+    case merge
+    case newCountry = "new-country"
+    case secession
+}
+
+struct NativeSovereigntyChange: Codable, Hashable {
+    var kind: NativeSovereigntyChangeKind
+    var name: String
+    var regionIDs: [String]
+    var sourceCodes: [String]
+    var targetCode: String
+
+    init(
+        kind: NativeSovereigntyChangeKind,
+        name: String,
+        regionIDs: [String],
+        sourceCodes: [String],
+        targetCode: String
+    ) {
+        self.kind = kind
+        self.name = name
+        self.regionIDs = regionIDs
+        self.sourceCodes = sourceCodes
+        self.targetCode = targetCode
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case kind
+        case name
+        case regionIDs
+        case sourceCodes
+        case targetCode
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let rawKind = (try? container.decodeIfPresent(String.self, forKey: .kind)) ?? ""
+        kind = NativeSovereigntyChangeKind(rawValue: rawKind) ?? .secession
+        name = (try? container.decodeIfPresent(String.self, forKey: .name)) ?? ""
+        regionIDs = (try? container.decodeIfPresent([String].self, forKey: .regionIDs)) ?? []
+        sourceCodes = (try? container.decodeIfPresent([String].self, forKey: .sourceCodes)) ?? []
+        targetCode = (try? container.decodeIfPresent(String.self, forKey: .targetCode)) ?? ""
+    }
+}
+
+struct NativeSemanticMemory: Codable, Hashable, Identifiable {
+    var date: String
+    var embedding: [Float]
+    var id: String
+    var importance: Int
+    var sourceID: String
+    var text: String
+    var track: NativeStrategicTrack
+}
+
 /// The complete persisted native campaign snapshot.
 ///
 /// This type is intentionally tolerant when decoding: old saves may be missing
@@ -173,6 +230,7 @@ struct NativeCampaignState: Codable, Hashable {
     var aiReadiness: NativeAIReadiness
     var country: PlayerCountry
     var diplomaticThreads: [NativeDiplomaticThread]
+    var dynamicCountries: [String: String]
     var economicLedger: NativeEconomicLedger
     var economicLedgers: [String: NativeEconomicLedger]
     var aiCountryStates: [String: NativeAICountryState]
@@ -186,6 +244,7 @@ struct NativeCampaignState: Codable, Hashable {
     var scenarioDescription: String
     var scenarioID: String
     var scenarioName: String
+    var semanticMemory: [NativeSemanticMemory]
     var suggestedActions: [NativeSuggestedAction]
     var stability: Int
     var startDate: String
@@ -210,6 +269,7 @@ struct NativeCampaignState: Codable, Hashable {
         aiReadiness: NativeAIReadiness,
         country: PlayerCountry,
         diplomaticThreads: [NativeDiplomaticThread] = [],
+        dynamicCountries: [String: String] = [:],
         economicLedger: NativeEconomicLedger? = nil,
         economicLedgers: [String: NativeEconomicLedger]? = nil,
         aiCountryStates: [String: NativeAICountryState]? = nil,
@@ -222,6 +282,7 @@ struct NativeCampaignState: Codable, Hashable {
         scenarioDescription: String,
         scenarioID: String,
         scenarioName: String,
+        semanticMemory: [NativeSemanticMemory] = [],
         suggestedActions: [NativeSuggestedAction],
         stability: Int,
         startDate: String,
@@ -243,6 +304,7 @@ struct NativeCampaignState: Codable, Hashable {
         self.aiReadiness = aiReadiness
         self.country = country
         self.diplomaticThreads = diplomaticThreads
+        self.dynamicCountries = dynamicCountries
         let computedEconomicLedger = economicLedger ?? NativeEconomicLedger.starting(
             for: country,
             scenario: NativeScenarioCatalog.scenario(for: scenarioID)
@@ -269,6 +331,7 @@ struct NativeCampaignState: Codable, Hashable {
         self.scenarioDescription = scenarioDescription
         self.scenarioID = scenarioID
         self.scenarioName = scenarioName
+        self.semanticMemory = semanticMemory
         self.suggestedActions = suggestedActions
         self.stability = stability
         self.startDate = startDate
@@ -292,6 +355,7 @@ struct NativeCampaignState: Codable, Hashable {
         case aiReadiness
         case country
         case diplomaticThreads
+        case dynamicCountries
         case economicLedger
         case economicLedgers
         case aiCountryStates
@@ -304,6 +368,7 @@ struct NativeCampaignState: Codable, Hashable {
         case scenarioDescription
         case scenarioID
         case scenarioName
+        case semanticMemory
         case suggestedActions
         case stability
         case startDate
@@ -321,12 +386,19 @@ struct NativeCampaignState: Codable, Hashable {
         case budgetDiplomacySlider
     }
 
+    // **Schema Normalization Mechanic**:
+    // Tolerant decoding ensures old save files never break when new features are added.
+    // If a field (e.g. diplomacy, AI states, sliders) is missing in an old save,
+    // the decoder injects safe defaults or derives them from the scenario.
+    // The `normalizedLoadedState` in `NativeCampaignStore` further sanitizes the data
+    // to remove AI placeholders and clamp bounds.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         advisorMessages = (try? container.decodeIfPresent([NativeAdvisorMessage].self, forKey: .advisorMessages)) ?? []
         aiReadiness = (try? container.decodeIfPresent(NativeAIReadiness.self, forKey: .aiReadiness)) ?? .notChecked
         country = try container.decode(PlayerCountry.self, forKey: .country)
         diplomaticThreads = (try? container.decodeIfPresent([NativeDiplomaticThread].self, forKey: .diplomaticThreads)) ?? []
+        dynamicCountries = (try? container.decodeIfPresent([String: String].self, forKey: .dynamicCountries)) ?? [:]
         scenarioID = (try? container.decodeIfPresent(String.self, forKey: .scenarioID)) ?? NativeScenarioCatalog.defaultScenario.id
         let decodedScenario = NativeScenarioCatalog.scenario(for: scenarioID)
         actionMemory = (try? container.decodeIfPresent([NativeActionMemory].self, forKey: .actionMemory)) ?? []
@@ -358,6 +430,7 @@ struct NativeCampaignState: Codable, Hashable {
         round = (try? container.decodeIfPresent(Int.self, forKey: .round)) ?? 1
         scenarioName = (try? container.decodeIfPresent(String.self, forKey: .scenarioName)) ?? decodedScenario.name
         scenarioDescription = (try? container.decodeIfPresent(String.self, forKey: .scenarioDescription)) ?? decodedScenario.heroSubtitle
+        semanticMemory = (try? container.decodeIfPresent([NativeSemanticMemory].self, forKey: .semanticMemory)) ?? []
         suggestedActions = (try? container.decodeIfPresent([NativeSuggestedAction].self, forKey: .suggestedActions)) ?? []
         stability = (try? container.decodeIfPresent(Int.self, forKey: .stability)) ?? decodedScenario.baseStability
         startDate = (try? container.decodeIfPresent(String.self, forKey: .startDate)) ?? decodedScenario.startDate
@@ -713,6 +786,7 @@ struct NativeCampaignEvent: Codable, Hashable, Identifiable {
     var strategicEffects: [NativeStrategicEffect]
     var title: String
     var hexLeverCode: String?
+    var sovereigntyChange: NativeSovereigntyChange?
 
     init(
         date: String,
@@ -725,7 +799,8 @@ struct NativeCampaignEvent: Codable, Hashable, Identifiable {
         playerRelated: Bool,
         strategicEffects: [NativeStrategicEffect],
         title: String,
-        hexLeverCode: String? = nil
+        hexLeverCode: String? = nil,
+        sovereigntyChange: NativeSovereigntyChange? = nil
     ) {
         self.date = date
         self.description = description
@@ -738,6 +813,7 @@ struct NativeCampaignEvent: Codable, Hashable, Identifiable {
         self.strategicEffects = strategicEffects
         self.title = title
         self.hexLeverCode = hexLeverCode
+        self.sovereigntyChange = sovereigntyChange
     }
 }
 
@@ -1101,6 +1177,12 @@ func normalizedFoundationUrgency(_ value: String) -> String {
     }
 }
 
+// **Track Normalization Mechanic**:
+// Apple's Foundation Models on-device often struggle with nuanced words like "Military" or "Security"
+// triggering internal safety filters or hallucinations.
+// `foundationPromptTrackLabel` rewrites strict tracks into safe analogies ("logistics-readiness", "resilience-pressure")
+// for the AI prompt.
+// `foundationVisibleTrack` collapses those abstracted tracks back into player-facing UI tracks.
 func foundationPromptTrackLabel(_ track: NativeStrategicTrack) -> String {
     switch track {
     case .diplomaticLeverage:

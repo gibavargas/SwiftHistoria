@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var campaignStore = NativeCampaignStore()
     @State private var didApplyLaunchConfiguration = false
+    @State private var didPrewarmMapData = false
 
     var body: some View {
         Group {
@@ -30,6 +31,13 @@ struct ContentView: View {
     }
 
     private func applyLaunchConfigurationIfNeeded() {
+        if !didPrewarmMapData {
+            didPrewarmMapData = true
+            Task.detached(priority: .utility) {
+                GeopoliticalMapData.prewarm()
+            }
+        }
+
         #if DEBUG
         guard !didApplyLaunchConfiguration else { return }
         didApplyLaunchConfiguration = true

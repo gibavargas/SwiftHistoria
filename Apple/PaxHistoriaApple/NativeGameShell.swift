@@ -276,105 +276,118 @@ struct NativeGameShell: View {
     #endif
 
     var body: some View {
-        #if os(iOS)
-        TabView(selection: $selectedTab) {
-            NativeMapScreen(
-                store: store,
-                onShowOrders: { selectedTab = .orders },
-                onShowAdvisor: {
-                    selectedIntelSection = .advisor
-                    selectedTab = .intel
-                },
-                onShowDiplomacy: {
-                    selectedIntelSection = .diplomacy
-                    selectedTab = .intel
-                }
-            )
-            .tag(NativeGameTab.map)
-            .tabItem {
-                Label("Map", systemImage: "globe.europe.africa")
-                    .accessibilityIdentifier("native-map-tab")
-            }
-
-            NativeOrdersScreen(store: store)
-                .tag(NativeGameTab.orders)
+        ZStack {
+            #if os(iOS)
+            TabView(selection: $selectedTab) {
+                NativeMapScreen(
+                    store: store,
+                    onShowOrders: { selectedTab = .orders },
+                    onShowAdvisor: {
+                        selectedIntelSection = .advisor
+                        selectedTab = .intel
+                    },
+                    onShowDiplomacy: {
+                        selectedIntelSection = .diplomacy
+                        selectedTab = .intel
+                    }
+                )
+                .tag(NativeGameTab.map)
                 .tabItem {
-                    Label("Orders", systemImage: "checklist")
-                        .accessibilityIdentifier("native-orders-tab")
+                    Label("Map", systemImage: "globe.europe.africa")
+                        .accessibilityIdentifier("native-map-tab")
                 }
 
-            NativeIntelScreen(
-                store: store,
-                selectedSection: $selectedIntelSection,
-                libraryMessage: libraryMessage,
-                onExportCampaign: onExportCampaign,
-                onImportCampaign: onImportCampaign
-            )
-            .tag(NativeGameTab.intel)
-            .tabItem {
-                Label("Intel", systemImage: "person.text.rectangle")
-                    .accessibilityIdentifier("native-intel-tab")
-            }
-        }
-        .background(.black)
-        .transaction { transaction in
-            if reduceMotion {
-                transaction.animation = nil
-            }
-        }
-        .accessibilityIdentifier("native-ios-tab-shell")
-        #else
-        NavigationSplitView {
-            List(selection: $selectedDestination) {
-                Section("Campaign") {
-                    ForEach(NativeMacDestination.allCases) { destination in
-                        Label(destination.title, systemImage: destination.systemImage)
-                            .tag(destination)
-                            .accessibilityIdentifier(destination.accessibilityIdentifier)
-                    }
-                }
-            }
-            .listStyle(.sidebar)
-            .navigationTitle("SwiftHistoria")
-            .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 320)
-        } detail: {
-            NativeMacDetailScreen(
-                destination: selectedDestination ?? .overview,
-                store: store,
-                libraryMessage: libraryMessage,
-                onExportCampaign: onExportCampaign,
-                onImportCampaign: onImportCampaign
-            )
-            .toolbar {
-                ToolbarItemGroup {
-                    Button {
-                        selectedDestination = .orders
-                    } label: {
+                NativeOrdersScreen(store: store)
+                    .tag(NativeGameTab.orders)
+                    .tabItem {
                         Label("Orders", systemImage: "checklist")
+                            .accessibilityIdentifier("native-orders-tab")
                     }
-                    .keyboardShortcut("o", modifiers: [.command])
 
-                    Button {
-                        Task { await store.advance(months: 1) }
-                    } label: {
-                        Label("Advance", systemImage: "calendar.badge.clock")
-                    }
-                    .disabled(store.isAdvancing)
-                    .keyboardShortcut("]", modifiers: [.command])
-                    .accessibilityIdentifier("native-mac-toolbar-advance")
-
-                    Button {
-                        selectedDestination = .advisor
-                    } label: {
-                        Label("Advisor", systemImage: "brain.head.profile")
-                    }
-                    .keyboardShortcut("a", modifiers: [.command, .shift])
+                NativeIntelScreen(
+                    store: store,
+                    selectedSection: $selectedIntelSection,
+                    libraryMessage: libraryMessage,
+                    onExportCampaign: onExportCampaign,
+                    onImportCampaign: onImportCampaign
+                )
+                .tag(NativeGameTab.intel)
+                .tabItem {
+                    Label("Intel", systemImage: "person.text.rectangle")
+                        .accessibilityIdentifier("native-intel-tab")
                 }
             }
+            .background(.black)
+            .transaction { transaction in
+                if reduceMotion {
+                    transaction.animation = nil
+                }
+            }
+            .accessibilityIdentifier("native-ios-tab-shell")
+            #else
+            NavigationSplitView {
+                List(selection: $selectedDestination) {
+                    Section("Campaign") {
+                        ForEach(NativeMacDestination.allCases) { destination in
+                            Label(destination.title, systemImage: destination.systemImage)
+                                .tag(destination)
+                                .accessibilityIdentifier(destination.accessibilityIdentifier)
+                        }
+                    }
+                }
+                .listStyle(.sidebar)
+                .navigationTitle("SwiftHistoria")
+                .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 320)
+            } detail: {
+                NativeMacDetailScreen(
+                    destination: selectedDestination ?? .overview,
+                    store: store,
+                    libraryMessage: libraryMessage,
+                    onExportCampaign: onExportCampaign,
+                    onImportCampaign: onImportCampaign,
+                    onSelectDestination: { selectedDestination = $0 }
+                )
+                .toolbar {
+                    ToolbarItemGroup {
+                        Button {
+                            selectedDestination = .orders
+                        } label: {
+                            Label("Orders", systemImage: "checklist")
+                                .labelStyle(.titleAndIcon)
+                        }
+                        .keyboardShortcut("o", modifiers: [.command])
+
+                        Button {
+                            Task { await store.advance(months: 1) }
+                        } label: {
+                            Label("Advance", systemImage: "calendar.badge.clock")
+                                .labelStyle(.titleAndIcon)
+                        }
+                        .disabled(store.isAdvancing)
+                        .keyboardShortcut("]", modifiers: [.command])
+                        .accessibilityIdentifier("native-mac-toolbar-advance")
+
+                        Button {
+                            selectedDestination = .advisor
+                        } label: {
+                            Label("Advisor", systemImage: "brain.head.profile")
+                                .labelStyle(.titleAndIcon)
+                        }
+                        .keyboardShortcut("a", modifiers: [.command, .shift])
+                    }
+                }
+            }
+            .background(.black)
+            .accessibilityIdentifier("native-mac-split-shell")
+            #endif
+            
+            if store.isAdvancing {
+                TurnTransitionOverlay(store: store)
+                    .transition(.opacity)
+                    .zIndex(99)
+            }
         }
-        .background(.black)
-        .accessibilityIdentifier("native-mac-split-shell")
-        #endif
+        .animation(.easeInOut, value: store.isAdvancing)
     }
 }
 
@@ -405,7 +418,11 @@ struct NativeMapScreen: View {
                         Spacer()
                     }
                     .padding(.horizontal, 14)
+                    #if os(iOS)
+                    .padding(.top, 66)
+                    #else
                     .padding(.top, 12)
+                    #endif
 
                     // Bottom Floating Console Drawer & Advance Button
                     VStack(spacing: 12) {
@@ -633,6 +650,7 @@ struct NativeTimelineFooter: View {
     @ObservedObject var store: NativeCampaignStore
     let currentYear: Int
     let baseYear: Int
+    let onShowEvents: () -> Void
 
     var body: some View {
         HStack(spacing: 16) {
@@ -680,339 +698,97 @@ struct NativeTimelineFooter: View {
             }
             .frame(maxWidth: .infinity)
 
-            Button("EVENTS") {
-                // Toggles history list or similar
+            Button {
+                onShowEvents()
+            } label: {
+                Label("Events", systemImage: "clock")
+                    .font(NativeWarRoomTheme.labelFont(.caption))
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
+            .accessibilityIdentifier("native-timeline-events")
 
             NativeFloatingAdvanceButton(store: store)
         }
         .padding(12)
-        .glassmorphicCard(borderColor: Color.white.opacity(0.1), cornerRadius: 12)
+        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.2), cornerRadius: 10)
     }
 }
 
 struct NativeOverviewScreen: View {
     @ObservedObject var store: NativeCampaignStore
+    let onShowEvents: () -> Void
+    @State private var showInspector = true
 
-    private func getCampaignYear(state: NativeCampaignState) -> Int {
+    private func year(in value: String, fallback: Int) -> Int {
         let pattern = "\\b(19|20)\\d{2}\\b"
         if let regex = try? NSRegularExpression(pattern: pattern),
-           let match = regex.firstMatch(in: state.gameDate, range: NSRange(state.gameDate.startIndex..., in: state.gameDate)),
-           let range = Range(match.range, in: state.gameDate),
-           let year = Int(state.gameDate[range]) {
+           let match = regex.firstMatch(in: value, range: NSRange(value.startIndex..., in: value)),
+           let range = Range(match.range, in: value),
+           let year = Int(value[range]) {
             return year
         }
-        return 2028
-    }
-
-    private func getStartYear(state: NativeCampaignState) -> Int {
-        let pattern = "\\b(19|20)\\d{2}\\b"
-        if let regex = try? NSRegularExpression(pattern: pattern),
-           let match = regex.firstMatch(in: state.startDate, range: NSRange(state.startDate.startIndex..., in: state.startDate)),
-           let range = Range(match.range, in: state.startDate),
-           let year = Int(state.startDate[range]) {
-            return year
-        }
-        return 2024
+        return fallback
     }
 
     var body: some View {
         Group {
             if let state = store.state {
                 #if os(macOS)
-                HStack(alignment: .top, spacing: 0) {
-                    // LEFT COLUMN: AI COMMAND
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 18) {
-                            HStack {
-                                Text("AI COMMAND")
-                                    .font(.system(.headline, design: .monospaced).weight(.bold))
-                                    .foregroundStyle(Color.glowingCyan)
-                                Spacer()
-                                Text("BETA")
-                                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                                    .padding(.horizontal, 4)
-                                    .padding(.vertical, 1)
-                                    .background(Color.glowingCyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 3))
-                                    .foregroundStyle(Color.glowingCyan)
-                            }
-                            .padding(.bottom, 2)
+                GeometryReader { geometry in
+                    let width = geometry.size.width
+                    let sideWidth = max(280, min(340, width * 0.24))
+                    let isWide = width >= 1280
+                    let isMedium = width >= 940 && width < 1280
 
-                            // Text Field to Conduct the Game
-                            VStack(alignment: .leading, spacing: 10) {
-                                TextEditor(text: $store.draftAction)
-                                    .font(.body)
-                                    .frame(height: 72)
-                                    .padding(8)
-                                    .scrollContentBackground(.hidden)
-                                    .background(Color.deepSlate.opacity(0.5))
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                                    }
+                    HStack(alignment: .top, spacing: 0) {
+                        if isWide {
+                            commandDesk(state: state)
+                                .frame(width: sideWidth)
 
-                                Button {
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                        store.addDraftAction()
-                                    }
-                                } label: {
-                                    HStack {
-                                        Spacer()
-                                        Image(systemName: "paperplane.fill")
-                                        Text("ENQUEUE DIRECTIVE")
-                                            .font(.system(.caption, design: .monospaced).weight(.bold))
-                                        Spacer()
-                                    }
-                                    .frame(minHeight: 32)
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.vertical, 6)
-                                .background(Color.iceBlue)
-                                .foregroundStyle(.black)
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                                .disabled(store.draftAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                            }
-
-                            NativeSuggestedActionsPanel(store: store)
-
-                            // Command History
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("COMMAND HISTORY")
-                                    .font(.system(.subheadline, design: .monospaced).weight(.bold))
-                                    .foregroundStyle(Color.iceBlue)
-
-                                let resolved = state.plannedActions.filter { $0.status == .resolved }
-                                if resolved.isEmpty {
-                                    Text("No historical directives logged.")
-                                        .font(.system(.caption, design: .monospaced))
-                                        .foregroundStyle(.secondary)
-                                } else {
-                                    VStack(spacing: 8) {
-                                        ForEach(resolved.suffix(4)) { action in
-                                            HStack {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundStyle(Color.neonTeal)
-                                                    .font(.caption)
-                                                Text(action.title)
-                                                    .font(.caption)
-                                                    .foregroundStyle(.primary)
-                                                    .lineLimit(1)
-                                                Spacer()
-                                                Text("Advanced")
-                                                    .font(.system(size: 8, design: .monospaced))
-                                                    .foregroundStyle(.secondary)
-                                            }
-                                            .padding(8)
-                                            .glassmorphicCard(borderColor: Color.white.opacity(0.06), cornerRadius: 6)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .padding(16)
-                    }
-                    .frame(width: 320)
-                    .background(Color.spaceBlack.opacity(0.95))
-
-                    Divider()
-                        .background(Color.white.opacity(0.12))
-
-                    // CENTER COLUMN: MAP, HUD, TIMELINE
-                    VStack(spacing: 0) {
-                        // Top HUD Bar
-                        NativeMapHUD(state: state)
-                            .padding(.horizontal, 16)
-                            .padding(.top, 14)
-
-                        NativeLatestIntelTicker(latestEvent: state.timeline.first)
-                            .padding(.horizontal, 16)
-                            .padding(.top, 8)
-
-                        if let progress = store.turnProgress {
-                            NativeTurnProgressPanel(progress: progress)
-                                .padding(.horizontal, 16)
-                                .padding(.top, 8)
+                            Divider()
+                                .background(NativeWarRoomTheme.brass.opacity(0.18))
                         }
 
-                        // Map view
-                        NativeWorldMap(state: state, minHeight: 320)
-                            .padding(16)
-                            .id(state.country.code)
+                        mapDesk(
+                            state: state,
+                            currentYear: year(in: state.gameDate, fallback: 2028),
+                            startYear: year(in: state.startDate, fallback: 2024)
+                        )
+                            .frame(maxWidth: .infinity)
 
-                        Spacer()
+                        if isWide || (isMedium && showInspector) {
+                            Divider()
+                                .background(NativeWarRoomTheme.brass.opacity(0.18))
 
-                        // Timeline Footer at bottom of center column
-                        let currentYear = getCampaignYear(state: state)
-                        let startYear = getStartYear(state: state)
-                        NativeTimelineFooter(store: store, currentYear: currentYear, baseYear: startYear)
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 14)
-                    }
-                    .frame(maxWidth: .infinity)
-
-                    Divider()
-                        .background(Color.white.opacity(0.12))
-
-                    // RIGHT COLUMN: CONSEQUENCES
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 18) {
-                            HStack {
-                                Text("CONSEQUENCES")
-                                    .font(.system(.headline, design: .monospaced).weight(.bold))
-                                    .foregroundStyle(Color.softRed)
-                                Spacer()
-                                Image(systemName: "chart.bar.xaxis")
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.softRed)
-                            }
-                            .padding(.bottom, 2)
-
-                            let alignments = Native2010WorldModel.alignments(for: state)
-                            let riskSignals = Native2010WorldModel.riskSignals(for: state)
-                            let commitments = Native2010WorldModel.commitments(for: state)
-                            let opinion = Native2010WorldModel.publicOpinion(for: state)
-                            let pressures = Native2010WorldModel.economicPressures(for: state)
-
-                            // Diplomacy List
-                            VStack(alignment: .leading, spacing: 10) {
-                                Label("2010 DIPLOMATIC ALIGNMENT", systemImage: "bubble.left.and.bubble.right")
-                                    .font(.system(.caption, design: .monospaced).weight(.bold))
-                                    .foregroundStyle(Color.neonTeal)
-
-                                VStack(spacing: 6) {
-                                    ForEach(alignments) { item in
-                                        let color = native2010RelationColor(item.relation)
-                                        HStack {
-                                            Circle()
-                                                .fill(color)
-                                                .frame(width: 6, height: 6)
-                                            Text(item.name)
-                                                .font(.caption)
-                                                .foregroundStyle(.primary)
-                                            Spacer()
-                                            Text(item.stance)
-                                                .font(.system(size: 8, design: .monospaced).weight(.bold))
-                                                .foregroundStyle(color)
-                                            Text("\(item.score)")
-                                                .font(.system(size: 10, design: .monospaced).weight(.bold))
-                                                .foregroundStyle(.secondary)
-                                        }
-                                        .padding(8)
-                                        .glassmorphicCard(borderColor: Color.white.opacity(0.06), cornerRadius: 6)
-                                    }
-                                }
-                            }
-
-                            // Active Battles Fronts
-                            VStack(alignment: .leading, spacing: 10) {
-                                Label("2010 TENSION SIGNALS", systemImage: "flame")
-                                    .font(.system(.caption, design: .monospaced).weight(.bold))
-                                    .foregroundStyle(Color.softRed)
-
-                                VStack(spacing: 6) {
-                                    ForEach(riskSignals) { signal in
-                                        BattleRow(name: signal.name, intensity: signal.intensity, color: native2010SignalColor(signal.level))
-                                    }
-                                }
-                            }
-
-                            // Troop Movements
-                            VStack(alignment: .leading, spacing: 10) {
-                                Label("2010 COMMITMENTS", systemImage: "shield.fill")
-                                    .font(.system(.caption, design: .monospaced).weight(.bold))
-                                    .foregroundStyle(Color.iceBlue)
-
-                                VStack(spacing: 6) {
-                                    ForEach(commitments) { commitment in
-                                        TroopRow(
-                                            name: commitment.name,
-                                            count: commitment.countLabel,
-                                            status: commitment.status,
-                                            color: native2010SignalColor(commitment.level)
-                                        )
-                                    }
-                                }
-                            }
-
-                            // Public Opinion Curve
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Label("PUBLIC OPINION", systemImage: "person.3.sequence.fill")
-                                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                                        .foregroundStyle(Color.glowingCyan)
-                                    Spacer()
-                                    Text("\(opinion.support)%")
-                                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                                        .foregroundStyle(Color.neonTeal)
-                                }
-
-                                // Glowing sparkline graph
-                                Path { path in
-                                    let width: CGFloat = 260
-                                    let height: CGFloat = 32
-                                    path.move(to: CGPoint(x: 0, y: height * 0.75))
-                                    path.addCurve(to: CGPoint(x: width * 0.3, y: height * 0.45), control1: CGPoint(x: width * 0.1, y: height * 0.8), control2: CGPoint(x: width * 0.2, y: height * 0.35))
-                                    path.addCurve(to: CGPoint(x: width * 0.6, y: height * 0.65), control1: CGPoint(x: width * 0.45, y: height * 0.55), control2: CGPoint(x: width * 0.5, y: height * 0.75))
-                                    path.addCurve(to: CGPoint(x: width, y: height * (1.0 - CGFloat(opinion.support) / 100.0)), control1: CGPoint(x: width * 0.8, y: height * 0.45), control2: CGPoint(x: width * 0.9, y: height * 0.25))
-                                }
-                                .stroke(Color.glowingCyan, lineWidth: 1.5)
-                                .frame(height: 32)
-                                .background(Color.white.opacity(0.02))
-                                .overlay {
-                                    Path { path in
-                                        let width: CGFloat = 260
-                                        let height: CGFloat = 32
-                                        path.move(to: CGPoint(x: 0, y: height * 0.75))
-                                        path.addCurve(to: CGPoint(x: width * 0.3, y: height * 0.45), control1: CGPoint(x: width * 0.1, y: height * 0.8), control2: CGPoint(x: width * 0.2, y: height * 0.35))
-                                        path.addCurve(to: CGPoint(x: width * 0.6, y: height * 0.65), control1: CGPoint(x: width * 0.45, y: height * 0.55), control2: CGPoint(x: width * 0.5, y: height * 0.75))
-                                        path.addCurve(to: CGPoint(x: width, y: height * (1.0 - CGFloat(opinion.support) / 100.0)), control1: CGPoint(x: width * 0.8, y: height * 0.45), control2: CGPoint(x: width * 0.9, y: height * 0.25))
-                                    }
-                                    .stroke(Color.glowingCyan.opacity(0.4), lineWidth: 4)
-                                    .blur(radius: 2)
-                                }
-
-                                HStack {
-                                    Text("Support \(opinion.support)%")
-                                        .font(.system(size: 8))
-                                        .foregroundStyle(.secondary)
-                                    Spacer()
-                                    Text("Neutral \(opinion.neutral)%")
-                                        .font(.system(size: 8))
-                                        .foregroundStyle(.secondary)
-                                    Spacer()
-                                    Text("Oppose \(opinion.oppose)%")
-                                        .font(.system(size: 8))
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-
-                            // Economic Resilience
-                            VStack(alignment: .leading, spacing: 10) {
-                                Label("ECONOMIC LEDGER", systemImage: "chart.line.uptrend.xyaxis")
-                                    .font(.system(.caption, design: .monospaced).weight(.bold))
-                                    .foregroundStyle(Color.alertGold)
-
-                                VStack(spacing: 6) {
-                                    ForEach(pressures) { pressure in
-                                        EconomicRow(
-                                            name: pressure.name,
-                                            value: pressure.value,
-                                            direction: pressure.direction,
-                                            color: native2010SignalColor(pressure.level)
-                                        )
-                                    }
-                                }
-                            }
+                            intelligenceDesk(state: state)
+                                .frame(width: isWide ? sideWidth : min(360, width * 0.34))
                         }
-                        .padding(16)
                     }
-                    .frame(width: 320)
-                    .background(Color.spaceBlack.opacity(0.95))
+                    .overlay(alignment: .topTrailing) {
+                        if isMedium {
+                            Button {
+                                withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                                    showInspector.toggle()
+                                }
+                            } label: {
+                                Label(showInspector ? "Hide dossier" : "Show dossier", systemImage: showInspector ? "sidebar.right" : "sidebar.right")
+                                    .font(NativeWarRoomTheme.labelFont(.caption))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 7)
+                            }
+                            .buttonStyle(.plain)
+                            .background(NativeWarRoomTheme.archiveShadow.opacity(0.82), in: Capsule())
+                            .overlay {
+                                Capsule().stroke(NativeWarRoomTheme.brass.opacity(0.24), lineWidth: 1)
+                            }
+                            .padding(14)
+                            .accessibilityIdentifier("native-mac-inspector-toggle")
+                        }
+                    }
+                    .background(NativeWarRoomTheme.blackboard.opacity(0.97))
                 }
-                .background(.black.opacity(0.94))
+                .frame(minWidth: 700, minHeight: 560)
                 #else
                 NativeDetailScroll(accessibilityIdentifier: "native-overview-screen") {
                     NativeHeroHeader(state: state)
@@ -1032,6 +808,324 @@ struct NativeOverviewScreen: View {
         }
         .task(id: store.state?.round ?? 0) {
             await store.refreshSuggestedActionsIfNeeded()
+        }
+    }
+
+    #if os(macOS)
+    private func commandDesk(state: NativeCampaignState) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack {
+                    Text("AI COMMAND")
+                        .font(NativeWarRoomTheme.labelFont(.headline))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
+                    Spacer()
+                    Text("DESK")
+                        .font(NativeWarRoomTheme.labelFont(.caption2))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(NativeWarRoomTheme.brass.opacity(0.14), in: RoundedRectangle(cornerRadius: 3))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
+                }
+                .padding(.bottom, 2)
+
+                // Text Field to Conduct the Game
+                VStack(alignment: .leading, spacing: 10) {
+                    TextEditor(text: $store.draftAction)
+                        .font(NativeWarRoomTheme.bodyFont())
+                        .frame(height: 72)
+                        .padding(8)
+                        .scrollContentBackground(.hidden)
+                        .background(NativeWarRoomTheme.graphite.opacity(0.72))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(NativeWarRoomTheme.brass.opacity(0.16), lineWidth: 1)
+                        }
+
+                    Button {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            store.addDraftAction()
+                        }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "paperplane.fill")
+                            Text("FILE DIRECTIVE")
+                                .font(NativeWarRoomTheme.labelFont(.caption))
+                            Spacer()
+                        }
+                        .frame(minHeight: 32)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.vertical, 6)
+                    .background(NativeWarRoomTheme.brass)
+                    .foregroundStyle(NativeWarRoomTheme.blackboard)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .disabled(store.draftAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+
+                NativeSuggestedActionsPanel(store: store)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("COMMAND HISTORY")
+                        .font(NativeWarRoomTheme.labelFont(.subheadline))
+                        .foregroundStyle(NativeWarRoomTheme.mapPaper)
+
+                    let resolved = state.plannedActions.filter { $0.status == .resolved }
+                    if resolved.isEmpty {
+                        Text("No historical directives logged.")
+                            .font(NativeWarRoomTheme.labelFont(.caption))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                    } else {
+                        VStack(spacing: 8) {
+                            ForEach(resolved.suffix(4)) { action in
+                                HStack {
+                                    Image(systemName: "checkmark.seal.fill")
+                                        .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+                                        .font(.caption)
+                                    Text(action.title)
+                                        .font(.caption)
+                                        .foregroundStyle(NativeWarRoomTheme.ink)
+                                        .lineLimit(1)
+                                    Spacer()
+                                    Text("Filed")
+                                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .regular))
+                                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                                }
+                                .padding(8)
+                                .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.12), cornerRadius: 6)
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(16)
+        }
+        .background(NativeWarRoomTheme.archiveShadow.opacity(0.95))
+    }
+
+    private func mapDesk(state: NativeCampaignState, currentYear: Int, startYear: Int) -> some View {
+        VStack(spacing: 0) {
+            NativeMapHUD(state: state)
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+
+            NativeLatestIntelTicker(latestEvent: state.timeline.first)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+            if let progress = store.turnProgress {
+                NativeTurnProgressPanel(progress: progress)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+            }
+
+            NativeWorldMap(state: state, minHeight: 320)
+                .padding(16)
+                .id(state.country.code)
+
+            Spacer()
+
+            NativeTimelineFooter(
+                store: store,
+                currentYear: currentYear,
+                baseYear: startYear,
+                onShowEvents: onShowEvents
+            )
+            .padding(.horizontal, 16)
+            .padding(.bottom, 14)
+        }
+    }
+
+    private func intelligenceDesk(state: NativeCampaignState) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack {
+                    Text("CONSEQUENCES")
+                        .font(NativeWarRoomTheme.labelFont(.headline))
+                        .foregroundStyle(NativeWarRoomTheme.threatRed)
+                    Spacer()
+                    Image(systemName: "chart.bar.xaxis")
+                        .font(.subheadline)
+                        .foregroundStyle(NativeWarRoomTheme.threatRed)
+                }
+                .padding(.bottom, 2)
+
+                let alignments = Native2010WorldModel.alignments(for: state)
+                let riskSignals = Native2010WorldModel.riskSignals(for: state)
+                let commitments = Native2010WorldModel.commitments(for: state)
+                let opinion = Native2010WorldModel.publicOpinion(for: state)
+                let pressures = Native2010WorldModel.economicPressures(for: state)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("2010 DIPLOMATIC ALIGNMENT", systemImage: "bubble.left.and.bubble.right")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                        .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+
+                    VStack(spacing: 6) {
+                        ForEach(alignments) { item in
+                            let color = native2010RelationColor(item.relation)
+                            HStack {
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 6, height: 6)
+                                Text(item.name)
+                                    .font(.caption)
+                                    .foregroundStyle(NativeWarRoomTheme.ink)
+                                Spacer()
+                                Text(item.stance)
+                                    .font(NativeWarRoomTheme.labelFont(.caption2))
+                                    .foregroundStyle(color)
+                                Text("\(item.score)")
+                                    .font(.system(size: 10, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                            }
+                            .padding(8)
+                            .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.1), cornerRadius: 6)
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("2010 TENSION SIGNALS", systemImage: "flame")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                        .foregroundStyle(NativeWarRoomTheme.threatRed)
+
+                    VStack(spacing: 6) {
+                        ForEach(riskSignals) { signal in
+                            BattleRow(name: signal.name, intensity: signal.intensity, color: native2010SignalColor(signal.level))
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("2010 COMMITMENTS", systemImage: "shield.fill")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                        .foregroundStyle(NativeWarRoomTheme.mapPaper)
+
+                    VStack(spacing: 6) {
+                        ForEach(commitments) { commitment in
+                            TroopRow(
+                                name: commitment.name,
+                                count: commitment.countLabel,
+                                status: commitment.status,
+                                color: native2010SignalColor(commitment.level)
+                            )
+                        }
+                    }
+                }
+
+                NativePublicOpinionSparkline(opinion: opinion, events: state.timeline)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("ECONOMIC LEDGER", systemImage: "chart.line.uptrend.xyaxis")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                        .foregroundStyle(NativeWarRoomTheme.alertAmber)
+
+                    VStack(spacing: 6) {
+                        ForEach(pressures) { pressure in
+                            EconomicRow(
+                                name: pressure.name,
+                                value: pressure.value,
+                                direction: pressure.direction,
+                                color: native2010SignalColor(pressure.level)
+                            )
+                        }
+                    }
+                }
+            }
+            .padding(16)
+        }
+        .background(NativeWarRoomTheme.archiveShadow.opacity(0.95))
+    }
+    #endif
+}
+
+struct NativePublicOpinionSparkline: View {
+    let opinion: Native2010PublicOpinion
+    let events: [NativeCampaignEvent]
+
+    private var supportSeries: [Int] {
+        let recentPressure = events.prefix(5).reversed().map { event in
+            event.strategicEffects.reduce(0) { partial, effect in
+                partial + effect.magnitude
+            }
+        }
+        guard !recentPressure.isEmpty else {
+            return [
+                max(0, min(100, opinion.support - 4)),
+                max(0, min(100, opinion.support - 2)),
+                opinion.support
+            ]
+        }
+
+        var running = opinion.support
+        var values = [running]
+        for pressure in recentPressure {
+            running = max(0, min(100, running + max(-6, min(6, pressure / 2))))
+            values.append(running)
+        }
+        return values
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Label("PUBLIC OPINION", systemImage: "person.3.sequence.fill")
+                    .font(NativeWarRoomTheme.labelFont(.caption))
+                    .foregroundStyle(NativeWarRoomTheme.signalCyan)
+                Spacer()
+                Text("\(opinion.support)%")
+                    .font(NativeWarRoomTheme.labelFont(.caption))
+                    .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+            }
+
+            GeometryReader { geometry in
+                let values = supportSeries
+                let width = geometry.size.width
+                let height = geometry.size.height
+                let step = values.count > 1 ? width / CGFloat(values.count - 1) : width
+                let points = values.enumerated().map { index, value in
+                    CGPoint(
+                        x: CGFloat(index) * step,
+                        y: height * (1.0 - CGFloat(value) / 100.0)
+                    )
+                }
+
+                ZStack {
+                    Rectangle()
+                        .fill(NativeWarRoomTheme.mapPaper.opacity(0.035))
+
+                    Path { path in
+                        guard let first = points.first else { return }
+                        path.move(to: first)
+                        for point in points.dropFirst() {
+                            path.addLine(to: point)
+                        }
+                    }
+                    .stroke(NativeWarRoomTheme.signalCyan, style: StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round))
+
+                    ForEach(Array(points.enumerated()), id: \.offset) { _, point in
+                        Circle()
+                            .fill(NativeWarRoomTheme.signalCyan)
+                            .frame(width: 4, height: 4)
+                            .position(point)
+                    }
+                }
+            }
+            .frame(height: 38)
+            .warRoomDossier(borderColor: NativeWarRoomTheme.signalCyan.opacity(0.18), cornerRadius: 6)
+
+            HStack {
+                Text("Support \(opinion.support)%")
+                Spacer()
+                Text("Neutral \(opinion.neutral)%")
+                Spacer()
+                Text("Oppose \(opinion.oppose)%")
+            }
+            .font(.system(size: 8))
+            .foregroundStyle(NativeWarRoomTheme.mutedInk)
         }
     }
 }
@@ -1132,12 +1226,15 @@ struct NativeMacDetailScreen: View {
     let libraryMessage: String?
     let onExportCampaign: () -> Void
     let onImportCampaign: () -> Void
+    let onSelectDestination: (NativeMacDestination) -> Void
 
     var body: some View {
         Group {
             switch destination {
             case .overview:
-                NativeOverviewScreen(store: store)
+                NativeOverviewScreen(store: store) {
+                    onSelectDestination(.events)
+                }
             case .orders:
                 NativeOrdersScreen(store: store)
             case .advisor:
@@ -1331,7 +1428,7 @@ struct NativeMapCommandBar: View {
     var body: some View {
         HStack(spacing: 10) {
             NativeAdvanceMenu(store: store)
-            NativeCommandButton(title: "Order", systemImage: "plus.circle", accessibilityIdentifier: "native-map-command-orders", action: onShowOrders)
+            NativeCommandButton(title: "Orders", systemImage: "checklist", accessibilityIdentifier: "native-map-command-orders", action: onShowOrders)
             NativeCommandButton(title: "Advisor", systemImage: "brain.head.profile", accessibilityIdentifier: "native-map-command-advisor", action: onShowAdvisor)
             NativeCommandButton(title: "Talk", systemImage: "bubble.left.and.bubble.right", accessibilityIdentifier: "native-map-command-diplomacy", action: onShowDiplomacy)
         }
@@ -1354,8 +1451,11 @@ struct NativeCommandButton: View {
     var body: some View {
         Button(action: action) {
             Label(title, systemImage: systemImage)
-                .labelStyle(.iconOnly)
-                .frame(minWidth: 52, minHeight: 44)
+                .labelStyle(.titleAndIcon)
+                .font(.system(.caption, design: .monospaced).weight(.bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(minWidth: 72, minHeight: 44)
         }
         .buttonStyle(.bordered)
         .controlSize(.large)
@@ -1387,8 +1487,11 @@ struct NativeAdvanceMenu: View {
                 .frame(minWidth: 52, minHeight: 44)
             } else {
                 Label("Advance", systemImage: "calendar.badge.clock")
-                    .labelStyle(.iconOnly)
-                    .frame(minWidth: 52, minHeight: 44)
+                    .labelStyle(.titleAndIcon)
+                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .frame(minWidth: 82, minHeight: 44)
             }
         }
         .buttonStyle(.borderedProminent)
@@ -1476,7 +1579,7 @@ struct NativeSuggestedActionsPanel: View {
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-suggested-actions-panel") {
             HStack {
-                Label("Apple-suggested actions", systemImage: "sparkles")
+                Label("Suggested actions", systemImage: "sparkles")
                     .font(.system(.headline, design: .monospaced).weight(.bold))
                     .foregroundStyle(Color.glowingCyan)
                 Spacer()
@@ -1499,8 +1602,9 @@ struct NativeSuggestedActionsPanel: View {
                 SuggestionWarning(message: suggestionError)
             }
 
-            if let state = store.state, !state.suggestedActions.isEmpty {
-                ForEach(state.suggestedActions) { suggestion in
+            let suggestions = store.state?.suggestedActions ?? []
+            if !suggestions.isEmpty {
+                ForEach(suggestions) { suggestion in
                     SuggestedActionRow(suggestion: suggestion) {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                             store.addSuggestedAction(suggestion)
@@ -1508,7 +1612,7 @@ struct NativeSuggestedActionsPanel: View {
                     }
                 }
             } else if store.isLoadingSuggestions {
-                Text("Analyzing campaign tracks via Apple Intelligence...")
+                Text("Analyzing campaign tracks...")
                     .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             } else {
@@ -1946,6 +2050,8 @@ struct NativeLibraryPanel: View {
 
 struct NativeSettingsPanel: View {
     @ObservedObject var store: NativeCampaignStore
+    @AppStorage("ZAI_API_KEY") private var zaiApiKey: String = ""
+    @AppStorage("ZAI_USE_CODING_ENDPOINT") private var zaiUseCodingEndpoint: Bool = false
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-settings-panel") {
@@ -1995,6 +2101,26 @@ struct NativeSettingsPanel: View {
                 NativeLanguagePicker(store: store, state: state)
                 NativeScenarioPicker(store: store)
                 NativeAIStatusPanel(readiness: state.aiReadiness)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Z.AI (GLM-5.1) CONFIGURATION")
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.glowingCyan)
+                    
+                    SecureField("Z.AI API Key", text: $zaiApiKey)
+                        .textFieldStyle(.roundedBorder)
+                        .accessibilityIdentifier("native-zai-api-key")
+                    
+                    Toggle("Use GLM Coding Endpoint", isOn: $zaiUseCodingEndpoint)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
+                    Text("If a Z.AI API key is provided, the turn simulation will use Z.AI's GLM-5.1 model (up to 5 concurrent calls) instead of local Apple Foundation Models.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.vertical, 8)
 
                 Button {
                     Task { await store.checkAppleStatus() }
@@ -2267,4 +2393,127 @@ func nativeFormatPercent(_ value: Double) -> String {
 
 func nativeFormatSignedPercent(_ value: Double) -> String {
     String(format: "%+.1f%%", value)
+}
+
+struct TurnTransitionOverlay: View {
+    @ObservedObject var store: NativeCampaignStore
+    @State private var consoleLogs: [String] = []
+    
+    private var engineName: String {
+        let key = UserDefaults.standard.string(forKey: "ZAI_API_KEY") ?? ""
+        return key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "LOCAL APPLE FOUNDATION" : "Z.AI GLM-5.1"
+    }
+    
+    var body: some View {
+        ZStack {
+            // Semi-transparent command overlay
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 24) {
+                Spacer()
+                
+                // Telemetry Card
+                VStack(spacing: 12) {
+                    HStack {
+                        Image(systemName: "cpu.fill")
+                            .foregroundStyle(Color.glowingCyan)
+                        Text("SIMULATION ACTIVE // \(engineName)")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.glowingCyan)
+                    }
+                    
+                    if let progress = store.turnProgress {
+                        Text(progress.phase.uppercased())
+                            .font(.system(.title3, design: .monospaced).weight(.black))
+                            .foregroundStyle(.white)
+                            .padding(.top, 4)
+                        
+                        ProgressView(value: progress.fraction)
+                            .tint(Color.glowingCyan)
+                            .frame(maxWidth: 320)
+                            .padding(.vertical, 8)
+                        
+                        Text("\(progress.completedLanes) / \(progress.totalLanes) COGNITIVE LANES RESOLVED")
+                            .font(.system(.caption, design: .monospaced).weight(.semibold))
+                            .foregroundStyle(Color.iceBlue)
+                    } else {
+                        Text("CALCULATING GEOPOLITICAL SHIFTS...")
+                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                            .foregroundStyle(.white)
+                        ProgressView()
+                            .tint(Color.glowingCyan)
+                            .padding(.vertical, 10)
+                    }
+                }
+                .padding(20)
+                .background(Color.spaceBlack.opacity(0.85))
+                .cornerRadius(12)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.glowingCyan.opacity(0.35), lineWidth: 1.5)
+                }
+                .shadow(color: Color.glowingCyan.opacity(0.18), radius: 12, x: 0, y: 0)
+                
+                // Terminal Drawer
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("ACTIVE SIMULATION CHANNEL")
+                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.alertGold)
+                        .padding(.bottom, 4)
+                    
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 6) {
+                                ForEach(Array(consoleLogs.enumerated()), id: \.offset) { _, log in
+                                    Text(log)
+                                        .font(.system(size: 10, design: .monospaced))
+                                        .foregroundStyle(log.contains("lane completed") || log.contains("Resolved") ? Color.neonTeal : Color.white.opacity(0.75))
+                                        .id(log)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .frame(height: 120)
+                        .onChange(of: consoleLogs) { _ in
+                            if let last = consoleLogs.last {
+                                withAnimation {
+                                    proxy.scrollTo(last, anchor: .bottom)
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(16)
+                .background(Color.spaceBlack.opacity(0.9))
+                .cornerRadius(10)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                }
+                .frame(maxWidth: 480)
+                .padding(.horizontal, 20)
+                
+                Spacer()
+            }
+            .padding(.bottom, 40)
+        }
+        .onAppear {
+            let initialMsg = engineName.contains("Z.AI")
+                ? "SYS // Initializing Z.AI Core Engine (GLM-5.1) parallel lanes..."
+                : "SYS // Initializing Local Apple Foundation Models..."
+            consoleLogs = [
+                initialMsg,
+                "SYS // Resolving global econ, defense, and advisor telemetry..."
+            ]
+        }
+        .onChange(of: store.turnProgress?.detail) { newDetail in
+            if let detail = newDetail, !detail.isEmpty {
+                let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
+                withAnimation {
+                    consoleLogs.append("[\(timestamp)] \(detail)")
+                }
+            }
+        }
+    }
 }
