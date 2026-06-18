@@ -1,29 +1,127 @@
 import Foundation
 import OSLog
 
+enum NativeJSONExtraction {
+    static func candidates(from rawText: String) -> [String] {
+        let trimmed = rawText
+            .replacingOccurrences(of: "\u{FEFF}", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+
+        var sources = [trimmed]
+        if trimmed.hasPrefix("```") {
+            let lines = trimmed.components(separatedBy: .newlines)
+            let unfenced = lines
+                .dropFirst()
+                .dropLast(lines.last?.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("```") == true ? 1 : 0)
+                .joined(separator: "\n")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !unfenced.isEmpty {
+                sources.append(unfenced)
+            }
+        }
+
+        var candidates: [String] = sources
+        for source in sources {
+            candidates.append(contentsOf: balancedObjects(in: source))
+        }
+
+        var seen: Set<String> = []
+        return candidates.filter { seen.insert($0).inserted }
+    }
+
+    private static func balancedObjects(in source: String) -> [String] {
+        var objects: [String] = []
+        var depth = 0
+        var start: String.Index?
+        var inString = false
+        var escaping = false
+
+        for index in source.indices {
+            let char = source[index]
+            if inString {
+                if escaping {
+                    escaping = false
+                } else if char == "\\" {
+                    escaping = true
+                } else if char == "\"" {
+                    inString = false
+                }
+                continue
+            }
+
+            if char == "\"" {
+                inString = true
+            } else if char == "{" {
+                if depth == 0 {
+                    start = index
+                }
+                depth += 1
+            } else if char == "}", depth > 0 {
+                depth -= 1
+                if depth == 0, let objectStart = start {
+                    objects.append(String(source[objectStart ... index]).trimmingCharacters(in: .whitespacesAndNewlines))
+                    start = nil
+                }
+            }
+        }
+        return objects.filter { !$0.isEmpty }
+    }
+}
+
 @MainActor
 class NativeZAIService: NativeAIService {
-    private let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeZAIService")
-    private let modelLanes: [ZAIModelLane] = [
+    let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeZAIService")
+    let defaults: UserDefaults
+    private let promptHarness = NativeFoundationModelService()
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    /// Whether the provider supports the GLM-specific "thinking" field.
+    /// OpenRouter and other non-Z.AI providers should override to false.
+    var includesThinkingField: Bool {
+        true
+    }
+
+    var modelLanes: [ZAIModelLane] = [
         ZAIModelLane(name: "glm-5", displayName: "GLM-5", maxConcurrent: 2),
         ZAIModelLane(name: "glm-4.7-flashx", displayName: "GLM-4.7-FlashX", maxConcurrent: 3),
-        ZAIModelLane(name: "glm-4.7-flash", displayName: "GLM-4.7-Flash", maxConcurrent: 1),
+        ZAIModelLane(name: "glm-4.7-flash", displayName: "GLM-4.7-Flash", maxConcurrent: 1)
     ]
+
+    var providerDisplayName: String {
+        "Z.AI"
+    }
+
+    var routeDisplayName: String {
+        useCodingEndpoint ? "Z.AI Coding Endpoint" : "Z.AI API"
+    }
+
+    var primaryModelDisplayName: String {
+        modelLanes.first?.displayName ?? "Unknown model"
+    }
+
+    var primaryModelIdentifier: String {
+        modelLanes.first?.name ?? "unknown"
+    }
+
     private var nextModelLaneStartIndex = 0
-    
-    private var apiKey: String {
-        UserDefaults.standard.string(forKey: "ZAI_API_KEY") ?? ""
+
+    var apiKey: String {
+        defaults.string(forKey: "ZAI_API_KEY") ?? ""
     }
-    
-    private var useCodingEndpoint: Bool {
-        UserDefaults.standard.bool(forKey: "ZAI_USE_CODING_ENDPOINT")
+
+    var useCodingEndpoint: Bool {
+        defaults.bool(forKey: "ZAI_USE_CODING_ENDPOINT")
     }
-    
-    private var apiEndpoint: URL {
+
+    var apiEndpoint: URL {
         if useCodingEndpoint {
-            return URL(string: "https://api.z.ai/api/coding/paas/v4/chat/completions")!
+            URL(string: "https://api.z.ai/api/coding/paas/v4/chat/completions")!
         } else {
-            return URL(string: "https://api.z.ai/api/paas/v4/chat/completions")!
+            URL(string: "https://api.z.ai/api/paas/v4/chat/completions")!
         }
     }
 
@@ -33,44 +131,44 @@ class NativeZAIService: NativeAIService {
         nextModelLaneStartIndex = (nextModelLaneStartIndex + 1) % modelLanes.count
         return Array(modelLanes[startIndex...]) + Array(modelLanes[..<startIndex])
     }
-    
+
     func checkReadiness() async -> NativeAIReadiness {
         let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         if key.isEmpty {
-            return .unavailable("Z.AI API Key not configured in System Settings.")
+            return .unavailable("\(providerDisplayName) API Key not configured in System Settings.")
         }
         do {
             _ = try await executeZAIRequest(
                 prompt: "Return exactly this JSON: {\"ok\":true}",
-                maxTokens: 12,
+                maxTokens: 16,
                 temperature: 0.0,
                 responseFormat: "json_object",
                 thinkingEnabled: false
             )
-            return .available(tokenBudget: "Z.AI model lanes verified")
+            return .available(tokenBudget: "\(providerDisplayName) model lanes verified")
         } catch {
-            logger.error("Z.AI readiness probe failed")
+            logger.error("\(self.providerDisplayName, privacy: .public) readiness probe failed")
             return .failure(error)
         }
     }
-    
+
     func generateTurn(for state: NativeCampaignState, months: Int) async throws -> NativeGeneratedTurn {
         try await generateTurn(for: state, months: months) { _ in }
     }
-    
+
     func generateTurn(
         for state: NativeCampaignState,
         months: Int,
         progress: @escaping @MainActor (NativeTurnProgress) -> Void
     ) async throws -> NativeGeneratedTurn {
-        logger.info("Z.AI turn generation started round=\(state.round) months=\(months)")
+        logger.info("\(self.providerDisplayName, privacy: .public) turn generation started round=\(state.round) months=\(months)")
         let rawTurn = try await generateSlicedTurn(for: state, months: months, progress: progress)
         do {
             let validated = try NativeGameEngine.validated(rawTurn, state: state, months: months)
-            logger.info("Z.AI turn generation validated events=\(validated.events.count)")
+            logger.info("\(self.providerDisplayName, privacy: .public) turn generation validated events=\(validated.events.count)")
             return validated
         } catch {
-            logger.error("Z.AI turn validation failed; retrying with repair instruction")
+            logger.error("\(self.providerDisplayName, privacy: .public) turn validation failed; retrying with repair instruction")
             let retryTurn = try await generateSlicedTurn(
                 for: state,
                 months: months,
@@ -79,43 +177,43 @@ class NativeZAIService: NativeAIService {
             )
             do {
                 let validated = try NativeGameEngine.validated(retryTurn, state: state, months: months)
-                logger.info("Z.AI repaired turn validated events=\(validated.events.count)")
+                logger.info("\(self.providerDisplayName, privacy: .public) repaired turn validated events=\(validated.events.count)")
                 return validated
             } catch {
-                logger.error("Z.AI repaired turn remained invalid: \(error.localizedDescription)")
+                logger.error("\(self.providerDisplayName, privacy: .public) repaired turn remained invalid: \(error.localizedDescription)")
                 throw NativeFoundationModelError.invalidGeneratedTurn(error.localizedDescription)
             }
         }
     }
-    
+
     func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
-        logger.info("Z.AI suggestions started round=\(state.round)")
+        logger.info("\(self.providerDisplayName, privacy: .public) suggestions started round=\(state.round)")
         let suggestions = try await generateStructuredSuggestions(for: state)
         let validSuggestions = suggestions.filter { isValidNativeSuggestion($0) }
         guard validSuggestions.count >= 3 else {
-            logger.error("Z.AI suggestions invalid count=\(validSuggestions.count)")
-            throw NativeFoundationModelError.invalidSuggestedActions("Expected at least three concrete suggestions from Z.AI Model.")
+            logger.error("\(self.providerDisplayName, privacy: .public) suggestions invalid count=\(validSuggestions.count)")
+            throw NativeFoundationModelError.invalidSuggestedActions("Expected at least three concrete suggestions from \(providerDisplayName).")
         }
-        logger.info("Z.AI suggestions validated count=\(validSuggestions.count)")
+        logger.info("\(self.providerDisplayName, privacy: .public) suggestions validated count=\(validSuggestions.count)")
         return Array(validSuggestions.prefix(4))
     }
-    
+
     func generateAdvisorBrief(for state: NativeCampaignState, question: String) async throws -> String {
         let safeQuestion = sanitizeFoundationModelText(question)
         guard hasConcreteFoundationText(safeQuestion, minimumWords: 2) else {
             throw NativeFoundationModelError.generationFailed("Advisor question was empty or placeholder-like.")
         }
-        
-        logger.info("Z.AI advisor generation started round=\(state.round)")
+
+        logger.info("\(self.providerDisplayName, privacy: .public) advisor generation started round=\(state.round)")
         let answer = try await generateTextResponse(
             prompt: makeAdvisorPrompt(for: state, question: safeQuestion),
             maxTokens: 520,
             repairNote: "Answer as a blunt strategic advisor in no more than three short paragraphs."
         )
-        logger.info("Z.AI advisor generation completed")
+        logger.info("\(self.providerDisplayName, privacy: .public) advisor generation completed")
         return answer
     }
-    
+
     func generateDiplomaticReply(
         for state: NativeCampaignState,
         thread: NativeDiplomaticThread,
@@ -125,19 +223,19 @@ class NativeZAIService: NativeAIService {
         guard hasConcreteFoundationText(safeMessage, minimumWords: 2) else {
             throw NativeFoundationModelError.generationFailed("Diplomatic response was empty or placeholder-like.")
         }
-        
-        logger.info("Z.AI diplomatic reply started round=\(state.round) counterpart=\(thread.participant.code)")
+
+        logger.info("\(self.providerDisplayName, privacy: .public) diplomatic reply started round=\(state.round) counterpart=\(thread.participant.code)")
         let reply = try await generateTextResponse(
             prompt: makeDiplomaticPrompt(for: state, thread: thread, message: safeMessage),
             maxTokens: 140,
             repairNote: "Draft a diplomatic response of one or two sentences in the active voice. Keep it under 140 characters."
         )
-        logger.info("Z.AI diplomatic reply completed")
+        logger.info("\(self.providerDisplayName, privacy: .public) diplomatic reply completed")
         return reply
     }
-    
+
     // MARK: - Internal Lane Slicing
-    
+
     private enum LaneResult {
         case independent(ZAIEventDraft)
         case economic(ZAIEventDraft)
@@ -145,7 +243,7 @@ class NativeZAIService: NativeAIService {
         case globalAI(ZAIEventDraft)
         case action(NativePlannedAction, ZAIEventDraft)
     }
-    
+
     private func generateSlicedTurn(
         for state: NativeCampaignState,
         months: Int,
@@ -159,17 +257,20 @@ class NativeZAIService: NativeAIService {
         var completedLanes = 0
         progress(NativeTurnProgress(
             completedLanes: completedLanes,
-            detail: "Launching external, economic, domestic, and action Z.AI lanes in parallel.",
-            phase: "Consulting Z.AI",
-            totalLanes: totalLanes
+            detail: "Calling \(routeDisplayName) with \(primaryModelDisplayName) first; other lanes may use fallback models.",
+            phase: "Consulting \(providerDisplayName)",
+            totalLanes: totalLanes,
+            providerName: providerDisplayName,
+            modelName: primaryModelDisplayName,
+            modelIdentifier: primaryModelIdentifier
         ))
-        
+
         var independentDraft: ZAIEventDraft?
         var economicDraft: ZAIEventDraft?
         var domesticDraft: ZAIEventDraft?
         var globalAIDraft: ZAIEventDraft?
         var actionDrafts: [String: ZAIEventDraft] = [:]
-        
+
         try await withThrowingTaskGroup(of: LaneResult.self) { group in
             group.addTask {
                 let draft = try await self.generateEventDraft(
@@ -208,44 +309,47 @@ class NativeZAIService: NativeAIService {
                     return .action(action, draft)
                 }
             }
-            
+
             for try await result in group {
                 completedLanes += 1
                 let phase: String
                 let detail: String
-                
+
                 switch result {
-                case .independent(let draft):
+                case let .independent(draft):
                     independentDraft = draft
                     phase = NativeFoundationTurnLane.external.title
                     detail = "External facts lane completed: \(sanitizeFoundationModelText(draft.title))"
-                case .economic(let draft):
+                case let .economic(draft):
                     economicDraft = draft
                     phase = NativeFoundationTurnLane.economy.title
                     detail = "Economic consequences lane completed: \(sanitizeFoundationModelText(draft.title))"
-                case .domestic(let draft):
+                case let .domestic(draft):
                     domesticDraft = draft
                     phase = NativeFoundationTurnLane.domestic.title
                     detail = "Domestic response lane completed: \(sanitizeFoundationModelText(draft.title))"
-                case .globalAI(let draft):
+                case let .globalAI(draft):
                     globalAIDraft = draft
                     phase = NativeFoundationTurnLane.external.title
                     detail = "Global AI Action lane completed: \(sanitizeFoundationModelText(draft.title))"
-                case .action(let action, let draft):
+                case let .action(action, draft):
                     actionDrafts[action.id] = draft
                     phase = NativeFoundationTurnLane.actionConsequence.title
                     detail = "Resolved \(sanitizeFoundationModelText(action.title)): \(sanitizeFoundationModelText(draft.title))"
                 }
-                
+
                 progress(NativeTurnProgress(
                     completedLanes: completedLanes,
                     detail: detail,
                     phase: phase,
-                    totalLanes: totalLanes
+                    totalLanes: totalLanes,
+                    providerName: providerDisplayName,
+                    modelName: primaryModelDisplayName,
+                    modelIdentifier: primaryModelIdentifier
                 ))
             }
         }
-        
+
         var events: [NativeCampaignEvent] = []
         if let independent = independentDraft {
             events.append(independent.toNativeEvent(
@@ -294,23 +398,29 @@ class NativeZAIService: NativeAIService {
                 ))
             }
         }
-        
+
         progress(NativeTurnProgress(
             completedLanes: max(0, totalLanes - 1),
             detail: "Synthesizing lane outputs into one validated turn.",
             phase: NativeFoundationTurnLane.summary.title,
-            totalLanes: totalLanes
+            totalLanes: totalLanes,
+            providerName: providerDisplayName,
+            modelName: primaryModelDisplayName,
+            modelIdentifier: primaryModelIdentifier
         ))
-        
+
         let summary = try await generateTurnSummary(state: state, months: months, events: events)
         progress(NativeTurnProgress(
             completedLanes: totalLanes,
-            detail: "Z.AI turn synthesis completed.",
+            detail: "\(providerDisplayName) turn synthesis completed.",
             phase: NativeFoundationTurnLane.summary.title,
-            totalLanes: totalLanes
+            totalLanes: totalLanes,
+            providerName: providerDisplayName,
+            modelName: primaryModelDisplayName,
+            modelIdentifier: primaryModelIdentifier
         ))
-        logger.info("Z.AI sliced turn assembled events=\(events.count)")
-        
+        logger.info("\(self.providerDisplayName, privacy: .public) sliced turn assembled events=\(events.count)")
+
         return NativeGeneratedTurn(
             events: events,
             stabilityDelta: summary.stabilityDelta,
@@ -318,13 +428,13 @@ class NativeZAIService: NativeAIService {
             worldTensionDelta: summary.globalFrictionDelta
         )
     }
-    
+
     private func generateEventDraft(
         prompt: String,
         state: NativeCampaignState
     ) async throws -> ZAIEventDraft {
         var repairNotes: [String] = []
-        for attempt in 1...3 {
+        for attempt in 1 ... 3 {
             do {
                 logger.info("Z.AI event draft attempt=\(attempt)")
                 let draft: ZAIEventDraft = try await generateStructuredJSON(
@@ -349,7 +459,7 @@ class NativeZAIService: NativeAIService {
         }
         throw NativeFoundationModelError.generationFailed("Z.AI Models returned placeholder event content after three attempts.")
     }
-    
+
     private func generateTurnSummary(
         state: NativeCampaignState,
         months: Int,
@@ -363,7 +473,7 @@ class NativeZAIService: NativeAIService {
             temperature: 0.0
         )
     }
-    
+
     private func generateStructuredSuggestions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
         let focusAreas = [
             "fiscal ledger, budget balance, debt, and market confidence",
@@ -371,9 +481,9 @@ class NativeZAIService: NativeAIService {
             "map conflict, border pressure, regional logistics, and service corridors",
             "diplomacy, trade balance, global friction, and regional relations",
             "infrastructure, energy, climate resilience, and unemployment",
-            "education, service access, administrative capacity, and action memory",
+            "education, service access, administrative capacity, and action memory"
         ]
-        
+
         var suggestions: [NativeSuggestedAction] = []
         await withTaskGroup(of: (Int, NativeSuggestedAction?).self) { group in
             for (index, focus) in focusAreas.enumerated() {
@@ -412,7 +522,7 @@ class NativeZAIService: NativeAIService {
         let basePrompt = makeSuggestionPrompt(for: state, focus: focus, index: index + 1)
         var repairNotes: [String] = []
 
-        for attempt in 1...2 {
+        for attempt in 1 ... 2 {
             do {
                 logger.info("Z.AI suggestion attempt focus=\(index + 1) attempt=\(attempt)")
                 let suggestion: ZAISuggestedAction = try await generateStructuredJSON(
@@ -439,16 +549,16 @@ class NativeZAIService: NativeAIService {
 
         return nil
     }
-    
+
     // MARK: - Core API Caller
-    
+
     private func generateTextResponse(
         prompt: String,
         maxTokens: Int,
         repairNote: String
     ) async throws -> String {
         var repairNotes: [String] = []
-        for attempt in 1...2 {
+        for attempt in 1 ... 2 {
             do {
                 logger.info("Z.AI text generation attempt=\(attempt)")
                 let text = try await executeZAIRequest(
@@ -473,7 +583,7 @@ class NativeZAIService: NativeAIService {
         }
         throw NativeFoundationModelError.generationFailed("Z.AI returned empty or placeholder text after repair.")
     }
-    
+
     private func generateStructuredJSON<T: Decodable>(
         prompt: String,
         schema: String,
@@ -482,11 +592,11 @@ class NativeZAIService: NativeAIService {
     ) async throws -> T {
         let combinedPrompt = """
         \(prompt)
-        
+
         Required JSON schema:
         \(schema)
         """
-        
+
         let rawResponse = try await executeZAIRequest(
             prompt: combinedPrompt,
             maxTokens: maximumResponseTokens,
@@ -494,7 +604,7 @@ class NativeZAIService: NativeAIService {
             responseFormat: "json_object",
             thinkingEnabled: false
         )
-        
+
         let decoder = JSONDecoder()
         for candidate in foundationJSONCandidates(from: rawResponse) {
             guard let data = candidate.data(using: .utf8) else { continue }
@@ -502,12 +612,12 @@ class NativeZAIService: NativeAIService {
                 return decoded
             }
         }
-        
+
         logger.error("Z.AI JSON decoding failed for response: \(rawResponse)")
         throw NativeFoundationModelError.generationFailed("Z.AI returned invalid strict JSON.")
     }
-    
-    private func executeZAIRequest(
+
+    func executeZAIRequest(
         prompt: String,
         maxTokens: Int,
         temperature: Double,
@@ -516,14 +626,14 @@ class NativeZAIService: NativeAIService {
     ) async throws -> String {
         let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !key.isEmpty else {
-            throw NativeFoundationModelError.modelUnavailable("Z.AI API Key is empty. Please set it in system settings.")
+            throw NativeFoundationModelError.modelUnavailable("\(providerDisplayName) API Key is empty. Please set it in system settings.")
         }
-        
+
         let systemMsg: [String: Any] = [
             "role": "system",
             "content": nativeSystemPrompt
         ]
-        
+
         let userMsg: [String: Any] = [
             "role": "user",
             "content": prompt
@@ -531,7 +641,7 @@ class NativeZAIService: NativeAIService {
 
         var lastError: Error?
         for lane in orderedModelLanes {
-            await lane.limiter.enter()
+            try await lane.limiter.enter()
             var releaseLane = true
             var request = URLRequest(url: apiEndpoint)
             request.httpMethod = "POST"
@@ -545,11 +655,13 @@ class NativeZAIService: NativeAIService {
                 "messages": [systemMsg, userMsg],
                 "stream": false,
                 "temperature": temperature,
-                "max_tokens": maxTokens,
-                "thinking": [
+                "max_tokens": maxTokens
+            ]
+            if includesThinkingField {
+                payload["thinking"] = [
                     "type": thinkingEnabled ? "enabled" : "disabled"
                 ]
-            ]
+            }
             if let responseFormat {
                 payload["response_format"] = ["type": responseFormat]
             }
@@ -559,16 +671,16 @@ class NativeZAIService: NativeAIService {
                 let (data, response) = try await URLSession.shared.data(for: request)
 
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    throw NativeFoundationModelError.generationFailed("Invalid response format from Z.AI API model=\(lane.name).")
+                    throw NativeFoundationModelError.generationFailed("Invalid response format from \(providerDisplayName) model=\(lane.name).")
                 }
 
                 guard httpResponse.statusCode == 200 else {
                     let errorText = String(data: data, encoding: .utf8) ?? "HTTP \(httpResponse.statusCode)"
-                    throw NativeFoundationModelError.generationFailed("Z.AI API returned status \(httpResponse.statusCode) model=\(lane.name): \(errorText)")
+                    throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned status \(httpResponse.statusCode) model=\(lane.name): \(errorText)")
                 }
 
                 do {
-                    let content = try Self.decodeCompletionContent(from: data)
+                    let content = try Self.decodeCompletionContent(from: data, providerDisplayName: providerDisplayName)
                     lane.limiter.exit()
                     releaseLane = false
                     return content
@@ -576,7 +688,7 @@ class NativeZAIService: NativeAIService {
                     if thinkingEnabled {
                         lane.limiter.exit()
                         releaseLane = false
-                        logger.error("Z.AI visible content failed with thinking; retrying without thinking model=\(lane.name, privacy: .public) error=\(error.localizedDescription, privacy: .public)")
+                        logger.error("\(self.providerDisplayName, privacy: .public) visible content failed with thinking; retrying without thinking model=\(lane.name, privacy: .public) error=\(error.localizedDescription, privacy: .public)")
                         return try await executeZAIRequest(
                             prompt: prompt,
                             maxTokens: maxTokens,
@@ -592,14 +704,14 @@ class NativeZAIService: NativeAIService {
                     lane.limiter.exit()
                 }
                 lastError = error
-                logger.error("Z.AI request failed model=\(lane.name, privacy: .public) limit=\(lane.maxConcurrent) error=\(error.localizedDescription, privacy: .public)")
+                logger.error("\(self.providerDisplayName, privacy: .public) request failed model=\(lane.name, privacy: .public) limit=\(lane.maxConcurrent) error=\(error.localizedDescription, privacy: .public)")
             }
         }
 
-        throw lastError ?? NativeFoundationModelError.generationFailed("Z.AI request failed for all configured models.")
+        throw lastError ?? NativeFoundationModelError.generationFailed("\(providerDisplayName) request failed for all configured models.")
     }
 
-    nonisolated static func decodeCompletionContent(from data: Data) throws -> String {
+    nonisolated static func decodeCompletionContent(from data: Data, providerDisplayName: String = "Z.AI") throws -> String {
         struct ZAICompletionResponse: Decodable {
             struct Choice: Decodable {
                 struct Message: Decodable {
@@ -629,312 +741,159 @@ class NativeZAIService: NativeAIService {
             decoded = try JSONDecoder().decode(ZAICompletionResponse.self, from: data)
         } catch {
             let rawPrefix = String(data: data.prefix(600), encoding: .utf8) ?? "<non-utf8>"
-            throw NativeFoundationModelError.generationFailed("Z.AI response decode failed: \(error.localizedDescription). Raw prefix: \(rawPrefix)")
+            throw NativeFoundationModelError.generationFailed("\(providerDisplayName) response decode failed: \(error.localizedDescription). Raw prefix: \(rawPrefix)")
         }
         guard let firstChoice = decoded.choices.first else {
-            throw NativeFoundationModelError.generationFailed("Z.AI API returned empty choices.")
+            throw NativeFoundationModelError.generationFailed("\(providerDisplayName) API returned empty choices.")
         }
 
         let content = firstChoice.message.content?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let reasoning = firstChoice.message.reasoningContent?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
         if let reason = firstChoice.finishReason,
-           ["length", "sensitive", "model_context_window_exceeded", "network_error"].contains(reason) {
-            throw NativeFoundationModelError.generationFailed("Z.AI returned no visible content (finish_reason=\(reason), choices=\(decoded.choices.count), content_chars=\(content.count), reasoning_chars=\(reasoning.count)).")
+           ["length", "sensitive", "model_context_window_exceeded", "network_error"].contains(reason)
+        {
+            throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned no visible content (finish_reason=\(reason), choices=\(decoded.choices.count), content_chars=\(content.count), reasoning_chars=\(reasoning.count)).")
         }
 
         if !content.isEmpty {
             return strippingZAIThinkingTags(from: content)
         }
 
-        throw NativeFoundationModelError.generationFailed("Z.AI returned no visible content (finish_reason=\(firstChoice.finishReason ?? "nil"), choices=\(decoded.choices.count), content_chars=\(content.count), reasoning_chars=\(reasoning.count)).")
+        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned no visible content (finish_reason=\(firstChoice.finishReason ?? "nil"), choices=\(decoded.choices.count), content_chars=\(content.count), reasoning_chars=\(reasoning.count)).")
     }
 
-    nonisolated private static func strippingZAIThinkingTags(from content: String) -> String {
+    private nonisolated static func strippingZAIThinkingTags(from content: String) -> String {
         var output = content
         while let startRange = output.range(of: "<think>"),
-              let endRange = output.range(of: "</think>", range: startRange.upperBound..<output.endIndex) {
-            output.removeSubrange(startRange.lowerBound..<endRange.upperBound)
+              let endRange = output.range(of: "</think>", range: startRange.upperBound ..< output.endIndex)
+        {
+            output.removeSubrange(startRange.lowerBound ..< endRange.upperBound)
         }
         return output.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
-    // MARK: - Prompt & Text Helpers (Replicated from Foundation Service)
-    
+
+    // MARK: - Prompt & Text Helpers
+
     private var nativeSystemPrompt: String {
-        """
-        You are the game master for SwiftHistoria, a turn-based civic strategy board game.
-        You narrate events like an experienced analyst covering fictional regional developments.
-        Be specific: name agencies, cite budget figures, reference corridors and sectors.
-        Every event should read like a headline from a planning-industry trade journal.
-        Use concrete fictional agencies, dates, sectors, and measurable game effects.
-        Connect every answer to the current campaign mechanics instead of giving generic advice.
-        Follow the request's response-language instruction for all player-facing prose.
-        Keep schema field names, enum values, identifiers, IDs, dates, and game tokens exactly as requested.
-        """
+        NativePromptHarness.sharedSystemPrompt
     }
-    
+
     private func isValidNativeSuggestion(_ suggestion: NativeSuggestedAction) -> Bool {
         hasConcreteFoundationText(suggestion.title, minimumWords: 2) &&
             hasConcreteFoundationText(suggestion.detail, minimumWords: 8) &&
             hasConcreteFoundationText(suggestion.rationale, minimumWords: 8) &&
             normalizedFoundationUrgency(suggestion.urgency) == suggestion.urgency
     }
-    
+
     private func eventPrompt(_ basePrompt: String, state: NativeCampaignState, repairNotes: [String]) -> String {
         let repairBlock = repairNotes.isEmpty ? "" : "\n\nEvent repair notes:\n\(repairNotes.map { "- \($0)" }.joined(separator: "\n"))"
-        
+
         let recentTitles = state.timeline
             .prefix(4)
             .map { sanitizeFoundationModelText($0.title) }
             .filter { !$0.isEmpty }
-        
+
         let deduplicationLine = recentTitles.isEmpty ? "" : "\nDo not reuse these themes: \(recentTitles.joined(separator: "; "))."
-        
+
         return """
         \(basePrompt)\(repairBlock)\(deduplicationLine)
-        
+
         Return one strict JSON object only. Do not include markdown fences, prose, schema labels, or comments.
+        Banned title words: Apple, Native, Generated, Draft, Placeholder, Schema.
+        Use a concrete title like Transit Funding Review, Grid Capacity Program, or School Access Plan.
         """
     }
-    
+
     private func textPrompt(_ basePrompt: String, repairNotes: [String]) -> String {
         guard !repairNotes.isEmpty else { return basePrompt }
         return """
         \(basePrompt)
-        
+
         Recent correction requests:
         \(repairNotes.map { "- \($0)" }.joined(separator: "\n"))
+        Do not return placeholder text, schema labels, unsafe operational instructions, or repeated sentences.
         """
     }
-    
+
     private func suggestionPrompt(_ basePrompt: String, repairNotes: [String]) -> String {
         let repairBlock = repairNotes.isEmpty ? "" : "\n\nSuggestion repair notes:\n\(repairNotes.map { "- \($0)" }.joined(separator: "\n"))"
         return """
         \(basePrompt)\(repairBlock)
-        
+
         Return one strict JSON object only. Do not include markdown fences, prose, schema labels, or comments.
+        Banned title words: Apple, Native, Generated, Draft, Placeholder, Schema.
         """
     }
-    
+
     private func foundationJSONCandidates(from rawText: String) -> [String] {
-        let trimmed = rawText
-            .replacingOccurrences(of: "\u{FEFF}", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return [] }
-        
-        var candidates = [trimmed]
-        if trimmed.hasPrefix("```") {
-            let lines = trimmed.components(separatedBy: .newlines)
-            let unfenced = lines
-                .dropFirst()
-                .dropLast(lines.last?.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("```") == true ? 1 : 0)
-                .joined(separator: "\n")
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            if !unfenced.isEmpty {
-                candidates.append(unfenced)
-            }
-        }
-        
-        if let start = trimmed.firstIndex(of: "{"), let end = trimmed.lastIndex(of: "}"), start <= end {
-            let object = String(trimmed[start...end]).trimmingCharacters(in: .whitespacesAndNewlines)
-            if !object.isEmpty {
-                candidates.append(object)
-            }
-        }
-        
-        var seen: Set<String> = []
-        return candidates.filter { seen.insert($0).inserted }
+        NativeJSONExtraction.candidates(from: rawText)
     }
-    
-    // Delegate make... prompts to the static context database or local helper copies
+
+    /// Reuse the Apple-native prompt harness so external providers stay aligned with
+    /// the same scenario, mechanics, language, and repair contracts.
     private func makeIndependentEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
-        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        return """
-        Create one external planning development for a SwiftHistoria board-game turn.
-        \(languageInstruction(for: state))
-        It must be unrelated to the selected region except through broad economic, logistics, climate, energy, education, or market conditions.
-        Include one measurable game effect.
-        The period starts on \(state.gameDate) and ends on \(targetDate).
-        \(repairInstruction != nil ? "Repair note: \(repairInstruction!)" : "")
-        
-        \(independentEventExamples(for: state.language))
-        
-        \(recentContext(for: state))
-        """
+        promptHarness.makeIndependentEventPrompt(for: state, months: months, repairInstruction: repairInstruction)
     }
-    
+
     private func makeEconomicEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
-        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        return """
-        Create one selected-region economic assessment event for a SwiftHistoria board-game turn.
-        \(languageInstruction(for: state))
-        Focus on budget surplus or deficit, fiscal space, debt pressure, inflation, growth, trade balance, unemployment, and the cost of planned commitments.
-        Include one measurable game effect using either market-confidence or economic-resilience.
-        The period starts on \(state.gameDate) and ends on \(targetDate).
-        \(repairInstruction != nil ? "Repair note: \(repairInstruction!)" : "")
-        
-        \(hexLeverCodeInstruction())
-        
-        Economic examples:
-        [Example 1]
-        {"title":"Quarterly Fiscal Outlook Narrows","description":"The treasury office updates its revenue forecast after weaker customs intake and higher service commitments, trimming available fiscal space for the next planning period.","kind":"economy","importance":"major","notable":true,"effectTarget":"\(state.country.code)","effectTrack":"market-confidence","effectMagnitude":-1,"effectSummary":"A narrower budget balance weighs on market confidence and slows discretionary spending.","hexLeverCode":"0x0D0004"}
-        
-        \(recentContext(for: state))
-        """
+        promptHarness.makeEconomicEventPrompt(for: state, months: months, repairInstruction: repairInstruction)
     }
-    
+
     private func makeDomesticEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
-        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        return """
-        Create one domestic public-security assessment event for a SwiftHistoria board-game turn.
-        \(languageInstruction(for: state))
-        Focus on domestic agency operations, public services, border logistics, infrastructure tension, or public safety.
-        Include one measurable game effect.
-        The period starts on \(state.gameDate) and ends on \(targetDate).
-        \(repairInstruction != nil ? "Repair note: \(repairInstruction!)" : "")
-        
-        \(hexLeverCodeInstruction())
-        
-        \(recentContext(for: state))
-        """
+        promptHarness.makeDomesticEventPrompt(for: state, months: months, repairInstruction: repairInstruction)
     }
-    
+
     private func makeGlobalAIActionsPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
-        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        let aiDetails = state.aiCountryStates.sorted(by: { $0.key < $1.key }).map { code, aiState in
-            "- \(code): doctrine=\(aiState.doctrine.rawValue), agenda=\"\(aiState.multiTurnAgenda)\""
-        }.joined(separator: "\n")
-        
-        return """
-        Create one geopolitical or economic action event initiated by one of the autonomous non-player countries.
-        \(languageInstruction(for: state))
-        Look at their doctrines and multi-turn agendas:
-        \(aiDetails)
-        
-        Author an event representing an action taken by one of these countries to advance their agenda.
-        The event must target the initiator country or one of its rivals, altering market confidence, global friction, or stability.
-        
-        Use the 'hexLeverCode' to nudge conflict borders or economic ledgers for the initiator or target.
-        The period starts on \(state.gameDate) and ends on \(targetDate).
-        \(repairInstruction != nil ? "Repair note: \(repairInstruction!)" : "")
-        
-        \(hexLeverCodeInstruction())
-        
-        Examples:
-        [Example 1]
-        {"title":"China Secures Highland Resource Access","description":"China completes a transit corridor integration with neighboring highland districts, securing primary resource inputs to advance its mercantile doctrine.","kind":"world","importance":"major","notable":true,"effectTarget":"CHN","effectTrack":"economic-resilience","effectMagnitude":2,"effectSummary":"Corridor integration secures resource supply, raising economic resilience.","hexLeverCode":"0x120004"}
-        
-        \(recentContext(for: state))
-        """
+        promptHarness.makeGlobalAIActionsPrompt(for: state, months: months, repairInstruction: repairInstruction)
     }
-    
+
     private func makeActionEventPrompt(for state: NativeCampaignState, action: NativePlannedAction, months: Int, repairInstruction: String?) -> String {
-        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        let safeTitle = sanitizeFoundationModelText(String(action.title.prefix(60)))
-        let safeDetail = sanitizeFoundationModelText(String(action.detail.prefix(220)))
-        
-        return """
-        Create one civic action-consequence event for a SwiftHistoria board-game turn.
-        \(languageInstruction(for: state))
-        The user has implemented this concrete action: "\(safeTitle)" - details: "\(safeDetail)".
-        Describe the operational rollout and direct consequences of this specific action over the turn.
-        Include one measurable game effect using either market-confidence or economic-resilience.
-        The period starts on \(state.gameDate) and ends on \(targetDate).
-        \(repairInstruction != nil ? "Repair note: \(repairInstruction!)" : "")
-        
-        \(hexLeverCodeInstruction())
-        
-        \(recentContext(for: state))
-        """
+        promptHarness.makeActionEventPrompt(for: state, action: action, months: months, repairInstruction: repairInstruction)
     }
-    
+
     private func makeSummaryPrompt(for state: NativeCampaignState, months: Int, events: [NativeCampaignEvent]) -> String {
-        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        let eventBriefs = events.map { "- \($0.title): \($0.strategicEffects.first?.summary ?? "")" }.joined(separator: "\n")
-        return """
-        Synthesize these \(events.count) turn developments into a single concise summary sentence.
-        \(languageInstruction(for: state))
-        Developments:
-        \(eventBriefs)
-        
-        Evaluate aggregate stabilityDelta (-12 to 12) and globalFrictionDelta (-8 to 8) based on these occurrences.
-        Period: \(state.gameDate) to \(targetDate).
-        Return one strict JSON object only following the summary schema.
-        """
+        promptHarness.makeSummaryPrompt(for: state, months: months, events: events)
     }
-    
+
     private func makeAdvisorPrompt(for state: NativeCampaignState, question: String) -> String {
-        return """
-        Strategic advisor consultation.
-        \(languageInstruction(for: state))
-        Answer in no more than three short paragraphs. Finish every sentence; do not stop mid-phrase.
-        Current Date: \(state.gameDate)
-        Selected Country: \(state.country.name) (\(state.country.code))
-        Stability: \(state.stability)/100
-        World Tension: \(state.worldTension)/100
-        
-        Player's question: "\(question)"
-        
-        Provide a sharp, evidence-based strategic briefing context.
-        """
+        promptHarness.makeAdvisorPrompt(for: state, question: question)
     }
-    
+
     private func makeDiplomaticPrompt(for state: NativeCampaignState, thread: NativeDiplomaticThread, message: String) -> String {
-        let participant = thread.participant
-        let dialogue = thread.messages.map { "- \($0.speaker): \($0.text)" }.joined(separator: "\n")
-        return """
-        Draft a diplomatic response from \(state.country.name) to \(participant.name) (\(participant.code)).
-        Language: \(state.language == .portuguese ? "Portuguese" : "English")
-        Counterpart doctrine: \(state.aiCountryStates[participant.code]?.doctrine.rawValue ?? "collaborative")
-        Dialogue history:
-        \(dialogue)
-        
-        Counterpart's statement: "\(message)"
-        
-        Write a short response (under 140 chars).
-        """
+        promptHarness.makeDiplomacyPrompt(for: state, thread: thread, message: message)
     }
-    
+
     private func makeSuggestionPrompt(for state: NativeCampaignState, focus: String, index: Int) -> String {
-        let primaryMetric = "stability"
-        return """
-        Create one board-game suggestion proposal (proposal \(index)).
-        Language: \(state.language == .portuguese ? "Portuguese" : "English")
-        Selected Country: \(state.country.name)
-        Focus area: \(focus)
-        Primary metric: \(primaryMetric)
-        
-        Provide a concrete neutral proposal.
-        """
+        promptHarness.makeSuggestionPrompt(for: state, focus: focus, index: index)
     }
-    
+
     private func recentContext(for state: NativeCampaignState) -> String {
         let recent = state.timeline.prefix(2)
         if recent.isEmpty { return "No recent events." }
         return "Recent event context:\n" + recent.map { "- \($0.title): \($0.description)" }.joined(separator: "\n")
     }
-    
+
     private func languageInstruction(for state: NativeCampaignState) -> String {
-        return state.language == .portuguese ? "Write all description and summary fields in Portuguese." : "Write all description and summary fields in English."
+        state.language == .portuguese ? "Write all description and summary fields in Portuguese." : "Write all description and summary fields in English."
     }
-    
+
     private func independentEventExamples(for lang: NativeGameLanguage) -> String {
         if lang == .portuguese {
-            return """
+            """
             [Exemplo 1]
             {"title":"Índice de Frete Marítimo Estabiliza","description":"A demanda por comércio transatlântico se alinha com a capacidade de navios cargueiros, reduzindo custos de trânsito em corredores globais de suprimentos.","kind":"world","importance":"major","notable":true,"effectTarget":"GLOBAL","effectTrack":"market-confidence","effectMagnitude":1,"effectSummary":"Custos estáveis de frete marítimo reduzem a fricção de importação, apoiando o comércio."}
             """
         } else {
-            return """
+            """
             [Exemplo 1]
             {"title":"Maritime Freight Index Stabilizes","description":"Transatlantic shipping demand aligns with carrier capacity, easing transit costs across major logistics corridors.","kind":"world","importance":"major","notable":true,"effectTarget":"GLOBAL","effectTrack":"market-confidence","effectMagnitude":1,"effectSummary":"Stable shipping costs ease import friction, supporting global trade."}
             """
         }
     }
-    
+
     private func hexLeverCodeInstruction() -> String {
-        return """
+        """
         Hexadecimal Lever Code:
         Output a `"hexLeverCode"` representing standard economic deltas. Use an 8-nibble map nudge only when this prompt explicitly asks for a conflict, border, insurgency, fallout, stabilization, conquest, or de-escalation change; otherwise use a 6-nibble economic code or null.
         Sovereignty change option:
@@ -955,7 +914,7 @@ class NativeZAIService: NativeAIService {
 // MARK: - Concurrency Limiter Implementation
 
 @MainActor
-private final class ZAIModelLane {
+final class ZAIModelLane {
     let name: String
     let displayName: String
     let maxConcurrent: Int
@@ -965,37 +924,62 @@ private final class ZAIModelLane {
         self.name = name
         self.displayName = displayName
         self.maxConcurrent = maxConcurrent
-        self.limiter = ConcurrencyLimiter(maxConcurrent: maxConcurrent)
+        limiter = ConcurrencyLimiter(maxConcurrent: maxConcurrent)
     }
 }
 
 @MainActor
 class ConcurrencyLimiter {
+    private struct Waiter {
+        let id: UUID
+        let continuation: CheckedContinuation<Bool, Never>
+    }
+
     private let maxConcurrent: Int
     private var activeCount = 0
-    private var suspendedTasks: [CheckedContinuation<Void, Never>] = []
-    
+    private var suspendedTasks: [Waiter] = []
+
     init(maxConcurrent: Int) {
         self.maxConcurrent = maxConcurrent
     }
-    
-    func enter() async {
+
+    func enter() async throws {
+        let waiterID = UUID()
         if activeCount < maxConcurrent {
             activeCount += 1
-        } else {
+            return
+        }
+
+        let entered = await withTaskCancellationHandler {
             await withCheckedContinuation { continuation in
-                suspendedTasks.append(continuation)
+                suspendedTasks.append(Waiter(id: waiterID, continuation: continuation))
+            }
+        } onCancel: {
+            Task { @MainActor in
+                self.cancel(waiterID)
             }
         }
+
+        guard entered, !Task.isCancelled else {
+            throw CancellationError()
+        }
     }
-    
+
     func exit() {
         if !suspendedTasks.isEmpty {
             let next = suspendedTasks.removeFirst()
-            next.resume()
+            next.continuation.resume(returning: true)
         } else {
-            activeCount -= 1
+            activeCount = max(0, activeCount - 1)
         }
+    }
+
+    private func cancel(_ waiterID: UUID) {
+        guard let index = suspendedTasks.firstIndex(where: { $0.id == waiterID }) else {
+            return
+        }
+        let waiter = suspendedTasks.remove(at: index)
+        waiter.continuation.resume(returning: false)
     }
 }
 
@@ -1013,17 +997,17 @@ private struct ZAIEventDraft: Decodable {
     var effectSummary: String
     var hexLeverCode: String?
     var sovereigntyChange: NativeSovereigntyChange?
-    
+
     var hasConcreteContent: Bool {
         hasConcreteFoundationText(title, minimumWords: 2) &&
             hasConcreteFoundationText(description, minimumWords: 6) &&
             hasConcreteFoundationText(effectSummary, minimumWords: 6)
     }
-    
+
     var validationDiagnostics: String {
         "titleWords=\(title.split(separator: " ").count) descWords=\(description.split(separator: " ").count)"
     }
-    
+
     func toNativeEvent(
         state: NativeCampaignState,
         months: Int,
@@ -1033,11 +1017,15 @@ private struct ZAIEventDraft: Decodable {
     ) -> NativeCampaignEvent {
         let eventDate = NativeGameEngine.advance(date: state.gameDate, months: months)
         let eventID = "zai-event-\(state.round)-\(index)-\(UUID().uuidString.prefix(6).lowercased())"
-        
+
         let target = effectTarget == "GLOBAL" ? "GLOBAL" : (effectTarget == "PLAYER" ? state.country.code : effectTarget)
-        let safeTrack: NativeStrategicTrack = effectTrack == "market-confidence" ? .marketConfidence : .economicResilience
+        let normalizedTrack = effectTrack
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: "_", with: "-")
+        let safeTrack = NativeStrategicTrack(rawValue: normalizedTrack) ?? .economicResilience
         let safeKind: NativeEventKind = kind == "economy" ? .economy : (kind == "domestic" ? .action : .world)
-        
+
         let targetEffect = NativeStrategicEffect(
             date: eventDate,
             eventId: eventID,
@@ -1047,7 +1035,7 @@ private struct ZAIEventDraft: Decodable {
             target: sanitizeFoundationModelText(target),
             track: safeTrack
         )
-        
+
         return NativeCampaignEvent(
             date: eventDate,
             description: sanitizeFoundationModelText(description),
@@ -1063,7 +1051,7 @@ private struct ZAIEventDraft: Decodable {
             sovereigntyChange: sovereigntyChange
         )
     }
-    
+
     static let schemaInstructions = """
     {
       "title": "Strict short news headline of the event.",
@@ -1072,7 +1060,7 @@ private struct ZAIEventDraft: Decodable {
       "importance": "minor, major, or critical",
       "notable": true,
       "effectTarget": "Country code like USA, CHN, or GLOBAL",
-      "effectTrack": "market-confidence or economic-resilience",
+      "effectTrack": "economic-resilience, market-confidence, diplomatic-leverage, internal-stability, world-tension, military-readiness, or security-anxiety",
       "effectMagnitude": -3 to 3,
       "effectSummary": "One concise sentence describing the game mechanics effect.",
       "hexLeverCode": "0xCode or null",
@@ -1085,7 +1073,7 @@ private struct ZAITurnSummary: Decodable {
     var summary: String
     var stabilityDelta: Int
     var globalFrictionDelta: Int
-    
+
     static let schemaInstructions = """
     {
       "summary": "One concise sentence summarizing why the generated period matters.",
@@ -1100,13 +1088,13 @@ private struct ZAISuggestedAction: Decodable {
     var detail: String
     var rationale: String
     var urgency: String
-    
+
     var hasConcreteContent: Bool {
         hasConcreteFoundationText(title, minimumWords: 2) &&
             hasConcreteFoundationText(detail, minimumWords: 6) &&
             hasConcreteFoundationText(rationale, minimumWords: 6)
     }
-    
+
     func toNativeSuggestion(state: NativeCampaignState, index: Int) -> NativeSuggestedAction {
         NativeSuggestedAction(
             detail: sanitizeFoundationModelText(detail),
@@ -1116,7 +1104,7 @@ private struct ZAISuggestedAction: Decodable {
             urgency: normalizedFoundationUrgency(urgency)
         )
     }
-    
+
     static let schemaInstructions = """
     {
       "title": "Short imperative title for the civic proposal.",
@@ -1130,96 +1118,253 @@ private struct ZAISuggestedAction: Decodable {
 @MainActor
 class DynamicAIService: NativeAIService {
     private let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "DynamicAIService")
-    private let zaiService = NativeZAIService()
+    private let defaults: UserDefaults
+    private let openRouterService: NativeOpenRouterService
+    private let zaiService: NativeZAIService
     private let foundationService = NativeFoundationModelService()
-    
-    private var useZAIService: Bool {
-        let key = UserDefaults.standard.string(forKey: "ZAI_API_KEY") ?? ""
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.openRouterService = NativeOpenRouterService(defaults: defaults)
+        self.zaiService = NativeZAIService(defaults: defaults)
+    }
+
+    private var providerPreference: NativeAIProviderPreference {
+        NativeAIProviderPreference.current(defaults: defaults)
+    }
+
+    private var hasOpenRouterKey: Bool {
+        let key = defaults.string(forKey: "OPENROUTER_API_KEY") ?? ""
         return !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
-    
+
+    private var hasZAIKey: Bool {
+        let key = defaults.string(forKey: "ZAI_API_KEY") ?? ""
+        return !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     func checkReadiness() async -> NativeAIReadiness {
-        if useZAIService {
-            return await zaiService.checkReadiness()
-        } else {
+        switch providerPreference {
+        case .appleFoundation:
+            return await foundationService.checkReadiness()
+        case .openRouter:
+            if hasOpenRouterKey {
+                let openRouterReadiness = await openRouterService.checkReadiness()
+                if openRouterReadiness.ok {
+                    return openRouterReadiness
+                }
+                if hasZAIKey {
+                    let zaiReadiness = await zaiService.checkReadiness()
+                    if zaiReadiness.ok {
+                        return .available(tokenBudget: "OpenRouter unavailable; Z.AI fallback verified")
+                    }
+                }
+                let appleReadiness = await foundationService.checkReadiness()
+                if appleReadiness.ok {
+                    return .available(tokenBudget: "OpenRouter unavailable; Apple Foundation Models fallback verified")
+                }
+                return openRouterReadiness
+            }
+            if hasZAIKey { return await zaiService.checkReadiness() }
+            return await foundationService.checkReadiness()
+        case .zai:
+            if hasZAIKey { return await zaiService.checkReadiness() }
             return await foundationService.checkReadiness()
         }
     }
-    
-    func generateTurn(for state: NativeCampaignState, months: Int) async throws -> NativeGeneratedTurn {
-        if useZAIService {
+
+    private func generateWithAppleFallback<T>(
+        label: String,
+        operation: () async throws -> T,
+        appleOperation: () async throws -> T
+    ) async throws -> T {
+        do {
+            return try await operation()
+        } catch {
+            logger.error("\(label, privacy: .public) failed; trying Apple Foundation Models. error=\(error.localizedDescription, privacy: .public)")
             do {
-                return try await zaiService.generateTurn(for: state, months: months)
+                return try await appleOperation()
             } catch {
-                let zaiError = error
-                logger.error("Z.AI turn failed; trying Apple Foundation Models. z_ai_error=\(zaiError.localizedDescription, privacy: .public)")
-                do {
-                    return try await foundationService.generateTurn(for: state, months: months)
-                } catch {
-                    logger.error("Apple Foundation turn also failed. apple_error=\(error.localizedDescription, privacy: .public)")
-                    throw NativeFoundationModelError.generationFailed("Turn generation failed on Z.AI and Apple Foundation Models. Z.AI: \(zaiError.localizedDescription) Apple: \(error.localizedDescription)")
-                }
+                logger.error("Apple Foundation fallback also failed. apple_error=\(error.localizedDescription, privacy: .public)")
+                throw error
             }
         }
-        return try await foundationService.generateTurn(for: state, months: months)
     }
-    
+
+    func generateTurn(for state: NativeCampaignState, months: Int) async throws -> NativeGeneratedTurn {
+        switch providerPreference {
+        case .appleFoundation:
+            return try await foundationService.generateTurn(for: state, months: months)
+        case .openRouter:
+            if hasOpenRouterKey {
+                do {
+                    logger.info("OpenRouter turn generation started round=\(state.round)")
+                    return try await openRouterService.generateTurn(for: state, months: months)
+                } catch {
+                    logger.error("OpenRouter turn failed; trying configured fallback. openrouter_error=\(error.localizedDescription, privacy: .public)")
+                }
+            }
+            if hasZAIKey {
+                return try await generateWithAppleFallback(
+                    label: "Z.AI turn",
+                    operation: { try await self.zaiService.generateTurn(for: state, months: months) },
+                    appleOperation: { try await self.foundationService.generateTurn(for: state, months: months) }
+                )
+            }
+            return try await foundationService.generateTurn(for: state, months: months)
+        case .zai:
+            if hasZAIKey {
+                return try await generateWithAppleFallback(
+                    label: "Z.AI turn",
+                    operation: { try await self.zaiService.generateTurn(for: state, months: months) },
+                    appleOperation: { try await self.foundationService.generateTurn(for: state, months: months) }
+                )
+            }
+            return try await foundationService.generateTurn(for: state, months: months)
+        }
+    }
+
     func generateTurn(
         for state: NativeCampaignState,
         months: Int,
         progress: @escaping @MainActor (NativeTurnProgress) -> Void
     ) async throws -> NativeGeneratedTurn {
-        if useZAIService {
-            do {
-                return try await zaiService.generateTurn(for: state, months: months, progress: progress)
-            } catch {
-                let zaiError = error
-                logger.error("Z.AI turn failed; trying Apple Foundation Models. z_ai_error=\(zaiError.localizedDescription, privacy: .public)")
+        let total = NativeStrategyContextDatabase.estimatedLaneCount(for: state)
+
+        switch providerPreference {
+        case .appleFoundation:
+            return try await foundationService.generateTurn(for: state, months: months, progress: progress)
+        case .openRouter:
+            if hasOpenRouterKey {
                 do {
-                    return try await foundationService.generateTurn(for: state, months: months, progress: progress)
+                    logger.info("OpenRouter turn generation started round=\(state.round)")
+                    return try await openRouterService.generateTurn(for: state, months: months, progress: progress)
                 } catch {
-                    logger.error("Apple Foundation turn also failed. apple_error=\(error.localizedDescription, privacy: .public)")
-                    throw NativeFoundationModelError.generationFailed("Turn generation failed on Z.AI and Apple Foundation Models. Z.AI: \(zaiError.localizedDescription) Apple: \(error.localizedDescription)")
+                    logger.error("OpenRouter turn failed; trying configured fallback. openrouter_error=\(error.localizedDescription, privacy: .public)")
+                    let fallbackProvider = hasZAIKey ? "Z.AI" : "Apple Foundation Models"
+                    progress(NativeTurnProgress(
+                        completedLanes: 0,
+                        detail: "OpenRouter failed: \(error.localizedDescription). Trying \(fallbackProvider) fallback now.",
+                        phase: hasZAIKey ? "Falling back to Z.AI" : "Falling back to Apple",
+                        totalLanes: total,
+                        providerName: hasZAIKey ? "Z.AI" : "Apple Foundation Models",
+                        modelName: hasZAIKey ? zaiService.primaryModelDisplayName : "System Language Model",
+                        modelIdentifier: hasZAIKey ? zaiService.primaryModelIdentifier : "SystemLanguageModel.default"
+                    ))
+                }
+            } else {
+                progress(NativeTurnProgress(
+                    completedLanes: 0,
+                    detail: hasZAIKey ? "OpenRouter is selected, but no OpenRouter API key is saved. Trying Z.AI fallback now." : "OpenRouter is selected, but no OpenRouter API key is saved. Trying Apple Foundation Models now.",
+                    phase: hasZAIKey ? "Falling back to Z.AI" : "Falling back to Apple",
+                    totalLanes: total,
+                    providerName: hasZAIKey ? "Z.AI" : "Apple Foundation Models",
+                    modelName: hasZAIKey ? zaiService.primaryModelDisplayName : "System Language Model",
+                    modelIdentifier: hasZAIKey ? zaiService.primaryModelIdentifier : "SystemLanguageModel.default"
+                ))
+            }
+            if hasZAIKey {
+                do {
+                    return try await zaiService.generateTurn(for: state, months: months, progress: progress)
+                } catch {
+                    logger.error("Z.AI turn failed; trying Apple Foundation Models. z_ai_error=\(error.localizedDescription, privacy: .public)")
+                    progress(NativeTurnProgress(
+                        completedLanes: 0,
+                        detail: "Z.AI failed: \(error.localizedDescription). Trying Apple Foundation Models now.",
+                        phase: "Falling back to Apple",
+                        totalLanes: total,
+                        providerName: "Apple Foundation Models",
+                        modelName: "System Language Model",
+                        modelIdentifier: "SystemLanguageModel.default"
+                    ))
                 }
             }
+            return try await foundationService.generateTurn(for: state, months: months, progress: progress)
+        case .zai:
+            if hasZAIKey {
+                do {
+                    return try await zaiService.generateTurn(for: state, months: months, progress: progress)
+                } catch {
+                    logger.error("Z.AI turn failed; trying Apple Foundation Models. z_ai_error=\(error.localizedDescription, privacy: .public)")
+                    progress(NativeTurnProgress(
+                        completedLanes: 0,
+                        detail: "Z.AI failed: \(error.localizedDescription). Trying Apple Foundation Models now.",
+                        phase: "Falling back to Apple",
+                        totalLanes: total,
+                        providerName: "Apple Foundation Models",
+                        modelName: "System Language Model",
+                        modelIdentifier: "SystemLanguageModel.default"
+                    ))
+                }
+            } else {
+                progress(NativeTurnProgress(
+                    completedLanes: 0,
+                    detail: "Z.AI is selected, but no Z.AI API key is saved. Trying Apple Foundation Models now.",
+                    phase: "Falling back to Apple",
+                    totalLanes: total,
+                    providerName: "Apple Foundation Models",
+                    modelName: "System Language Model",
+                    modelIdentifier: "SystemLanguageModel.default"
+                ))
+            }
+            return try await foundationService.generateTurn(for: state, months: months, progress: progress)
         }
-        return try await foundationService.generateTurn(for: state, months: months, progress: progress)
     }
-    
+
     func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
-        if useZAIService {
-            do {
-                return try await zaiService.generateSuggestedActions(for: state)
-            } catch {
-                let zaiError = error
-                logger.error("Z.AI suggestions failed; trying Apple Foundation Models. z_ai_error=\(zaiError.localizedDescription, privacy: .public)")
-                do {
-                    return try await foundationService.generateSuggestedActions(for: state)
-                } catch {
-                    logger.error("Apple Foundation suggestions also failed. apple_error=\(error.localizedDescription, privacy: .public)")
-                    throw NativeFoundationModelError.generationFailed("Suggested actions failed on Z.AI and Apple Foundation Models. Z.AI: \(zaiError.localizedDescription) Apple: \(error.localizedDescription)")
-                }
+        switch providerPreference {
+        case .appleFoundation:
+            return try await foundationService.generateSuggestedActions(for: state)
+        case .openRouter:
+            if hasOpenRouterKey, let result = try? await openRouterService.generateSuggestedActions(for: state) { return result }
+            if hasZAIKey {
+                return try await generateWithAppleFallback(
+                    label: "Z.AI suggestions",
+                    operation: { try await self.zaiService.generateSuggestedActions(for: state) },
+                    appleOperation: { try await self.foundationService.generateSuggestedActions(for: state) }
+                )
             }
+            return try await foundationService.generateSuggestedActions(for: state)
+        case .zai:
+            if hasZAIKey {
+                return try await generateWithAppleFallback(
+                    label: "Z.AI suggestions",
+                    operation: { try await self.zaiService.generateSuggestedActions(for: state) },
+                    appleOperation: { try await self.foundationService.generateSuggestedActions(for: state) }
+                )
+            }
+            return try await foundationService.generateSuggestedActions(for: state)
         }
-        return try await foundationService.generateSuggestedActions(for: state)
     }
-    
+
     func generateAdvisorBrief(for state: NativeCampaignState, question: String) async throws -> String {
-        if useZAIService {
-            return try await zaiService.generateAdvisorBrief(for: state, question: question)
-        } else {
+        switch providerPreference {
+        case .appleFoundation:
+            return try await foundationService.generateAdvisorBrief(for: state, question: question)
+        case .openRouter:
+            if hasOpenRouterKey, let result = try? await openRouterService.generateAdvisorBrief(for: state, question: question) { return result }
+            if hasZAIKey, let result = try? await zaiService.generateAdvisorBrief(for: state, question: question) { return result }
+            return try await foundationService.generateAdvisorBrief(for: state, question: question)
+        case .zai:
+            if hasZAIKey, let result = try? await zaiService.generateAdvisorBrief(for: state, question: question) { return result }
             return try await foundationService.generateAdvisorBrief(for: state, question: question)
         }
     }
-    
+
     func generateDiplomaticReply(
         for state: NativeCampaignState,
         thread: NativeDiplomaticThread,
         message: String
     ) async throws -> String {
-        if useZAIService {
-            return try await zaiService.generateDiplomaticReply(for: state, thread: thread, message: message)
-        } else {
+        switch providerPreference {
+        case .appleFoundation:
+            return try await foundationService.generateDiplomaticReply(for: state, thread: thread, message: message)
+        case .openRouter:
+            if hasOpenRouterKey, let result = try? await openRouterService.generateDiplomaticReply(for: state, thread: thread, message: message) { return result }
+            if hasZAIKey, let result = try? await zaiService.generateDiplomaticReply(for: state, thread: thread, message: message) { return result }
+            return try await foundationService.generateDiplomaticReply(for: state, thread: thread, message: message)
+        case .zai:
+            if hasZAIKey, let result = try? await zaiService.generateDiplomaticReply(for: state, thread: thread, message: message) { return result }
             return try await foundationService.generateDiplomaticReply(for: state, thread: thread, message: message)
         }
     }

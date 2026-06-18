@@ -1,0 +1,41 @@
+# SwiftFormat configuration — https://github.com/nicklockwood/SwiftFormat
+#
+# This project's style is enforced by SwiftFormat. SwiftLint (see .swiftlint.yml)
+# handles semantic rules only; SwiftFormat owns all style/whitespace/brace rules.
+#
+# Run `script/format.sh` to auto-format, `script/lint.sh` to check without
+# modifying files. CI runs `swiftformat --lint` as a strict gate.
+#
+# The options below are intentionally minimal: they describe the style the
+# codebase already follows (4-space indent, K&R braces, no trailing whitespace)
+# without imposing line wrapping (the project uses long lines for SwiftUI
+# modifier chains and OSLog privacy-annotated interpolations).
+
+--swift-version 6
+
+# Files and directories to skip (build output, Xcode user state)
+--exclude Apple/build,.build,Apple/PaxHistoriaApple.xcodeproj/xcuserdata,*.xcuserdata,Apple/PaxHistoriaApple.xcodeproj/project.xcworkspace/xcuserdata
+
+# Indentation: 4 spaces (matches existing code)
+--indent 4
+
+# K&R brace style (opening brace on same line) — matches existing code
+--allman false
+
+# Preserve file header comments (don't strip license/attribution blocks)
+--header ignore
+
+# Trim trailing whitespace on all lines
+--trim-whitespace always
+
+# Match existing trailing-comma usage (none on simple lists)
+--trailing-commas never
+
+# Disable line wrapping — the project intentionally uses long lines for
+# SwiftUI chains and OSLog privacy annotations. Re-enable per-file if desired.
+--disable wrap
+
+# Preserve explicit `self.` — the project uses Swift 6 strict concurrency and
+# requires explicit `self.` inside OSLog autoclosures and escaping closures.
+# SwiftFormat's `redundantSelf` rule would strip these and break the build.
+--disable redundantSelf

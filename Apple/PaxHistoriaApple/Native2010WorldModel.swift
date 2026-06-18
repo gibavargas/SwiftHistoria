@@ -39,7 +39,10 @@ struct Native2010CountryProfile: Codable, Hashable {
 }
 
 struct Native2010Alignment: Identifiable, Hashable {
-    var id: String { name }
+    var id: String {
+        name
+    }
+
     let name: String
     let stance: String
     let score: Int
@@ -47,14 +50,20 @@ struct Native2010Alignment: Identifiable, Hashable {
 }
 
 struct Native2010RiskSignal: Identifiable, Hashable {
-    var id: String { name }
+    var id: String {
+        name
+    }
+
     let name: String
     let intensity: String
     let level: Native2010SignalLevel
 }
 
 struct Native2010Commitment: Identifiable, Hashable {
-    var id: String { name }
+    var id: String {
+        name
+    }
+
     let name: String
     let countLabel: String
     let status: String
@@ -62,7 +71,10 @@ struct Native2010Commitment: Identifiable, Hashable {
 }
 
 struct Native2010EconomicPressure: Identifiable, Hashable {
-    var id: String { name }
+    var id: String {
+        name
+    }
+
     let name: String
     let value: String
     let direction: EconomicDirection
@@ -72,11 +84,16 @@ struct Native2010EconomicPressure: Identifiable, Hashable {
 struct Native2010PublicOpinion: Hashable {
     let support: Int
     let neutral: Int
-    var oppose: Int { max(0, 100 - support - neutral) }
+    var oppose: Int {
+        max(0, 100 - support - neutral)
+    }
 }
 
 struct Native2010MapSector: Identifiable, Hashable {
-    var id: String { code }
+    var id: String {
+        code
+    }
+
     let name: String
     let code: String
     let latitude: Double
@@ -240,35 +257,35 @@ enum Native2010WorldModel {
     static func alignments(for state: NativeCampaignState) -> [Native2010Alignment] {
         switch state.country.code {
         case "USA":
-            return [
+            [
                 Native2010Alignment(name: "NATO", stance: "Ally", score: 82, relation: .ally),
                 Native2010Alignment(name: "Japan Treaty", stance: "Ally", score: 76, relation: .ally),
                 Native2010Alignment(name: "China", stance: "Competitor", score: 46, relation: .rival),
                 Native2010Alignment(name: "Russia Reset", stance: "Watch", score: 52, relation: .watch)
             ]
         case "BRA":
-            return [
+            [
                 Native2010Alignment(name: "Mercosur", stance: "Partner", score: 78, relation: .partner),
                 Native2010Alignment(name: "UNASUR", stance: "Partner", score: 68, relation: .partner),
                 Native2010Alignment(name: "United States", stance: "Partner", score: 61, relation: .partner),
                 Native2010Alignment(name: "Venezuela", stance: "Watch", score: 48, relation: .watch)
             ]
         case "CHN":
-            return [
+            [
                 Native2010Alignment(name: "Russia", stance: "Partner", score: 64, relation: .partner),
                 Native2010Alignment(name: "ASEAN Trade", stance: "Partner", score: 58, relation: .partner),
                 Native2010Alignment(name: "United States", stance: "Competitor", score: 47, relation: .rival),
                 Native2010Alignment(name: "Japan", stance: "Watch", score: 43, relation: .watch)
             ]
         case "DEU", "FRA", "GBR":
-            return [
+            [
                 Native2010Alignment(name: "European Union", stance: "Ally", score: 78, relation: .ally),
                 Native2010Alignment(name: "NATO", stance: "Ally", score: 73, relation: .ally),
                 Native2010Alignment(name: "Russia Energy", stance: "Watch", score: 49, relation: .watch),
                 Native2010Alignment(name: "G20", stance: "Partner", score: 65, relation: .partner)
             ]
         default:
-            return [
+            [
                 Native2010Alignment(name: "United Nations", stance: "Neutral", score: 55, relation: .neutral),
                 Native2010Alignment(name: "G20 System", stance: "Partner", score: 58, relation: .partner),
                 Native2010Alignment(name: "Regional Neighbors", stance: "Watch", score: 50, relation: .watch),
@@ -280,25 +297,25 @@ enum Native2010WorldModel {
     static func riskSignals(for state: NativeCampaignState) -> [Native2010RiskSignal] {
         switch state.country.code {
         case "USA", "GBR", "FRA", "DEU":
-            return [
+            [
                 Native2010RiskSignal(name: "Afghanistan War", intensity: "High", level: .high),
                 Native2010RiskSignal(name: "Eurozone Debt Stress", intensity: "Medium", level: .medium),
                 Native2010RiskSignal(name: "Iran Nuclear File", intensity: "Medium", level: .medium)
             ]
         case "BRA":
-            return [
+            [
                 Native2010RiskSignal(name: "Haiti Stabilization Mission", intensity: "Medium", level: .medium),
                 Native2010RiskSignal(name: "Commodity Price Volatility", intensity: "Medium", level: .medium),
                 Native2010RiskSignal(name: "Amazon Infrastructure Pressure", intensity: "Low", level: .low)
             ]
         case "CHN", "JPN", "KOR":
-            return [
+            [
                 Native2010RiskSignal(name: "Korean Peninsula", intensity: "High", level: .high),
                 Native2010RiskSignal(name: "South China Sea Claims", intensity: "Medium", level: .medium),
                 Native2010RiskSignal(name: "Export Demand Volatility", intensity: "Medium", level: .medium)
             ]
         default:
-            return [
+            [
                 Native2010RiskSignal(name: "Global Recovery Fragility", intensity: "Medium", level: .medium),
                 Native2010RiskSignal(name: "Energy Price Volatility", intensity: "Medium", level: .medium),
                 Native2010RiskSignal(name: "Food Price Pressure", intensity: "Low", level: .low)
@@ -309,19 +326,19 @@ enum Native2010WorldModel {
     static func commitments(for state: NativeCampaignState) -> [Native2010Commitment] {
         switch state.country.code {
         case "USA":
-            return [
+            [
                 Native2010Commitment(name: "Afghanistan Commitment", countLabel: "NATO-led", status: "Active", level: .high),
                 Native2010Commitment(name: "Iraq Drawdown", countLabel: "Transition", status: "Reducing", level: .medium),
                 Native2010Commitment(name: "Korea Deterrence", countLabel: "Alliance", status: "Standing", level: .medium)
             ]
         case "BRA":
-            return [
+            [
                 Native2010Commitment(name: "Haiti MINUSTAH Role", countLabel: "UN mission", status: "Active", level: .medium),
                 Native2010Commitment(name: "Mercosur Mediation", countLabel: "Regional", status: "Engaged", level: .medium),
                 Native2010Commitment(name: "Pre-salt Energy Buildout", countLabel: "Domestic", status: "Scaling", level: .low)
             ]
         default:
-            return [
+            [
                 Native2010Commitment(name: "UN Diplomacy", countLabel: "Multilateral", status: "Active", level: .medium),
                 Native2010Commitment(name: "Trade Corridor Watch", countLabel: "Economic", status: "Monitoring", level: .low),
                 Native2010Commitment(name: "Energy Security Planning", countLabel: "Domestic", status: "Staging", level: .medium)

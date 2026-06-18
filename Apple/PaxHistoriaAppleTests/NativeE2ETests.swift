@@ -1,9 +1,8 @@
-import XCTest
 @testable import SwiftHistoria
+import XCTest
 
 @MainActor
 final class NativeE2ETests: XCTestCase {
-
     private let testCountry = PlayerCountry(code: "USA", name: "United States")
 
     func testEndToEndGameSessionFlow() async throws {
@@ -44,6 +43,7 @@ final class NativeE2ETests: XCTestCase {
 
         XCTAssertEqual(initialState.stability, expectedStability)
         XCTAssertEqual(initialState.worldTension, expectedWorldTension)
+        XCTAssertEqual(NativeGameEngine.campaignObjectives(for: initialState).count, 3)
 
         // Verify ledger properties exist
         let initialUSALedger = try XCTUnwrap(initialState.economicLedgers["USA"])
@@ -51,6 +51,9 @@ final class NativeE2ETests: XCTestCase {
 
         // 4. Create and queue a planned civic proposal
         store.draftAction = "Launch regional energy and transport corridor optimization project."
+        let draftPreview = NativeGameEngine.previewDirective(store.draftAction, in: initialState)
+        XCTAssertEqual(draftPreview.cost, 60)
+        XCTAssertNil(draftPreview.warning)
         store.addDraftAction()
 
         let stateWithAction = try XCTUnwrap(store.state)
@@ -117,6 +120,10 @@ final class NativeE2ETests: XCTestCase {
         let stateTurn2 = try XCTUnwrap(store.state)
         XCTAssertEqual(stateTurn2.round, 2)
         XCTAssertEqual(stateTurn2.gameDate, "2010-04-15") // advanced 3 months from 2010-01-15
+        let afterActionTurn = try XCTUnwrap(store.lastTurnReport)
+        let afterActionReport = NativeGameEngine.afterActionReport(for: afterActionTurn, state: stateTurn2)
+        XCTAssertEqual(afterActionReport.resolvedOrderCount, 1)
+        XCTAssertTrue(afterActionReport.summary.contains("E2E turn simulation"))
 
         // Verify action is resolved
         let resolvedAction = try XCTUnwrap(stateTurn2.plannedActions.first { $0.id == plannedAction.id })
@@ -151,6 +158,27 @@ final class NativeE2ETests: XCTestCase {
         let chnThread = try XCTUnwrap(stateDiplomacy.diplomaticThreads.first { $0.participant.code == "CHN" })
         XCTAssertTrue(chnThread.messages.contains { $0.speaker == partner.name && $0.text.contains("E2E Diplomatic Response") })
 
+        var treatyState = stateDiplomacy
+        treatyState.activeOffers = [
+            NativeDiplomaticOffer(
+                id: "offer-e2e-trade",
+                proposerCode: "CHN",
+                type: .tradeAgreement,
+                description: "E2E trade corridor agreement with measurable growth benefits.",
+                stabilityCost: 1,
+                relationshipEffect: 8,
+                growthDelta: 0.2,
+                status: .pending,
+                turnProposed: treatyState.round
+            )
+        ]
+        store.state = treatyState
+        store.acceptDiplomaticOffer(id: "offer-e2e-trade")
+        let stateTreaty = try XCTUnwrap(store.state)
+        XCTAssertEqual(stateTreaty.activeOffers.first?.status, .accepted)
+        XCTAssertTrue(stateTreaty.timeline.contains { $0.title.contains("Treaty Signed") })
+        let usaLedgerAfterTreaty = try XCTUnwrap(stateTreaty.economicLedgers["USA"])
+
         // 8. Test Export, Clean Reset, and Import (Persistence Recovery)
         let exportedData = try store.exportCampaignData()
         XCTAssertFalse(exportedData.isEmpty)
@@ -169,20 +197,20 @@ final class NativeE2ETests: XCTestCase {
 
         // Assert that the state matches the exported store state exactly
         let importedState = try XCTUnwrap(otherStore.state)
-        XCTAssertEqual(importedState.round, stateDiplomacy.round)
-        XCTAssertEqual(importedState.gameDate, stateDiplomacy.gameDate)
-        XCTAssertEqual(importedState.country.code, stateDiplomacy.country.code)
-        XCTAssertEqual(importedState.stability, stateDiplomacy.stability)
-        XCTAssertEqual(importedState.worldTension, stateDiplomacy.worldTension)
-        XCTAssertEqual(importedState.plannedActions.count, stateDiplomacy.plannedActions.count)
-        XCTAssertEqual(importedState.actionMemory.count, stateDiplomacy.actionMemory.count)
-        XCTAssertEqual(importedState.advisorMessages.count, stateDiplomacy.advisorMessages.count)
-        XCTAssertEqual(importedState.diplomaticThreads.count, stateDiplomacy.diplomaticThreads.count)
+        XCTAssertEqual(importedState.round, stateTreaty.round)
+        XCTAssertEqual(importedState.gameDate, stateTreaty.gameDate)
+        XCTAssertEqual(importedState.country.code, stateTreaty.country.code)
+        XCTAssertEqual(importedState.stability, stateTreaty.stability)
+        XCTAssertEqual(importedState.worldTension, stateTreaty.worldTension)
+        XCTAssertEqual(importedState.plannedActions.count, stateTreaty.plannedActions.count)
+        XCTAssertEqual(importedState.actionMemory.count, stateTreaty.actionMemory.count)
+        XCTAssertEqual(importedState.advisorMessages.count, stateTreaty.advisorMessages.count)
+        XCTAssertEqual(importedState.diplomaticThreads.count, stateTreaty.diplomaticThreads.count)
 
         // Verify ledger matches exactly
         let importedUSALedger = try XCTUnwrap(importedState.economicLedgers["USA"])
-        XCTAssertEqual(importedUSALedger.nominalGDPTrillions, usaLedgerTurn2.nominalGDPTrillions, accuracy: 0.0001)
-        XCTAssertEqual(importedUSALedger.realGrowthPercent, usaLedgerTurn2.realGrowthPercent, accuracy: 0.0001)
+        XCTAssertEqual(importedUSALedger.nominalGDPTrillions, usaLedgerAfterTreaty.nominalGDPTrillions, accuracy: 0.0001)
+        XCTAssertEqual(importedUSALedger.realGrowthPercent, usaLedgerAfterTreaty.realGrowthPercent, accuracy: 0.0001)
 
         // 9. Advance another turn in the imported store to ensure operational continuity
         fakeAI.nextTurnEvents = [
@@ -218,7 +246,7 @@ final class NativeE2ETests: XCTestCase {
         XCTAssertTrue(finalState.timeline.contains { $0.id == "event-external-2" })
     }
 
-    // Helpers
+    /// Helpers
     private func makeCleanDefaults() -> UserDefaults {
         let suiteName = "NativeE2ETests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -243,7 +271,7 @@ private final class FakeE2EAIService: NativeAIService {
         .available(tokenBudget: "fake-e2e")
     }
 
-    func generateTurn(for state: NativeCampaignState, months: Int) async throws -> NativeGeneratedTurn {
+    func generateTurn(for state: NativeCampaignState, months _: Int) async throws -> NativeGeneratedTurn {
         NativeGeneratedTurn(
             events: nextTurnEvents.isEmpty ? [
                 NativeCampaignEvent(
@@ -297,17 +325,17 @@ private final class FakeE2EAIService: NativeAIService {
         )
     }
 
-    func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
+    func generateSuggestedActions(for _: NativeCampaignState) async throws -> [NativeSuggestedAction] {
         [
             NativeSuggestedAction(detail: "E2E suggested action detail.", id: "sug-e2e-1", rationale: "E2E suggestion rationale.", title: "E2E Suggested Action", urgency: "soon")
         ]
     }
 
-    func generateAdvisorBrief(for state: NativeCampaignState, question: String) async throws -> String {
+    func generateAdvisorBrief(for _: NativeCampaignState, question _: String) async throws -> String {
         "E2E Advisor Advice: Prioritize transport corridors to bolster growth."
     }
 
-    func generateDiplomaticReply(for state: NativeCampaignState, thread: NativeDiplomaticThread, message: String) async throws -> String {
+    func generateDiplomaticReply(for _: NativeCampaignState, thread _: NativeDiplomaticThread, message _: String) async throws -> String {
         "E2E Diplomatic Response: China welcomes corridor integration discussions."
     }
 }

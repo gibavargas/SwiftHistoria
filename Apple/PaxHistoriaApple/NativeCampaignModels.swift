@@ -7,41 +7,45 @@ enum NativeGameMode: String, Codable, CaseIterable, Identifiable, Hashable {
     case normal = "Normal"
     case ironman = "Iron Man"
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var description: String {
         switch self {
-        case .sandbox: return "Unlimited administrative freedom and light consequences."
-        case .normal: return "Standard campaign conditions with active crisis events."
-        case .ironman: return "Sovereign risks are doubled, and reloading is disabled."
+        case .sandbox: String(localized: "Unlimited administrative freedom and light consequences.")
+        case .normal: String(localized: "Standard campaign conditions with active crisis events.")
+        case .ironman: String(localized: "Sovereign risks are doubled, and reloading is disabled.")
         }
     }
 }
 
 enum NativeTerrainType: String, Codable, CaseIterable, Identifiable, Hashable {
-    case ocean = "ocean"
-    case strait = "strait"
-    case sea = "sea"
-    case city = "city"
-    case forest = "forest"
-    case cerrado = "cerrado"
-    case swamp = "swamp"
-    case mountain = "mountain"
-    case plains = "plains"
+    case ocean
+    case strait
+    case sea
+    case city
+    case forest
+    case cerrado
+    case swamp
+    case mountain
+    case plains
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var displayName: String {
         switch self {
-        case .ocean: return "Ocean"
-        case .strait: return "Strait"
-        case .sea: return "Sea"
-        case .city: return "City"
-        case .forest: return "Forest"
-        case .cerrado: return "Cerrado"
-        case .swamp: return "Swamp"
-        case .mountain: return "Mountain"
-        case .plains: return "Plains"
+        case .ocean: String(localized: "Ocean")
+        case .strait: String(localized: "Strait")
+        case .sea: String(localized: "Sea")
+        case .city: String(localized: "City")
+        case .forest: String(localized: "Forest")
+        case .cerrado: String(localized: "Cerrado")
+        case .swamp: String(localized: "Swamp")
+        case .mountain: String(localized: "Mountain")
+        case .plains: String(localized: "Plains")
         }
     }
 }
@@ -51,22 +55,24 @@ enum NativeRegionConflictMode: String, Codable, CaseIterable, Identifiable, Hash
     case conventionalOccupation = "conventional-occupation"
     case guerrillaControl = "guerrilla-control"
     case nuclearFallout = "nuclear-fallout"
-    case stabilization = "stabilization"
+    case stabilization
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var displayName: String {
         switch self {
         case .contestedBorder:
-            return "Contested border"
+            String(localized: "Contested border")
         case .conventionalOccupation:
-            return "Conventional occupation"
+            String(localized: "Conventional occupation")
         case .guerrillaControl:
-            return "Guerrilla control"
+            String(localized: "Guerrilla control")
         case .nuclearFallout:
-            return "Nuclear fallout"
+            String(localized: "Nuclear fallout")
         case .stabilization:
-            return "Stabilization corridor"
+            String(localized: "Stabilization corridor")
         }
     }
 }
@@ -89,7 +95,9 @@ struct NativeRegionConflictState: Codable, Hashable, Identifiable {
     var summary: String
     var updatedAt: String
 
-    var id: String { regionID }
+    var id: String {
+        regionID
+    }
 
     init(
         controllerCode: String,
@@ -122,32 +130,36 @@ struct NativeRegionConflictState: Codable, Hashable, Identifiable {
 }
 
 enum NativeAIDoctrine: String, Codable, CaseIterable, Identifiable, Hashable {
-    case mercantile = "mercantile"
-    case expansionist = "expansionist"
-    case isolationist = "isolationist"
-    case defensive = "defensive"
-    case collaborative = "collaborative"
+    case mercantile
+    case expansionist
+    case isolationist
+    case defensive
+    case collaborative
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var displayName: String {
         switch self {
-        case .mercantile: return "Mercantile"
-        case .expansionist: return "Expansionist"
-        case .isolationist: return "Isolationist"
-        case .defensive: return "Defensive"
-        case .collaborative: return "Collaborative"
+        case .mercantile: String(localized: "Mercantile")
+        case .expansionist: String(localized: "Expansionist")
+        case .isolationist: String(localized: "Isolationist")
+        case .defensive: String(localized: "Defensive")
+        case .collaborative: String(localized: "Collaborative")
         }
     }
 }
 
 enum NativeAIBudgetPriority: String, Codable, CaseIterable, Identifiable, Hashable {
-    case growth = "growth"
-    case stability = "stability"
-    case military = "military"
-    case diplomacy = "diplomacy"
+    case growth
+    case stability
+    case military
+    case diplomacy
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 }
 
 struct NativeAICountryState: Codable, Hashable, Identifiable {
@@ -158,7 +170,9 @@ struct NativeAICountryState: Codable, Hashable, Identifiable {
     var multiTurnAgenda: String
     var agendaProgress: Int // 0 to 100
 
-    var id: String { countryCode }
+    var id: String {
+        countryCode
+    }
 }
 
 enum NativeSovereigntyChangeKind: String, Codable, Hashable {
@@ -216,6 +230,39 @@ struct NativeSemanticMemory: Codable, Hashable, Identifiable {
     var sourceID: String
     var text: String
     var track: NativeStrategicTrack
+}
+
+struct NativeCampaignObjective: Hashable, Identifiable {
+    var currentValue: String
+    var detail: String
+    var deadline: String
+    var id: String
+    var isComplete: Bool
+    var progress: Double
+    var targetValue: String
+    var title: String
+}
+
+struct NativeDirectivePreview: Hashable {
+    var capacityAfter: Int
+    var cost: Int
+    var expectedEffects: [String]
+    var riskLabel: String
+    var warning: String?
+}
+
+struct NativeAfterActionMetric: Hashable, Identifiable {
+    var delta: String
+    var id: String
+    var label: String
+    var value: String
+}
+
+struct NativeAfterActionReport: Hashable {
+    var events: [NativeCampaignEvent]
+    var metrics: [NativeAfterActionMetric]
+    var resolvedOrderCount: Int
+    var summary: String
 }
 
 /// The complete persisted native campaign snapshot.
@@ -310,7 +357,7 @@ struct NativeCampaignState: Codable, Hashable {
             scenario: NativeScenarioCatalog.scenario(for: scenarioID)
         )
         self.economicLedger = computedEconomicLedger
-        if let economicLedgers = economicLedgers {
+        if let economicLedgers {
             self.economicLedgers = economicLedgers
         } else {
             var ledgers: [String: NativeEconomicLedger] = [:]
@@ -386,22 +433,22 @@ struct NativeCampaignState: Codable, Hashable {
         case budgetDiplomacySlider
     }
 
-    // **Schema Normalization Mechanic**:
-    // Tolerant decoding ensures old save files never break when new features are added.
-    // If a field (e.g. diplomacy, AI states, sliders) is missing in an old save,
-    // the decoder injects safe defaults or derives them from the scenario.
-    // The `normalizedLoadedState` in `NativeCampaignStore` further sanitizes the data
-    // to remove AI placeholders and clamp bounds.
+    /// **Schema Normalization Mechanic**:
+    /// Tolerant decoding ensures old save files never break when new features are added.
+    /// If a field (e.g. diplomacy, AI states, sliders) is missing in an old save,
+    /// the decoder injects safe defaults or derives them from the scenario.
+    /// The `normalizedLoadedState` in `NativeCampaignStore` further sanitizes the data
+    /// to remove AI placeholders and clamp bounds.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        advisorMessages = (try? container.decodeIfPresent([NativeAdvisorMessage].self, forKey: .advisorMessages)) ?? []
+        advisorMessages = Self.decodeLossyArray(NativeAdvisorMessage.self, from: container, forKey: .advisorMessages)
         aiReadiness = (try? container.decodeIfPresent(NativeAIReadiness.self, forKey: .aiReadiness)) ?? .notChecked
         country = try container.decode(PlayerCountry.self, forKey: .country)
-        diplomaticThreads = (try? container.decodeIfPresent([NativeDiplomaticThread].self, forKey: .diplomaticThreads)) ?? []
+        diplomaticThreads = Self.decodeLossyArray(NativeDiplomaticThread.self, from: container, forKey: .diplomaticThreads)
         dynamicCountries = (try? container.decodeIfPresent([String: String].self, forKey: .dynamicCountries)) ?? [:]
         scenarioID = (try? container.decodeIfPresent(String.self, forKey: .scenarioID)) ?? NativeScenarioCatalog.defaultScenario.id
         let decodedScenario = NativeScenarioCatalog.scenario(for: scenarioID)
-        actionMemory = (try? container.decodeIfPresent([NativeActionMemory].self, forKey: .actionMemory)) ?? []
+        actionMemory = Self.decodeLossyArray(NativeActionMemory.self, from: container, forKey: .actionMemory)
         let decodedLedger = (try? container.decodeIfPresent(NativeEconomicLedger.self, forKey: .economicLedger)) ?? NativeEconomicLedger.starting(for: country, scenario: decodedScenario)
         economicLedger = decodedLedger
         var ledgers = (try? container.decodeIfPresent([String: NativeEconomicLedger].self, forKey: .economicLedgers)) ?? [:]
@@ -426,25 +473,33 @@ struct NativeCampaignState: Codable, Hashable {
         gameMode = (try? container.decodeIfPresent(NativeGameMode.self, forKey: .gameMode)) ?? .normal
         lastSummary = (try? container.decodeIfPresent(String.self, forKey: .lastSummary)) ?? "\(decodedScenario.openingSummary) \(country.name) needs to turn intent into concrete plans."
         language = NativeGameLanguage.normalized(try? container.decodeIfPresent(String.self, forKey: .language))
-        plannedActions = (try? container.decodeIfPresent([NativePlannedAction].self, forKey: .plannedActions)) ?? []
+        plannedActions = Self.decodeLossyArray(NativePlannedAction.self, from: container, forKey: .plannedActions)
         round = (try? container.decodeIfPresent(Int.self, forKey: .round)) ?? 1
         scenarioName = (try? container.decodeIfPresent(String.self, forKey: .scenarioName)) ?? decodedScenario.name
         scenarioDescription = (try? container.decodeIfPresent(String.self, forKey: .scenarioDescription)) ?? decodedScenario.heroSubtitle
-        semanticMemory = (try? container.decodeIfPresent([NativeSemanticMemory].self, forKey: .semanticMemory)) ?? []
-        suggestedActions = (try? container.decodeIfPresent([NativeSuggestedAction].self, forKey: .suggestedActions)) ?? []
+        semanticMemory = Self.decodeLossyArray(NativeSemanticMemory.self, from: container, forKey: .semanticMemory)
+        suggestedActions = Self.decodeLossyArray(NativeSuggestedAction.self, from: container, forKey: .suggestedActions)
         stability = (try? container.decodeIfPresent(Int.self, forKey: .stability)) ?? decodedScenario.baseStability
         startDate = (try? container.decodeIfPresent(String.self, forKey: .startDate)) ?? decodedScenario.startDate
-        timeline = (try? container.decodeIfPresent([NativeCampaignEvent].self, forKey: .timeline)) ?? []
+        timeline = Self.decodeLossyArray(NativeCampaignEvent.self, from: container, forKey: .timeline)
         worldTension = (try? container.decodeIfPresent(Int.self, forKey: .worldTension)) ?? decodedScenario.baseWorldTension
-        worldEffects = (try? container.decodeIfPresent([NativeStrategicEffect].self, forKey: .worldEffects)) ?? []
+        worldEffects = Self.decodeLossyArray(NativeStrategicEffect.self, from: container, forKey: .worldEffects)
 
         // Decoding new fields with defaults
         administrativeCapacity = (try? container.decodeIfPresent(Int.self, forKey: .administrativeCapacity)) ?? 100
         victoryStatus = (try? container.decodeIfPresent(NativeVictoryStatus.self, forKey: .victoryStatus)) ?? .ongoing
-        activeOffers = (try? container.decodeIfPresent([NativeDiplomaticOffer].self, forKey: .activeOffers)) ?? []
+        activeOffers = Self.decodeLossyArray(NativeDiplomaticOffer.self, from: container, forKey: .activeOffers)
         budgetMilitarySlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetMilitarySlider)) ?? 0.33
         budgetServicesSlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetServicesSlider)) ?? 0.34
         budgetDiplomacySlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetDiplomacySlider)) ?? 0.33
+    }
+
+    private static func decodeLossyArray<Element: Decodable>(
+        _: Element.Type,
+        from container: KeyedDecodingContainer<CodingKeys>,
+        forKey key: CodingKeys
+    ) -> [Element] {
+        (try? container.decodeIfPresent(LossyDecodableArray<Element>.self, forKey: key)?.elements) ?? []
     }
 
     private static func conflictsFromLegacyMapState(
@@ -479,6 +534,25 @@ struct NativeCampaignState: Codable, Hashable {
     }
 }
 
+private struct LossyDecodableArray<Element: Decodable>: Decodable {
+    let elements: [Element]
+
+    init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        var decoded: [Element] = []
+        while !container.isAtEnd {
+            if let element = try? container.decode(Element.self) {
+                decoded.append(element)
+            } else {
+                _ = try? container.decode(DiscardedDecodableValue.self)
+            }
+        }
+        elements = decoded
+    }
+}
+
+private struct DiscardedDecodableValue: Decodable {}
+
 /// User-facing language selection plus the prompt instruction used by native
 /// AI generation. Keep schema keys and identifiers out of translation; only
 /// player-visible prose should follow this value.
@@ -487,27 +561,29 @@ enum NativeGameLanguage: String, Codable, CaseIterable, Hashable, Identifiable {
     case portuguese = "Portuguese"
     case spanish = "Spanish"
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var label: String {
         switch self {
         case .english:
-            return "English"
+            "English"
         case .portuguese:
-            return "Português"
+            "Português"
         case .spanish:
-            return "Español"
+            "Español"
         }
     }
 
     var responseLanguageName: String {
         switch self {
         case .english:
-            return "English"
+            "English"
         case .portuguese:
-            return "Portuguese (Brazilian Portuguese)"
+            "Portuguese (Brazilian Portuguese)"
         case .spanish:
-            return "Spanish"
+            "Spanish"
         }
     }
 
@@ -724,8 +800,8 @@ enum NativeActionStatus: String, Codable, Hashable {
 }
 
 enum NativeVictoryStatus: String, Codable, Hashable {
-    case ongoing = "ongoing"
-    case won = "won"
+    case ongoing
+    case won
     case lostCollapse = "lost-collapse"
     case lostTimeout = "lost-timeout"
 }
@@ -738,10 +814,10 @@ enum NativeOfferType: String, Codable, Hashable {
 
     var displayName: String {
         switch self {
-        case .tradeAgreement: return "Trade Agreement"
-        case .militaryAlliance: return "Military Alliance"
-        case .nonAggressionPact: return "Non-Aggression Pact"
-        case .territoryDemarcation: return "Territory Demarcation"
+        case .tradeAgreement: String(localized: "Trade Agreement")
+        case .militaryAlliance: String(localized: "Military Alliance")
+        case .nonAggressionPact: String(localized: "Non-Aggression Pact")
+        case .territoryDemarcation: String(localized: "Territory Demarcation")
         }
     }
 }
@@ -764,7 +840,6 @@ struct NativeDiplomaticOffer: Codable, Hashable, Identifiable {
     var status: NativeOfferStatus
     var turnProposed: Int
 }
-
 
 struct NativeSuggestedAction: Codable, Hashable, Identifiable {
     var detail: String
@@ -828,11 +903,11 @@ enum NativeEventKind: String, Codable, Hashable {
 extension NativeEventKind {
     var displayName: String {
         switch self {
-        case .action: "Nation Policy"
-        case .crisis: "Crisis Action"
-        case .diplomacy: "Diplomacy"
-        case .economy: "Economic Event"
-        case .world: "Global Event"
+        case .action: String(localized: "Nation Policy")
+        case .crisis: String(localized: "Crisis Action")
+        case .diplomacy: String(localized: "Diplomacy")
+        case .economy: String(localized: "Economic Event")
+        case .world: String(localized: "Global Event")
         }
     }
 }
@@ -862,19 +937,21 @@ enum NativeStrategicTrack: String, Codable, CaseIterable, Hashable, Identifiable
     case securityAnxiety = "security-anxiety"
     case worldTension = "world-tension"
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 }
 
 extension NativeStrategicTrack {
     var displayName: String {
         switch self {
-        case .diplomaticLeverage: "Diplomatic Leverage"
-        case .economicResilience: "Economic Resilience"
-        case .internalStability: "Internal Stability"
-        case .marketConfidence: "Market Confidence"
-        case .militaryReadiness: "Military Readiness"
-        case .securityAnxiety: "Security Anxiety"
-        case .worldTension: "World Tension"
+        case .diplomaticLeverage: String(localized: "Diplomatic Leverage")
+        case .economicResilience: String(localized: "Economic Resilience")
+        case .internalStability: String(localized: "Internal Stability")
+        case .marketConfidence: String(localized: "Market Confidence")
+        case .militaryReadiness: String(localized: "Military Readiness")
+        case .securityAnxiety: String(localized: "Security Anxiety")
+        case .worldTension: String(localized: "World Tension")
         }
     }
 }
@@ -895,22 +972,6 @@ struct NativeAIReadiness: Codable, Hashable {
         recoverySuggestion: "",
         tokenBudget: ""
     )
-
-    init(
-        availability: String,
-        checkedAt: String,
-        lastError: String,
-        ok: Bool,
-        recoverySuggestion: String,
-        tokenBudget: String
-    ) {
-        self.availability = availability
-        self.checkedAt = checkedAt
-        self.lastError = lastError
-        self.ok = ok
-        self.recoverySuggestion = recoverySuggestion
-        self.tokenBudget = tokenBudget
-    }
 
     static func available(tokenBudget: String) -> NativeAIReadiness {
         NativeAIReadiness(
@@ -940,7 +1001,7 @@ struct NativeAIReadiness: Codable, Hashable {
             checkedAt: NativeGameEngine.todayStamp(),
             lastError: error.localizedDescription,
             ok: false,
-            recoverySuggestion: "Suggested actions could not be refreshed safely. Keep drafting manual civic proposals and retry when Apple Foundation Models are ready.",
+            recoverySuggestion: "Suggested actions could not be refreshed safely. Keep drafting manual civic proposals, verify the selected AI provider, and retry.",
             tokenBudget: "context=4096, suggestions=4x180"
         )
     }
@@ -951,7 +1012,7 @@ struct NativeAIReadiness: Codable, Hashable {
             checkedAt: NativeGameEngine.todayStamp(),
             lastError: reason,
             ok: false,
-            recoverySuggestion: "Enable Apple Intelligence and make sure the local model is ready. SwiftHistoria will not simulate turns without Apple Foundation Models.",
+            recoverySuggestion: "Configure the selected AI provider in Settings, or choose a provider that is available on this machine. SwiftHistoria will not simulate turns with an unavailable AI route.",
             tokenBudget: "context=4096"
         )
     }
@@ -962,7 +1023,7 @@ struct NativeAIReadiness: Codable, Hashable {
             checkedAt: NativeGameEngine.todayStamp(),
             lastError: reason,
             ok: false,
-            recoverySuggestion: "Enable Apple Intelligence and make sure the local model is ready. SwiftHistoria will not simulate turns without Apple Foundation Models.",
+            recoverySuggestion: "Configure the selected AI provider in Settings, or choose a provider that is available on this machine. SwiftHistoria will not simulate turns with an unavailable AI route.",
             tokenBudget: "context=4096"
         )
     }
@@ -975,7 +1036,7 @@ struct NativeAIReadiness: Codable, Hashable {
         switch foundationError {
         case .unsupportedOS:
             return "unsupported-os"
-        case .modelUnavailable(let reason):
+        case let .modelUnavailable(reason):
             return availabilityCode(for: reason)
         case .generationFailed, .invalidGeneratedTurn, .invalidSuggestedActions:
             return "apple-foundation-error"
@@ -984,14 +1045,14 @@ struct NativeAIReadiness: Codable, Hashable {
 
     private static func recoverySuggestion(for error: Error) -> String {
         guard let foundationError = error as? NativeFoundationModelError else {
-            return "Apple Foundation Models did not complete this request. The game kept the current turn unchanged; add manual civic proposals and retry when the model is ready."
+            return "The selected AI provider did not complete this request. The game kept the current turn unchanged; add manual civic proposals, verify the active provider, and retry."
         }
 
         switch foundationError {
         case .unsupportedOS:
             return "Run SwiftHistoria on an OS that exposes FoundationModels. The current campaign remains editable, but AI turns are paused."
         case .modelUnavailable:
-            return "Enable Apple Intelligence and wait for the local model to finish preparing. Manual civic proposals remain available."
+            return "Verify the selected AI provider in Settings and wait for the route to become available. Manual civic proposals remain available."
         case .generationFailed, .invalidGeneratedTurn, .invalidSuggestedActions:
             return "The model response could not be repaired safely. The campaign was not advanced; revise the proposal as civic planning and retry."
         }
@@ -1000,7 +1061,8 @@ struct NativeAIReadiness: Codable, Hashable {
     private static func availabilityCode(for reason: String) -> String {
         let normalized = reason.lowercased()
         if normalized.contains("appleintelligencenotenabled") ||
-            normalized.contains("not enabled") {
+            normalized.contains("not enabled")
+        {
             return "apple-intelligence-not-enabled"
         }
 
@@ -1018,102 +1080,24 @@ enum NativeFoundationModelError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unsupportedOS:
-            return "This OS does not expose the FoundationModels framework required by the native game."
-        case .modelUnavailable(let reason):
-            return "Apple Foundation Models are unavailable: \(reason)."
-        case .generationFailed(let reason):
-            return "Apple Foundation Models generation failed: \(reason)."
-        case .invalidGeneratedTurn(let reason):
-            return "Apple Foundation Models returned an invalid turn: \(reason)."
-        case .invalidSuggestedActions(let reason):
-            return "Apple Foundation Models returned invalid suggested actions: \(reason)."
+            "This OS does not expose the FoundationModels framework required by the native game."
+        case let .modelUnavailable(reason):
+            "Apple Foundation Models are unavailable: \(reason)."
+        case let .generationFailed(reason):
+            "Apple Foundation Models generation failed: \(reason)."
+        case let .invalidGeneratedTurn(reason):
+            "Apple Foundation Models returned an invalid turn: \(reason)."
+        case let .invalidSuggestedActions(reason):
+            "Apple Foundation Models returned invalid suggested actions: \(reason)."
         }
     }
 }
 
+/// Cleans Foundation Model output for display: trims whitespace and collapses
+/// accidental duplicate sentences/lines. No content filtering — the game is a
+/// geopolitical strategy simulator and AI output is shown verbatim.
 func sanitizeFoundationModelText(_ value: String) -> String {
-    var result = value.trimmingCharacters(in: .whitespacesAndNewlines)
-    let replacements: [(String, String)] = [
-        ("World Trade Organization", "External Trade Forum"),
-        ("United Nations", "Global Coordination Forum"),
-        ("World Bank", "Development Finance Forum"),
-        ("International Monetary Fund", "Stability Finance Forum"),
-        ("Port Rio Grande", "Port Delta"),
-        ("Rio Verde", "Valley District"),
-        ("Serra Verde", "Highland District"),
-        ("Rio de Janeiro", "Metro A"),
-        ("São Paulo", "Metro B"),
-        ("Sao Paulo", "Metro B"),
-        ("government", "regional council"),
-        ("Government", "Regional council"),
-        ("public health", "community services"),
-        ("Public health", "Community services"),
-        ("Public Health", "Community Services"),
-        ("healthcare", "community services"),
-        ("Healthcare", "Community services"),
-        ("health", "community services"),
-        ("Health", "Community services"),
-        ("medical", "service"),
-        ("Medical", "Service"),
-        ("clinic", "service center"),
-        ("Clinic", "Service center"),
-        ("emergency", "contingency"),
-        ("Emergency", "Contingency"),
-        ("mortality", "service delays"),
-        ("Mortality", "Service delays"),
-        ("death", "service loss"),
-        ("Death", "Service loss"),
-        ("crisis", "constraint"),
-        ("Crisis", "Constraint"),
-        ("conflict", "friction"),
-        ("Conflict", "Friction"),
-        ("security", "resilience"),
-        ("Security", "Resilience"),
-        ("weapons", "tools"),
-        ("Weapons", "Tools"),
-        ("weapon", "tool"),
-        ("Weapon", "Tool"),
-        ("missile", "long-range asset"),
-        ("Missile", "Long-range asset"),
-        ("bomb", "hazard"),
-        ("Bomb", "Hazard"),
-        ("cy" + "berattack", "digital disruption"),
-        ("Cy" + "berattack", "Digital disruption"),
-        ("attack", "pressure event"),
-        ("Attack", "Pressure event"),
-        ("invasion", "border pressure"),
-        ("Invasion", "Border pressure"),
-        ("troop", "logistics unit"),
-        ("Troop", "Logistics unit"),
-        ("troops", "logistics units"),
-        ("Troops", "Logistics units"),
-        ("military", "logistics"),
-        ("Military", "Logistics"),
-        ("surveillance", "oversight"),
-        ("Surveillance", "Oversight"),
-        ("coercion", "pressure"),
-        ("Coercion", "Pressure"),
-        ("cy" + "ber", "digital"),
-        ("Cy" + "ber", "Digital"),
-        ("intelligence", "analysis"),
-        ("Intelligence", "Analysis"),
-        ("market-confidence drops", "market-confidence volatility"),
-        ("Market-confidence drops", "Market-confidence volatility"),
-        ("market confidence drops", "market confidence volatility"),
-        ("Market confidence drops", "Market confidence volatility"),
-        ("market-confidence drop", "market-confidence volatility"),
-        ("Market-confidence drop", "Market-confidence volatility"),
-        ("market confidence drop", "market confidence volatility"),
-        ("Market confidence drop", "Market confidence volatility"),
-        ("community services services", "community services"),
-        ("Community services Services", "Community Services"),
-        ("community services service center", "community service center"),
-        ("Community services service center", "Community service center"),
-    ]
-
-    for (needle, replacement) in replacements {
-        result = result.replacingOccurrences(of: needle, with: replacement)
-    }
+    let result = value.trimmingCharacters(in: .whitespacesAndNewlines)
     return collapseRepeatedLines(in: collapseRepeatedSentences(in: result))
 }
 
@@ -1163,54 +1147,43 @@ private func collapseRepeatedLines(in value: String) -> String {
 }
 
 func hasConcreteFoundationText(_ value: String, minimumWords: Int) -> Bool {
-    let sanitized = sanitizeFoundationModelText(value)
-    return !containsFoundationPlaceholderText(sanitized) &&
-        sanitized.split(separator: " ").count >= minimumWords
+    let cleaned = sanitizeFoundationModelText(value)
+    return !containsFoundationPlaceholderText(cleaned) &&
+        cleaned.split(separator: " ").count >= minimumWords
 }
 
 func normalizedFoundationUrgency(_ value: String) -> String {
     switch value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
     case "immediate", "soon", "opportunistic":
-        return value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     default:
-        return "soon"
+        "soon"
     }
 }
 
-// **Track Normalization Mechanic**:
-// Apple's Foundation Models on-device often struggle with nuanced words like "Military" or "Security"
-// triggering internal safety filters or hallucinations.
-// `foundationPromptTrackLabel` rewrites strict tracks into safe analogies ("logistics-readiness", "resilience-pressure")
-// for the AI prompt.
-// `foundationVisibleTrack` collapses those abstracted tracks back into player-facing UI tracks.
+/// Returns the prompt-friendly label for a strategic track using real names.
 func foundationPromptTrackLabel(_ track: NativeStrategicTrack) -> String {
     switch track {
     case .diplomaticLeverage:
-        return "regional-relations"
+        "diplomatic-leverage"
     case .economicResilience:
-        return "economic-resilience"
+        "economic-resilience"
     case .internalStability:
-        return "internal-stability"
+        "internal-stability"
     case .marketConfidence:
-        return "market-confidence"
+        "market-confidence"
     case .militaryReadiness:
-        return "logistics-readiness"
+        "military-readiness"
     case .securityAnxiety:
-        return "resilience-pressure"
+        "security-anxiety"
     case .worldTension:
-        return "global-friction"
+        "world-tension"
     }
 }
 
+/// Identity — all strategic tracks are valid and visible to the player.
 func foundationVisibleTrack(_ track: NativeStrategicTrack) -> NativeStrategicTrack {
-    switch track {
-    case .militaryReadiness:
-        return .economicResilience
-    case .securityAnxiety:
-        return .worldTension
-    default:
-        return track
-    }
+    track
 }
 
 func containsFoundationPlaceholderText(_ value: String) -> Bool {
@@ -1232,7 +1205,7 @@ func containsFoundationPlaceholderText(_ value: String) -> Bool {
         "lorem ipsum",
         "todo:",
         "to do",
-        "tbd",
+        "tbd"
     ]
     return blockedFragments.contains { normalized.contains($0) }
 }
@@ -1242,8 +1215,8 @@ enum NativeGameEngineError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidTurn(let reason):
-            return "The generated turn could not be applied: \(reason)."
+        case let .invalidTurn(reason):
+            "The generated turn could not be applied: \(reason)."
         }
     }
 }

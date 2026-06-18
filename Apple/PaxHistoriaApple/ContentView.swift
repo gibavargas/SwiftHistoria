@@ -39,29 +39,34 @@ struct ContentView: View {
         }
 
         #if DEBUG
-        guard !didApplyLaunchConfiguration else { return }
-        didApplyLaunchConfiguration = true
+            guard !didApplyLaunchConfiguration else { return }
+            didApplyLaunchConfiguration = true
 
-        let environment = ProcessInfo.processInfo.environment
-        let arguments = ProcessInfo.processInfo.arguments
-        if environment["PAX_HISTORIA_UI_TEST_RESET"] == "1" || arguments.contains("--pax-historia-ui-test-reset") {
-            campaignStore.resetSelection()
-        }
+            let environment = ProcessInfo.processInfo.environment
+            let arguments = ProcessInfo.processInfo.arguments
+            if environment["PAX_HISTORIA_UI_TEST_RESET"] == "1" || arguments.contains("--pax-historia-ui-test-reset") {
+                UserDefaults.standard.set(false, forKey: "hasSeenInGameOnboarding")
+                campaignStore.resetSelection()
+            }
 
-        guard environment["PAX_HISTORIA_SCREENSHOT_SEED"] == "1" || arguments.contains("--pax-historia-screenshot-seed") else {
-            return
-        }
+            if environment["PAX_HISTORIA_SKIP_ONBOARDING"] == "1" || arguments.contains("--pax-historia-skip-onboarding") {
+                UserDefaults.standard.set(true, forKey: "hasSeenInGameOnboarding")
+            }
 
-        let scenarioID = environment["PAX_HISTORIA_SCENARIO"] ?? NativeScenarioCatalog.defaultScenario.id
-        let language = NativeGameLanguage.normalized(environment["PAX_HISTORIA_LANGUAGE"])
-        let countryCode = (environment["PAX_HISTORIA_COUNTRY"] ?? "BRA").uppercased()
-        let country = CountryCatalog.all.first { $0.code == countryCode } ?? CountryCatalog.all.first
+            guard environment["PAX_HISTORIA_SCREENSHOT_SEED"] == "1" || arguments.contains("--pax-historia-screenshot-seed") else {
+                return
+            }
 
-        campaignStore.selectScenario(id: scenarioID)
-        campaignStore.setLanguage(language)
-        if let country {
-            campaignStore.choose(country)
-        }
+            let scenarioID = environment["PAX_HISTORIA_SCENARIO"] ?? NativeScenarioCatalog.defaultScenario.id
+            let language = NativeGameLanguage.normalized(environment["PAX_HISTORIA_LANGUAGE"])
+            let countryCode = (environment["PAX_HISTORIA_COUNTRY"] ?? "BRA").uppercased()
+            let country = CountryCatalog.all.first { $0.code == countryCode } ?? CountryCatalog.all.first
+
+            campaignStore.selectScenario(id: scenarioID)
+            campaignStore.setLanguage(language)
+            if let country {
+                campaignStore.choose(country)
+            }
         #endif
     }
 }

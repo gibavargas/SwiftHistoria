@@ -1,8 +1,8 @@
 import Metal
 import MetalKit
 import QuartzCore
-import SwiftUI
 import simd
+import SwiftUI
 
 private struct NativeMetalMapUniforms {
     var viewportSize: SIMD2<Float>
@@ -32,11 +32,11 @@ struct NativeMetalMapBackdrop: View {
 }
 
 #if os(macOS)
-private typealias PlatformViewRepresentable = NSViewRepresentable
-private typealias PlatformMTKView = MTKView
+    private typealias PlatformViewRepresentable = NSViewRepresentable
+    private typealias PlatformMTKView = MTKView
 #else
-private typealias PlatformViewRepresentable = UIViewRepresentable
-private typealias PlatformMTKView = MTKView
+    private typealias PlatformViewRepresentable = UIViewRepresentable
+    private typealias PlatformMTKView = MTKView
 #endif
 
 private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
@@ -50,21 +50,21 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
     }
 
     #if os(macOS)
-    func makeNSView(context: Context) -> PlatformMTKView {
-        makeView(context: context)
-    }
+        func makeNSView(context: Context) -> PlatformMTKView {
+            makeView(context: context)
+        }
 
-    func updateNSView(_ view: PlatformMTKView, context: Context) {
-        updateView(view, coordinator: context.coordinator)
-    }
+        func updateNSView(_ view: PlatformMTKView, context: Context) {
+            updateView(view, coordinator: context.coordinator)
+        }
     #else
-    func makeUIView(context: Context) -> PlatformMTKView {
-        makeView(context: context)
-    }
+        func makeUIView(context: Context) -> PlatformMTKView {
+            makeView(context: context)
+        }
 
-    func updateUIView(_ view: PlatformMTKView, context: Context) {
-        updateView(view, coordinator: context.coordinator)
-    }
+        func updateUIView(_ view: PlatformMTKView, context: Context) {
+            updateView(view, coordinator: context.coordinator)
+        }
     #endif
 
     private func makeView(context: Context) -> PlatformMTKView {
@@ -104,7 +104,8 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
 
             guard let library = try? device.makeLibrary(source: Self.shaderSource, options: nil),
                   let vertexFunction = library.makeFunction(name: "nativeMapBackdropVertex"),
-                  let fragmentFunction = library.makeFunction(name: "nativeMapBackdropFragment") else {
+                  let fragmentFunction = library.makeFunction(name: "nativeMapBackdropFragment")
+            else {
                 return
             }
 
@@ -222,7 +223,7 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
         }
         """
 
-        func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
+        func mtkView(_: MTKView, drawableSizeWillChange _: CGSize) {}
 
         func draw(in view: MTKView) {
             guard let pipelineState,
@@ -230,7 +231,8 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
                   let drawable = view.currentDrawable,
                   let descriptor = view.currentRenderPassDescriptor,
                   let commandBuffer = commandQueue.makeCommandBuffer(),
-                  let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: descriptor) else {
+                  let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: descriptor)
+            else {
                 return
             }
 

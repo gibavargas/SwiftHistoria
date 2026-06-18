@@ -1,5 +1,5 @@
-import XCTest
 @testable import SwiftHistoria
+import XCTest
 
 @MainActor
 final class NativeBackendTests: XCTestCase {
@@ -15,7 +15,7 @@ final class NativeBackendTests: XCTestCase {
 
         XCTAssertThrowsError(try NativeGameEngine.validated(
             NativeGeneratedTurn(events: [
-                makeEvent(id: "player-only", playerRelated: true),
+                makeEvent(id: "player-only", playerRelated: true)
             ], stabilityDelta: 0, summary: summary, worldTensionDelta: 0),
             state: state,
             months: 1
@@ -24,16 +24,18 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertThrowsError(try NativeGameEngine.validated(
             NativeGeneratedTurn(events: [
                 makeEvent(id: "placeholder", title: "AppleNativeGeneratedEventDraft", playerRelated: false),
-                makeEvent(id: "player", playerRelated: true),
+                makeEvent(id: "player", playerRelated: true)
             ], stabilityDelta: 0, summary: summary, worldTensionDelta: 0),
             state: state,
             months: 1
         ))
 
-        XCTAssertThrowsError(try NativeGameEngine.validated(
+        // Military tracks are now valid — the game is a geopolitical simulator
+        // and all strategic tracks are accepted by the engine.
+        XCTAssertNoThrow(try NativeGameEngine.validated(
             NativeGeneratedTurn(events: [
-                makeEvent(id: "unsafe", playerRelated: false, track: .militaryReadiness),
-                makeEvent(id: "player", playerRelated: true),
+                makeEvent(id: "military-track", playerRelated: false, track: .militaryReadiness),
+                makeEvent(id: "player", playerRelated: true)
             ], stabilityDelta: 0, summary: summary, worldTensionDelta: 0),
             state: state,
             months: 1
@@ -42,7 +44,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertThrowsError(try NativeGameEngine.validated(
             NativeGeneratedTurn(events: [
                 makeEvent(id: "bad-date", date: "soon", playerRelated: false),
-                makeEvent(id: "player", playerRelated: true),
+                makeEvent(id: "player", playerRelated: true)
             ], stabilityDelta: 0, summary: summary, worldTensionDelta: 0),
             state: state,
             months: 1
@@ -51,11 +53,110 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertThrowsError(try NativeGameEngine.validated(
             NativeGeneratedTurn(events: [
                 makeEvent(id: "duplicate", playerRelated: false),
-                makeEvent(id: "duplicate", playerRelated: true),
+                makeEvent(id: "duplicate", playerRelated: true)
             ], stabilityDelta: 0, summary: summary, worldTensionDelta: 0),
             state: state,
             months: 1
         ))
+    }
+
+    func testGeneratedTurnValidationRejectsDatesOutsideTurnWindow() throws {
+        let state = makeState()
+        let summary = "Regional planning signals shift while external markets reassess delivery capacity."
+        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: 1)
+
+        var futureEvent = makeEvent(id: "future-world", date: "2099-01-15", playerRelated: false)
+        futureEvent.strategicEffects[0].date = "2099-01-15"
+        XCTAssertThrowsError(try NativeGameEngine.validated(
+            NativeGeneratedTurn(events: [
+                futureEvent,
+                makeEvent(id: "player", date: targetDate, playerRelated: true)
+            ], stabilityDelta: 0, summary: summary, worldTensionDelta: 0),
+            state: state,
+            months: 1
+        ))
+
+        var mismatchedEffect = makeEvent(id: "mismatched-effect", date: targetDate, playerRelated: false)
+        mismatchedEffect.strategicEffects[0].date = state.gameDate
+        XCTAssertThrowsError(try NativeGameEngine.validated(
+            NativeGeneratedTurn(events: [
+                mismatchedEffect,
+                makeEvent(id: "player-2", date: targetDate, playerRelated: true)
+            ], stabilityDelta: 0, summary: summary, worldTensionDelta: 0),
+            state: state,
+            months: 1
+        ))
+    }
+
+    func testResolvedActionMemoryDoesNotRewriteOldResolvedActions() throws {
+        var state = makeState()
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Fund a public transit delivery audit.",
+            id: "already-resolved",
+            resolvedAt: state.gameDate,
+            status: .resolved,
+            title: "Transit audit"
+        )
+        state.plannedActions = [action]
+        state.actionMemory = [
+            NativeActionMemory(
+                actionID: action.id,
+                createdAt: action.createdAt,
+                detail: action.detail,
+                economicSummary: "Original resolved summary remains stable.",
+                id: "memory-\(action.id)",
+                resolvedAt: action.resolvedAt,
+                ruleIDs: ["public-services"],
+                source: "manual",
+                status: .resolved,
+                title: action.title
+            )
+        ]
+
+        let applied = NativeGameEngine.apply(
+            NativeGeneratedTurn(
+                events: [makeEvent(id: "unrelated-world", playerRelated: false)],
+                stabilityDelta: 0,
+                summary: "No new action resolution occurs this turn.",
+                worldTensionDelta: 0
+            ),
+            to: state,
+            months: 1
+        )
+
+        let memory = try XCTUnwrap(applied.actionMemory.first { $0.actionID == action.id })
+        XCTAssertEqual(memory.economicSummary, "Original resolved summary remains stable.")
+        XCTAssertEqual(memory.source, "manual")
+    }
+
+    func testStabilizationConflictDoesNotEscalateWorldTension() throws {
+        var state = makeState()
+        state.worldTension = 40
+        state.budgetMilitarySlider = 0.33
+        let region = try XCTUnwrap(GeopoliticalMapData.regions.first { $0.countryCode == state.country.code })
+        state.regionConflicts[region.id] = NativeRegionConflictState(
+            controllerCode: state.country.code,
+            intensity: 1,
+            mode: .stabilization,
+            originalCountryCode: region.countryCode,
+            regionID: region.id,
+            summary: "Stabilization work is active but no longer contested.",
+            updatedAt: state.gameDate
+        )
+
+        let applied = NativeGameEngine.apply(
+            NativeGeneratedTurn(
+                events: [],
+                stabilityDelta: 0,
+                summary: "Stabilization work continues without new international friction.",
+                worldTensionDelta: 0
+            ),
+            to: state,
+            months: 1
+        )
+
+        XCTAssertEqual(applied.worldTension, 40)
     }
 
     func testStateApplicationResolvesOnlyLinkedActionsAndClampsMetrics() throws {
@@ -72,7 +173,7 @@ final class NativeBackendTests: XCTestCase {
             NativeGeneratedTurn(
                 events: [
                     makeEvent(id: "independent", playerRelated: false, track: .internalStability, magnitude: 5),
-                    makeEvent(id: "linked", playerRelated: true, linkedActionIDs: [firstAction.id], magnitude: -4),
+                    makeEvent(id: "linked", playerRelated: true, linkedActionIDs: [firstAction.id], magnitude: -4)
                 ],
                 stabilityDelta: 80,
                 summary: "Planning agencies convert a narrow fiscal window into visible delivery commitments.",
@@ -143,7 +244,7 @@ final class NativeBackendTests: XCTestCase {
                     title: "Command Staff Opens Invasion File",
                     playerRelated: true,
                     linkedActionIDs: [invasion.id]
-                ),
+                )
             ],
             stabilityDelta: 0,
             summary: "Leap",
@@ -162,14 +263,14 @@ final class NativeBackendTests: XCTestCase {
 
     func testStateApplicationPreservesComplexCampaignArchives() throws {
         var state = makeState()
-        state.timeline = (0..<125).map { index in
+        state.timeline = (0 ..< 125).map { index in
             makeEvent(
                 id: "archive-event-\(index)",
                 date: state.gameDate,
                 playerRelated: index.isMultiple(of: 2)
             )
         }
-        state.worldEffects = (0..<225).map { index in
+        state.worldEffects = (0 ..< 225).map { index in
             NativeStrategicEffect(
                 date: state.gameDate,
                 eventId: "archive-event-\(index)",
@@ -185,7 +286,7 @@ final class NativeBackendTests: XCTestCase {
             NativeGeneratedTurn(
                 events: [
                     makeEvent(id: "new-independent", date: state.gameDate, playerRelated: false),
-                    makeEvent(id: "new-player", date: state.gameDate, playerRelated: true),
+                    makeEvent(id: "new-player", date: state.gameDate, playerRelated: true)
                 ],
                 stabilityDelta: 0,
                 summary: "Complex campaign archives stay intact while new events enter the turn log.",
@@ -224,7 +325,7 @@ final class NativeBackendTests: XCTestCase {
             NativeGeneratedTurn(
                 events: [
                     makeEvent(id: "external-econ", playerRelated: false, track: .marketConfidence, magnitude: -1),
-                    makeEvent(id: "linked-econ", playerRelated: true, linkedActionIDs: [action.id], track: .economicResilience, magnitude: 3),
+                    makeEvent(id: "linked-econ", playerRelated: true, linkedActionIDs: [action.id], track: .economicResilience, magnitude: 3)
                 ],
                 stabilityDelta: 1,
                 summary: "Budget officers convert the action into measurable fiscal and resilience consequences.",
@@ -280,7 +381,7 @@ final class NativeBackendTests: XCTestCase {
         var legacyState = makeState()
         legacyState.timeline = []
         legacyState.round = -4
-        legacyDefaults.set(try JSONEncoder().encode(legacyState), forKey: "pax-historia.native.campaign-state.v1")
+        try legacyDefaults.set(JSONEncoder().encode(legacyState), forKey: "pax-historia.native.campaign-state.v1")
 
         let legacyStore = NativeCampaignStore(
             defaults: legacyDefaults,
@@ -304,7 +405,31 @@ final class NativeBackendTests: XCTestCase {
 
         XCTAssertEqual(imported.state?.country.code, testCountry.code)
         XCTAssertEqual(imported.state?.scenarioID, store.state?.scenarioID)
-        XCTAssertThrowsError(try imported.importCampaignData(Data(repeating: 0, count: 1_600_000)))
+
+        let validButOversized = data + Data(repeating: 0x20, count: NativeCampaignStore.maximumCampaignImportBytes - data.count + 1)
+        XCTAssertThrowsError(try imported.importCampaignData(validButOversized)) { error in
+            XCTAssertTrue(error.localizedDescription.contains("too large"))
+        }
+    }
+
+    func testCampaignStateDecodeKeepsGoodItemsWhenLegacyArrayContainsBadItem() throws {
+        let state = makeState()
+        let encoded = try JSONEncoder().encode(state)
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        let timeline = try XCTUnwrap(object["timeline"] as? [[String: Any]])
+        object["timeline"] = timeline + [["id": 42, "date": ["bad": "shape"]]]
+        let corrupted = try JSONSerialization.data(withJSONObject: object)
+
+        let decoded = try JSONDecoder().decode(NativeCampaignState.self, from: corrupted)
+
+        XCTAssertEqual(decoded.timeline.map(\.id), state.timeline.map(\.id))
+    }
+
+    func testMapDataAliasesSelectableCountryCodesToGeometryCodes() {
+        XCTAssertEqual(GeopoliticalMapData.canonicalCountryCode("PSE"), "PSX")
+        XCTAssertEqual(GeopoliticalMapData.canonicalCountryCode("XXK"), "KOS")
+        XCTAssertFalse(GeopoliticalMapData.regions(forCountryCode: "PSE").isEmpty)
+        XCTAssertFalse(GeopoliticalMapData.regions(forCountryCode: "XXK").isEmpty)
     }
 
     func testNativeFrontendSmokeFlowCoversPrimaryAppleSurfaces() async throws {
@@ -366,7 +491,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(store.state?.diplomaticThreads.contains { $0.participant.code == partner.code && !$0.messages.isEmpty } == true)
     }
 
-    func testDefaultScenarioUsesReal2010HistoricalBaseline() throws {
+    func testDefaultScenarioUsesReal2010HistoricalBaseline() {
         let scenario = NativeScenarioCatalog.defaultScenario
         let state = NativeGameEngine.initialState(for: testCountry, scenario: scenario, language: .english)
         let profile = Native2010WorldModel.profile(for: testCountry)
@@ -393,11 +518,11 @@ final class NativeBackendTests: XCTestCase {
         let promptContext = Native2010WorldModel.promptContext(for: state)
         let payload = (
             alignments.map(\.name) +
-            alignments.map(\.stance) +
-            riskSignals.map(\.name) +
-            commitments.map(\.name) +
-            mapSectors.map(\.name) +
-            [promptContext]
+                alignments.map(\.stance) +
+                riskSignals.map(\.name) +
+                commitments.map(\.name) +
+                mapSectors.map(\.name) +
+                [promptContext]
         ).joined(separator: " ")
 
         XCTAssertFalse(alignments.isEmpty)
@@ -477,6 +602,278 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(store.state?.language, .spanish)
     }
 
+    func testManualBudgetAndOfferChangesInvalidatePendingAdvance() async throws {
+        let gate = AsyncGate()
+        let service = FakeNativeAIService()
+        service.turnHandler = { state, months in
+            await gate.wait()
+            return makeValidTurn(for: state, months: months)
+        }
+
+        let store = try makeStore(aiService: service)
+        store.choose(testCountry)
+        var state = try XCTUnwrap(store.state)
+        state.activeOffers = [
+            NativeDiplomaticOffer(
+                id: "offer-arg-trade",
+                proposerCode: "ARG",
+                type: .tradeAgreement,
+                description: "A narrow ports and customs agreement.",
+                stabilityCost: 1,
+                relationshipEffect: 4,
+                growthDelta: 0.2,
+                status: .pending,
+                turnProposed: state.round
+            )
+        ]
+        store.state = state
+
+        let task = Task { await store.advance(months: 1) }
+        await gate.waitUntilEntered()
+        store.updateBudgetSliders(military: 10, services: 0, diplomacy: 0)
+        store.acceptDiplomaticOffer(id: "offer-arg-trade")
+        await gate.resume()
+        await task.value
+
+        XCTAssertEqual(store.state?.round, 1)
+        XCTAssertEqual(try XCTUnwrap(store.state?.budgetMilitarySlider), 1.0, accuracy: 0.0001)
+        XCTAssertEqual(store.state?.activeOffers.first?.status, .accepted)
+        XCTAssertTrue(store.state?.timeline.contains { $0.id.hasPrefix("offer-accept-event-offer-arg-trade") } == true)
+    }
+
+    func testTerminalCampaignDoesNotAdvanceOrCallAI() async throws {
+        let service = FakeNativeAIService()
+        service.turnHandler = { _, _ in
+            XCTFail("Terminal campaigns must not request a new AI turn.")
+            return NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "Should not run.", worldTensionDelta: 0)
+        }
+
+        let store = try makeStore(aiService: service)
+        store.choose(testCountry)
+        var state = try XCTUnwrap(store.state)
+        state.victoryStatus = .won
+        store.state = state
+
+        await store.advance(months: 1)
+
+        XCTAssertEqual(store.state?.round, state.round)
+        XCTAssertEqual(store.state?.gameDate, state.gameDate)
+        XCTAssertTrue(store.lastError?.localizedCaseInsensitiveContains("ended") == true)
+    }
+
+    func testDeletingPlannedActionRefundsAdministrativeCapacityUpToTurnCap() throws {
+        let store = try makeStore()
+        store.choose(testCountry)
+        var state = try XCTUnwrap(store.state)
+        let action = try XCTUnwrap(NativeGameEngine.action(
+            from: "Fund a public service delivery audit.",
+            date: state.gameDate
+        ))
+        state.administrativeCapacity = 110
+        state.plannedActions = [action]
+        store.state = state
+
+        store.deleteAction(id: action.id)
+
+        XCTAssertEqual(store.state?.administrativeCapacity, 120)
+        XCTAssertTrue(store.state?.plannedActions.isEmpty == true)
+    }
+
+    func testAIProviderPreferencePersistsInDefaults() {
+        let defaults = makeDefaults()
+        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .openRouter)
+
+        defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .openRouter)
+
+        defaults.set(NativeAIProviderPreference.zai.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .zai)
+    }
+
+    func testAIProviderServicesReadInjectedDefaults() throws {
+        let defaults = makeDefaults()
+        defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
+        defaults.set("zai-test-key", forKey: "ZAI_API_KEY")
+        defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
+
+        let openRouter = NativeOpenRouterService(defaults: defaults)
+        XCTAssertEqual(openRouter.apiKey, "or-test-key")
+        XCTAssertEqual(openRouter.providerDisplayName, "OpenRouter")
+        XCTAssertEqual(openRouter.modelLanes.map(\.name), ["openrouter/free"])
+        XCTAssertEqual(openRouter.modelLanes.first?.displayName, "Free Models Router")
+        XCTAssertEqual(openRouter.modelLanes.first?.maxConcurrent, 4)
+        let firstOpenRouterLane = try XCTUnwrap(openRouter.modelLanes.first)
+        let secondOpenRouterLane = try XCTUnwrap(openRouter.modelLanes.first)
+        XCTAssertTrue(firstOpenRouterLane === secondOpenRouterLane)
+
+        let progress = NativeTurnProgress(
+            completedLanes: 0,
+            detail: "Calling OpenRouter Free API with Free Models Router first.",
+            phase: "Consulting OpenRouter",
+            totalLanes: 4,
+            providerName: openRouter.providerDisplayName,
+            modelName: openRouter.primaryModelDisplayName,
+            modelIdentifier: openRouter.primaryModelIdentifier
+        )
+        XCTAssertEqual(progress.providerSummary, "Calling OpenRouter · Free Models Router")
+        XCTAssertFalse(progress.providerSummary?.localizedCaseInsensitiveContains("Apple") ?? true)
+
+        let zai = NativeZAIService(defaults: defaults)
+        XCTAssertEqual(zai.apiKey, "zai-test-key")
+        XCTAssertEqual(zai.providerDisplayName, "Z.AI")
+
+        let store = try makeStore(defaults: defaults)
+        XCTAssertEqual(store.selectedAIProviderPreference, .openRouter)
+    }
+
+    func testCampaignObjectivesExposeScenarioWinProgress() {
+        var state = makeState()
+        state.scenarioID = NativeScenarioCatalog.defaultScenario.id
+        state.stability = 80
+        state.economicLedger.tradeBalancePercentGDP = 0.5
+
+        let objectives = NativeGameEngine.campaignObjectives(for: state)
+        let expectedCoreRegions = max(1, GeopoliticalMapData.regions(forCountryCode: state.country.code).count)
+
+        XCTAssertEqual(objectives.count, 3)
+        XCTAssertTrue(objectives.contains { $0.id == "stability" && $0.isComplete })
+        XCTAssertTrue(objectives.contains { $0.id == "trade" && $0.isComplete })
+        XCTAssertTrue(objectives.contains { $0.id == "core" && $0.targetValue == "\(expectedCoreRegions) secure" })
+        XCTAssertTrue(objectives.allSatisfy { !$0.title.isEmpty && !$0.deadline.isEmpty })
+    }
+
+    func testSolarpunkObjectiveAndVictoryTreatTinyInsurgencyAsZero() {
+        var state = makeState()
+        state.scenarioID = "solarpunk-dawn"
+        state.gameDate = "2069-01-15"
+        state.stability = 85
+        state.economicLedger.rebelControlPercent = 0.05
+        state.economicLedger.securityIndex = 80
+
+        let objectives = NativeGameEngine.campaignObjectives(for: state)
+
+        XCTAssertEqual(NativeGameEngine.evaluateVictoryStatus(for: state), .won)
+        XCTAssertTrue(objectives.contains { $0.id == "rebel" && $0.isComplete })
+    }
+
+    func testDirectivePreviewUsesQuickActionAndRegionalCosts() throws {
+        var state = makeState()
+        state.administrativeCapacity = 45
+
+        let tradePreview = NativeGameEngine.previewDirective("Propose a bilateral trade agreement to deepen ties.", in: state)
+        XCTAssertEqual(tradePreview.cost, 15)
+        XCTAssertEqual(tradePreview.capacityAfter, 30)
+        XCTAssertTrue(tradePreview.expectedEffects.contains { $0.contains("Diplomatic") || $0.contains("Trade") })
+
+        let region = try XCTUnwrap(GeopoliticalMapData.regions.first { $0.id == "ARG" })
+        let invadePreview = NativeGameEngine.previewDirective("Invade \(region.name) (ID: \(region.id))", in: state)
+        XCTAssertEqual(invadePreview.cost, 40)
+        XCTAssertEqual(invadePreview.capacityAfter, 5)
+        XCTAssertTrue(invadePreview.expectedEffects.contains { $0.localizedCaseInsensitiveContains("dice") })
+
+        state.administrativeCapacity = 10
+        let blockedPreview = NativeGameEngine.previewDirective("Fortify \(region.name) (ID: \(region.id))", in: state)
+        XCTAssertEqual(blockedPreview.cost, 35)
+        XCTAssertNotNil(blockedPreview.warning)
+    }
+
+    func testRegionalOrdersResolveDeterministicallyWithoutAI() throws {
+        var state = makeState()
+        let region = try XCTUnwrap(GeopoliticalMapData.regions.first { $0.countryCode == "BRA" })
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Stabilize \(region.name) (ID: \(region.id))",
+            id: "action-stabilize-bra",
+            resolvedAt: nil,
+            status: .planned,
+            title: "Stabilize \(region.name) (ID: \(region.id))"
+        )
+        state.plannedActions = [action]
+        state.regionOccupations[region.id] = "REB"
+        state.regionConflicts[region.id] = NativeRegionConflictState(
+            controllerCode: "REB",
+            intensity: 5,
+            mode: .guerrillaControl,
+            originalCountryCode: region.countryCode,
+            regionID: region.id,
+            summary: "Test insurgency pressure.",
+            updatedAt: state.gameDate
+        )
+
+        let applied = NativeGameEngine.apply(
+            NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "Regional order resolved.", worldTensionDelta: 0),
+            to: state,
+            months: 1
+        )
+
+        XCTAssertEqual(applied.plannedActions.first?.status, .resolved)
+        XCTAssertNil(applied.regionOccupations[region.id])
+        XCTAssertEqual(applied.regionConflicts[region.id]?.mode, .stabilization)
+        XCTAssertTrue(applied.timeline.contains { $0.id.hasPrefix("regional-stabilize-\(region.id)-") })
+    }
+
+    func testMalformedRegionalOrderDoesNotRemainPlannedForever() {
+        var state = makeState()
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Fortify imaginary province (ID: DOES_NOT_EXIST)",
+            id: "action-invalid-regional",
+            resolvedAt: nil,
+            status: .planned,
+            title: "Fortify imaginary province"
+        )
+        state.plannedActions = [action]
+
+        let applied = NativeGameEngine.apply(
+            NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "No external adjudication.", worldTensionDelta: 0),
+            to: state,
+            months: 1
+        )
+
+        XCTAssertEqual(applied.plannedActions.first?.status, .resolved)
+        XCTAssertTrue(applied.timeline.contains { event in
+            event.id.hasPrefix("regional-invalid-action-invalid-regional-") &&
+                event.linkedActionIDs == ["action-invalid-regional"]
+        })
+    }
+
+    func testAfterActionReportSummarizesResolvedOrders() {
+        let state = makeState()
+        let turn = NativeGeneratedTurn(
+            events: [
+                makeEvent(id: "reported-action", playerRelated: true, linkedActionIDs: ["action-1"], track: .economicResilience, magnitude: 2),
+                makeEvent(id: "reported-world", playerRelated: false, track: .worldTension, magnitude: -1)
+            ],
+            stabilityDelta: 1,
+            summary: "Cabinet after-action reporting links orders to visible effects.",
+            worldTensionDelta: -2
+        )
+
+        let report = NativeGameEngine.afterActionReport(for: turn, state: state)
+
+        XCTAssertEqual(report.resolvedOrderCount, 1)
+        XCTAssertEqual(report.events.count, 2)
+        XCTAssertTrue(report.metrics.contains { $0.id == "economy" && $0.delta == "+2" })
+        XCTAssertTrue(report.summary.contains("after-action"))
+    }
+
+    func testDefaultAIProgressDoesNotPretendToBeApple() async throws {
+        let service = FakeNativeAIService()
+        let state = makeState()
+        var progressEvents: [NativeTurnProgress] = []
+
+        _ = try await service.generateTurn(for: state, months: 1) { progress in
+            progressEvents.append(progress)
+        }
+
+        XCTAssertFalse(progressEvents.isEmpty)
+        XCTAssertFalse(progressEvents.contains { event in
+            event.detail.localizedCaseInsensitiveContains("Apple") ||
+                event.phase.localizedCaseInsensitiveContains("Apple") ||
+                (event.providerSummary?.localizedCaseInsensitiveContains("Apple") ?? false)
+        })
+    }
+
     func testReadinessMapsUnsupportedOSWithoutAdvancing() {
         let readiness = NativeAIReadiness.failure(NativeFoundationModelError.unsupportedOS)
 
@@ -516,7 +913,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertFalse(validated.summary.isEmpty)
     }
 
-    func testPrintPromptExamples() throws {
+    func testPrintPromptExamples() {
         var state = makeState()
         let plannedAction = NativePlannedAction(
             createdAt: state.gameDate,
@@ -600,7 +997,7 @@ final class NativeBackendTests: XCTestCase {
             summaryPrompt,
             suggestionPrompt,
             advisorPrompt,
-            diplomacyPrompt,
+            diplomacyPrompt
         ]
         for prompt in mechanicsPrompts {
             XCTAssertTrue(prompt.contains("Mechanics checklist"))
@@ -616,7 +1013,27 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(suggestionPrompt.contains("secondary mechanic"))
     }
 
-    func testMultiCountryEconSimulationAndNaming() throws {
+    func testPromptClampPreservesOpeningAndClosingConstraints() {
+        let opening = "Create one selected-region economic assessment event."
+        let middle = (0 ..< 260).map { "Long context row \($0): stored evidence for the model." }.joined(separator: "\n")
+        let closing = "Return one strict JSON object only. Do not include markdown fences, prose, schema labels, or comments."
+
+        let prompt = NativePromptHarness.clamped(
+            """
+            \(opening)
+            \(middle)
+            \(closing)
+            """,
+            characterLimit: 1200
+        )
+
+        XCTAssertLessThanOrEqual(prompt.count, 1200)
+        XCTAssertTrue(prompt.hasPrefix(opening))
+        XCTAssertTrue(prompt.contains(NativePromptHarness.trimMarker.trimmingCharacters(in: .whitespacesAndNewlines)))
+        XCTAssertTrue(prompt.contains(closing))
+    }
+
+    func testMultiCountryEconSimulationAndNaming() {
         let state = makeState()
         XCTAssertGreaterThanOrEqual(state.economicLedgers.count, CountryCatalog.all.count)
         XCTAssertEqual(state.economicLedgers["GLOBAL"]?.nominalGDPTrillions, 66.20)
@@ -738,7 +1155,7 @@ final class NativeBackendTests: XCTestCase {
 
         // Let's roll until we get a restructuring event (40% probability, so it should trigger quickly)
         var restructuringHappened = false
-        for i in 1...50 {
+        for i in 1 ... 50 {
             let targetDate = "2010-04-\(String(format: "%02d", i))"
             if let result = NativeStrategyContextDatabase.rollStochasticEvent(for: crisisLedger, code: "CHN", targetDate: targetDate) {
                 if result.summary.contains("Debt Restructuring") {
@@ -753,7 +1170,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(restructuringHappened, "Expected a debt restructuring event to trigger under high debt and zero fiscal space.")
     }
 
-    func testScenarioExpansionCatalog() throws {
+    func testScenarioExpansionCatalog() {
         let all = NativeScenarioCatalog.all
         XCTAssertEqual(all.count, 8)
         let soviet = NativeScenarioCatalog.scenario(for: "soviet-triumph")
@@ -761,7 +1178,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(soviet.name, "Soviet Triumph")
     }
 
-    func testSovietTriumphCustomizations() throws {
+    func testSovietTriumphCustomizations() {
         let sovietScenario = NativeScenarioCatalog.scenario(for: "soviet-triumph")
         let rus = PlayerCountry(code: "RUS", name: "Russia")
 
@@ -786,18 +1203,27 @@ final class NativeBackendTests: XCTestCase {
 
     func testGameModePersistence() throws {
         let defaults = makeDefaults()
-        let store = try makeStore(defaults: defaults)
+        let persistenceDirectory = try makePersistenceDirectory()
+        let store = NativeCampaignStore(
+            defaults: defaults,
+            aiService: FakeNativeAIService(),
+            persistenceDirectory: persistenceDirectory
+        )
         let state = makeState()
         store.choose(state.country)
 
         store.setGameMode(.ironman)
         XCTAssertEqual(store.state?.gameMode, .ironman)
 
-        let newStore = try makeStore(defaults: defaults)
+        let newStore = NativeCampaignStore(
+            defaults: defaults,
+            aiService: FakeNativeAIService(),
+            persistenceDirectory: persistenceDirectory
+        )
         XCTAssertEqual(newStore.state?.gameMode, .ironman)
     }
 
-    func testHexLever8CharacterDecodingAndTacticalNudges() throws {
+    func testHexLever8CharacterDecodingAndTacticalNudges() {
         let hex = "0x4D21F423"
         let lever = NativeStrategyContextDatabase.decodeHexLever(hex)
         XCTAssertNotNil(lever)
@@ -823,7 +1249,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(applied.regionConflicts.values.contains { $0.mode == .nuclearFallout })
     }
 
-    func testConflictMapNudgesRecordConventionalAndGuerrillaStates() throws {
+    func testConflictMapNudgesRecordConventionalAndGuerrillaStates() {
         let state = makeState()
         var conventionalEvent = makeEvent(id: "conventional-nudge", playerRelated: true)
         conventionalEvent.hexLeverCode = "0x00000001"
@@ -844,7 +1270,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(applied.regionOccupations.values.contains("REB"))
     }
 
-    func testSovereigntyChangeCreatesDynamicCountryActor() throws {
+    func testSovereigntyChangeCreatesDynamicCountryActor() {
         let state = makeState()
         var event = makeEvent(id: "secession-event", playerRelated: false)
         event.sovereigntyChange = NativeSovereigntyChange(
@@ -896,9 +1322,9 @@ final class NativeBackendTests: XCTestCase {
 
     private var liveFoundationModelsGateEnabled: Bool {
         #if PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS
-        return true
+            return true
         #else
-        return ProcessInfo.processInfo.environment["PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS"] == "1"
+            return ProcessInfo.processInfo.environment["PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS"] == "1"
         #endif
     }
 
@@ -999,6 +1425,20 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(store.state?.plannedActions.count, 2)
     }
 
+    func testEmptyDraftActionIsANoOpWithoutCapacityError() {
+        let state = makeState()
+        let store = NativeCampaignStore(aiService: FakeNativeAIService())
+        store.state = state
+        store.state?.administrativeCapacity = 5
+        store.draftAction = "   "
+
+        store.addDraftAction()
+
+        XCTAssertNil(store.lastError)
+        XCTAssertEqual(store.state?.administrativeCapacity, 5)
+        XCTAssertEqual(store.state?.plannedActions.count, 0)
+    }
+
     func testDynamicAdministrativeCapacity() throws {
         let state = makeState()
         XCTAssertEqual(state.administrativeCapacity, 100)
@@ -1042,7 +1482,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(store.state?.plannedActions.count, 0)
     }
 
-    func testTurnResolutionStabilityCrisisAndCollapse() throws {
+    func testTurnResolutionStabilityCrisisAndCollapse() {
         var state = makeState()
         state.stability = 25
         if var ledger = state.economicLedgers[state.country.code] {
@@ -1079,7 +1519,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(appliedCollapse.timeline.contains { $0.title.contains("NATION COLLAPSED") })
     }
 
-    func testScenarioVictoryConditionEvaluation() throws {
+    func testScenarioVictoryConditionEvaluation() {
         var state = makeState()
         state.scenarioID = "default"
         state.stability = 85
@@ -1149,7 +1589,7 @@ final class NativeBackendTests: XCTestCase {
         ledgers[state.country.code]?.rebelControlPercent = 20.0
         ledgers[state.country.code]?.securityIndex = 60.0
         state.economicLedgers = ledgers
-        state.economicLedger = ledgers[state.country.code]!
+        state.economicLedger = try XCTUnwrap(ledgers[state.country.code])
 
         let generated = NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "Leap", worldTensionDelta: 0)
         let resolved = NativeGameEngine.apply(generated, to: state, months: 1)
@@ -1165,7 +1605,7 @@ final class NativeBackendTests: XCTestCase {
         var boostLedgers = [boostState.country.code: boostState.economicLedger]
         boostLedgers[boostState.country.code]?.rebelControlPercent = 0.0
         boostState.economicLedgers = boostLedgers
-        boostState.economicLedger = boostLedgers[boostState.country.code]!
+        boostState.economicLedger = try XCTUnwrap(boostLedgers[boostState.country.code])
 
         let resolvedBoost = NativeGameEngine.apply(generated, to: boostState, months: 1)
         XCTAssertEqual(resolvedBoost.administrativeCapacity, 115)
@@ -1296,7 +1736,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(nonTreatyPartner.relationshipScores[resolved.country.code], 31)
     }
 
-    func testWorldTensionEscalationAndParanoia() throws {
+    func testWorldTensionEscalationAndParanoia() {
         var state = makeState()
         state.worldTension = 20
 
@@ -1357,7 +1797,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(usaState.relationshipScores["BRA"], -29)
     }
 
-    func testTerritorialAndRadiologicalPenalties() throws {
+    func testTerritorialAndRadiologicalPenalties() {
         var state = makeState()
         state.regionOccupations = ["BRA_Acre": "CHN"]
         state.nuclearFalloutRegions = ["BRA_Acre"]
@@ -1370,7 +1810,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(resolved.stability, 67)
     }
 
-    func test512DiceFrictionSystem() throws {
+    func test512DiceFrictionSystem() {
         NativeGameEngine.force512DiceFrictionForTesting = true
         defer { NativeGameEngine.force512DiceFrictionForTesting = false }
 
@@ -1387,7 +1827,7 @@ final class NativeBackendTests: XCTestCase {
         // Verify that the overall event exists
         let overallEvent = resolved.timeline.first { $0.id.hasPrefix("512dice-overall-") }
         XCTAssertNotNil(overallEvent, "Expected an overall turbulence event in the timeline.")
-        
+
         // The economic ledger should contain entries related to the 512-dice events
         let entries = resolved.economicLedger.entries
         let hasFrictionLedgerEntry = entries.contains { entry in
@@ -1412,19 +1852,19 @@ private final class FakeNativeAIService: NativeAIService {
         return makeValidTurn(for: state, months: months)
     }
 
-    func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
+    func generateSuggestedActions(for _: NativeCampaignState) async throws -> [NativeSuggestedAction] {
         [
             NativeSuggestedAction(detail: "Fund a service access audit for district agencies.", id: "fake-1", rationale: "It fits current delivery constraints.", title: "Audit service access", urgency: "soon"),
             NativeSuggestedAction(detail: "Open a logistics desk for regional infrastructure permits.", id: "fake-2", rationale: "It supports market confidence.", title: "Coordinate logistics desk", urgency: "opportunistic"),
-            NativeSuggestedAction(detail: "Publish a fiscal buffer plan for essential services.", id: "fake-3", rationale: "It protects stability during delays.", title: "Publish buffer plan", urgency: "immediate"),
+            NativeSuggestedAction(detail: "Publish a fiscal buffer plan for essential services.", id: "fake-3", rationale: "It protects stability during delays.", title: "Publish buffer plan", urgency: "immediate")
         ]
     }
 
-    func generateAdvisorBrief(for state: NativeCampaignState, question: String) async throws -> String {
+    func generateAdvisorBrief(for _: NativeCampaignState, question _: String) async throws -> String {
         "Hold the line on concrete service delivery and avoid vague commitments."
     }
 
-    func generateDiplomaticReply(for state: NativeCampaignState, thread: NativeDiplomaticThread, message: String) async throws -> String {
+    func generateDiplomaticReply(for _: NativeCampaignState, thread _: NativeDiplomaticThread, message _: String) async throws -> String {
         "The counterpart accepts a narrow technical channel while reserving broader commitments."
     }
 }
@@ -1459,10 +1899,10 @@ private func makeStore(
     defaults: UserDefaults = makeDefaults(),
     aiService: any NativeAIService = FakeNativeAIService()
 ) throws -> NativeCampaignStore {
-    NativeCampaignStore(
+    try NativeCampaignStore(
         defaults: defaults,
         aiService: aiService,
-        persistenceDirectory: try makePersistenceDirectory()
+        persistenceDirectory: makePersistenceDirectory()
     )
 }
 
@@ -1485,11 +1925,11 @@ private func makePersistenceDirectory() throws -> URL {
     return url
 }
 
-private func makeValidTurn(for state: NativeCampaignState, months: Int) -> NativeGeneratedTurn {
+private func makeValidTurn(for state: NativeCampaignState, months _: Int) -> NativeGeneratedTurn {
     NativeGeneratedTurn(
         events: [
             makeEvent(id: "independent-\(state.round)", playerRelated: false),
-            makeEvent(id: "player-\(state.round)", playerRelated: true),
+            makeEvent(id: "player-\(state.round)", playerRelated: true)
         ],
         stabilityDelta: 1,
         summary: "Regional agencies turn concrete planning into a visible delivery signal.",
@@ -1524,7 +1964,7 @@ private func makeEvent(
                 summary: "Market confidence shifts as service delivery commitments become measurable.",
                 target: playerRelated ? testCountry.name : "International system",
                 track: track
-            ),
+            )
         ],
         title: title
     )

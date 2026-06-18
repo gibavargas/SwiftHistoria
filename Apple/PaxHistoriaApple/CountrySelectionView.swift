@@ -17,7 +17,7 @@ struct CountrySelectionView: View {
 
     private var filteredCountries: [PlayerCountry] {
         let mapped = countries.map { country -> PlayerCountry in
-            if country.code == "RUS" && selectedScenarioID == "soviet-triumph" {
+            if country.code == "RUS", selectedScenarioID == "soviet-triumph" {
                 return PlayerCountry(code: "RUS", name: "Soviet Union")
             }
             return country
@@ -45,79 +45,79 @@ struct CountrySelectionView: View {
             CountrySelectionBackground()
 
             #if os(macOS)
-            NavigationSplitView {
-                setupPanel
-                    .navigationTitle("New Campaign")
-            } detail: {
-                countryList
-                    .navigationTitle("Choose Country")
-            }
-            .frame(minWidth: 820, minHeight: 620)
+                NavigationSplitView {
+                    setupPanel
+                        .navigationTitle("New Campaign")
+                } detail: {
+                    countryList
+                        .navigationTitle("Choose Country")
+                }
+                .frame(minWidth: 820, minHeight: 620)
             #else
-            NavigationStack {
-                VStack(spacing: 0) {
-                    if setupStep == 0 {
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 20) {
-                                header
-                                scenarioDeck
-                                languageDeck
-                                simulationGuide
+                NavigationStack {
+                    VStack(spacing: 0) {
+                        if setupStep == 0 {
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 20) {
+                                    header
+                                    scenarioDeck
+                                    languageDeck
+                                    simulationGuide
 
-                                Button {
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                        setupStep = 1
+                                    Button {
+                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                            setupStep = 1
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text("Continue to Choose Country")
+                                                .fontWeight(.bold)
+                                            Image(systemName: "arrow.right")
+                                        }
+                                        .frame(maxWidth: .infinity, minHeight: 46)
                                     }
-                                } label: {
-                                    HStack {
-                                        Text("Continue to Choose Country")
-                                            .fontWeight(.bold)
-                                        Image(systemName: "arrow.right")
-                                    }
-                                    .frame(maxWidth: .infinity, minHeight: 46)
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(selectedScenarioAccentColor)
+                                    .padding(.top, 10)
+                                    .accessibilityIdentifier("native-country-continue")
                                 }
-                                .buttonStyle(.borderedProminent)
-                                .tint(selectedScenarioAccentColor)
-                                .padding(.top, 10)
-                                .accessibilityIdentifier("native-country-continue")
+                                .padding(20)
+                                .frame(maxWidth: 520, alignment: .leading)
                             }
-                            .padding(20)
-                            .frame(maxWidth: 520, alignment: .leading)
-                        }
-                    } else {
-                        VStack(spacing: 0) {
-                            HStack {
-                                Button {
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                        setupStep = 0
+                        } else {
+                            VStack(spacing: 0) {
+                                HStack {
+                                    Button {
+                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                            setupStep = 0
+                                        }
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "chevron.left")
+                                                .fontWeight(.bold)
+                                            Text("Scenario Setup")
+                                                .fontWeight(.semibold)
+                                        }
+                                        .font(.subheadline)
+                                        .foregroundStyle(selectedScenarioAccentColor)
                                     }
-                                } label: {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "chevron.left")
-                                            .fontWeight(.bold)
-                                        Text("Scenario Setup")
-                                            .fontWeight(.semibold)
-                                    }
-                                    .font(.subheadline)
-                                    .foregroundStyle(selectedScenarioAccentColor)
+                                    Spacer()
                                 }
-                                Spacer()
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.top, 16)
-                            .padding(.bottom, 12)
-
-                            searchField
                                 .padding(.horizontal, 20)
+                                .padding(.top, 16)
                                 .padding(.bottom, 12)
 
-                            countryList
+                                searchField
+                                    .padding(.horizontal, 20)
+                                    .padding(.bottom, 12)
+
+                                countryList
+                            }
                         }
                     }
+                    .navigationTitle(setupStep == 0 ? "New Campaign" : "Choose Country")
+                    .navigationBarTitleDisplayMode(.inline)
                 }
-                .navigationTitle(setupStep == 0 ? "New Campaign" : "Choose Country")
-                .navigationBarTitleDisplayMode(.inline)
-            }
             #endif
         }
         .tint(selectedScenarioAccentColor)
@@ -245,7 +245,7 @@ struct CountrySelectionView: View {
                 .foregroundStyle(NativeWarRoomTheme.ink)
                 .minimumScaleFactor(0.8)
 
-            Text("Select the strategic archive, operating language, and national desk before the first briefing is filed.")
+            Text("Choose your scenario, language, and country to begin.")
                 .font(NativeWarRoomTheme.bodyFont())
                 .foregroundStyle(NativeWarRoomTheme.mutedInk)
                 .fixedSize(horizontal: false, vertical: true)
@@ -295,7 +295,7 @@ struct CountrySelectionView: View {
     private var languageDeck: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("Dispatch language", systemImage: "character.bubble")
+                Label("Language", systemImage: "character.bubble")
                     .font(NativeWarRoomTheme.labelFont(.subheadline))
                     .foregroundStyle(NativeWarRoomTheme.brass)
                 Spacer()
@@ -324,7 +324,7 @@ struct CountrySelectionView: View {
 
     private var searchField: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("Find a national desk", systemImage: "magnifyingglass")
+            Label("Find your country", systemImage: "magnifyingglass")
                 .font(NativeWarRoomTheme.labelFont(.subheadline))
                 .foregroundStyle(NativeWarRoomTheme.brass)
             HStack {
@@ -334,9 +334,9 @@ struct CountrySelectionView: View {
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                     .accessibilityIdentifier("native-country-search")
-                    #if os(iOS)
+                #if os(iOS)
                     .textInputAutocapitalization(.never)
-                    #endif
+                #endif
                 if !query.isEmpty {
                     Button {
                         query = ""
@@ -362,15 +362,15 @@ struct CountrySelectionView: View {
 
     private var simulationGuide: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("BRIEFING PROTOCOL", systemImage: "info.circle")
+            Label("How to play", systemImage: "info.circle")
                 .font(NativeWarRoomTheme.labelFont(.subheadline))
                 .foregroundStyle(NativeWarRoomTheme.brass)
 
             VStack(alignment: .leading, spacing: 8) {
-                GuideStepRow(number: "01", text: "Select a geopolitical scenario from the stack above.")
-                GuideStepRow(number: "02", text: "Choose the nation you wish to direct in the simulator.")
-                GuideStepRow(number: "03", text: "Draft enqueued policy orders or leverage advisor intelligence.")
-                GuideStepRow(number: "04", text: "Advance rounds to trigger strategic consequences and read the timeline.")
+                GuideStepRow(number: "01", text: "Pick a scenario from the options above.")
+                GuideStepRow(number: "02", text: "Choose the nation you want to play.")
+                GuideStepRow(number: "03", text: "Add policy orders — typed or quick-pick.")
+                GuideStepRow(number: "04", text: "Press Advance to see what happens next.")
             }
         }
         .padding(14)
@@ -507,8 +507,8 @@ private struct ScenarioSelectionCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
                 Text(scenario.name)
-                .font(NativeWarRoomTheme.labelFont(.subheadline))
-                .foregroundStyle(selected ? NativeWarRoomTheme.ink : NativeWarRoomTheme.mutedInk)
+                    .font(NativeWarRoomTheme.labelFont(.subheadline))
+                    .foregroundStyle(selected ? NativeWarRoomTheme.ink : NativeWarRoomTheme.mutedInk)
                     .lineLimit(1)
                 Spacer()
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
@@ -565,7 +565,7 @@ extension Color {
             .sRGB,
             red: Double(r) / 255,
             green: Double(g) / 255,
-            blue:  Double(b) / 255,
+            blue: Double(b) / 255,
             opacity: Double(a) / 255
         )
     }
@@ -731,14 +731,14 @@ struct HoverScaleModifier: ViewModifier {
 
 extension View {
     func hoverScale(_ scale: CGFloat = 1.02) -> some View {
-        self.modifier(HoverScaleModifier(scale: scale))
+        modifier(HoverScaleModifier(scale: scale))
     }
 
     func glassmorphicCard(borderColor: Color = .white.opacity(0.12), cornerRadius: CGFloat = 12) -> some View {
-        self.modifier(GlassmorphicCardModifier(borderColor: borderColor, cornerRadius: cornerRadius))
+        modifier(GlassmorphicCardModifier(borderColor: borderColor, cornerRadius: cornerRadius))
     }
 
     func warRoomDossier(borderColor: Color = NativeWarRoomTheme.brass.opacity(0.22), cornerRadius: CGFloat = 10) -> some View {
-        self.modifier(WarRoomDossierModifier(borderColor: borderColor, cornerRadius: cornerRadius))
+        modifier(WarRoomDossierModifier(borderColor: borderColor, cornerRadius: cornerRadius))
     }
 }

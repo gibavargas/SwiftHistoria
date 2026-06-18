@@ -1,5 +1,5 @@
-import SwiftUI
 import Foundation
+import SwiftUI
 
 struct NativeWorldEconomicsPanel: View {
     @ObservedObject var store: NativeCampaignStore
@@ -103,14 +103,14 @@ struct ExpansionEconomicCard: View {
                                 .foregroundStyle(.white)
                             if isPlayer {
                                 Text("PLAYER")
-                                    .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                    .font(.system(size: 11, weight: .bold, design: .monospaced))
                                     .padding(.horizontal, 4)
                                     .padding(.vertical, 1)
                                     .background(Color.glowingCyan.opacity(0.2), in: RoundedRectangle(cornerRadius: 3))
                                     .foregroundStyle(Color.glowingCyan)
                             } else if isGlobal {
                                 Text("SYSTEM")
-                                    .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                    .font(.system(size: 11, weight: .bold, design: .monospaced))
                                     .padding(.horizontal, 4)
                                     .padding(.vertical, 1)
                                     .background(Color(hex: "#b862ff").opacity(0.2), in: RoundedRectangle(cornerRadius: 3))
@@ -157,22 +157,22 @@ struct ExpansionEconomicCard: View {
                     if !ledger.entries.isEmpty {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("RECENT FISCAL ENTRIES")
-                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
                                 .foregroundStyle(Color.iceBlue)
 
                             ForEach(ledger.entries.prefix(3)) { entry in
                                 HStack {
                                     Text(entry.turnDate)
-                                        .font(.system(size: 8, design: .monospaced))
+                                        .font(.system(size: 11, design: .monospaced))
                                         .foregroundStyle(.secondary)
                                     Text(entry.summary)
-                                        .font(.system(size: 9))
+                                        .font(.system(size: 11))
                                         .foregroundStyle(.white)
                                         .lineLimit(1)
                                     Spacer()
                                     let growthVal = entry.growthDelta >= 0 ? "+\(String(format: "%.2f", entry.growthDelta))" : String(format: "%.2f", entry.growthDelta)
                                     Text("Growth \(growthVal)%")
-                                        .font(.system(size: 8, design: .monospaced).weight(.bold))
+                                        .font(.system(size: 11, design: .monospaced).weight(.bold))
                                         .foregroundStyle(entry.growthDelta >= 0 ? Color.neonTeal : Color.softRed)
                                 }
                                 .padding(6)
@@ -202,7 +202,7 @@ struct MiniMetricIndicator: View {
                 .font(.system(size: 7, weight: .bold, design: .monospaced))
                 .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
                 .foregroundStyle(isPositive ? Color.neonTeal : Color.softRed)
         }
     }
@@ -212,7 +212,7 @@ struct DetailMetricRow: View {
     let title: String
     let value: String
     let systemImage: String
-    var tintColor: Color = Color.glowingCyan
+    var tintColor: Color = .glowingCyan
 
     var body: some View {
         HStack(spacing: 8) {
@@ -224,10 +224,10 @@ struct DetailMetricRow: View {
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(.system(size: 8))
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                 Text(value)
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .font(.system(size: 11, weight: .bold, design: .monospaced))
                     .foregroundStyle(.white)
             }
             Spacer()
@@ -268,8 +268,8 @@ struct PlayerBudgetPanel: View {
                         set: { newValue in
                             adjustSliders(changed: .military, value: newValue)
                         }
-                    ), in: 0...1)
-                    .tint(Color.softRed)
+                    ), in: 0 ... 1)
+                        .tint(Color.softRed)
                 }
 
                 // Services Slider
@@ -288,8 +288,8 @@ struct PlayerBudgetPanel: View {
                         set: { newValue in
                             adjustSliders(changed: .services, value: newValue)
                         }
-                    ), in: 0...1)
-                    .tint(Color.neonTeal)
+                    ), in: 0 ... 1)
+                        .tint(Color.neonTeal)
                 }
 
                 // Diplomacy Slider
@@ -308,8 +308,8 @@ struct PlayerBudgetPanel: View {
                         set: { newValue in
                             adjustSliders(changed: .diplomacy, value: newValue)
                         }
-                    ), in: 0...1)
-                    .tint(Color.alertGold)
+                    ), in: 0 ... 1)
+                        .tint(Color.alertGold)
                 }
             }
         }

@@ -31,41 +31,41 @@ struct NativeGameView: View {
                 .transition(.opacity)
             }
         }
-            .fileExporter(
-                isPresented: $isExportingCampaign,
-                document: campaignDocument,
-                contentType: .json,
-                defaultFilename: store.campaignExportFilename
-            ) { result in
-                switch result {
-                case .success:
-                    libraryMessage = "Campaign exported."
-                case .failure(let error):
-                    libraryMessage = error.localizedDescription
+        .fileExporter(
+            isPresented: $isExportingCampaign,
+            document: campaignDocument,
+            contentType: .json,
+            defaultFilename: store.campaignExportFilename
+        ) { result in
+            switch result {
+            case .success:
+                libraryMessage = "Campaign exported."
+            case let .failure(error):
+                libraryMessage = error.localizedDescription
+            }
+        }
+        .fileImporter(isPresented: $isImportingCampaign, allowedContentTypes: [.json]) { result in
+            importCampaign(from: result)
+        }
+        .sheet(isPresented: Binding<Bool>(
+            get: { store.lastTurnReport != nil },
+            set: { show in
+                if !show {
+                    store.lastTurnReport = nil
                 }
             }
-            .fileImporter(isPresented: $isImportingCampaign, allowedContentTypes: [.json]) { result in
-                importCampaign(from: result)
-            }
-            .sheet(isPresented: Binding<Bool>(
-                get: { store.lastTurnReport != nil },
-                set: { show in
-                    if !show {
-                        store.lastTurnReport = nil
-                    }
-                }
-            )) {
-                if let report = store.lastTurnReport {
-                    NativeTurnReportView(report: report) {
-                        store.lastTurnReport = nil
-                    }
+        )) {
+            if let report = store.lastTurnReport {
+                NativeTurnReportView(report: report) {
+                    store.lastTurnReport = nil
                 }
             }
+        }
     }
 
     private func prepareCampaignExport() {
         do {
-            campaignDocument = NativeCampaignDocument(data: try store.exportCampaignData())
+            campaignDocument = try NativeCampaignDocument(data: store.exportCampaignData())
             libraryMessage = nil
             isExportingCampaign = true
         } catch {
@@ -83,17 +83,26 @@ struct NativeGameView: View {
                 }
             }
 
+            if let byteCount = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize,
+               byteCount > NativeCampaignStore.maximumCampaignImportBytes
+            {
+                throw NativeCampaignStoreError.campaignImportTooLarge(
+                    actualBytes: byteCount,
+                    maximumBytes: NativeCampaignStore.maximumCampaignImportBytes
+                )
+            }
             try store.importCampaignData(Data(contentsOf: url))
             libraryMessage = "Imported \(store.state?.scenarioName ?? "campaign") for \(store.state?.country.name ?? "player")."
         } catch {
             libraryMessage = error.localizedDescription
         }
     }
-
 }
 
 private struct NativeCampaignDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.json] }
+    static var readableContentTypes: [UTType] {
+        [.json]
+    }
 
     var data: Data
 
@@ -105,13 +114,16 @@ private struct NativeCampaignDocument: FileDocument {
         data = configuration.file.regularFileContents ?? Data()
     }
 
-    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+    func fileWrapper(configuration _: WriteConfiguration) throws -> FileWrapper {
         FileWrapper(regularFileWithContents: data)
     }
 }
 
 struct GlobalSector: Identifiable {
-    var id: String { code }
+    var id: String {
+        code
+    }
+
     let name: String
     let code: String
     let coordinate: CLLocationCoordinate2D
@@ -132,7 +144,9 @@ enum NativeWarRoomMapLayer: String, CaseIterable, Identifiable {
     case economy
     case fallout
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var title: String {
         switch self {
@@ -150,17 +164,17 @@ struct SectorAnnotationBadge: View {
 
     private var color: Color {
         switch sector.relation {
-        case .player: return Color.glowingCyan
-        case .ally: return Color.neonTeal
-        case .neutral: return Color.alertGold
-        case .rival: return Color.softRed
+        case .player: Color.glowingCyan
+        case .ally: Color.neonTeal
+        case .neutral: Color.alertGold
+        case .rival: Color.softRed
         }
     }
 
     var body: some View {
         VStack(spacing: 2) {
             Text(sector.name.uppercased())
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
                 .foregroundStyle(.white)
                 .shadow(radius: 1)
 
@@ -170,7 +184,7 @@ struct SectorAnnotationBadge: View {
                     .frame(width: 6, height: 6)
 
                 Text("\(sector.stability)")
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .font(.system(size: 11, weight: .bold, design: .monospaced))
                     .foregroundStyle(color)
             }
             .padding(.horizontal, 6)
@@ -198,7 +212,7 @@ struct LegendItem: View {
                 .fill(color)
                 .frame(width: 6, height: 6)
             Text(text)
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
                 .foregroundStyle(.secondary)
         }
     }
@@ -219,12 +233,13 @@ struct NativeWorldMap: View {
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
 
-    private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+    private static let drawInterval: TimeInterval = 0.1
+    private let timer = Timer.publish(every: Self.drawInterval, on: .main, in: .common).autoconnect()
 
     init(state: NativeCampaignState, minHeight: CGFloat = 300) {
         self.state = state
         self.minHeight = minHeight
-        self.sectorsByCode = Dictionary(uniqueKeysWithValues: Native2010WorldModel.mapSectors(for: state).map { ($0.code, $0) })
+        sectorsByCode = Dictionary(uniqueKeysWithValues: Native2010WorldModel.mapSectors(for: state).map { ($0.code, $0) })
     }
 
     private var needsMapAnimation: Bool {
@@ -427,10 +442,10 @@ struct NativeWorldMap: View {
 
     private func relationColor(_ relation: SectorRelation) -> Color {
         switch relation {
-        case .player: return Color.glowingCyan
-        case .ally: return Color.neonTeal
-        case .neutral: return Color.alertGold
-        case .rival: return Color.softRed
+        case .player: Color.glowingCyan
+        case .ally: Color.neonTeal
+        case .neutral: Color.alertGold
+        case .rival: Color.softRed
         }
     }
 
@@ -445,7 +460,7 @@ struct NativeWorldMap: View {
         return NativeWarRoomTheme.alertAmber
     }
 
-    private func drawDiagonalStripes(context: GraphicsContext, path: Path, size: CGSize, occupierColor: Color, originalColor: Color) {
+    private func drawDiagonalStripes(context: GraphicsContext, path: Path, size _: CGSize, occupierColor: Color, originalColor: Color) {
         var context = context
         context.fill(path, with: .color(occupierColor.opacity(0.35)))
         context.clip(to: path)
@@ -531,15 +546,15 @@ struct NativeWorldMap: View {
     private func conflictColor(_ conflict: NativeRegionConflictState) -> Color {
         switch conflict.mode {
         case .contestedBorder:
-            return Color.alertGold
+            Color.alertGold
         case .conventionalOccupation:
-            return Color.softRed
+            Color.softRed
         case .guerrillaControl:
-            return Color.orange
+            Color.orange
         case .nuclearFallout:
-            return Color.alertGold
+            Color.alertGold
         case .stabilization:
-            return Color.neonTeal
+            Color.neonTeal
         }
     }
 
@@ -561,12 +576,12 @@ struct NativeWorldMap: View {
         let isContested = conflict?.mode == .contestedBorder
 
         var path = Path()
-        
-        if isContested, let conflict = conflict {
+
+        if isContested, let conflict {
             // Find closest region of the opponent/controller if contested
             var targetCenter: CGPoint? = nil
             let targetCode = conflict.controllerCode
-            let otherRegions = GeopoliticalMapData.regionsByCountry[targetCode, default: []].filter { $0.id != reg.id }
+            let otherRegions = GeopoliticalMapData.regions(forCountryCode: targetCode).filter { $0.id != reg.id }
             if let closest = otherRegions.min(by: {
                 let d1 = pow($0.center.x - reg.center.x, 2) + pow($0.center.y - reg.center.y, 2)
                 let d2 = pow($1.center.x - reg.center.x, 2) + pow($1.center.y - reg.center.y, 2)
@@ -581,15 +596,15 @@ struct NativeWorldMap: View {
                     if let tc = targetCenter {
                         let dx = tc.x - reg.center.x
                         let dy = tc.y - reg.center.y
-                        let dist = sqrt(dx*dx + dy*dy)
+                        let dist = sqrt(dx * dx + dy * dy)
                         let ux = dx / max(1.0, dist)
                         let uy = dy / max(1.0, dist)
-                        
+
                         let midX = (reg.center.x + tc.x) / 2.0
                         let midY = (reg.center.y + tc.y) / 2.0
                         let d = sqrt(pow(pt.x - midX, 2) + pow(pt.y - midY, 2))
                         let threshold = max(20.0, dist * 0.6)
-                        
+
                         if d < threshold {
                             let factor = (1.0 - d / threshold)
                             let wave = sin(animationPhase * 0.08 + pt.x * 0.3 + pt.y * 0.3)
@@ -617,29 +632,27 @@ struct NativeWorldMap: View {
         let falloutLayerColor = state.nuclearFalloutRegions.contains(reg.id) || conflict?.mode == .nuclearFallout
             ? NativeWarRoomTheme.alertAmber
             : NativeWarRoomTheme.mutedInk.opacity(0.28)
-        var stanceColor: Color = {
-            switch selectedLayer {
-            case .relations:
-                return relationStanceColor
-            case .conflicts:
-                return conflictLayerColor
-            case .economy:
-                return economyLayerColor
-            case .fallout:
-                return falloutLayerColor
-            }
-        }()
+        var stanceColor: Color = switch selectedLayer {
+        case .relations:
+            relationStanceColor
+        case .conflicts:
+            conflictLayerColor
+        case .economy:
+            economyLayerColor
+        case .fallout:
+            falloutLayerColor
+        }
 
         // Dynamic GDP / Economic Highlights
         let occupierLedger = state.economicLedgers[occupierCode]
         let hasHighGrowth = (occupierLedger?.realGrowthPercent ?? 0.0) > 0.03
-        
+
         // Stability-based desaturation
         if state.stability < 40 {
             let fraction = Double(40 - state.stability) / 40.0
             stanceColor = Color.lerp(from: stanceColor, to: Color(hex: "#1b2535"), fraction: fraction)
         }
-        
+
         // World Tension Red-shift
         if state.worldTension > 60 {
             let shiftFactor = Double(state.worldTension - 60) / 40.0
@@ -664,7 +677,7 @@ struct NativeWorldMap: View {
             return
         }
 
-        var fillOpacity: Double = 0.22
+        var fillOpacity = 0.22
         if isPlayerOccupier { fillOpacity = 0.38 }
         else if isSelectedCountry { fillOpacity = 0.3 }
         if reg.id == selectedRegionID { fillOpacity += 0.15 }
@@ -735,7 +748,7 @@ struct NativeWorldMap: View {
                 continue
             }
 
-            if let source = GeopoliticalMapData.regionsByCountry[conflict.controllerCode, default: []].first(where: { $0.id != conflict.regionID }) {
+            if let source = GeopoliticalMapData.regions(forCountryCode: conflict.controllerCode).first(where: { $0.id != conflict.regionID }) {
                 let sourcePoint = CGPoint(x: source.center.x * scaleX, y: source.center.y * scaleY)
                 var route = Path()
                 route.move(to: sourcePoint)
@@ -805,13 +818,12 @@ struct NativeWorldMap: View {
             for reg in GeopoliticalMapData.nonWaterRegions {
                 if !visibleRect.contains(reg.center) { continue }
                 let isState = reg.id.contains("_") || reg.id.count > 3
-                let shouldShow: Bool
-                if zoomScale >= 3.0 {
-                    shouldShow = true
+                let shouldShow: Bool = if zoomScale >= 3.0 {
+                    true
                 } else {
-                    shouldShow = !isState // Only show country names when zoomed out slightly
+                    !isState // Only show country names when zoomed out slightly
                 }
-                
+
                 if shouldShow {
                     let scaledCenter = CGPoint(x: reg.center.x * scaleX, y: reg.center.y * scaleY)
                     // Draw name
@@ -819,12 +831,12 @@ struct NativeWorldMap: View {
                     let nameText = Text(reg.name.uppercased())
                         .font(.system(size: fontSize, weight: isState ? .semibold : .black, design: .monospaced))
                         .foregroundColor(isState ? Color.white.opacity(0.8) : Color.iceBlue)
-                    
+
                     // Simple drop-shadow effect by drawing a dark background text first
                     let shadowText = Text(reg.name.uppercased())
                         .font(.system(size: fontSize, weight: isState ? .semibold : .black, design: .monospaced))
                         .foregroundColor(Color.black.opacity(0.85))
-                    
+
                     let shadowOffset = 0.6 / zoomScale
                     context.draw(shadowText, at: CGPoint(x: scaledCenter.x + shadowOffset, y: scaledCenter.y + shadowOffset), anchor: .center)
                     context.draw(nameText, at: scaledCenter, anchor: .center)
@@ -843,23 +855,22 @@ struct NativeWorldMap: View {
         }
 
         // Draw populated places (cities) with LOD
-        let cityPopulationThreshold: Int
-        if zoomScale >= 4.0 {
-            cityPopulationThreshold = 100_000
+        let cityPopulationThreshold = if zoomScale >= 4.0 {
+            100_000
         } else if zoomScale >= 3.0 {
-            cityPopulationThreshold = 300_000
+            300_000
         } else if zoomScale >= 2.0 {
-            cityPopulationThreshold = 700_000
+            700_000
         } else if zoomScale >= 1.5 {
-            cityPopulationThreshold = 1_500_000
+            1_500_000
         } else {
-            cityPopulationThreshold = 4_000_000
+            4_000_000
         }
 
         for city in GeopoliticalMapData.cities {
             if !visibleRect.contains(city.coordinate) { continue }
             guard city.isCapital || city.population >= cityPopulationThreshold else { continue }
-            
+
             let scaledPt = CGPoint(x: city.coordinate.x * scaleX, y: city.coordinate.y * scaleY)
             let radius: CGFloat = (city.isCapital ? 4.0 : 2.5) / zoomScale
             let markerRect = CGRect(
@@ -868,16 +879,16 @@ struct NativeWorldMap: View {
                 width: radius * 2,
                 height: radius * 2
             )
-            
+
             let markerColor = city.isCapital ? Color.alertGold : Color.white
             context.fill(Path(ellipseIn: markerRect), with: .color(markerColor))
             context.stroke(Path(ellipseIn: markerRect), with: .color(Color.black.opacity(0.8)), lineWidth: 0.6 / zoomScale)
-            
+
             if zoomScale >= 1.4 || (city.isCapital && city.population >= 800_000) {
                 let text = Text(city.name)
                     .font(.system(size: (city.isCapital ? 7 : 6) / zoomScale, weight: city.isCapital ? .bold : .regular, design: .monospaced))
                     .foregroundColor(city.isCapital ? .alertGold : .white.opacity(0.85))
-                
+
                 context.draw(text, at: CGPoint(x: scaledPt.x, y: scaledPt.y - radius - 3 / zoomScale), anchor: .bottom)
             }
         }
@@ -925,29 +936,29 @@ struct NativeWorldMap: View {
             let occupierCode = state.regionOccupations[reg.id] ?? reg.countryCode
             let ledger = state.economicLedgers[occupierCode]
             let conflict = state.regionConflicts[reg.id]
-            
+
             let securityIndex = ledger?.securityIndex ?? 80.0
             let centerPt = CGPoint(x: reg.center.x * scaleX, y: reg.center.y * scaleY)
-            
+
             let isOccupied = occupierCode != reg.countryCode
             let isMilitaryConflict = conflict?.mode == .contestedBorder || conflict?.mode == .conventionalOccupation
             let hasMilitaryFocus = state.aiCountryStates[occupierCode]?.budgetPriority == .military
-            
+
             if isOccupied || isMilitaryConflict || hasMilitaryFocus {
                 let armyColor = occupierCode == state.country.code ? Color.glowingCyan : Color.softRed
                 let scale: CGFloat = (1.2 / zoomScale)
                 let armyPt = CGPoint(x: centerPt.x - 10 / zoomScale, y: centerPt.y + 4 / zoomScale)
-                
+
                 var tank = Path()
                 tank.addRect(CGRect(x: -5 * scale, y: -2 * scale, width: 10 * scale, height: 4 * scale))
                 tank.addRect(CGRect(x: -2.5 * scale, y: -4 * scale, width: 5 * scale, height: 2 * scale))
                 tank.move(to: CGPoint(x: 0, y: -3 * scale))
                 tank.addLine(to: CGPoint(x: 7 * scale, y: -3 * scale))
-                
+
                 let transformedTank = tank.applying(CGAffineTransform(translationX: armyPt.x, y: armyPt.y))
                 context.fill(transformedTank, with: .color(armyColor))
                 context.stroke(transformedTank, with: .color(Color.black.opacity(0.85)), lineWidth: 0.8 / zoomScale)
-                
+
                 if let intensity = conflict?.intensity, intensity > 2 {
                     let secondPt = CGPoint(x: armyPt.x - 4 / zoomScale, y: armyPt.y - 4 / zoomScale)
                     let secondTank = tank.applying(CGAffineTransform(translationX: secondPt.x, y: secondPt.y))
@@ -955,12 +966,12 @@ struct NativeWorldMap: View {
                     context.stroke(secondTank, with: .color(Color.black.opacity(0.7)), lineWidth: 0.6 / zoomScale)
                 }
             }
-            
+
             if securityIndex > 10.0 {
                 let policeColor = securityIndex >= 50.0 ? Color.neonTeal : Color.alertGold
                 let scale: CGFloat = (1.2 / zoomScale)
                 let policePt = CGPoint(x: centerPt.x + 10 / zoomScale, y: centerPt.y + 4 / zoomScale)
-                
+
                 var shield = Path()
                 shield.move(to: CGPoint(x: 0, y: -5 * scale))
                 shield.addLine(to: CGPoint(x: 4 * scale, y: -3 * scale))
@@ -969,7 +980,7 @@ struct NativeWorldMap: View {
                 shield.addQuadCurve(to: CGPoint(x: -4 * scale, y: 1 * scale), control: CGPoint(x: -3.5 * scale, y: 4.5 * scale))
                 shield.addLine(to: CGPoint(x: -4 * scale, y: -3 * scale))
                 shield.closeSubpath()
-                
+
                 let transformedShield = shield.applying(CGAffineTransform(translationX: policePt.x, y: policePt.y))
                 context.fill(transformedShield, with: .color(policeColor))
                 context.stroke(transformedShield, with: .color(Color.black.opacity(0.85)), lineWidth: 0.8 / zoomScale)
@@ -977,7 +988,6 @@ struct NativeWorldMap: View {
         }
     }
 
-    @ViewBuilder
     private var layerSelectorOverlay: some View {
         Picker("Map layer", selection: $selectedLayer) {
             ForEach(NativeWarRoomMapLayer.allCases) { layer in
@@ -1000,7 +1010,8 @@ struct NativeWorldMap: View {
     @ViewBuilder
     private var regionDetailsOverlay: some View {
         if let regionID = selectedRegionID,
-           let region = GeopoliticalMapData.regionByID[regionID] {
+           let region = GeopoliticalMapData.regionByID[regionID]
+        {
             RegionDetailsCard(
                 region: region,
                 state: state,
@@ -1010,7 +1021,6 @@ struct NativeWorldMap: View {
         }
     }
 
-    @ViewBuilder
     private var scenarioHeaderOverlay: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(state.scenarioName)
@@ -1027,7 +1037,6 @@ struct NativeWorldMap: View {
         .padding(12)
     }
 
-    @ViewBuilder
     private var legendOverlay: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 12) {
@@ -1091,7 +1100,7 @@ struct NativeWorldMap: View {
                         .onChanged { value in
                             zoomScale = max(1.0, min(lastZoomScale * value, 12.0))
                         }
-                        .onEnded { value in
+                        .onEnded { _ in
                             zoomScale = max(1.0, min(zoomScale, 12.0))
                             lastZoomScale = zoomScale
                             withAnimation(.easeOut(duration: 0.2)) {
@@ -1202,18 +1211,19 @@ struct NativeWorldMap: View {
                     .padding(16)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                 }
-                    .onChange(of: selectedRegionID) { _, newID in
-                    guard let newID = newID,
-                          let region = GeopoliticalMapData.regionByID[newID] else {
+                .onChange(of: selectedRegionID) { _, newID in
+                    guard let newID,
+                          let region = GeopoliticalMapData.regionByID[newID]
+                    else {
                         return
                     }
-                    
+
                     withAnimation(.easeOut(duration: 0.4)) {
                         if zoomScale < 2.5 {
                             zoomScale = 2.5
                             lastZoomScale = zoomScale
                         }
-                        
+
                         let targetOffset = CGSize(
                             width: (size.width / 2.0 - region.center.x * scaleX) * zoomScale,
                             height: (size.height / 2.0 - region.center.y * scaleY) * zoomScale
@@ -1234,12 +1244,12 @@ struct NativeWorldMap: View {
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay(alignment: .topLeading) {
             #if os(macOS)
-            scenarioHeaderOverlay
+                scenarioHeaderOverlay
             #endif
         }
         .overlay(alignment: .topTrailing) {
             #if os(macOS)
-            layerSelectorOverlay
+                layerSelectorOverlay
             #endif
         }
         .overlay(alignment: .bottomLeading) {
@@ -1267,12 +1277,12 @@ struct StrategicMapGrid: View {
         Canvas { context, size in
             // Draw coordinate grid lines
             var grid = Path()
-            for index in 1..<6 {
+            for index in 1 ..< 6 {
                 let x = size.width * CGFloat(index) / 6
                 grid.move(to: CGPoint(x: x, y: 0))
                 grid.addLine(to: CGPoint(x: x, y: size.height))
             }
-            for index in 1..<4 {
+            for index in 1 ..< 4 {
                 let y = size.height * CGFloat(index) / 4
                 grid.move(to: CGPoint(x: 0, y: y))
                 grid.addLine(to: CGPoint(x: size.width, y: y))
@@ -1431,13 +1441,13 @@ struct SuggestedActionRow: View {
     private var urgencyColors: (bg: Color, border: Color, text: Color) {
         switch suggestion.urgency.lowercased() {
         case "immediate":
-            return (Color.softRed.opacity(0.12), Color.softRed.opacity(0.4), Color.softRed)
+            (Color.softRed.opacity(0.12), Color.softRed.opacity(0.4), Color.softRed)
         case "soon":
-            return (Color.alertGold.opacity(0.12), Color.alertGold.opacity(0.4), Color.alertGold)
+            (Color.alertGold.opacity(0.12), Color.alertGold.opacity(0.4), Color.alertGold)
         case "opportunistic":
-            return (Color.neonTeal.opacity(0.12), Color.neonTeal.opacity(0.4), Color.neonTeal)
+            (Color.neonTeal.opacity(0.12), Color.neonTeal.opacity(0.4), Color.neonTeal)
         default:
-            return (Color.iceBlue.opacity(0.12), Color.iceBlue.opacity(0.4), Color.iceBlue)
+            (Color.iceBlue.opacity(0.12), Color.iceBlue.opacity(0.4), Color.iceBlue)
         }
     }
 
@@ -1899,14 +1909,14 @@ struct RegionDetailsCard: View {
 
     private func terrainModifiersText(for terrain: NativeTerrainType) -> String {
         switch terrain {
-        case .mountain: return "Defense +30% (Invasion -30%)"
-        case .strait: return "Amphibious barrier (Invasion -25%)"
-        case .swamp: return "Attrition +20% (Invasion -20%)"
-        case .forest: return "Concealment +15% (Invasion -15%)"
-        case .city: return "Urban fortification (Invasion -15%)"
-        case .cerrado: return "Maneuver penalty (Invasion -10%)"
-        case .ocean, .sea: return "Deep water penalty (Invasion -40%)"
-        case .plains: return "Open maneuver (Invasion +10%)"
+        case .mountain: "Defense +30% (Invasion -30%)"
+        case .strait: "Amphibious barrier (Invasion -25%)"
+        case .swamp: "Attrition +20% (Invasion -20%)"
+        case .forest: "Concealment +15% (Invasion -15%)"
+        case .city: "Urban fortification (Invasion -15%)"
+        case .cerrado: "Maneuver penalty (Invasion -10%)"
+        case .ocean, .sea: "Deep water penalty (Invasion -40%)"
+        case .plains: "Open maneuver (Invasion +10%)"
         }
     }
 
@@ -1990,55 +2000,40 @@ struct RegionDetailsCard: View {
                 }
             }
 
-            HStack(spacing: 10) {
-                if occupierCode != "REB" && occupierCode != state.country.code && CountryCatalog.all.contains(where: { $0.code == occupierCode }) {
-                    Button {
-                        if let country = CountryCatalog.all.first(where: { $0.code == occupierCode }) {
-                            let pc = PlayerCountry(code: country.code, name: occupierCountryName)
-                            store.switchCountry(to: pc)
-                            selectedRegionID = nil
-                        }
-                    } label: {
-                        Text("Control \(occupierCountryName)")
-                            .font(.caption.weight(.bold))
-                            .frame(maxWidth: .infinity, minHeight: 32)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color.glowingCyan.opacity(0.3))
-                }
+            let regionalActions = NativeQuickActionCatalog.regionalActions(for: region, state: state)
+            if !regionalActions.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Regional orders")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(NativeWarRoomTheme.mapPaper)
 
-                if isOccupied && region.countryCode != state.country.code && CountryCatalog.all.contains(where: { $0.code == region.countryCode }) {
-                    Button {
-                        if let country = CountryCatalog.all.first(where: { $0.code == region.countryCode }) {
-                            let pc = PlayerCountry(code: country.code, name: originalCountryName)
-                            store.switchCountry(to: pc)
+                    ForEach(regionalActions) { action in
+                        Button {
+                            store.draftAction = action.directiveTemplate
+                            store.addDraftAction()
                             selectedRegionID = nil
+                        } label: {
+                            HStack {
+                                Image(systemName: action.category.systemImage)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(action.title)
+                                        .font(.caption.weight(.bold))
+                                    Text(action.primaryEffects.joined(separator: " · "))
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Text("\(action.cost)")
+                                    .font(.system(.caption, design: .monospaced).weight(.black))
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 34)
                         }
-                    } label: {
-                        Text("Control \(originalCountryName)")
-                            .font(.caption.weight(.bold))
-                            .frame(maxWidth: .infinity, minHeight: 32)
+                        .buttonStyle(.borderedProminent)
+                        .tint(action.category == .military ? Color.softRed.opacity(0.85) : Color.glowingCyan.opacity(0.8))
+                        .disabled(state.administrativeCapacity < action.cost)
+                        .accessibilityIdentifier("native-region-action-\(action.id)")
                     }
-                    .buttonStyle(.bordered)
                 }
-            }
-
-            if occupierCode != state.country.code {
-                Button {
-                    store.draftAction = "Invade \(region.name) (ID: \(region.id))"
-                    store.addDraftAction()
-                    selectedRegionID = nil
-                } label: {
-                    HStack {
-                        Image(systemName: "shield.dashed")
-                        Text("Order Invasion (Cost: 40)")
-                            .fontWeight(.bold)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 32)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.softRed.opacity(0.85))
-                .disabled(state.administrativeCapacity < 40)
             }
         }
         .padding(14)
@@ -2052,7 +2047,6 @@ struct RegionDetailsCard: View {
         .frame(maxWidth: 420)
         .accessibilityIdentifier("native-region-dossier")
     }
-
 }
 
 struct VictoryDefeatOverlay: View {
@@ -2138,27 +2132,27 @@ extension Color {
 
     var components: (red: Double, green: Double, blue: Double, opacity: Double) {
         #if canImport(UIKit)
-        typealias NativeColor = UIColor
+            typealias NativeColor = UIColor
         #elseif canImport(AppKit)
-        typealias NativeColor = NSColor
+            typealias NativeColor = NSColor
         #endif
-        
+
         let native = NativeColor(self)
         var r: CGFloat = 0
         var g: CGFloat = 0
         var b: CGFloat = 0
         var a: CGFloat = 0
-        
+
         #if canImport(UIKit)
-        native.getRed(&r, green: &g, blue: &b, alpha: &a)
+            native.getRed(&r, green: &g, blue: &b, alpha: &a)
         #elseif canImport(AppKit)
-        if let rgbColor = native.usingColorSpace(.sRGB) {
-            rgbColor.getRed(&r, green: &g, blue: &b, alpha: &a)
-        } else {
-            r = 0.5; g = 0.5; b = 0.5; a = 1.0
-        }
+            if let rgbColor = native.usingColorSpace(.sRGB) {
+                rgbColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+            } else {
+                r = 0.5; g = 0.5; b = 0.5; a = 1.0
+            }
         #endif
-        
+
         return (Double(r), Double(g), Double(b), Double(a))
     }
 }

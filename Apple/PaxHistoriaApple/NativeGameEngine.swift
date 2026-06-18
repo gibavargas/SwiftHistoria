@@ -62,10 +62,10 @@ enum NativeGameEngine {
                             summary: openingEffectSummary(for: scenario, language: language),
                             target: country.name,
                             track: .internalStability
-                        ),
+                        )
                     ],
                     title: openingTitle(for: country, scenario: scenario, language: language)
-                ),
+                )
             ],
             worldTension: openingWorldTension,
             worldEffects: []
@@ -77,10 +77,10 @@ enum NativeGameEngine {
         guard !trimmed.isEmpty else { return 0 }
 
         var normalized = trimmed.replacingOccurrences(of: ";", with: "|")
-                                .replacingOccurrences(of: "\n", with: "|")
-                                .replacingOccurrences(of: "!", with: "|")
-                                .replacingOccurrences(of: "?", with: "|")
-                                .replacingOccurrences(of: ".", with: "|")
+            .replacingOccurrences(of: "\n", with: "|")
+            .replacingOccurrences(of: "!", with: "|")
+            .replacingOccurrences(of: "?", with: "|")
+            .replacingOccurrences(of: ".", with: "|")
 
         let transitionWords = [
             " and ", " e ", " y ",
@@ -92,10 +92,10 @@ enum NativeGameEngine {
         ]
 
         for word in transitionWords {
-            var searchRange = normalized.startIndex..<normalized.endIndex
+            var searchRange = normalized.startIndex ..< normalized.endIndex
             while let range = normalized.range(of: word, options: .caseInsensitive, range: searchRange) {
                 normalized.replaceSubrange(range, with: "|")
-                searchRange = normalized.startIndex..<normalized.endIndex
+                searchRange = normalized.startIndex ..< normalized.endIndex
             }
         }
 
@@ -112,23 +112,129 @@ enum NativeGameEngine {
     }
 
     static func estimateDirectiveCost(for text: String) -> Int {
-        if text.hasPrefix("Invade ") {
-            return 40
+        if let quickActionCost = NativeQuickActionCatalog.estimatedCost(for: text) {
+            return quickActionCost
         }
         return estimateDirectiveCount(in: text) * 30
     }
 
+    static func previewDirective(_ text: String, in state: NativeCampaignState) -> NativeDirectivePreview {
+        let trimmed = sanitizeFoundationModelText(text)
+        let cost = estimateDirectiveCost(for: trimmed)
+        let capacityAfter = state.administrativeCapacity - cost
+        let warning = capacityAfter < 0 ? "Insufficient administrative capacity." : nil
+        let quickAction = NativeQuickActionCatalog.action(matching: trimmed)
+        var expectedEffects = quickAction?.primaryEffects ?? []
+        var riskLabel = "Standard"
+
+        if let kind = regionOrderKind(from: trimmed),
+           let regionID = regionID(from: trimmed),
+           let region = GeopoliticalMapData.regionByID[regionID]
+        {
+            switch kind {
+            case .invade:
+                let terrainRisk = switch region.terrain {
+                case .mountain, .strait, .ocean, .sea: "High"
+                case .swamp, .forest, .city, .cerrado: "Medium"
+                case .plains: "Low"
+                }
+                riskLabel = "\(terrainRisk) terrain risk"
+                expectedEffects = [
+                    "Dice battle uses military budget and \(region.terrain.displayName.lowercased()) terrain.",
+                    "Success creates occupation; failure creates contested border pressure.",
+                    "World tension rises while the conflict persists."
+                ]
+            case .stabilize:
+                riskLabel = "Low"
+                expectedEffects = ["Reduces regional conflict pressure.", "Can restore domestic stability."]
+            case .fortify:
+                riskLabel = "Escalatory"
+                expectedEffects = ["Improves defensive posture.", "Raises world tension if overused."]
+            case .withdraw:
+                riskLabel = "De-escalatory"
+                expectedEffects = ["Removes player occupation from non-core territory.", "Lowers tension and occupation burden."]
+            case .autonomy:
+                riskLabel = "Political"
+                expectedEffects = ["Trades central control for lower insurgency pressure.", "Improves diplomatic leverage."]
+            case .rebuild:
+                riskLabel = "Recovery"
+                expectedEffects = ["Repairs fallout or conflict damage.", "Improves resilience and stability."]
+            case .tradeCorridor:
+                riskLabel = "Economic"
+                expectedEffects = ["Raises market confidence.", "Supports economic resilience and trade balance."]
+            }
+        } else if expectedEffects.isEmpty {
+            let directiveCount = estimateDirectiveCount(in: trimmed)
+            expectedEffects = [
+                "\(directiveCount) directive\(directiveCount == 1 ? "" : "s") queued for AI adjudication.",
+                "Concrete effects resolve during the next turn."
+            ]
+        }
+
+        return NativeDirectivePreview(
+            capacityAfter: capacityAfter,
+            cost: cost,
+            expectedEffects: expectedEffects,
+            riskLabel: riskLabel,
+            warning: warning
+        )
+    }
+
+    private enum NativeRegionOrderKind {
+        case autonomy
+        case fortify
+        case invade
+        case rebuild
+        case stabilize
+        case tradeCorridor
+        case withdraw
+
+        var displayName: String {
+            switch self {
+            case .autonomy: "autonomy"
+            case .fortify: "fortification"
+            case .invade: "invasion"
+            case .rebuild: "rebuild"
+            case .stabilize: "stabilization"
+            case .tradeCorridor: "trade corridor"
+            case .withdraw: "withdrawal"
+            }
+        }
+    }
+
+    private static func regionOrderKind(from text: String) -> NativeRegionOrderKind? {
+        let trimmed = sanitizeFoundationModelText(text)
+        if trimmed.hasPrefix("Invade ") { return .invade }
+        if trimmed.hasPrefix("Stabilize ") { return .stabilize }
+        if trimmed.hasPrefix("Fortify ") { return .fortify }
+        if trimmed.hasPrefix("Withdraw from ") { return .withdraw }
+        if trimmed.hasPrefix("Negotiate autonomy for ") { return .autonomy }
+        if trimmed.hasPrefix("Rebuild ") { return .rebuild }
+        if trimmed.hasPrefix("Open trade corridor through ") { return .tradeCorridor }
+        return nil
+    }
+
+    private static func regionID(from text: String) -> String? {
+        guard let range = text.range(of: "(ID: "),
+              let endRange = text.range(of: ")", range: range.upperBound ..< text.endIndex)
+        else {
+            return nil
+        }
+        let regionID = String(text[range.upperBound ..< endRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        return regionID.isEmpty ? nil : regionID
+    }
+
     private static func fnv1aHash(_ seed: String) -> UInt64 {
-        var hash: UInt64 = 1469598103934665603
+        var hash: UInt64 = 1_469_598_103_934_665_603
         for byte in seed.utf8 {
             hash ^= UInt64(byte)
-            hash &*= 1099511628211
+            hash &*= 1_099_511_628_211
         }
         return hash
     }
 
     private static func stablePercentage(seed: String) -> Double {
-        Double(fnv1aHash(seed) % 10_001) / 100.0
+        Double(fnv1aHash(seed) % 10001) / 100.0
     }
 
     private static func deterministicDie(seed: String) -> Int {
@@ -137,7 +243,7 @@ enum NativeGameEngine {
 
     private static func rollDice(seed: String, count: Int) -> [Int] {
         var rolls: [Int] = []
-        for i in 0..<count {
+        for i in 0 ..< count {
             let die = deterministicDie(seed: "\(seed)-die-\(i)")
             rolls.append(die)
         }
@@ -148,14 +254,14 @@ enum NativeGameEngine {
         scenarioID: String,
         gameDate: String,
         round: Int,
-        playerCountryCode: String
+        playerCountryCode _: String
     ) -> [NativeCampaignEvent] {
         let turnSeed = "\(scenarioID)-\(gameDate)-round-\(round)-512dice"
         var frictionCount = 0
         var events: [NativeCampaignEvent] = []
 
         // 1. Roll 512 virtual dice with a 5% threshold
-        for i in 0..<512 {
+        for i in 0 ..< 512 {
             let dieSeed = "\(turnSeed)-die-\(i)"
             let roll = stablePercentage(seed: dieSeed)
             if roll < 5.0 {
@@ -413,7 +519,7 @@ enum NativeGameEngine {
                 ],
                 title: "Global Pax Era (Golden Age)"
             ))
-        } else if frictionCount >= 15 && frictionCount <= 35 {
+        } else if frictionCount >= 15, frictionCount <= 35 {
             events.append(NativeCampaignEvent(
                 date: gameDate,
                 description: "Normal historical friction recorded at \(frictionCount) points. Standard seasonal fluctuations, minor trade disruptions, and normal labor turnover slightly impact economic resilient buffers.",
@@ -436,7 +542,7 @@ enum NativeGameEngine {
                 ],
                 title: "Historical Friction: Minor Setbacks"
             ))
-        } else if frictionCount >= 36 && frictionCount <= 45 {
+        } else if frictionCount >= 36, frictionCount <= 45 {
             events.append(NativeCampaignEvent(
                 date: gameDate,
                 description: "High global friction detected at \(frictionCount) points. Strained resources, border administrative congestion, and localized labor disputes threaten domestic stability.",
@@ -532,7 +638,7 @@ enum NativeGameEngine {
     /// links, and hidden/internal-only tracks. The store and AI service should
     /// treat thrown errors as repair instructions or visible failures, not as
     /// permission to apply partial model output.
-    /// 
+    ///
     /// **Mechanical Interaction**:
     /// - Checks that AI generated events contain at least one independent world event (`playerRelated == false`).
     /// - Verifies that the summary and event descriptions are concrete, rejecting placeholder text.
@@ -568,19 +674,12 @@ enum NativeGameEngine {
         var events: [NativeCampaignEvent] = []
 
         for (index, rawEvent) in candidateEvents.enumerated() {
-            let unsafeTracks = rawEvent.strategicEffects.filter {
-                $0.track == .militaryReadiness || $0.track == .securityAnxiety
-            }
-            guard unsafeTracks.isEmpty else {
-                throw NativeGameEngineError.invalidTurn("Event \(index + 1) used an unsafe strategic track.")
-            }
-
             let event = normalized(rawEvent, index: index, targetDate: targetDate, country: state.country)
             guard seenEventIDs.insert(event.id).inserted else {
                 throw NativeGameEngineError.invalidTurn("Event \(index + 1) reused a duplicate event ID.")
             }
-            guard NativeGameEngine.isValidDate(event.date) else {
-                throw NativeGameEngineError.invalidTurn("Event \(index + 1) has an invalid date.")
+            guard NativeGameEngine.isDate(event.date, inWindowFrom: state.gameDate, to: targetDate) else {
+                throw NativeGameEngineError.invalidTurn("Event \(index + 1) date must fall within the generated turn window.")
             }
             guard !event.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 throw NativeGameEngineError.invalidTurn("Event \(index + 1) is missing a title.")
@@ -605,10 +704,9 @@ enum NativeGameEngine {
                 hasConcreteFoundationText($0.summary, minimumWords: 5) &&
                     !$0.target.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
                     !containsFoundationPlaceholderText($0.target) &&
-                    NativeGameEngine.isValidDate($0.date) &&
-                    $0.eventId == event.id &&
-                    $0.track != .militaryReadiness &&
-                    $0.track != .securityAnxiety
+                    NativeGameEngine.isDate($0.date, inWindowFrom: state.gameDate, to: targetDate) &&
+                    $0.date == event.date &&
+                    $0.eventId == event.id
             }) else {
                 throw NativeGameEngineError.invalidTurn("Event \(index + 1) needs a concrete strategic effect summary.")
             }
@@ -633,7 +731,8 @@ enum NativeGameEngine {
         var keptMapNudge = false
         return events.map { event in
             guard let hex = event.hexLeverCode,
-                  NativeStrategyContextDatabase.decodeHexLever(hex)?.conflictMode != nil else {
+                  NativeStrategyContextDatabase.decodeHexLever(hex)?.conflictMode != nil
+            else {
                 return event
             }
             if !keptMapNudge {
@@ -682,13 +781,16 @@ enum NativeGameEngine {
             generatedEvents.append(contentsOf: pollutionEvents)
         }
         let linkedActionIDs = Set(generatedEvents.flatMap(\.linkedActionIDs))
-        let invasionActionIDs = Set(state.plannedActions
-            .filter { $0.status == .planned && $0.title.hasPrefix("Invade ") }
+        let regionalActionIDs = Set(state.plannedActions
+            .filter { action in
+                let actionText = action.detail.isEmpty ? action.title : action.detail
+                return action.status == .planned && regionOrderKind(from: actionText) != nil
+            }
             .map(\.id))
         var resolvedActions = state.plannedActions.map { action in
             guard linkedActionIDs.contains(action.id),
                   action.status == .planned,
-                  !invasionActionIDs.contains(action.id) else { return action }
+                  !regionalActionIDs.contains(action.id) else { return action }
             var next = action
             next.status = .resolved
             next.resolvedAt = targetDate
@@ -700,15 +802,51 @@ enum NativeGameEngine {
         var nextRegionConflicts = state.regionConflicts
 
         var additionalEvents: [NativeCampaignEvent] = []
-        for idx in 0..<resolvedActions.count {
+        for idx in 0 ..< resolvedActions.count {
             let action = resolvedActions[idx]
-            if action.status == .planned && action.title.hasPrefix("Invade ") {
-                if let range = action.title.range(of: "(ID: "),
-                   let endRange = action.title.range(of: ")", range: range.upperBound..<action.title.endIndex) {
-                    let regionID = String(action.title[range.upperBound..<endRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let actionText = action.detail.isEmpty ? action.title : action.detail
+            if action.status == .planned,
+               let regionKind = regionOrderKind(from: actionText)
+            {
+                guard let regionID = regionID(from: actionText),
+                      let region = GeopoliticalMapData.regionByID[regionID]
+                else {
+                    var next = action
+                    next.status = .resolved
+                    next.resolvedAt = targetDate
+                    resolvedActions[idx] = next
+                    additionalEvents.append(unresolvedRegionalOrderEvent(
+                        kind: regionKind,
+                        action: action,
+                        targetDate: targetDate
+                    ))
+                    continue
+                }
+
+                if regionKind != .invade {
+                    var next = action
+                    next.status = .resolved
+                    next.resolvedAt = targetDate
+                    resolvedActions[idx] = next
+                    additionalEvents.append(resolveRegionalOrder(
+                        kind: regionKind,
+                        action: action,
+                        region: region,
+                        state: state,
+                        targetDate: targetDate,
+                        regionOccupations: &nextRegionOccupations,
+                        nuclearFalloutRegions: &nextNuclearRegions,
+                        regionConflicts: &nextRegionConflicts
+                    ))
+                    continue
+                }
+            }
+
+            if action.status == .planned, actionText.hasPrefix("Invade ") {
+                if let regionID = regionID(from: actionText) {
                     if let region = GeopoliticalMapData.regionByID[regionID] {
                         let defenderCode = state.regionOccupations[region.id] ?? region.countryCode
-                        
+
                         // **Combat Mechanic**: RISK-style dice roll.
                         // Dice count is determined by military budget sliders.
                         // Attacker parameters: Military budget > 0.6 yields 3 dice. > 0.3 yields 2.
@@ -718,7 +856,7 @@ enum NativeGameEngine {
                             return 1
                         }()
                         let attackerModifier = state.budgetMilitarySlider > 0.8 ? 1 : 0
-                        
+
                         // Defender parameters: Local regions defend harder (>0.4 yields 2 dice). AI defends based on budgetPriority.
                         let defenderDiceCount: Int = {
                             if defenderCode == state.country.code {
@@ -728,39 +866,35 @@ enum NativeGameEngine {
                                 return 1
                             }
                         }()
-                        let defenderModifier: Int = {
-                            if defenderCode == state.country.code {
-                                return state.budgetMilitarySlider > 0.8 ? 1 : 0
-                            } else {
-                                return state.aiCountryStates[defenderCode]?.budgetPriority == .military ? 1 : 0
-                            }
-                        }()
-                        
-                        let terrainModifier: Int = {
-                            switch region.terrain {
-                            case .mountain, .strait, .ocean, .sea: return 2
-                            case .swamp, .forest, .city, .cerrado: return 1
-                            default: return 0
-                            }
-                        }()
-                        
+                        let defenderModifier: Int = if defenderCode == state.country.code {
+                            state.budgetMilitarySlider > 0.8 ? 1 : 0
+                        } else {
+                            state.aiCountryStates[defenderCode]?.budgetPriority == .military ? 1 : 0
+                        }
+
+                        let terrainModifier = switch region.terrain {
+                        case .mountain, .strait, .ocean, .sea: 2
+                        case .swamp, .forest, .city, .cerrado: 1
+                        default: 0
+                        }
+
                         // Deterministic Dice Roll (RISK mechanic)
                         let seed = [action.id, region.id, state.gameDate].joined(separator: "|")
                         let attackerRawRolls = rollDice(seed: seed + "-atk", count: attackerDiceCount)
                         let defenderRawRolls = rollDice(seed: seed + "-def", count: defenderDiceCount)
-                        
+
                         let attackerModifiedRolls = attackerRawRolls.map { $0 + attackerModifier }
                         let defenderModifiedRolls = defenderRawRolls.map { $0 + defenderModifier + terrainModifier }
-                        
+
                         let attackerSorted = attackerModifiedRolls.sorted(by: >)
                         let defenderSorted = defenderModifiedRolls.sorted(by: >)
-                        
+
                         let matchCount = min(attackerSorted.count, defenderSorted.count)
                         var attackerWins = 0
                         var defenderWins = 0
                         var matchupDetails: [String] = []
-                        
-                        for i in 0..<matchCount {
+
+                        for i in 0 ..< matchCount {
                             let aVal = attackerSorted[i]
                             let dVal = defenderSorted[i]
                             if aVal > dVal {
@@ -771,10 +905,10 @@ enum NativeGameEngine {
                                 matchupDetails.append("\(aVal) vs \(dVal) (Defender Wins)")
                             }
                         }
-                        
+
                         // Attacker wins if they win more matchups
                         let isSuccess = attackerWins > defenderWins
-                        
+
                         // Detailed Battle Log
                         let defenderName = state.aiCountryStates[defenderCode]?.countryCode ?? defenderCode
                         let battleLog = "Dice Battle for \(region.name): Attacker rolled \(attackerRawRolls) (Mil: +\(attackerModifier) -> \(attackerSorted)). Defender \(defenderName) rolled \(defenderRawRolls) (Terrain: +\(terrainModifier), Mil: +\(defenderModifier) -> \(defenderSorted)). Matchups: \(matchupDetails.joined(separator: ", "))."
@@ -895,7 +1029,8 @@ enum NativeGameEngine {
 
         for event in generatedEvents {
             guard let hex = event.hexLeverCode,
-                  let lever = NativeStrategyContextDatabase.decodeHexLever(hex) else {
+                  let lever = NativeStrategyContextDatabase.decodeHexLever(hex)
+            else {
                 continue
             }
 
@@ -935,11 +1070,10 @@ enum NativeGameEngine {
             }
         }
 
-        let negativeMultiplier: Double
-        switch state.gameMode {
-        case .sandbox: negativeMultiplier = 0.5
-        case .normal: negativeMultiplier = 1.0
-        case .ironman: negativeMultiplier = 2.0
+        let negativeMultiplier = switch state.gameMode {
+        case .sandbox: 0.5
+        case .normal: 1.0
+        case .ironman: 2.0
         }
 
         let rawStabilityDelta = generated.stabilityDelta
@@ -1085,7 +1219,13 @@ enum NativeGameEngine {
         // **Tension Mechanic**: Dynamic world tension escalation.
         // The international system becomes more volatile based on global conflicts,
         // arms races, and aggressive territorial expansions (imperial friction).
-        let activeConflictsCount = nextRegionConflicts.count
+        let tensionConflictModes: Set<NativeRegionConflictMode> = [
+            .contestedBorder,
+            .conventionalOccupation,
+            .guerrillaControl,
+            .nuclearFallout
+        ]
+        let activeConflictsCount = nextRegionConflicts.values.filter { tensionConflictModes.contains($0.mode) }.count
         let armsRaceEscalation = state.budgetMilitarySlider > 0.40 ? 2 : 0
         let globalFalloutCount = nextNuclearRegions.count
         let globalOccupiedCount = nextRegionOccupations.filter { key, val in
@@ -1187,6 +1327,194 @@ enum NativeGameEngine {
         return finalState
     }
 
+    private static func unresolvedRegionalOrderEvent(
+        kind: NativeRegionOrderKind,
+        action: NativePlannedAction,
+        targetDate: String
+    ) -> NativeCampaignEvent {
+        NativeCampaignEvent(
+            date: targetDate,
+            description: "The regional command could not be executed because its region marker is missing or no longer matches the current map. Open the map and issue a fresh \(kind.displayName) order from a region detail panel.",
+            id: "regional-invalid-\(action.id)-\(targetDate)",
+            importance: .minor,
+            kind: .action,
+            linkedActionIDs: [action.id],
+            notable: false,
+            playerRelated: true,
+            strategicEffects: [],
+            title: "Regional Order Not Executed"
+        )
+    }
+
+    private static func resolveRegionalOrder(
+        kind: NativeRegionOrderKind,
+        action: NativePlannedAction,
+        region: MapRegion,
+        state: NativeCampaignState,
+        targetDate: String,
+        regionOccupations: inout [String: String],
+        nuclearFalloutRegions: inout [String],
+        regionConflicts: inout [String: NativeRegionConflictState]
+    ) -> NativeCampaignEvent {
+        let eventID: String
+        let title: String
+        let description: String
+        let importance: NativeEventImportance
+        let effects: [(NativeStrategicTrack, Int, String)]
+
+        switch kind {
+        case .stabilize:
+            if region.countryCode == state.country.code || regionOccupations[region.id] == "REB" {
+                regionOccupations.removeValue(forKey: region.id)
+            }
+            regionConflicts[region.id] = NativeRegionConflictState(
+                controllerCode: regionOccupations[region.id] ?? region.countryCode,
+                intensity: 2,
+                mode: .stabilization,
+                originalCountryCode: region.countryCode,
+                regionID: region.id,
+                summary: "Administrative stabilization teams reduced visible conflict pressure.",
+                updatedAt: targetDate
+            )
+            eventID = "regional-stabilize-\(region.id)-\(targetDate)"
+            title = "Stabilization Corridor Opened in \(region.name)"
+            description = "Regional administrators opened a stabilization corridor in \(region.name), prioritizing local services, de-escalation channels, and public-security coordination."
+            importance = .major
+            effects = [
+                (.internalStability, 2, "Stabilization lowers domestic conflict pressure."),
+                (.economicResilience, 1, "Restored local administration supports service delivery.")
+            ]
+        case .fortify:
+            regionConflicts[region.id] = NativeRegionConflictState(
+                controllerCode: regionOccupations[region.id] ?? state.country.code,
+                intensity: 3,
+                mode: .stabilization,
+                originalCountryCode: region.countryCode,
+                regionID: region.id,
+                summary: "Defensive works and logistics reserves hardened the regional posture.",
+                updatedAt: targetDate
+            )
+            eventID = "regional-fortify-\(region.id)-\(targetDate)"
+            title = "\(region.name) Fortification Program"
+            description = "Defense planners fortified \(region.name), expanding logistics reserves and local readiness while signaling a firmer posture to nearby rivals."
+            importance = .major
+            effects = [
+                (.militaryReadiness, 2, "Fortification improves regional defensive readiness."),
+                (.worldTension, 1, "Visible military works increase external concern.")
+            ]
+        case .withdraw:
+            if regionOccupations[region.id] == state.country.code, region.countryCode != state.country.code {
+                regionOccupations.removeValue(forKey: region.id)
+            }
+            regionConflicts[region.id] = NativeRegionConflictState(
+                controllerCode: region.countryCode,
+                intensity: 1,
+                mode: .stabilization,
+                originalCountryCode: region.countryCode,
+                regionID: region.id,
+                summary: "Withdrawal reduced occupation burden and opened de-escalation channels.",
+                updatedAt: targetDate
+            )
+            eventID = "regional-withdraw-\(region.id)-\(targetDate)"
+            title = "Withdrawal from \(region.name)"
+            description = "The cabinet authorized a managed withdrawal from \(region.name), lowering occupation costs and converting the file into a monitored de-escalation channel."
+            importance = .major
+            effects = [
+                (.worldTension, -2, "Withdrawal lowers external friction."),
+                (.internalStability, 1, "Lower occupation burden improves domestic legitimacy.")
+            ]
+        case .autonomy:
+            if region.countryCode == state.country.code {
+                regionOccupations.removeValue(forKey: region.id)
+            }
+            regionConflicts[region.id] = NativeRegionConflictState(
+                controllerCode: region.countryCode,
+                intensity: 2,
+                mode: .stabilization,
+                originalCountryCode: region.countryCode,
+                regionID: region.id,
+                summary: "Autonomy talks traded central control for lower insurgency pressure.",
+                updatedAt: targetDate
+            )
+            eventID = "regional-autonomy-\(region.id)-\(targetDate)"
+            title = "\(region.name) Autonomy Framework"
+            description = "Negotiators opened an autonomy framework for \(region.name), exchanging limited local discretion for a calmer security environment and clearer tax-service obligations."
+            importance = .major
+            effects = [
+                (.diplomaticLeverage, 1, "Autonomy talks improve negotiated legitimacy."),
+                (.internalStability, 1, "Local concessions reduce insurgency pressure.")
+            ]
+        case .rebuild:
+            nuclearFalloutRegions.removeAll { $0 == region.id }
+            regionConflicts[region.id] = NativeRegionConflictState(
+                controllerCode: regionOccupations[region.id] ?? region.countryCode,
+                intensity: 2,
+                mode: .stabilization,
+                originalCountryCode: region.countryCode,
+                regionID: region.id,
+                summary: "Reconstruction teams repaired critical systems and reduced exclusion-zone pressure.",
+                updatedAt: targetDate
+            )
+            eventID = "regional-rebuild-\(region.id)-\(targetDate)"
+            title = "\(region.name) Reconstruction Push"
+            description = "Reconstruction agencies concentrated engineers, public-health teams, and logistics contractors in \(region.name), repairing damage and restoring economic access."
+            importance = .major
+            effects = [
+                (.economicResilience, 2, "Reconstruction restores productive capacity."),
+                (.internalStability, 1, "Visible recovery improves local legitimacy.")
+            ]
+        case .tradeCorridor:
+            regionConflicts[region.id] = NativeRegionConflictState(
+                controllerCode: regionOccupations[region.id] ?? region.countryCode,
+                intensity: 1,
+                mode: .stabilization,
+                originalCountryCode: region.countryCode,
+                regionID: region.id,
+                summary: "A protected trade corridor improved predictable market access.",
+                updatedAt: targetDate
+            )
+            eventID = "regional-corridor-\(region.id)-\(targetDate)"
+            title = "\(region.name) Trade Corridor"
+            description = "Transport ministries opened a monitored trade corridor through \(region.name), prioritizing customs reliability, service access, and market confidence."
+            importance = .minor
+            effects = [
+                (.marketConfidence, 2, "Reliable corridor access raises market confidence."),
+                (.economicResilience, 1, "Trade throughput supports resilience.")
+            ]
+        case .invade:
+            eventID = "regional-noop-\(region.id)-\(targetDate)"
+            title = "Regional Order Deferred"
+            description = "The regional order for \(region.name) was deferred for standard military resolution."
+            importance = .minor
+            effects = []
+        }
+
+        let strategicEffects = effects.enumerated().map { index, effect in
+            NativeStrategicEffect(
+                date: targetDate,
+                eventId: eventID,
+                id: "\(eventID)-effect-\(index)",
+                magnitude: effect.1,
+                summary: effect.2,
+                target: state.country.code,
+                track: effect.0
+            )
+        }
+
+        return NativeCampaignEvent(
+            date: targetDate,
+            description: description,
+            id: eventID,
+            importance: importance,
+            kind: .action,
+            linkedActionIDs: [action.id],
+            notable: true,
+            playerRelated: true,
+            strategicEffects: strategicEffects,
+            title: title
+        )
+    }
+
     private static func processSovereigntyChanges(
         events: [NativeCampaignEvent],
         state: NativeCampaignState,
@@ -1248,17 +1576,17 @@ enum NativeGameEngine {
     private static func sovereigntyRegions(
         for change: NativeSovereigntyChange,
         state: NativeCampaignState,
-        targetCode: String
+        targetCode _: String
     ) -> [MapRegion] {
         let explicit = change.regionIDs.compactMap { GeopoliticalMapData.regionByID[$0] }
         if !explicit.isEmpty { return explicit }
         for source in change.sourceCodes {
-            let sourceRegions = GeopoliticalMapData.regionsByCountry[source, default: []]
+            let sourceRegions = GeopoliticalMapData.regions(forCountryCode: source)
             if let first = sourceRegions.first {
                 return [first]
             }
         }
-        return GeopoliticalMapData.regionsByCountry[state.country.code, default: []].prefix(1).map { $0 }
+        return GeopoliticalMapData.regions(forCountryCode: state.country.code).prefix(1).map(\.self)
     }
 
     private static func ensureLedger(
@@ -1303,7 +1631,8 @@ enum NativeGameEngine {
     ) {
         for event in events {
             guard let hex = event.hexLeverCode,
-                  let lever = NativeStrategyContextDatabase.decodeHexLever(hex) else {
+                  let lever = NativeStrategyContextDatabase.decodeHexLever(hex)
+            else {
                 continue
             }
 
@@ -1316,7 +1645,7 @@ enum NativeGameEngine {
 
             switch lever.invasionNudge {
             case 1:
-                let targetRegions = GeopoliticalMapData.regionsByCountry[targetCountryCode, default: []]
+                let targetRegions = GeopoliticalMapData.regions(forCountryCode: targetCountryCode)
                 if let regionToOccupy = targetRegions.first(where: { regionOccupations[$0.id] != countryCode }) {
                     regionOccupations[regionToOccupy.id] = countryCode
                     setConflict(
@@ -1331,7 +1660,7 @@ enum NativeGameEngine {
                     )
                 }
             case 2:
-                let domesticRegions = GeopoliticalMapData.regionsByCountry[countryCode, default: []]
+                let domesticRegions = GeopoliticalMapData.regions(forCountryCode: countryCode)
                 if let regionToSeize = domesticRegions.first(where: { regionOccupations[$0.id] != "REB" }) {
                     regionOccupations[regionToSeize.id] = "REB"
                     setConflict(
@@ -1346,7 +1675,7 @@ enum NativeGameEngine {
                     )
                 }
             case 3:
-                let targetRegions = GeopoliticalMapData.regionsByCountry[targetCountryCode, default: []]
+                let targetRegions = GeopoliticalMapData.regions(forCountryCode: targetCountryCode)
                 if let regionToDevastate = targetRegions.first(where: { !nuclearFalloutRegions.contains($0.id) }) {
                     nuclearFalloutRegions.append(regionToDevastate.id)
                     setConflict(
@@ -1367,7 +1696,7 @@ enum NativeGameEngine {
                     }
                 }
             case 4:
-                let domesticRegions = GeopoliticalMapData.regionsByCountry[countryCode, default: []]
+                let domesticRegions = GeopoliticalMapData.regions(forCountryCode: countryCode)
                 if let occupiedRegion = domesticRegions.first(where: { regionOccupations[$0.id] != nil && regionOccupations[$0.id] != countryCode }) {
                     regionOccupations.removeValue(forKey: occupiedRegion.id)
                     setConflict(
@@ -1382,7 +1711,7 @@ enum NativeGameEngine {
                     )
                 }
             case 5:
-                let targetRegions = GeopoliticalMapData.regionsByCountry[targetCountryCode, default: []]
+                let targetRegions = GeopoliticalMapData.regions(forCountryCode: targetCountryCode)
                 if let contestedRegion = targetRegions.first {
                     setConflict(
                         region: contestedRegion,
@@ -1396,7 +1725,7 @@ enum NativeGameEngine {
                     )
                 }
             case 6:
-                let domesticRegions = GeopoliticalMapData.regionsByCountry[countryCode, default: []]
+                let domesticRegions = GeopoliticalMapData.regions(forCountryCode: countryCode)
                 if let rebelRegion = domesticRegions.first(where: { regionOccupations[$0.id] == "REB" }) {
                     regionOccupations.removeValue(forKey: rebelRegion.id)
                     setConflict(
@@ -1416,7 +1745,7 @@ enum NativeGameEngine {
                     economicLedgers[countryCode] = ledger
                 }
             case 7:
-                let targetRegions = GeopoliticalMapData.regionsByCountry[targetCountryCode, default: []]
+                let targetRegions = GeopoliticalMapData.regions(forCountryCode: targetCountryCode)
                 for regionToOccupy in targetRegions.prefix(2) {
                     regionOccupations[regionToOccupy.id] = countryCode
                     setConflict(
@@ -1431,7 +1760,7 @@ enum NativeGameEngine {
                     )
                 }
             case -1:
-                let domesticRegionIDs = GeopoliticalMapData.regionsByCountry[countryCode, default: []].map(\.id)
+                let domesticRegionIDs = GeopoliticalMapData.regions(forCountryCode: countryCode).map(\.id)
                 for rid in domesticRegionIDs {
                     regionOccupations.removeValue(forKey: rid)
                     if regionConflicts[rid]?.mode != .nuclearFallout {
@@ -1445,7 +1774,7 @@ enum NativeGameEngine {
 
         for (code, ledger) in economicLedgers {
             if ledger.rebelControlPercent > 65.0 {
-                let domesticRegions = GeopoliticalMapData.regionsByCountry[code, default: []]
+                let domesticRegions = GeopoliticalMapData.regions(forCountryCode: code)
                 let seizureCount = ledger.rebelControlPercent > 82.0 ? 2 : 1
                 for regionToSeize in domesticRegions.filter({ regionOccupations[$0.id] != "REB" }).prefix(seizureCount) {
                     regionOccupations[regionToSeize.id] = "REB"
@@ -1462,7 +1791,7 @@ enum NativeGameEngine {
                     )
                 }
             } else if ledger.rebelControlPercent < 10.0 {
-                let domesticRegions = GeopoliticalMapData.regionsByCountry[code, default: []]
+                let domesticRegions = GeopoliticalMapData.regions(forCountryCode: code)
                 for reg in domesticRegions where regionOccupations[reg.id] == "REB" {
                     regionOccupations.removeValue(forKey: reg.id)
                     if regionConflicts[reg.id]?.mode == .guerrillaControl {
@@ -1511,18 +1840,18 @@ enum NativeGameEngine {
 
     private static func getRivalCountryCode(for countryCode: String) -> String {
         switch countryCode {
-        case "USA": return "RUS"
-        case "CHN": return "USA"
-        case "BRA": return "USA"
-        case "DEU": return "RUS"
-        case "JPN": return "CHN"
-        case "GBR": return "RUS"
-        case "FRA": return "RUS"
-        case "IND": return "CHN"
-        case "RUS": return "USA"
-        case "ZAF": return "GLOBAL"
-        case "AUS": return "CHN"
-        default: return "USA"
+        case "USA": "RUS"
+        case "CHN": "USA"
+        case "BRA": "USA"
+        case "DEU": "RUS"
+        case "JPN": "CHN"
+        case "GBR": "RUS"
+        case "FRA": "RUS"
+        case "IND": "CHN"
+        case "RUS": "USA"
+        case "ZAF": "GLOBAL"
+        case "AUS": "CHN"
+        default: "USA"
         }
     }
 
@@ -1534,6 +1863,16 @@ enum NativeGameEngine {
 
     static func isValidDate(_ value: String) -> Bool {
         displayFormatter.date(from: value) != nil
+    }
+
+    static func isDate(_ value: String, inWindowFrom start: String, to end: String) -> Bool {
+        guard let date = displayFormatter.date(from: value),
+              let startDate = displayFormatter.date(from: start),
+              let endDate = displayFormatter.date(from: end)
+        else {
+            return false
+        }
+        return date >= startDate && date <= endDate
     }
 
     static func clampedMetric(_ value: Int) -> Int {
@@ -1691,21 +2030,21 @@ enum NativeGameEngine {
 
         switch state.scenarioID {
         case "default":
-            if state.stability >= 80 && pLedger.tradeBalancePercentGDP >= 0.0 && occupiedCount == 0 {
+            if state.stability >= 80, pLedger.tradeBalancePercentGDP >= 0.0, occupiedCount == 0 {
                 return .won
             }
             if currentYear > 2030 {
                 return .lostTimeout
             }
         case "fragmented-markets":
-            if state.stability >= 75 && pLedger.nominalGDPTrillions >= 15.0 && pLedger.fiscalSpaceIndex >= 60 {
+            if state.stability >= 75, pLedger.nominalGDPTrillions >= 15.0, pLedger.fiscalSpaceIndex >= 60 {
                 return .won
             }
             if currentYear > 2040 {
                 return .lostTimeout
             }
         case "resilience-decade":
-            if state.stability >= 80 && pLedger.securityIndex >= 85 && pLedger.rebelControlPercent <= 5.0 {
+            if state.stability >= 80, pLedger.securityIndex >= 85, pLedger.rebelControlPercent <= 5.0 {
                 return .won
             }
             if currentYear > 2050 {
@@ -1716,28 +2055,28 @@ enum NativeGameEngine {
                 let reg = GeopoliticalMapData.regionByID[key]
                 return reg?.countryCode != state.country.code && val == state.country.code
             }.count
-            if state.stability >= 80 && state.worldTension >= 80 && occupiedRivals >= 2 {
+            if state.stability >= 80, state.worldTension >= 80, occupiedRivals >= 2 {
                 return .won
             }
             if currentYear > 2005 {
                 return .lostTimeout
             }
         case "pax-cybernetica":
-            if state.stability >= 85 && pLedger.nominalGDPTrillions >= 25.0 && pLedger.tradeBalancePercentGDP >= 2.0 {
+            if state.stability >= 85, pLedger.nominalGDPTrillions >= 25.0, pLedger.tradeBalancePercentGDP >= 2.0 {
                 return .won
             }
             if currentYear > 2065 {
                 return .lostTimeout
             }
         case "solarpunk-dawn":
-            if state.stability >= 85 && pLedger.rebelControlPercent == 0.0 && pLedger.securityIndex >= 80 {
+            if state.stability >= 85, pLedger.rebelControlPercent <= 0.1, pLedger.securityIndex >= 80 {
                 return .won
             }
             if currentYear > 2070 {
                 return .lostTimeout
             }
         default:
-            if state.stability >= 85 && currentYear <= 2040 {
+            if state.stability >= 85, currentYear <= 2040 {
                 return .won
             }
             if currentYear > 2040 {
@@ -1746,5 +2085,144 @@ enum NativeGameEngine {
         }
 
         return .ongoing
+    }
+
+    static func campaignObjectives(for state: NativeCampaignState) -> [NativeCampaignObjective] {
+        let pLedger = state.economicLedger
+        let playerCode = GeopoliticalMapData.canonicalCountryCode(state.country.code)
+        let occupiedCoreCount = state.regionOccupations.filter { key, val in
+            let reg = GeopoliticalMapData.regionByID[key]
+            return GeopoliticalMapData.canonicalCountryCode(reg?.countryCode ?? "") == playerCode &&
+                GeopoliticalMapData.canonicalCountryCode(val) != playerCode
+        }.count
+        let coreRegionCount = max(1, GeopoliticalMapData.regions(forCountryCode: state.country.code).count)
+        let occupiedRivals = state.regionOccupations.filter { key, val in
+            let reg = GeopoliticalMapData.regionByID[key]
+            return GeopoliticalMapData.canonicalCountryCode(reg?.countryCode ?? "") != playerCode &&
+                GeopoliticalMapData.canonicalCountryCode(val) == playerCode
+        }.count
+
+        switch state.scenarioID {
+        case "default":
+            return [
+                objective(id: "stability", title: "Domestic legitimacy", detail: "Reach 80 stability before the post-crisis decade closes.", current: state.stability, target: 80, suffix: "/100", deadline: "2030", complete: state.stability >= 80),
+                objective(id: "trade", title: "External balance", detail: "Bring trade balance to zero or better.", current: pLedger.tradeBalancePercentGDP, target: 0, suffix: "% GDP", deadline: "2030", complete: pLedger.tradeBalancePercentGDP >= 0),
+                objective(id: "core", title: "Territorial integrity", detail: "Keep all core regions out of occupation or guerrilla control.", current: max(0, coreRegionCount - occupiedCoreCount), target: coreRegionCount, suffix: " secure", deadline: "2030", complete: occupiedCoreCount == 0)
+            ]
+        case "fragmented-markets":
+            return [
+                objective(id: "stability", title: "Bloc stability", detail: "Hold 75 stability in a fractured market order.", current: state.stability, target: 75, suffix: "/100", deadline: "2040", complete: state.stability >= 75),
+                objective(id: "gdp", title: "Economic mass", detail: "Reach $15T nominal GDP.", current: pLedger.nominalGDPTrillions, target: 15, prefix: "$", suffix: "T", deadline: "2040", complete: pLedger.nominalGDPTrillions >= 15),
+                objective(id: "fiscal", title: "Fiscal room", detail: "Preserve 60 fiscal-space index.", current: pLedger.fiscalSpaceIndex, target: 60, suffix: "/100", deadline: "2040", complete: pLedger.fiscalSpaceIndex >= 60)
+            ]
+        case "resilience-decade":
+            return [
+                objective(id: "stability", title: "Institutional trust", detail: "Reach 80 stability through patient delivery.", current: state.stability, target: 80, suffix: "/100", deadline: "2050", complete: state.stability >= 80),
+                objective(id: "security", title: "Public security", detail: "Reach 85 public-security index.", current: pLedger.securityIndex, target: 85, suffix: "/100", deadline: "2050", complete: pLedger.securityIndex >= 85),
+                objective(id: "insurgency", title: "Local calm", detail: "Reduce rebel control to 5% or less.", current: max(0, 100 - pLedger.rebelControlPercent), target: 95, suffix: "% calm", deadline: "2050", complete: pLedger.rebelControlPercent <= 5)
+            ]
+        case "soviet-triumph":
+            return [
+                objective(id: "stability", title: "Command legitimacy", detail: "Reach 80 stability under hegemonic pressure.", current: state.stability, target: 80, suffix: "/100", deadline: "2005", complete: state.stability >= 80),
+                objective(id: "tension", title: "Bipolar leverage", detail: "Keep world tension at 80 or higher.", current: state.worldTension, target: 80, suffix: "/100", deadline: "2005", complete: state.worldTension >= 80),
+                objective(id: "rivals", title: "Forward control", detail: "Occupy at least two rival regions.", current: occupiedRivals, target: 2, suffix: " regions", deadline: "2005", complete: occupiedRivals >= 2)
+            ]
+        case "pax-cybernetica":
+            return [
+                objective(id: "stability", title: "Protocol legitimacy", detail: "Reach 85 stability.", current: state.stability, target: 85, suffix: "/100", deadline: "2065", complete: state.stability >= 85),
+                objective(id: "gdp", title: "Network scale", detail: "Reach $25T nominal GDP.", current: pLedger.nominalGDPTrillions, target: 25, prefix: "$", suffix: "T", deadline: "2065", complete: pLedger.nominalGDPTrillions >= 25),
+                objective(id: "trade", title: "Data-trade surplus", detail: "Reach +2% trade balance.", current: pLedger.tradeBalancePercentGDP, target: 2, suffix: "% GDP", deadline: "2065", complete: pLedger.tradeBalancePercentGDP >= 2)
+            ]
+        case "solarpunk-dawn":
+            return [
+                objective(id: "stability", title: "Cooperative legitimacy", detail: "Reach 85 stability.", current: state.stability, target: 85, suffix: "/100", deadline: "2070", complete: state.stability >= 85),
+                objective(id: "rebel", title: "Zero insurgency", detail: "Reduce rebel control to zero.", current: max(0, 100 - pLedger.rebelControlPercent), target: 100, suffix: "% calm", deadline: "2070", complete: pLedger.rebelControlPercent <= 0.1),
+                objective(id: "security", title: "Bioregion security", detail: "Hold 80 public-security index.", current: pLedger.securityIndex, target: 80, suffix: "/100", deadline: "2070", complete: pLedger.securityIndex >= 80)
+            ]
+        default:
+            return [
+                objective(id: "stability", title: "Regime durability", detail: "Reach 85 stability.", current: state.stability, target: 85, suffix: "/100", deadline: "2040", complete: state.stability >= 85),
+                objective(id: "security", title: "Strategic security", detail: "Keep public security above 70.", current: pLedger.securityIndex, target: 70, suffix: "/100", deadline: "2040", complete: pLedger.securityIndex >= 70),
+                objective(id: "tension", title: "Manage global friction", detail: "Keep world tension below 70.", current: max(0, 100 - state.worldTension), target: 31, suffix: " safe", deadline: "2040", complete: state.worldTension < 70)
+            ]
+        }
+    }
+
+    static func afterActionReport(for turn: NativeGeneratedTurn, state: NativeCampaignState) -> NativeAfterActionReport {
+        let effects = turn.events.flatMap(\.strategicEffects)
+        let stabilityEffects = effects.filter { $0.track == .internalStability }.map(\.magnitude).reduce(0, +)
+        let tensionEffects = effects.filter { $0.track == .worldTension || $0.track == .securityAnxiety }.map(\.magnitude).reduce(0, +)
+        let economyEffects = effects.filter { $0.track == .economicResilience || $0.track == .marketConfidence }.map(\.magnitude).reduce(0, +)
+        let resolvedOrderCount = Set(turn.events.flatMap(\.linkedActionIDs)).count
+
+        return NativeAfterActionReport(
+            events: Array(turn.events.prefix(5)),
+            metrics: [
+                NativeAfterActionMetric(delta: signed(turn.stabilityDelta + stabilityEffects), id: "stability", label: "Stability pressure", value: "\(state.stability)/100"),
+                NativeAfterActionMetric(delta: signed(turn.worldTensionDelta + tensionEffects), id: "tension", label: "World tension pressure", value: "\(state.worldTension)/100"),
+                NativeAfterActionMetric(delta: signed(economyEffects), id: "economy", label: "Economic effect weight", value: "\(state.economicLedger.fiscalSpaceIndex)/100 fiscal")
+            ],
+            resolvedOrderCount: resolvedOrderCount,
+            summary: sanitizeFoundationModelText(turn.summary)
+        )
+    }
+
+    private static func objective(
+        id: String,
+        title: String,
+        detail: String,
+        current: Double,
+        target: Double,
+        prefix: String = "",
+        suffix: String,
+        deadline: String,
+        complete: Bool
+    ) -> NativeCampaignObjective {
+        let progress = target == 0 ? (complete ? 1.0 : 0.0) : max(0, min(1, current / target))
+        return NativeCampaignObjective(
+            currentValue: "\(prefix)\(formatObjectiveNumber(current))\(suffix)",
+            detail: detail,
+            deadline: deadline,
+            id: id,
+            isComplete: complete,
+            progress: progress,
+            targetValue: "\(prefix)\(formatObjectiveNumber(target))\(suffix)",
+            title: title
+        )
+    }
+
+    private static func objective(
+        id: String,
+        title: String,
+        detail: String,
+        current: Int,
+        target: Int,
+        prefix: String = "",
+        suffix: String,
+        deadline: String,
+        complete: Bool
+    ) -> NativeCampaignObjective {
+        objective(
+            id: id,
+            title: title,
+            detail: detail,
+            current: Double(current),
+            target: Double(target),
+            prefix: prefix,
+            suffix: suffix,
+            deadline: deadline,
+            complete: complete
+        )
+    }
+
+    private static func formatObjectiveNumber(_ value: Double) -> String {
+        if value.rounded() == value {
+            return "\(Int(value))"
+        }
+        return String(format: "%.1f", value)
+    }
+
+    private static func signed(_ value: Int) -> String {
+        value >= 0 ? "+\(value)" : "\(value)"
     }
 }

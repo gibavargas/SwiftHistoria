@@ -3,7 +3,7 @@ import OSLog
 
 /// Main actor owner for native campaign state.
 ///
-/// **State Flow Mechanic**: 
+/// **State Flow Mechanic**:
 /// SwiftUI views MUST NOT mutate `NativeCampaignState` directly. Instead, views call methods on this store.
 /// The store centralizes all business logic and state transitions:
 /// View Action -> Store Method -> (Optional Async AI Call) -> Engine Validation -> State Mutation -> `persistState()` -> @Published UI Update.
@@ -36,14 +36,16 @@ final class NativeCampaignStore: ObservableObject {
     private let aiService: any NativeAIService
     private let persistenceDirectory: URL
     private let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeCampaignStore")
-    // **Concurrency & Asynchrony Mechanic**:
-    // `stateVersion` prevents async race conditions (stale-response rejection).
-    // Incremented (`invalidateInFlightWork()`) whenever local state changes in a way that makes in-flight AI work obsolete.
-    // Async methods (like `advance(months:)` or `askAdvisor()`) capture this value before awaiting the AI service.
-    // After the await resumes, they check if `stateVersion` is still the same. If it changed (e.g. the user clicked "Reset" or advanced again),
-    // the stale result is dropped and not applied to the state, preventing ghost mutations.
+    /// **Concurrency & Asynchrony Mechanic**:
+    /// `stateVersion` prevents async race conditions (stale-response rejection).
+    /// Incremented (`invalidateInFlightWork()`) whenever local state changes in a way that makes in-flight AI work obsolete.
+    /// Async methods (like `advance(months:)` or `askAdvisor()`) capture this value before awaiting the AI service.
+    /// After the await resumes, they check if `stateVersion` is still the same. If it changed (e.g. the user clicked "Reset" or advanced again),
+    /// the stale result is dropped and not applied to the state, preventing ghost mutations.
     private var stateVersion = 0
+    private var pendingSuggestionRefreshForce: Bool?
 
+    static let maximumCampaignImportBytes = 5_000_000
     private static let selectedCountryKey = "pax-historia.native.selected-country.v1"
     private static let selectedLanguageKey = "pax-historia.native.selected-language.v1"
     private static let selectedScenarioKey = "pax-historia.native.selected-scenario.v1"
@@ -53,14 +55,16 @@ final class NativeCampaignStore: ObservableObject {
     private static let campaignStateEnvelopeFileName = "campaign-state-envelope-v2.json"
     private static let campaignStateBackupFileName = "campaign-state-backup-v2.json"
     private static let campaignStateLegacyFileName = "campaign-state-legacy-v1.json"
+    private static let maximumUserDefaultsCampaignBlobBytes = 512_000
+    private static let maximumAdministrativeCapacity = 120
 
     private static var uiTestResetRequested: Bool {
         #if DEBUG
-        let environment = ProcessInfo.processInfo.environment
-        let arguments = ProcessInfo.processInfo.arguments
-        return environment["PAX_HISTORIA_UI_TEST_RESET"] == "1" || arguments.contains("--pax-historia-ui-test-reset")
+            let environment = ProcessInfo.processInfo.environment
+            let arguments = ProcessInfo.processInfo.arguments
+            return environment["PAX_HISTORIA_UI_TEST_RESET"] == "1" || arguments.contains("--pax-historia-ui-test-reset")
         #else
-        return false
+            return false
         #endif
     }
 
@@ -71,9 +75,65 @@ final class NativeCampaignStore: ObservableObject {
         defaults.removeObject(forKey: campaignStateKey)
         defaults.removeObject(forKey: campaignStateEnvelopeKey)
         defaults.removeObject(forKey: campaignStateBackupKey)
-
         for fileName in [campaignStateEnvelopeFileName, campaignStateBackupFileName, campaignStateLegacyFileName] {
             try? FileManager.default.removeItem(at: persistenceDirectory.appendingPathComponent(fileName))
+        }
+    }
+
+    private static func currentAIProviderRoute(defaults: UserDefaults) -> (provider: String, model: String, identifier: String, detail: String) {
+        let preference = NativeAIProviderPreference.current(defaults: defaults)
+        let openRouterKey = defaults.string(forKey: "OPENROUTER_API_KEY") ?? ""
+        let hasOpenRouterKey = !openRouterKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let zaiKey = defaults.string(forKey: "ZAI_API_KEY") ?? ""
+        let hasZAIKey = !zaiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
+        switch preference {
+        case .appleFoundation:
+            return (
+                "Apple Foundation Models",
+                "System Language Model",
+                "SystemLanguageModel.default",
+                "Player selected Apple Foundation Models. Calling the on-device System Language Model."
+            )
+        case .openRouter:
+            if hasOpenRouterKey {
+                return (
+                    "OpenRouter",
+                    "Free Models Router",
+                    "openrouter/free",
+                    "Player selected OpenRouter. Calling OpenRouter Free API first; fallback is Z.AI if configured, then Apple."
+                )
+            }
+            if hasZAIKey {
+                return (
+                    "Z.AI",
+                    "GLM-5",
+                    "glm-5",
+                    "OpenRouter is selected, but no OpenRouter API key is saved. Starting with Z.AI fallback."
+                )
+            }
+            return (
+                "Apple Foundation Models",
+                "System Language Model",
+                "SystemLanguageModel.default",
+                "OpenRouter is selected, but no OpenRouter API key is saved. Starting with Apple Foundation Models."
+            )
+        case .zai:
+            if hasZAIKey {
+                let route = defaults.bool(forKey: "ZAI_USE_CODING_ENDPOINT") ? "Z.AI Coding Endpoint" : "Z.AI API"
+                return (
+                    "Z.AI",
+                    "GLM-5",
+                    "glm-5",
+                    "Player selected Z.AI. Calling \(route); fallback is Apple Foundation Models."
+                )
+            }
+            return (
+                "Apple Foundation Models",
+                "System Language Model",
+                "SystemLanguageModel.default",
+                "Z.AI is selected, but no Z.AI API key is saved. Starting with Apple Foundation Models."
+            )
         }
     }
 
@@ -98,19 +158,19 @@ final class NativeCampaignStore: ObservableObject {
 
     init(
         defaults: UserDefaults = .standard,
-        aiService: any NativeAIService = DynamicAIService(),
+        aiService: (any NativeAIService)? = nil,
         persistenceDirectory: URL? = nil
     ) {
         let decoder = JSONDecoder()
         self.defaults = defaults
-        self.encoder = JSONEncoder()
+        encoder = JSONEncoder()
         self.decoder = decoder
-        self.aiService = aiService
+        self.aiService = aiService ?? DynamicAIService(defaults: defaults)
         self.persistenceDirectory = persistenceDirectory ?? Self.defaultPersistenceDirectory()
         #if DEBUG
-        if Self.uiTestResetRequested {
-            Self.removePersistedCampaignState(defaults: defaults, persistenceDirectory: self.persistenceDirectory)
-        }
+            if Self.uiTestResetRequested {
+                Self.removePersistedCampaignState(defaults: defaults, persistenceDirectory: self.persistenceDirectory)
+            }
         #endif
         selectedCountry = Self.loadSelectedCountry(from: defaults, decoder: decoder)
         let loadResult = Self.loadCampaignState(
@@ -121,7 +181,19 @@ final class NativeCampaignStore: ObservableObject {
         let loadedState = loadResult.state.map(Self.normalizedLoadedState)
         state = loadedState
         lastRecoveryNotice = loadResult.notice
-        selectedLanguage = NativeGameLanguage.normalized(defaults.string(forKey: Self.selectedLanguageKey) ?? loadedState?.language.rawValue)
+        let resolvedLanguage = NativeGameLanguage.normalized(defaults.string(forKey: Self.selectedLanguageKey) ?? loadedState?.language.rawValue)
+        selectedLanguage = resolvedLanguage
+
+        // Ensure AppleLanguages matches the saved game language on launch.
+        if defaults.string(forKey: Self.selectedLanguageKey) != nil {
+            let localeCode = switch resolvedLanguage {
+            case .english: "en"
+            case .portuguese: "pt-BR"
+            case .spanish: "es"
+            }
+            defaults.set([localeCode], forKey: "AppleLanguages")
+        }
+
         selectedScenarioID = Self.normalizedScenarioID(defaults.string(forKey: Self.selectedScenarioKey) ?? loadedState?.scenarioID)
 
         if let selectedCountry, state == nil {
@@ -140,11 +212,25 @@ final class NativeCampaignStore: ObservableObject {
         NativeScenarioCatalog.scenario(for: selectedScenarioID)
     }
 
+    var selectedAIProviderPreference: NativeAIProviderPreference {
+        NativeAIProviderPreference.current(defaults: defaults)
+    }
+
     func setLanguage(_ language: NativeGameLanguage) {
         guard selectedLanguage != language || state?.language != language else { return }
         invalidateInFlightWork()
         selectedLanguage = language
         defaults.set(language.rawValue, forKey: Self.selectedLanguageKey)
+
+        // Update the system locale so SwiftUI picks up the correct Localizable.xcstrings
+        // translations on the next app launch.
+        let localeCode = switch language {
+        case .english: "en"
+        case .portuguese: "pt-BR"
+        case .spanish: "es"
+        }
+        defaults.set([localeCode], forKey: "AppleLanguages")
+
         logger.info("Native campaign language changed language=\(language.rawValue, privacy: .public)")
         lastAdvisorError = nil
         lastDiplomacyError = nil
@@ -249,7 +335,7 @@ final class NativeCampaignStore: ObservableObject {
         draftAdvisorQuestion = ""
         draftDiplomaticMessage = ""
 
-        self.state = currentState
+        state = currentState
 
         if let data = try? encoder.encode(newCountry) {
             defaults.set(data, forKey: Self.selectedCountryKey)
@@ -275,7 +361,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func resumeActiveCampaign() {
-        guard let state = state else { return }
+        guard let state else { return }
         invalidateInFlightWork()
         selectedCountry = state.country
         selectedScenarioID = state.scenarioID
@@ -293,7 +379,7 @@ final class NativeCampaignStore: ObservableObject {
         guard var currentState = state else { return }
         invalidateInFlightWork()
         currentState.gameMode = mode
-        self.state = currentState
+        state = currentState
         persistState()
         logger.info("Game mode changed to \(mode.rawValue)")
     }
@@ -302,10 +388,10 @@ final class NativeCampaignStore: ObservableObject {
         let slug = [
             state?.scenarioID ?? selectedScenarioID,
             state?.country.code ?? "campaign",
-            state?.gameDate ?? NativeGameEngine.todayStamp(),
+            state?.gameDate ?? NativeGameEngine.todayStamp()
         ]
-            .map { $0.lowercased().replacingOccurrences(of: ":", with: "-") }
-            .joined(separator: "-")
+        .map { $0.lowercased().replacingOccurrences(of: ":", with: "-") }
+        .joined(separator: "-")
         return "pax-historia-\(slug).json"
     }
 
@@ -320,6 +406,12 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func importCampaignData(_ data: Data) throws {
+        guard data.count <= Self.maximumCampaignImportBytes else {
+            throw NativeCampaignStoreError.campaignImportTooLarge(
+                actualBytes: data.count,
+                maximumBytes: Self.maximumCampaignImportBytes
+            )
+        }
         let imported = try decoder.decode(NativeCampaignState.self, from: data)
         let normalized = Self.normalizedLoadedState(imported)
         invalidateInFlightWork()
@@ -350,13 +442,16 @@ final class NativeCampaignStore: ObservableObject {
 
     func addDraftAction() {
         guard var state else { return }
-        let cost = NativeGameEngine.estimateDirectiveCost(for: draftAction)
+        let action = NativeGameEngine.action(from: draftAction, date: state.gameDate)
+        guard let action else {
+            lastError = nil
+            return
+        }
+        let cost = NativeGameEngine.estimateDirectiveCost(for: action.detail)
         if state.administrativeCapacity < cost {
             lastError = "Insufficient administrative capacity. This directive requires \(cost) capacity."
             return
         }
-        let action = NativeGameEngine.action(from: draftAction, date: state.gameDate)
-        guard let action else { return }
 
         invalidateInFlightWork()
         state.administrativeCapacity -= cost
@@ -400,7 +495,7 @@ final class NativeCampaignStore: ObservableObject {
         state.actionMemory = NativeStrategyContextDatabase.remember(
             action: action,
             in: state.actionMemory,
-            source: "apple-suggestion",
+            source: "ai-suggestion",
             state: state
         )
         state.suggestedActions.removeAll { $0.id == suggestion.id }
@@ -417,7 +512,7 @@ final class NativeCampaignStore: ObservableObject {
             let action = state.plannedActions[idx]
             if action.status == .planned {
                 let cost = NativeGameEngine.estimateDirectiveCost(for: action.detail)
-                state.administrativeCapacity = min(100, state.administrativeCapacity + cost)
+                state.administrativeCapacity = min(Self.maximumAdministrativeCapacity, state.administrativeCapacity + cost)
             }
             state.plannedActions.remove(at: idx)
         }
@@ -437,7 +532,7 @@ final class NativeCampaignStore: ObservableObject {
             let action = state.plannedActions[index]
             if action.status == .planned {
                 let cost = NativeGameEngine.estimateDirectiveCost(for: action.detail)
-                state.administrativeCapacity = min(100, state.administrativeCapacity + cost)
+                state.administrativeCapacity = min(Self.maximumAdministrativeCapacity, state.administrativeCapacity + cost)
             }
             state.plannedActions.remove(at: index)
         }
@@ -447,7 +542,7 @@ final class NativeCampaignStore: ObservableObject {
         logger.info("Native actions deleted count=\(offsets.count, privacy: .public)")
     }
 
-    func checkAppleStatus() async {
+    func checkAIStatus() async {
         guard var state else { return }
         let requestVersion = stateVersion
         let readiness = await aiService.checkReadiness()
@@ -456,7 +551,7 @@ final class NativeCampaignStore: ObservableObject {
         state.aiReadiness = readiness
         self.state = state
         persistState()
-        logger.info("Native Apple readiness checked availability=\(readiness.availability, privacy: .public)")
+        logger.info("Native AI readiness checked availability=\(readiness.availability, privacy: .public)")
     }
 
     func askAdvisor() async {
@@ -487,7 +582,7 @@ final class NativeCampaignStore: ObservableObject {
             nextState.advisorMessages.insert(
                 NativeAdvisorMessage(
                     date: nextState.gameDate,
-                    id: "advisor-apple-\(UUID().uuidString.lowercased())",
+                    id: "advisor-ai-\(UUID().uuidString.lowercased())",
                     role: .advisor,
                     text: answer
                 ),
@@ -504,7 +599,7 @@ final class NativeCampaignStore: ObservableObject {
             nextState.aiReadiness = .failure(error)
             invalidateInFlightWork()
             state = nextState
-            lastAdvisorError = "\(error.localizedDescription) The advisor transcript was preserved; retry when Apple Foundation Models are ready."
+            lastAdvisorError = "\(error.localizedDescription) The advisor transcript was preserved; verify the selected AI provider and retry."
             persistState()
             logger.error("Native advisor response failed round=\(nextState.round, privacy: .public)")
         }
@@ -575,6 +670,10 @@ final class NativeCampaignStore: ObservableObject {
 
     func advance(months: Int) async {
         guard var currentState = state, !isAdvancing else { return }
+        guard currentState.victoryStatus == .ongoing else {
+            lastError = "This campaign has already ended. Start or import a new campaign to continue playing."
+            return
+        }
         guard months > 0 else {
             lastError = "Choose a positive time jump."
             return
@@ -592,32 +691,43 @@ final class NativeCampaignStore: ObservableObject {
         // the newer campaign.
         let requestVersion = stateVersion
         let laneCount = NativeStrategyContextDatabase.estimatedLaneCount(for: currentState)
+        let providerRoute = Self.currentAIProviderRoute(defaults: defaults)
         turnProgress = NativeTurnProgress(
             completedLanes: 0,
-            detail: "Preparing local facts, action memory, and economic ledger.",
+            detail: providerRoute.detail,
             phase: "Preparing turn",
-            totalLanes: laneCount
+            totalLanes: laneCount,
+            providerName: providerRoute.provider,
+            modelName: providerRoute.model,
+            modelIdentifier: providerRoute.identifier
         )
         var shouldRefreshSuggestions = false
 
         do {
             let generated = try await aiService.generateTurn(for: currentState, months: months) { [weak self] progress in
-                guard let self, self.isCurrentStateVersion(requestVersion) else { return }
-                self.turnProgress = progress
+                guard let self, isCurrentStateVersion(requestVersion) else { return }
+                turnProgress = progress
             }
             guard isCurrentStateVersion(requestVersion) else { return }
+            let activeRoute = turnProgress.map { ($0.providerName, $0.modelName, $0.modelIdentifier) }
             turnProgress = NativeTurnProgress(
                 completedLanes: max(0, laneCount - 1),
                 detail: "Checking dates, linked actions, and visible consequences.",
                 phase: "Validating turn",
-                totalLanes: laneCount
+                totalLanes: laneCount,
+                providerName: activeRoute?.0,
+                modelName: activeRoute?.1,
+                modelIdentifier: activeRoute?.2
             )
             let validated = try NativeGameEngine.validated(generated, state: currentState, months: months)
             turnProgress = NativeTurnProgress(
                 completedLanes: laneCount,
                 detail: "Updating budgets, fiscal space, action memory, and campaign effects.",
                 phase: "Applying economics",
-                totalLanes: laneCount
+                totalLanes: laneCount,
+                providerName: activeRoute?.0,
+                modelName: activeRoute?.1,
+                modelIdentifier: activeRoute?.2
             )
             currentState = NativeGameEngine.apply(
                 validated,
@@ -641,7 +751,6 @@ final class NativeCampaignStore: ObservableObject {
             persistState()
             logger.error("Native campaign advance failed round=\(currentState.round, privacy: .public) months=\(months, privacy: .public)")
         }
-
         if shouldRefreshSuggestions {
             await refreshSuggestedActions(force: true)
         }
@@ -653,13 +762,23 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func refreshSuggestedActions(force: Bool) async {
-        guard var currentState = state, !isLoadingSuggestions else { return }
+        guard var currentState = state else { return }
+        guard !isLoadingSuggestions else {
+            pendingSuggestionRefreshForce = (pendingSuggestionRefreshForce ?? false) || force
+            return
+        }
         guard force || currentState.suggestedActions.isEmpty else { return }
 
         isLoadingSuggestions = true
         lastSuggestionError = nil
         let requestVersion = stateVersion
-        defer { isLoadingSuggestions = false }
+        defer {
+            isLoadingSuggestions = false
+            if let pendingForce = pendingSuggestionRefreshForce {
+                pendingSuggestionRefreshForce = nil
+                Task { await refreshSuggestedActions(force: pendingForce) }
+            }
+        }
 
         do {
             let suggestions = try await aiService.generateSuggestedActions(for: currentState)
@@ -713,37 +832,25 @@ final class NativeCampaignStore: ObservableObject {
             return
         }
 
+        let backupData: Data
         if let previousPrimary = Self.primaryPersistenceData(
             from: defaults,
             persistenceDirectory: persistenceDirectory
         ),
-           let previousEnvelope = try? decoder.decode(CampaignStateEnvelope.self, from: previousPrimary),
-           previousEnvelope.schemaVersion == 2 {
-            defaults.set(previousPrimary, forKey: Self.campaignStateBackupKey)
-            do {
-                try Self.writePersistenceData(
-                    previousPrimary,
-                    fileName: Self.campaignStateBackupFileName,
-                    directory: persistenceDirectory
-                )
-            } catch {
-                logger.error("Native campaign backup file write failed")
-            }
+            let previousEnvelope = try? decoder.decode(CampaignStateEnvelope.self, from: previousPrimary),
+            previousEnvelope.schemaVersion == 2
+        {
+            backupData = previousPrimary
         } else {
-            defaults.set(envelopeData, forKey: Self.campaignStateBackupKey)
-            do {
-                try Self.writePersistenceData(
-                    envelopeData,
-                    fileName: Self.campaignStateBackupFileName,
-                    directory: persistenceDirectory
-                )
-            } catch {
-                logger.error("Native campaign backup file seed failed")
-            }
+            backupData = envelopeData
         }
-        defaults.set(envelopeData, forKey: Self.campaignStateEnvelopeKey)
-        defaults.set(legacyData, forKey: Self.campaignStateKey)
+
         do {
+            try Self.writePersistenceData(
+                backupData,
+                fileName: Self.campaignStateBackupFileName,
+                directory: persistenceDirectory
+            )
             try Self.writePersistenceData(
                 envelopeData,
                 fileName: Self.campaignStateEnvelopeFileName,
@@ -754,6 +861,9 @@ final class NativeCampaignStore: ObservableObject {
                 fileName: Self.campaignStateLegacyFileName,
                 directory: persistenceDirectory
             )
+            Self.storeDefaultsFallback(backupData, forKey: Self.campaignStateBackupKey, defaults: defaults)
+            Self.storeDefaultsFallback(envelopeData, forKey: Self.campaignStateEnvelopeKey, defaults: defaults)
+            Self.storeDefaultsFallback(legacyData, forKey: Self.campaignStateKey, defaults: defaults)
             logger.info("Native campaign persisted round=\(state.round, privacy: .public) timeline=\(state.timeline.count, privacy: .public)")
         } catch {
             logger.error("Native campaign file persistence failed")
@@ -780,7 +890,7 @@ final class NativeCampaignStore: ObservableObject {
         for fileName in [
             Self.campaignStateEnvelopeFileName,
             Self.campaignStateBackupFileName,
-            Self.campaignStateLegacyFileName,
+            Self.campaignStateLegacyFileName
         ] {
             do {
                 try Self.removePersistenceData(fileName: fileName, directory: persistenceDirectory)
@@ -801,10 +911,11 @@ final class NativeCampaignStore: ObservableObject {
             fileName: campaignStateEnvelopeFileName,
             directory: persistenceDirectory
         )
-        for source in primarySources {
-            if let envelope = try? decoder.decode(CampaignStateEnvelope.self, from: source.data), envelope.schemaVersion == 2 {
-                return CampaignLoadResult(state: envelope.state, notice: nil)
-            }
+        if let primary = newestEnvelope(from: primarySources, decoder: decoder) {
+            let notice = primary.sourceLabel == "file"
+                ? nil
+                : "Loaded the newest campaign save from user-defaults because it is newer than the file copy."
+            return CampaignLoadResult(state: primary.envelope.state, notice: notice)
         }
 
         let backupSources = persistenceSources(
@@ -813,14 +924,11 @@ final class NativeCampaignStore: ObservableObject {
             fileName: campaignStateBackupFileName,
             directory: persistenceDirectory
         )
-        for source in backupSources {
-            if let envelope = try? decoder.decode(CampaignStateEnvelope.self, from: source.data),
-               envelope.schemaVersion == 2 {
-                let notice = primarySources.isEmpty
+        if let backup = newestEnvelope(from: backupSources, decoder: decoder) {
+            let notice = primarySources.isEmpty
                 ? "Loaded the last-good campaign backup because the primary save was missing."
                 : "Recovered the campaign from the last-good backup because the primary save was corrupt."
-                return CampaignLoadResult(state: envelope.state, notice: "\(notice) Source: \(source.label).")
-            }
+            return CampaignLoadResult(state: backup.envelope.state, notice: "\(notice) Source: \(backup.sourceLabel).")
         }
 
         let legacySources = persistenceSources(
@@ -832,8 +940,8 @@ final class NativeCampaignStore: ObservableObject {
         for source in legacySources {
             if let state = try? decoder.decode(NativeCampaignState.self, from: source.data) {
                 let notice = primarySources.isEmpty
-                ? "Loaded a legacy campaign save and will upgrade it on the next save."
-                : "Loaded a legacy campaign save because the versioned save could not be read."
+                    ? "Loaded a legacy campaign save and will upgrade it on the next save."
+                    : "Loaded a legacy campaign save because the versioned save could not be read."
                 return CampaignLoadResult(state: state, notice: "\(notice) Source: \(source.label).")
             }
         }
@@ -860,12 +968,42 @@ final class NativeCampaignStore: ObservableObject {
         from defaults: UserDefaults,
         persistenceDirectory: URL
     ) -> Data? {
-        persistenceSources(
+        let sources = persistenceSources(
             defaults: defaults,
             key: campaignStateEnvelopeKey,
             fileName: campaignStateEnvelopeFileName,
             directory: persistenceDirectory
-        ).first?.data
+        )
+        return newestEnvelope(from: sources, decoder: JSONDecoder())?.sourceData ?? sources.first?.data
+    }
+
+    private static func storeDefaultsFallback(_ data: Data, forKey key: String, defaults: UserDefaults) {
+        if data.count <= maximumUserDefaultsCampaignBlobBytes {
+            defaults.set(data, forKey: key)
+        } else {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
+    private static func newestEnvelope(
+        from sources: [PersistenceDataSource],
+        decoder: JSONDecoder
+    ) -> (envelope: CampaignStateEnvelope, sourceLabel: String, sourceData: Data)? {
+        let formatter = ISO8601DateFormatter()
+        var newest: (envelope: CampaignStateEnvelope, sourceLabel: String, sourceData: Data, savedDate: Date)?
+        for source in sources {
+            guard let envelope = try? decoder.decode(CampaignStateEnvelope.self, from: source.data),
+                  envelope.schemaVersion == 2
+            else {
+                continue
+            }
+            let savedDate = formatter.date(from: envelope.savedAt) ?? .distantPast
+            if newest == nil || savedDate > newest!.savedDate {
+                newest = (envelope, source.label, source.data, savedDate)
+            }
+        }
+        guard let newest else { return nil }
+        return (newest.envelope, newest.sourceLabel, newest.sourceData)
     }
 
     private static func persistenceSources(
@@ -908,6 +1046,23 @@ final class NativeCampaignStore: ObservableObject {
         return NativeScenarioCatalog.scenario(for: rawID).id
     }
 
+    private static func normalizedBudgetSliders(
+        military: Double,
+        services: Double,
+        diplomacy: Double
+    ) -> (military: Double, services: Double, diplomacy: Double) {
+        var values = [military, services, diplomacy].map { value in
+            value.isFinite ? Swift.max(0.0, Swift.min(1.0, value)) : 0.0
+        }
+        let total = values.reduce(0.0, +)
+        if total > 0 {
+            values = values.map { $0 / total }
+        } else {
+            values = [0.33, 0.34, 0.33]
+        }
+        return (values[0], values[1], values[2])
+    }
+
     private static func normalizedLoadedState(_ loaded: NativeCampaignState) -> NativeCampaignState {
         var state = loaded
         let scenario = NativeScenarioCatalog.scenario(for: state.scenarioID)
@@ -933,6 +1088,15 @@ final class NativeCampaignStore: ObservableObject {
         state.round = Swift.max(1, state.round)
         state.stability = NativeGameEngine.clampedMetric(state.stability)
         state.worldTension = NativeGameEngine.clampedMetric(state.worldTension)
+        state.administrativeCapacity = Swift.max(0, Swift.min(maximumAdministrativeCapacity, state.administrativeCapacity))
+        let sliders = normalizedBudgetSliders(
+            military: state.budgetMilitarySlider,
+            services: state.budgetServicesSlider,
+            diplomacy: state.budgetDiplomacySlider
+        )
+        state.budgetMilitarySlider = sliders.military
+        state.budgetServicesSlider = sliders.services
+        state.budgetDiplomacySlider = sliders.diplomacy
         state.suggestedActions = []
         state.lastSummary = sanitizeFoundationModelText(state.lastSummary)
         let initialState = NativeGameEngine.initialState(for: state.country, scenario: scenario, language: state.language)
@@ -1245,22 +1409,22 @@ final class NativeCampaignStore: ObservableObject {
     private static func plannedOrderSummary(for action: NativePlannedAction, language: NativeGameLanguage) -> String {
         switch language {
         case .english:
-            return "\(action.title) has been placed before the cabinet. Its concrete consequences will be resolved on the next time jump."
+            "\(action.title) has been placed before the cabinet. Its concrete consequences will be resolved on the next time jump."
         case .portuguese:
-            return "\(action.title) foi colocado diante do gabinete. Suas consequências concretas serão resolvidas no próximo salto de tempo."
+            "\(action.title) foi colocado diante do gabinete. Suas consequências concretas serão resolvidas no próximo salto de tempo."
         case .spanish:
-            return "\(action.title) fue puesto ante el gabinete. Sus consecuencias concretas se resolverán en el próximo salto temporal."
+            "\(action.title) fue puesto ante el gabinete. Sus consecuencias concretas se resolverán en el próximo salto temporal."
         }
     }
 
     private static func acceptedSuggestionSummary(for action: NativePlannedAction, language: NativeGameLanguage) -> String {
         switch language {
         case .english:
-            return "\(action.title) has been accepted as a planned order. Apple Foundation Models will resolve its impact on the next time jump."
+            "\(action.title) has been accepted as a planned order. The selected AI provider will resolve its impact on the next time jump."
         case .portuguese:
-            return "\(action.title) foi aceito como ordem planejada. O Apple Foundation Models resolverá seu impacto no próximo salto de tempo."
+            "\(action.title) foi aceito como ordem planejada. O provedor de IA selecionado resolverá seu impacto no próximo salto de tempo."
         case .spanish:
-            return "\(action.title) fue aceptado como orden planificada. Apple Foundation Models resolverá su impacto en el próximo salto temporal."
+            "\(action.title) fue aceptado como orden planificada. El proveedor de IA seleccionado resolverá su impacto en el próximo salto temporal."
         }
     }
 
@@ -1294,17 +1458,24 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func updateBudgetSliders(military: Double, services: Double, diplomacy: Double) {
-        guard var state = self.state else { return }
-        state.budgetMilitarySlider = military
-        state.budgetServicesSlider = services
-        state.budgetDiplomacySlider = diplomacy
+        guard var state else { return }
+        invalidateInFlightWork()
+        let normalized = Self.normalizedBudgetSliders(
+            military: military,
+            services: services,
+            diplomacy: diplomacy
+        )
+        state.budgetMilitarySlider = normalized.military
+        state.budgetServicesSlider = normalized.services
+        state.budgetDiplomacySlider = normalized.diplomacy
         self.state = state
         persistState()
     }
 
     func acceptDiplomaticOffer(id: String) {
-        guard var state = self.state else { return }
+        guard var state else { return }
         guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        invalidateInFlightWork()
         var offer = state.activeOffers[idx]
         offer.status = .accepted
         state.activeOffers[idx] = offer
@@ -1371,8 +1542,9 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func rejectDiplomaticOffer(id: String) {
-        guard var state = self.state else { return }
+        guard var state else { return }
         guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        invalidateInFlightWork()
         var offer = state.activeOffers[idx]
         offer.status = .rejected
         state.activeOffers[idx] = offer
@@ -1401,8 +1573,9 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func counterDiplomaticOffer(id: String) {
-        guard var state = self.state else { return }
+        guard var state else { return }
         guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        invalidateInFlightWork()
         var offer = state.activeOffers[idx]
 
         let proposerCode = offer.proposerCode
@@ -1496,10 +1669,15 @@ final class NativeCampaignStore: ObservableObject {
 }
 
 enum NativeCampaignStoreError: LocalizedError {
+    case campaignImportTooLarge(actualBytes: Int, maximumBytes: Int)
     case noCampaignToExport
 
     var errorDescription: String? {
         switch self {
+        case let .campaignImportTooLarge(actualBytes, maximumBytes):
+            let actualMB = Double(actualBytes) / 1_000_000.0
+            let maximumMB = Double(maximumBytes) / 1_000_000.0
+            return String(format: "Campaign import is too large (%.1f MB). Maximum supported size is %.1f MB.", actualMB, maximumMB)
         case .noCampaignToExport:
             return "There is no native campaign to export yet."
         }

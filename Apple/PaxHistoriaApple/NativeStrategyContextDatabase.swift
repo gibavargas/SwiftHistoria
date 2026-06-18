@@ -47,7 +47,7 @@ private enum NativeTinyEmbeddingModel {
         "stability": ["services", "security", "legitimacy"],
         "stabilization": ["security", "insurgency", "resilience"],
         "trade": ["corridor", "market", "diplomacy"],
-        "unemployment": ["jobs", "growth", "stability"],
+        "unemployment": ["jobs", "growth", "stability"]
     ]
 }
 
@@ -69,7 +69,9 @@ enum NativeFoundationTurnLane: String, Codable, CaseIterable, Hashable, Identifi
     case actionConsequence
     case summary
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var title: String {
         switch self {
@@ -88,6 +90,17 @@ struct NativeTurnProgress: Codable, Hashable {
     var detail: String
     var phase: String
     var totalLanes: Int
+    var providerName: String? = nil
+    var modelName: String? = nil
+    var modelIdentifier: String? = nil
+
+    var providerSummary: String? {
+        guard let providerName else { return nil }
+        if let modelName, !modelName.isEmpty {
+            return "Calling \(providerName) · \(modelName)"
+        }
+        return "Calling \(providerName)"
+    }
 
     var fraction: Double {
         guard totalLanes > 0 else { return 0 }
@@ -225,17 +238,17 @@ struct NativeHexLever: Codable, Hashable {
     var conflictMode: NativeRegionConflictMode? {
         switch invasionNudge {
         case 1, 7:
-            return .conventionalOccupation
+            .conventionalOccupation
         case 2:
-            return .guerrillaControl
+            .guerrillaControl
         case 3:
-            return .nuclearFallout
+            .nuclearFallout
         case 4, 6, -1:
-            return .stabilization
+            .stabilization
         case 5:
-            return .contestedBorder
+            .contestedBorder
         default:
-            return nil
+            nil
         }
     }
 }
@@ -337,7 +350,7 @@ enum NativeStrategyContextDatabase {
         Array(Set(defaultStrategicCountryCodes + Array(state.dynamicCountries.keys) + Array(state.economicLedgers.keys) + [state.country.code])).sorted()
     }
 
-    static func startingEconomicLedger(for country: PlayerCountry, scenario: NativeScenario) -> NativeEconomicLedger {
+    static func startingEconomicLedger(for country: PlayerCountry, scenario _: NativeScenario) -> NativeEconomicLedger {
         let profile = Native2010WorldModel.profile(for: country)
         let supplement = economicSupplements[country.code] ?? economicSupplements["GLOBAL"]!
         let openingSecurity = clampDouble(Double(profile.stability) + 18.0 - Double(profile.sanctionsExposurePercent) * 0.35, 35, 92)
@@ -378,41 +391,40 @@ enum NativeStrategyContextDatabase {
     }
 
     private static func isGlobal(_ targetLower: String) -> Bool {
-        return targetLower.contains("global") || targetLower.contains("international") || targetLower.contains("system")
+        targetLower.contains("global") || targetLower.contains("international") || targetLower.contains("system")
     }
 
     static func countryAliases(for code: String) -> [String] {
         let normalizedCode = code.lowercased()
         let catalogName = CountryCatalog.all.first { $0.code == code }?.name.lowercased()
-        let fixedAliases: [String]
-        switch code {
+        let fixedAliases: [String] = switch code {
         case "USA":
-            fixedAliases = ["us", "u.s.", "usa", "united states", "america"]
+            ["us", "u.s.", "usa", "united states", "america"]
         case "CHN":
-            fixedAliases = ["chn", "china"]
+            ["chn", "china"]
         case "BRA":
-            fixedAliases = ["bra", "brazil", "brasil"]
+            ["bra", "brazil", "brasil"]
         case "DEU":
-            fixedAliases = ["deu", "germany", "deutschland"]
+            ["deu", "germany", "deutschland"]
         case "GBR":
-            fixedAliases = ["gbr", "united kingdom", "uk", "britain"]
+            ["gbr", "united kingdom", "uk", "britain"]
         case "RUS":
-            fixedAliases = ["rus", "russia"]
+            ["rus", "russia"]
         case "ZAF":
-            fixedAliases = ["zaf", "south africa"]
+            ["zaf", "south africa"]
         default:
-            fixedAliases = [normalizedCode]
+            [normalizedCode]
         }
-        return Array(Set(([normalizedCode, catalogName].compactMap { $0 } + fixedAliases).map { $0.lowercased() }))
+        return Array(Set(([normalizedCode, catalogName].compactMap(\.self) + fixedAliases).map { $0.lowercased() }))
     }
 
-    static func contextPacket(for state: NativeCampaignState, months: Int, action: NativePlannedAction? = nil) -> NativeStrategyContextPacket {
+    static func contextPacket(for state: NativeCampaignState, months _: Int, action: NativePlannedAction? = nil) -> NativeStrategyContextPacket {
         NativeStrategyContextPacket(
             consequenceRules: consequenceRules(for: action, state: state),
             dynamicCountries: state.dynamicCountries,
             economicLedger: state.economicLedger,
             facts: facts(for: state, action: action),
-            recentActions: state.actionMemory.prefix(8).map { $0 },
+            recentActions: state.actionMemory.prefix(8).map(\.self),
             semanticMemories: semanticMemories(for: state, action: action),
             aiCountryStates: state.aiCountryStates
         )
@@ -447,7 +459,7 @@ enum NativeStrategyContextDatabase {
         targetDate: String
     ) -> [NativeActionMemory] {
         var records = state.actionMemory
-        for action in resolvedActions where action.status == .resolved {
+        for action in resolvedActions where action.status == .resolved && action.resolvedAt == targetDate {
             let linkedEvents = events.filter { $0.linkedActionIDs.contains(action.id) }
             let ruleIDs = consequenceRules(for: action, state: state).map(\.id)
             let summary = linkedEvents.first?.strategicEffects.first?.summary ?? "Resolved with limited measurable effect."
@@ -501,8 +513,8 @@ enum NativeStrategyContextDatabase {
             state.lastSummary,
             action?.title,
             action?.detail,
-            state.plannedActions.prefix(3).map { "\($0.title) \($0.detail)" }.joined(separator: " "),
-        ].compactMap { $0 }.joined(separator: " ")
+            state.plannedActions.prefix(3).map { "\($0.title) \($0.detail)" }.joined(separator: " ")
+        ].compactMap(\.self).joined(separator: " ")
         let queryEmbedding = NativeTinyEmbeddingModel.embed(query)
         return state.semanticMemory
             .map { memory in
@@ -516,10 +528,10 @@ enum NativeStrategyContextDatabase {
             .map(\.memory)
     }
 
-    // **Ledger Update Mechanic**:
-    // Processes the economic impact of events across all country ledgers.
-    // Handles AI generated rules, Hex Lever map nudges, deterministic market drift,
-    // and stability-based feedback loops that increase rebel control and drain security.
+    /// **Ledger Update Mechanic**:
+    /// Processes the economic impact of events across all country ledgers.
+    /// Handles AI generated rules, Hex Lever map nudges, deterministic market drift,
+    /// and stability-based feedback loops that increase rebel control and drain security.
     static func updatedEconomicLedgers(
         from ledgers: [String: NativeEconomicLedger],
         state: NativeCampaignState,
@@ -537,11 +549,10 @@ enum NativeStrategyContextDatabase {
             }
         }
 
-        let negativeMultiplier: Double
-        switch state.gameMode {
-        case .sandbox: negativeMultiplier = 0.5
-        case .normal: negativeMultiplier = 1.0
-        case .ironman: negativeMultiplier = 2.0
+        let negativeMultiplier = switch state.gameMode {
+        case .sandbox: 0.5
+        case .normal: 1.0
+        case .ironman: 2.0
         }
 
         for (code, ledger) in nextLedgers {
@@ -740,14 +751,14 @@ enum NativeStrategyContextDatabase {
         return taggedFacts.isEmpty ? Array(countryFacts.prefix(6)) : Array(taggedFacts.prefix(6))
     }
 
-    private static func consequenceRules(for action: NativePlannedAction?, state: NativeCampaignState) -> [NativeConsequenceRule] {
+    private static func consequenceRules(for action: NativePlannedAction?, state _: NativeCampaignState) -> [NativeConsequenceRule] {
         guard let action else {
             return [
                 rulesByID["macro-demand"]!,
                 rulesByID["market-confidence"]!,
                 rulesByID["fiscal-drift"]!,
                 rulesByID["public-security"]!,
-                rulesByID["insurgency-containment"]!,
+                rulesByID["insurgency-containment"]!
             ]
         }
         let text = "\(action.title) \(action.detail)".lowercased()
@@ -787,7 +798,7 @@ enum NativeStrategyContextDatabase {
         "RUS": (-3.4, 12.0, 7.3, 62),
         "ZAF": (-4.8, 34.0, 24.7, 36),
         "AUS": (-4.2, 20.0, 5.2, 69),
-        "GLOBAL": (-3.5, 58.0, 8.0, 48),
+        "GLOBAL": (-3.5, 58.0, 8.0, 48)
     ]
 
     private static let factRecords: [NativeFactRecord] = [
@@ -800,7 +811,7 @@ enum NativeStrategyContextDatabase {
         NativeFactRecord(countryCodes: ["BRA"], detail: "Brazil starts with strong growth, commodity leverage, manageable debt, and inflation pressure from demand.", id: "BRA_2010_COMMODITY_EXPANSION", startDate: "2010-01-01", tags: ["commodity", "energy", "budget", "growth"], title: "Brazil commodity expansion"),
         NativeFactRecord(countryCodes: ["DEU", "FRA", "GBR"], detail: "European economies face Eurozone debt stress, bank repair, and tighter fiscal politics.", id: "EUROPE_2010_DEBT_STRESS", startDate: "2010-01-01", tags: ["budget", "debt", "market"], title: "European debt stress"),
         NativeFactRecord(countryCodes: ["JPN"], detail: "Japan starts with deflation pressure, heavy public debt, advanced industry, and high energy import dependence.", id: "JPN_2010_DEFLATION_DEBT", startDate: "2010-01-01", tags: ["debt", "energy", "industry"], title: "Japan deflation and debt"),
-        NativeFactRecord(countryCodes: ["IND"], detail: "India starts with fast growth, infrastructure bottlenecks, inflation pressure, and rising services capacity.", id: "IND_2010_GROWTH_INFLATION", startDate: "2010-01-01", tags: ["growth", "inflation", "infrastructure"], title: "India growth and inflation"),
+        NativeFactRecord(countryCodes: ["IND"], detail: "India starts with fast growth, infrastructure bottlenecks, inflation pressure, and rising services capacity.", id: "IND_2010_GROWTH_INFLATION", startDate: "2010-01-01", tags: ["growth", "inflation", "infrastructure"], title: "India growth and inflation")
     ]
 
     private static let consequenceRules: [NativeConsequenceRule] = [
@@ -814,16 +825,16 @@ enum NativeStrategyContextDatabase {
         NativeConsequenceRule(budgetBalanceDelta: -0.14, debtDelta: 0.18, description: "Public security programs reduce insurgency pressure but require sustained local legitimacy and budget room.", fiscalSpaceDelta: -1, growthDelta: 0.02, id: "public-security", inflationDelta: 0.01, keywords: ["security", "public safety", "public order", "policing", "seguranca", "segurança", "stabilization"], summary: "Public security: lower rebel pressure with budget cost.", tradeBalanceDelta: 0.00, track: .internalStability),
         NativeConsequenceRule(budgetBalanceDelta: -0.18, debtDelta: 0.22, description: "Insurgency containment protects service corridors but drags growth when local control remains contested.", fiscalSpaceDelta: -2, growthDelta: -0.03, id: "insurgency-containment", inflationDelta: 0.03, keywords: ["insurgency", "guerrilla", "rebel", "occupation", "border"], summary: "Insurgency containment: stabilizes control while slowing delivery.", tradeBalanceDelta: -0.02, track: .internalStability),
         NativeConsequenceRule(budgetBalanceDelta: -0.04, debtDelta: 0.08, description: "Macro demand remains fragile and can drift against the player if no credible fiscal path exists.", fiscalSpaceDelta: -1, growthDelta: -0.02, id: "macro-demand", inflationDelta: 0.03, keywords: [], summary: "Macro demand: fragile recovery pressure.", tradeBalanceDelta: -0.02, track: .economicResilience),
-        NativeConsequenceRule(budgetBalanceDelta: -0.10, debtDelta: 0.12, description: "Recurring commitments can slowly erode budget space even without a headline shock.", fiscalSpaceDelta: -2, growthDelta: 0.00, id: "fiscal-drift", inflationDelta: 0.01, keywords: [], summary: "Fiscal drift: budget space narrows.", tradeBalanceDelta: 0.00, track: .economicResilience),
+        NativeConsequenceRule(budgetBalanceDelta: -0.10, debtDelta: 0.12, description: "Recurring commitments can slowly erode budget space even without a headline shock.", fiscalSpaceDelta: -2, growthDelta: 0.00, id: "fiscal-drift", inflationDelta: 0.01, keywords: [], summary: "Fiscal drift: budget space narrows.", tradeBalanceDelta: 0.00, track: .economicResilience)
     ]
 
     private static let rulesByID = Dictionary(uniqueKeysWithValues: consequenceRules.map { ($0.id, $0) })
 
-    // **Hex Lever Decoder Mechanic**:
-    // Parses the optional 8-character hex code generated by the AI model.
-    // Nibbles 1-6 apply direct economic deltas (growth, budget, debt, inflation, trade, fiscal space).
-    // Nibbles 7-8 apply public security penalties and tactical map nudges (invasions, occupations).
-    // This allows the model to nudge deterministic state boundaries without breaking strict typing.
+    /// **Hex Lever Decoder Mechanic**:
+    /// Parses the optional 8-character hex code generated by the AI model.
+    /// Nibbles 1-6 apply direct economic deltas (growth, budget, debt, inflation, trade, fiscal space).
+    /// Nibbles 7-8 apply public security penalties and tactical map nudges (invasions, occupations).
+    /// This allows the model to nudge deterministic state boundaries without breaking strict typing.
     static func decodeHexLever(_ hex: String) -> NativeHexLever? {
         var clean = hex.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         if clean.hasPrefix("0x") {
@@ -842,7 +853,8 @@ enum NativeStrategyContextDatabase {
               let d = decodeNibble(chars[2]),
               let i = decodeNibble(chars[3]),
               let t = decodeNibble(chars[4]),
-              let f = decodeNibble(chars[5]) else {
+              let f = decodeNibble(chars[5])
+        else {
             return nil
         }
 
@@ -876,61 +888,61 @@ enum NativeStrategyContextDatabase {
     static func conflictNudgeLabel(for value: Int) -> String {
         switch value {
         case 1:
-            return "conventional border advance"
+            "conventional border advance"
         case 2:
-            return "guerrilla control"
+            "guerrilla control"
         case 3:
-            return "nuclear fallout"
+            "nuclear fallout"
         case 4:
-            return "domestic stabilization"
+            "domestic stabilization"
         case 5:
-            return "contested border"
+            "contested border"
         case 6:
-            return "public-security recovery"
+            "public-security recovery"
         case 7:
-            return "conquest occupation"
+            "conquest occupation"
         case -1:
-            return "de-escalation"
+            "de-escalation"
         default:
-            return "no map nudge"
+            "no map nudge"
         }
     }
 
     private static func securityNudge(for value: Int) -> Double {
         switch value {
         case 1:
-            return -6
+            -6
         case 2:
-            return -14
+            -14
         case 3:
-            return -35
+            -35
         case 4:
-            return 10
+            10
         case 5:
-            return -4
+            -4
         case 6:
-            return 16
+            16
         case 7:
-            return -10
+            -10
         case -1:
-            return 8
+            8
         default:
-            return 0
+            0
         }
     }
 
     private static func rebelNudge(for value: Int) -> Double {
         switch value {
         case 2:
-            return 22
+            22
         case 3:
-            return 12
+            12
         case 4, 6, -1:
-            return -16
+            -16
         case 5:
-            return 4
+            4
         default:
-            return 0
+            0
         }
     }
 
@@ -982,7 +994,7 @@ enum NativeStrategyContextDatabase {
         }
 
         // 3. Sovereign Upgrade Check
-        if ledger.publicDebtPercentGDP < 50.0 && ledger.fiscalSpaceIndex > 70 {
+        if ledger.publicDebtPercentGDP < 50.0, ledger.fiscalSpaceIndex > 70 {
             var mult = 1.0
             if ledger.publicDebtPercentGDP < 30.0 { mult *= 2.0 }
             if ledger.fiscalSpaceIndex > 85 { mult *= 2.0 }
@@ -1073,10 +1085,9 @@ enum NativeStrategyContextDatabase {
         let noiseTrade = (rng.nextDouble() * 0.04) - 0.02
 
         let fsRoll = rng.nextDouble()
-        let noiseFiscalSpace: Int
-        if fsRoll > 0.85 { noiseFiscalSpace = 1 }
-        else if fsRoll < 0.15 { noiseFiscalSpace = -1 }
-        else { noiseFiscalSpace = 0 }
+        let noiseFiscalSpace: Int = if fsRoll > 0.85 { 1 }
+        else if fsRoll < 0.15 { -1 }
+        else { 0 }
 
         let noiseDeltas = NativeHexLever(
             growthDelta: noiseGrowth,
@@ -1243,13 +1254,13 @@ enum NativeStrategyContextDatabase {
         return states
     }
 
-    // **AI Drift & Diplomacy Mechanic**:
-    // Simulates non-player actors based on their budget priority and relationships.
-    // Over time:
-    // 1. Player budget sliders dynamically alter macro economics and security.
-    // 2. Active treaties slowly build up relationship drift and grant passive economic buffs.
-    // 3. High global tension or low relationship scores push AI into arms races and conflict.
-    // 4. Autonomous completion of AI agendas causes stability/economic effects to the player.
+    /// **AI Drift & Diplomacy Mechanic**:
+    /// Simulates non-player actors based on their budget priority and relationships.
+    /// Over time:
+    /// 1. Player budget sliders dynamically alter macro economics and security.
+    /// 2. Active treaties slowly build up relationship drift and grant passive economic buffs.
+    /// 3. High global tension or low relationship scores push AI into arms races and conflict.
+    /// 4. Autonomous completion of AI agendas causes stability/economic effects to the player.
     static func simulateAIDrift(state: inout NativeCampaignState, months: Int) {
         let strategicCodes = defaultStrategicCountryCodes.filter { $0 != "GLOBAL" }
 
@@ -1566,12 +1577,12 @@ enum NativeStrategyContextDatabase {
                 // 2. Apply active diplomacy outreach to player relations.
                 // Accepted treaty partners already receive explicit treaty upkeep
                 // above, so do not double-count the same budget signal here.
-                if otherCode == state.country.code && dipSlider > 0.40 && !acceptedTreatyPartnerCodes.contains(code) {
+                if otherCode == state.country.code, dipSlider > 0.40, !acceptedTreatyPartnerCodes.contains(code) {
                     nextScore = min(100.0, nextScore + (1.0 * Double(months)))
                 }
 
                 // 3. Apply military arms buildup anxiety to player relations
-                if otherCode == state.country.code && milSlider > 0.40 {
+                if otherCode == state.country.code, milSlider > 0.40 {
                     let isRival = score < -30
                     let penalty = isRival ? (-1.0 * Double(months)) : (-0.5 * Double(months))
                     nextScore = max(-100.0, nextScore + penalty)
@@ -1584,7 +1595,7 @@ enum NativeStrategyContextDatabase {
             // Diplomatic offer generation
             let hasPending = state.activeOffers.contains(where: { $0.proposerCode == code && $0.status == .pending })
             let relations = aiState.relationshipScores[state.country.code] ?? 0
-            if !hasPending && relations >= -20 {
+            if !hasPending, relations >= -20 {
                 var rng = SimpleRNG(seedString: "\(state.scenarioID)-\(state.round)-\(code)")
                 if rng.nextDouble() < 0.15 {
                     let type: NativeOfferType
@@ -1703,23 +1714,22 @@ private struct SimpleRNG {
     private var state: UInt64
 
     init(seedString: String) {
-        var hash: UInt64 = 14695981039346656037
+        var hash: UInt64 = 14_695_981_039_346_656_037
         for char in seedString.utf8 {
             hash ^= UInt64(char)
-            hash = hash.addingReportingOverflow(hash &* 1099511628211).0
+            hash = hash.addingReportingOverflow(hash &* 1_099_511_628_211).0
         }
-        self.state = hash
+        state = hash
     }
 
     mutating func nextDouble() -> Double {
-        state = state.addingReportingOverflow(0x9e3779b97f4a7c15).0
+        state = state.addingReportingOverflow(0x9E37_79B9_7F4A_7C15).0
         var z = state
-        z = (z ^ (z >> 30)) &* 0xbf58476d1ce4e5b9
-        z = (z ^ (z >> 27)) &* 0x94d049bb133111eb
+        z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+        z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
         return Double(z ^ (z >> 31)) / Double(UInt64.max)
     }
 }
-
 
 private extension Double {
     var percent: String {

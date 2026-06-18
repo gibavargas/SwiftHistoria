@@ -234,6 +234,6 @@ private struct CountryCodePair {
         .init(alpha2: "YE", alpha3: "YEM"),
         .init(alpha2: "ZM", alpha3: "ZMB"),
         .init(alpha2: "ZW", alpha3: "ZWE"),
-        .init(alpha2: "XK", alpha3: "XXK"),
+        .init(alpha2: "XK", alpha3: "XXK")
     ]
 }

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04950C6760499D3DEDEC22F1 /* NativeGeopoliticalMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E64CFD59D62B55AC8C72F2D /* NativeGeopoliticalMap.swift */; };
+		0B07CB2A56CB4FAF0FD9FF09 /* NativeTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EF6A87A13040FF905FFF5F /* NativeTypography.swift */; };
 		3DF127D52FDF71C600B72996 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000001 /* Assets.xcassets */; };
 		3DF127D62FDF71C600B72996 /* countries.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E0 /* countries.geojson */; };
 		3DF127D72FDF71C600B72996 /* states.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E1 /* states.geojson */; };
@@ -22,6 +24,25 @@
 		3DF127E12FDF71C600B72996 /* states.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E1 /* states.geojson */; };
 		3DF127E22FDF71C600B72996 /* cities.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E2 /* cities.geojson */; };
 		3DF127E32FDF71C600B72996 /* land.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E3 /* land.geojson */; };
+		4B313FCE5D69F69D12ADCA4D /* NativeContextualHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */; };
+		5F42D795D46921CBDD9F1002 /* NativeOpenRouterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */; };
+		F10000000000000000000101 /* NativeGameShellShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000103 /* NativeGameShellShared.swift */; };
+		F10000000000000000000102 /* NativeGameShellShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000103 /* NativeGameShellShared.swift */; };
+		F10000000000000000000104 /* NativeMapComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000106 /* NativeMapComponents.swift */; };
+		F10000000000000000000105 /* NativeMapComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000106 /* NativeMapComponents.swift */; };
+		F10000000000000000000107 /* NativeOverviewComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000109 /* NativeOverviewComponents.swift */; };
+		F10000000000000000000108 /* NativeOverviewComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000109 /* NativeOverviewComponents.swift */; };
+		F1000000000000000000010A /* NativeIntelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010C /* NativeIntelComponents.swift */; };
+		F1000000000000000000010B /* NativeIntelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010C /* NativeIntelComponents.swift */; };
+		F1000000000000000000010D /* NativeOrdersComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010F /* NativeOrdersComponents.swift */; };
+		F1000000000000000000010E /* NativeOrdersComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010F /* NativeOrdersComponents.swift */; };
+		F10000000000000000000110 /* NativeSettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000112 /* NativeSettingsComponents.swift */; };
+		F10000000000000000000111 /* NativeSettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000112 /* NativeSettingsComponents.swift */; };
+		F10000000000000000000113 /* NativeTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EF6A87A13040FF905FFF5F /* NativeTypography.swift */; };
+		F10000000000000000000114 /* NativeQuickActionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801F3CC5E4D679F95A9F6655 /* NativeQuickActionCatalog.swift */; };
+		F10000000000000000000115 /* NativeContextualHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */; };
+		F10000000000000000000116 /* NativeGeopoliticalMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E64CFD59D62B55AC8C72F2D /* NativeGeopoliticalMap.swift */; };
+		F10000000000000000000117 /* NativeOpenRouterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */; };
 		A10000000000000000000010 /* PaxHistoriaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000001 /* PaxHistoriaApp.swift */; };
 		A10000000000000000000011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* ContentView.swift */; };
 		A10000000000000000000017 /* PlayerCountry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* PlayerCountry.swift */; };
@@ -62,8 +83,11 @@
 		A100000000000000000000F3 /* land.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E3 /* land.geojson */; };
 		A100000000000000000000FA /* NativeZAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FC /* NativeZAIService.swift */; };
 		A100000000000000000000FB /* NativeZAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FC /* NativeZAIService.swift */; };
+		A1000000000000AAAA000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000AAAA000001 /* Localizable.xcstrings */; };
+		A1000000000000AAAA000003 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000AAAA000001 /* Localizable.xcstrings */; };
 		B20000000000000000000003 /* NativeMetalMapBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* NativeMetalMapBackdrop.swift */; };
 		B20000000000000000000004 /* NativeMetalMapBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* NativeMetalMapBackdrop.swift */; };
+		C711A78BB26E09BF714C9188 /* NativeQuickActionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801F3CC5E4D679F95A9F6655 /* NativeQuickActionCatalog.swift */; };
 		E10000000000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000001 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -85,6 +109,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeOpenRouterService.swift; sourceTree = "<group>"; };
+		2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeContextualHelp.swift; sourceTree = "<group>"; };
+		801F3CC5E4D679F95A9F6655 /* NativeQuickActionCatalog.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeQuickActionCatalog.swift; sourceTree = "<group>"; };
+		9E64CFD59D62B55AC8C72F2D /* NativeGeopoliticalMap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeGeopoliticalMap.swift; sourceTree = "<group>"; };
 		A10000000000000000000001 /* PaxHistoriaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxHistoriaApp.swift; sourceTree = "<group>"; };
 		A10000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A10000000000000000000008 /* PlayerCountry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCountry.swift; sourceTree = "<group>"; };
@@ -113,7 +141,15 @@
 		A100000000000000000000E2 /* cities.geojson */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = cities.geojson; sourceTree = "<group>"; };
 		A100000000000000000000E3 /* land.geojson */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = land.geojson; sourceTree = "<group>"; };
 		A100000000000000000000FC /* NativeZAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeZAIService.swift; sourceTree = "<group>"; };
+		A1000000000000AAAA000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		B20000000000000000000001 /* NativeMetalMapBackdrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeMetalMapBackdrop.swift; sourceTree = "<group>"; };
+		D3EF6A87A13040FF905FFF5F /* NativeTypography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeTypography.swift; sourceTree = "<group>"; };
+		F10000000000000000000103 /* NativeGameShellShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeGameShellShared.swift; sourceTree = "<group>"; };
+		F10000000000000000000106 /* NativeMapComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeMapComponents.swift; sourceTree = "<group>"; };
+		F10000000000000000000109 /* NativeOverviewComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeOverviewComponents.swift; sourceTree = "<group>"; };
+		F1000000000000000000010C /* NativeIntelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeIntelComponents.swift; sourceTree = "<group>"; };
+		F1000000000000000000010F /* NativeOrdersComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeOrdersComponents.swift; sourceTree = "<group>"; };
+		F10000000000000000000112 /* NativeSettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSettingsComponents.swift; sourceTree = "<group>"; };
 		E10000000000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -170,20 +206,32 @@
 				A100000000000000000000E3 /* land.geojson */,
 				A10000000000000000000001 /* PaxHistoriaApp.swift */,
 				A10000000000000000000002 /* ContentView.swift */,
+				A1000000000000AAAA000001 /* Localizable.xcstrings */,
 				A10000000000000000000008 /* PlayerCountry.swift */,
 				A10000000000000000000009 /* NativeCampaignStore.swift */,
 				A1000000000000000000000A /* CountrySelectionView.swift */,
 				A1000000000000000000000B /* NativeCampaignModels.swift */,
 				A1000000000000000000000C /* NativeGameEngine.swift */,
 				A1000000000000000000000D /* NativeFoundationModelService.swift */,
-				A1000000000000000000000E /* NativeGameView.swift */,
-				A1000000000000000000000F /* NativeGameShell.swift */,
-				A10000000000000000000013 /* NativeCountryCoordinates.swift */,
-				A10000000000000000000014 /* Native2010WorldModel.swift */,
+					A1000000000000000000000E /* NativeGameView.swift */,
+					A1000000000000000000000F /* NativeGameShell.swift */,
+					F10000000000000000000103 /* NativeGameShellShared.swift */,
+					F10000000000000000000106 /* NativeMapComponents.swift */,
+					F10000000000000000000109 /* NativeOverviewComponents.swift */,
+					F1000000000000000000010C /* NativeIntelComponents.swift */,
+					F1000000000000000000010F /* NativeOrdersComponents.swift */,
+					F10000000000000000000112 /* NativeSettingsComponents.swift */,
+					A10000000000000000000013 /* NativeCountryCoordinates.swift */,
+					A10000000000000000000014 /* Native2010WorldModel.swift */,
 				A10000000000000000000015 /* NativeStrategyContextDatabase.swift */,
 				A1000000000000000000009A /* NativeWorldEconomicsPanel.swift */,
 				A1000000000000000000009E /* GeopoliticalMapData.swift */,
 				B20000000000000000000001 /* NativeMetalMapBackdrop.swift */,
+				D3EF6A87A13040FF905FFF5F /* NativeTypography.swift */,
+				801F3CC5E4D679F95A9F6655 /* NativeQuickActionCatalog.swift */,
+				2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */,
+				9E64CFD59D62B55AC8C72F2D /* NativeGeopoliticalMap.swift */,
+				2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */,
 			);
 			path = PaxHistoriaApple;
 			sourceTree = "<group>";
@@ -348,6 +396,7 @@
 				A100000000000000000000F1 /* states.geojson in Resources */,
 				A100000000000000000000F2 /* cities.geojson in Resources */,
 				A100000000000000000000F3 /* land.geojson in Resources */,
+				A1000000000000AAAA000002 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -355,6 +404,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1000000000000AAAA000003 /* Localizable.xcstrings in Resources */,
 				3DF127D52FDF71C600B72996 /* Assets.xcassets in Resources */,
 				3DF127D62FDF71C600B72996 /* countries.geojson in Resources */,
 				3DF127D72FDF71C600B72996 /* states.geojson in Resources */,
@@ -393,49 +443,71 @@
 		A10000000000000000000070 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (
-				A100000000000000000000FA /* NativeZAIService.swift in Sources */,
-				A10000000000000000000010 /* PaxHistoriaApp.swift in Sources */,
-				A10000000000000000000011 /* ContentView.swift in Sources */,
+				files = (
+					A100000000000000000000FA /* NativeZAIService.swift in Sources */,
+					F10000000000000000000101 /* NativeGameShellShared.swift in Sources */,
+					A10000000000000000000010 /* PaxHistoriaApp.swift in Sources */,
+					A10000000000000000000011 /* ContentView.swift in Sources */,
 				A10000000000000000000017 /* PlayerCountry.swift in Sources */,
 				A10000000000000000000018 /* NativeCampaignStore.swift in Sources */,
 				A10000000000000000000019 /* CountrySelectionView.swift in Sources */,
 				A1000000000000000000002A /* NativeCampaignModels.swift in Sources */,
 				A1000000000000000000002C /* NativeGameEngine.swift in Sources */,
 				A1000000000000000000002E /* NativeFoundationModelService.swift in Sources */,
-				A1000000000000000000003A /* NativeGameView.swift in Sources */,
-				A1000000000000000000003C /* NativeGameShell.swift in Sources */,
-				A1000000000000000000003E /* NativeCountryCoordinates.swift in Sources */,
+					A1000000000000000000003A /* NativeGameView.swift in Sources */,
+					A1000000000000000000003C /* NativeGameShell.swift in Sources */,
+					F10000000000000000000104 /* NativeMapComponents.swift in Sources */,
+					F10000000000000000000107 /* NativeOverviewComponents.swift in Sources */,
+					F1000000000000000000010A /* NativeIntelComponents.swift in Sources */,
+					F1000000000000000000010D /* NativeOrdersComponents.swift in Sources */,
+					F10000000000000000000110 /* NativeSettingsComponents.swift in Sources */,
+					A1000000000000000000003E /* NativeCountryCoordinates.swift in Sources */,
 				A10000000000000000000044 /* Native2010WorldModel.swift in Sources */,
 				A10000000000000000000046 /* NativeStrategyContextDatabase.swift in Sources */,
 				A1000000000000000000009B /* NativeWorldEconomicsPanel.swift in Sources */,
 				A1000000000000000000009D /* GeopoliticalMapData.swift in Sources */,
 				B20000000000000000000003 /* NativeMetalMapBackdrop.swift in Sources */,
+				0B07CB2A56CB4FAF0FD9FF09 /* NativeTypography.swift in Sources */,
+				C711A78BB26E09BF714C9188 /* NativeQuickActionCatalog.swift in Sources */,
+				4B313FCE5D69F69D12ADCA4D /* NativeContextualHelp.swift in Sources */,
+				04950C6760499D3DEDEC22F1 /* NativeGeopoliticalMap.swift in Sources */,
+				5F42D795D46921CBDD9F1002 /* NativeOpenRouterService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A10000000000000000000071 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (
-				A100000000000000000000FB /* NativeZAIService.swift in Sources */,
-				A10000000000000000000020 /* PaxHistoriaApp.swift in Sources */,
-				A10000000000000000000021 /* ContentView.swift in Sources */,
+				files = (
+					A100000000000000000000FB /* NativeZAIService.swift in Sources */,
+					F10000000000000000000102 /* NativeGameShellShared.swift in Sources */,
+					A10000000000000000000020 /* PaxHistoriaApp.swift in Sources */,
+					A10000000000000000000021 /* ContentView.swift in Sources */,
 				A10000000000000000000027 /* PlayerCountry.swift in Sources */,
 				A10000000000000000000028 /* NativeCampaignStore.swift in Sources */,
 				A10000000000000000000029 /* CountrySelectionView.swift in Sources */,
 				A1000000000000000000002B /* NativeCampaignModels.swift in Sources */,
 				A1000000000000000000002D /* NativeGameEngine.swift in Sources */,
 				A1000000000000000000002F /* NativeFoundationModelService.swift in Sources */,
-				A1000000000000000000003B /* NativeGameView.swift in Sources */,
-				A1000000000000000000003D /* NativeGameShell.swift in Sources */,
-				A1000000000000000000003F /* NativeCountryCoordinates.swift in Sources */,
+					A1000000000000000000003B /* NativeGameView.swift in Sources */,
+					A1000000000000000000003D /* NativeGameShell.swift in Sources */,
+					F10000000000000000000105 /* NativeMapComponents.swift in Sources */,
+					F10000000000000000000108 /* NativeOverviewComponents.swift in Sources */,
+					F1000000000000000000010B /* NativeIntelComponents.swift in Sources */,
+					F1000000000000000000010E /* NativeOrdersComponents.swift in Sources */,
+					F10000000000000000000111 /* NativeSettingsComponents.swift in Sources */,
+					A1000000000000000000003F /* NativeCountryCoordinates.swift in Sources */,
 				A10000000000000000000045 /* Native2010WorldModel.swift in Sources */,
 				A10000000000000000000047 /* NativeStrategyContextDatabase.swift in Sources */,
-				A1000000000000000000009C /* NativeWorldEconomicsPanel.swift in Sources */,
-				A1000000000000000000009F /* GeopoliticalMapData.swift in Sources */,
-				B20000000000000000000004 /* NativeMetalMapBackdrop.swift in Sources */,
-			);
+					A1000000000000000000009C /* NativeWorldEconomicsPanel.swift in Sources */,
+					A1000000000000000000009F /* GeopoliticalMapData.swift in Sources */,
+					B20000000000000000000004 /* NativeMetalMapBackdrop.swift in Sources */,
+					F10000000000000000000113 /* NativeTypography.swift in Sources */,
+					F10000000000000000000114 /* NativeQuickActionCatalog.swift in Sources */,
+					F10000000000000000000115 /* NativeContextualHelp.swift in Sources */,
+					F10000000000000000000116 /* NativeGeopoliticalMap.swift in Sources */,
+					F10000000000000000000117 /* NativeOpenRouterService.swift in Sources */,
+				);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A10000000000000000000074 /* Sources */ = {

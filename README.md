@@ -70,3 +70,39 @@ To build and launch the macOS app from the command line:
 ```bash
 script/build_and_run.sh
 ```
+
+---
+
+## 🧪 Testing, Linting & CI
+
+### One-command checks (mirrors CI)
+
+```bash
+script/lint.sh          # SwiftFormat (style) + SwiftLint (semantic), strict
+script/format.sh        # auto-fix style with SwiftFormat
+```
+
+Requires `swiftlint` and `swiftformat` — install once with Homebrew:
+
+```bash
+brew install swiftlint swiftformat
+```
+
+### Tooling split
+
+| Concern               | Tool         | Config           | CI gate               |
+| --------------------- | ------------ | ---------------- | --------------------- |
+| Style / whitespace    | SwiftFormat  | [`.swiftformat`](.swiftformat)   | `swiftformat --lint` (strict) |
+| Semantic issues       | SwiftLint    | [`.swiftlint.yml`](.swiftlint.yml) | `swiftlint lint --strict`     |
+| Build + tests         | `xcodebuild` | —                | macOS / iOS-sim / test jobs    |
+
+### CI
+
+GitHub Actions runs four jobs on every push and pull request (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+
+1. **Lint** — SwiftFormat + SwiftLint, both strict.
+2. **Build (macOS)** — `PaxHistoriaMac` scheme.
+3. **Build (iOS Simulator)** — `PaxHistoriaiOS` scheme.
+4. **Test** — `PaxHistoriaMacTests` on the macOS host, with code coverage uploaded as an artifact.
+
+Runs cancel superseded runs on the same ref to save macOS minutes. The latest Xcode (26) is selected via `maxim-lobanov/setup-xcode`.

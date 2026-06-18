@@ -28,3 +28,12 @@ test-results
 *.njsproj
 *.sln
 *.sw?
+
+# Xcode user state (should never be committed)
+xcuserdata/
+*.xcuserstate
+Apple/PaxHistoriaApple.xcodeproj/xcuserdata/
+Apple/PaxHistoriaApple.xcodeproj/project.xcworkspace/xcuserdata/
+
+# SwiftFormat cache
+.swiftformat.cache

@@ -1,56 +1,55 @@
-import XCTest
 @testable import SwiftHistoria
+import XCTest
 
 final class NativeZAITests: XCTestCase {
-    
     // MARK: - Concurrency Limiter Tests
-    
+
     @MainActor
     func testConcurrencyLimiterMaxLimit() async {
         let limiter = ConcurrencyLimiter(maxConcurrent: 2)
         var activeCount = 0
         var maxObservedCount = 0
-        
+
         let task1 = Task { @MainActor in
-            await limiter.enter()
+            try? await limiter.enter()
             activeCount += 1
             maxObservedCount = max(maxObservedCount, activeCount)
-            
+
             try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
-            
+
             activeCount -= 1
             await limiter.exit()
         }
-        
+
         let task2 = Task { @MainActor in
-            await limiter.enter()
+            try? await limiter.enter()
             activeCount += 1
             maxObservedCount = max(maxObservedCount, activeCount)
-            
+
             try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
-            
+
             activeCount -= 1
             await limiter.exit()
         }
-        
+
         let task3 = Task { @MainActor in
-            await limiter.enter()
+            try? await limiter.enter()
             activeCount += 1
             maxObservedCount = max(maxObservedCount, activeCount)
-            
+
             try? await Task.sleep(nanoseconds: 10_000_000) // 10ms
-            
+
             activeCount -= 1
             await limiter.exit()
         }
-        
+
         _ = await (task1.value, task2.value, task3.value)
-        
+
         XCTAssertLessThanOrEqual(maxObservedCount, 2, "Concurrency Limiter failed to restrict execution under max concurrent count.")
     }
-    
+
     // MARK: - JSON Candidate Extraction Tests
-    
+
     func testJSONCandidatesExtractionStandard() {
         let rawJSON = """
         {
@@ -58,12 +57,11 @@ final class NativeZAITests: XCTestCase {
           "description": "Standard border logistics coordination."
         }
         """
-        
-        // Let's call the private helper via Reflection or test the logic directly since it's identical
-        let candidates = extractCandidates(from: rawJSON)
+
+        let candidates = NativeJSONExtraction.candidates(from: rawJSON)
         XCTAssertTrue(candidates.contains(rawJSON.trimmingCharacters(in: .whitespacesAndNewlines)))
     }
-    
+
     func testJSONCandidatesExtractionFenced() {
         let rawFenced = """
         ```json
@@ -72,11 +70,11 @@ final class NativeZAITests: XCTestCase {
         }
         ```
         """
-        
-        let candidates = extractCandidates(from: rawFenced)
+
+        let candidates = NativeJSONExtraction.candidates(from: rawFenced)
         XCTAssertTrue(candidates.contains("{\n  \"title\": \"Corridor Security Upgrade\"\n}"))
     }
-    
+
     func testJSONCandidatesExtractionWithSurroundingText() {
         let rawText = """
         Here is the JSON you requested:
@@ -85,9 +83,28 @@ final class NativeZAITests: XCTestCase {
         }
         Hope this helps!
         """
-        
-        let candidates = extractCandidates(from: rawText)
+
+        let candidates = NativeJSONExtraction.candidates(from: rawText)
         XCTAssertTrue(candidates.contains("{\n  \"title\": \"Corridor Security Upgrade\"\n}"))
+    }
+
+    func testJSONCandidatesExtractionUsesBalancedObjectsInsteadOfGreedyRange() {
+        let rawText = """
+        First option:
+        {"title":"Corridor Security Upgrade"}
+        Second option:
+        {"title":"Port Clearance Delay","effectTrack":"market-confidence"}
+        """
+
+        let candidates = NativeJSONExtraction.candidates(from: rawText)
+
+        XCTAssertTrue(candidates.contains("{\"title\":\"Corridor Security Upgrade\"}"))
+        XCTAssertTrue(candidates.contains("{\"title\":\"Port Clearance Delay\",\"effectTrack\":\"market-confidence\"}"))
+        XCTAssertFalse(candidates.contains("""
+        {"title":"Corridor Security Upgrade"}
+        Second option:
+        {"title":"Port Clearance Delay","effectTrack":"market-confidence"}
+        """))
     }
 
     func testCompletionDecoderAcceptsVisibleContentWithReasoning() throws {
@@ -150,35 +167,5 @@ final class NativeZAITests: XCTestCase {
             XCTAssertTrue(error.localizedDescription.contains("finish_reason=length"))
         }
     }
-    
-    // Replicated candidate extraction logic used in Z.AI service to verify its correctness
-    private func extractCandidates(from rawText: String) -> [String] {
-        let trimmed = rawText
-            .replacingOccurrences(of: "\u{FEFF}", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return [] }
-        
-        var candidates = [trimmed]
-        if trimmed.hasPrefix("```") {
-            let lines = trimmed.components(separatedBy: .newlines)
-            let unfenced = lines
-                .dropFirst()
-                .dropLast(lines.last?.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("```") == true ? 1 : 0)
-                .joined(separator: "\n")
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            if !unfenced.isEmpty {
-                candidates.append(unfenced)
-            }
-        }
-        
-        if let start = trimmed.firstIndex(of: "{"), let end = trimmed.lastIndex(of: "}"), start <= end {
-            let object = String(trimmed[start...end]).trimmingCharacters(in: .whitespacesAndNewlines)
-            if !object.isEmpty {
-                candidates.append(object)
-            }
-        }
-        
-        var seen: Set<String> = []
-        return candidates.filter { seen.insert($0).inserted }
-    }
+
 }

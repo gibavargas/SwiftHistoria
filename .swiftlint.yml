@@ -1,0 +1,106 @@
+# SwiftLint configuration — https://github.com/realm/SwiftLint
+#
+# Scope: SEMANTIC issues only. Style/whitespace/brace rules are owned by
+# SwiftFormat (see .swiftformat). Keeping the tools in their lanes avoids
+# conflicting enforcement.
+#
+# Run `script/lint.sh` locally. CI runs `swiftlint lint --strict --no-cache`.
+
+# Where to lint
+included:
+  - Apple
+
+# Where NOT to lint
+excluded:
+  - Apple/build
+  - Apple/.build
+  - .build
+  - Apple/PaxHistoriaApple.xcodeproj
+  - "**/*.xcuserdata"
+
+# Baseline of disabled-by-default rules to turn ON
+opt_in_rules:
+  - fatal_error_message
+  - implicit_return
+  - legacy_random
+  - overridden_super_call
+  - override_in_extension
+  - pattern_matching_keywords
+  - private_outlet
+  - prohibited_super_call
+  - quick_discouraged_call
+  - quick_discouraged_focused_test
+  - reduce_into
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - single_test_class
+  - sorted_first_last
+  - toggle_bool
+  - unneeded_parentheses_in_closure_argument
+  - unowned_variable_capture
+  - yoda_condition
+
+# Rules intentionally DISABLED because they fire on legitimate patterns in this
+# codebase, or because SwiftFormat owns the equivalent style concern.
+disabled_rules:
+  # --- Owned by SwiftFormat (whitespace / layout) ---
+  - trailing_whitespace
+  - opening_brace
+  - closing_brace
+  - trailing_comma
+  - colon
+  - comma
+  - control_statement
+  - leading_whitespace
+  - mark
+  - statement_position
+  - return_arrow_whitespace
+  - trailing_semicolon
+  - vertical_parameter_alignment
+  - vertical_parameter_alignment_on_call
+  - vertical_whitespace
+  - vertical_whitespace_closing_braces
+  - vertical_whitespace_opening_braces
+  - operator_usage_whitespace
+
+  # --- Size/complexity gates deferred until god-files are decomposed ---
+  - file_length
+  - function_body_length
+  - type_body_length
+  - cyclomatic_complexity
+  - large_tuple
+  - nesting
+  - function_parameter_count
+
+  # --- Length/naming friction against existing data-heavy code ---
+  - line_length
+  - identifier_name
+  - type_name
+  - file_header
+
+  # --- Existing code uses these deliberately (data tables, enum payloads,
+  #     `for x in y { if cond { … } }` style preferred over where-clauses) ---
+  - redundant_string_enum_value
+  - implicit_optional_initialization
+  - for_where
+  - empty_count
+  - empty_string
+  - empty_collection_literal
+
+# Analyzer rules (slower; useful but opt-in)
+analyzer_rules:
+  - unused_import
+  - unused_declaration
+  - capture_variable
+
+# Per-rule severity / parameter tuning
+force_cast: error             # never allowed
+force_try: error              # never allowed
+implicit_getter: error
+redundant_void_return: warning
+unused_optional_binding: warning
+generic_type_name:
+  max_length: 40
+
+# Report findings relative to the repo root for stable CI output
+reporter: "github-actions-logging"
