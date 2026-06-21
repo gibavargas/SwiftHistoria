@@ -111,7 +111,7 @@ final class NativeE2ETests: XCTestCase {
         ]
 
         // 5. Advance turn (simulating turn advance)
-        await store.advance(months: 3)
+        await store.performAdvance(months: 3)
 
         if let lastError = store.lastError {
             print("E2E Test Advance Failed Error: \(lastError)")
@@ -238,7 +238,7 @@ final class NativeE2ETests: XCTestCase {
             )
         ]
 
-        await otherStore.advance(months: 1)
+        await otherStore.performAdvance(months: 1)
 
         let finalState = try XCTUnwrap(otherStore.state)
         XCTAssertEqual(finalState.round, 3)

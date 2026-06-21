@@ -30,35 +30,52 @@ final class NativeCampaignStore: ObservableObject {
     @Published private(set) var turnProgress: NativeTurnProgress?
     @Published var lastTurnReport: NativeGeneratedTurn? = nil
 
-    private let defaults: UserDefaults
-    private let encoder: JSONEncoder
-    private let decoder: JSONDecoder
+    let defaults: UserDefaults
+    let encoder: JSONEncoder
+    let decoder: JSONDecoder
     private let aiService: any NativeAIService
-    private let persistenceDirectory: URL
-    private let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeCampaignStore")
+
+    /// Provider name for the last advisor/diplomacy response (for UI labels).
+    var lastAIProviderUsed: String {
+        (aiService as? DynamicAIService)?.lastProviderUsed ?? "Unknown"
+    }
+
+    /// Session token usage for cost telemetry display.
+    var sessionTokenUsage: (prompt: Int, completion: Int, total: Int) {
+        guard let dyn = aiService as? DynamicAIService else { return (0, 0, 0) }
+        return (dyn.sessionPromptTokens, dyn.sessionCompletionTokens, dyn.sessionTotalTokens)
+    }
+
+    var tokenBudgetWarning: Bool {
+        (aiService as? DynamicAIService)?.tokenBudgetWarning ?? false
+    }
+
+    let persistenceDirectory: URL
+    let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeCampaignStore")
     /// **Concurrency & Asynchrony Mechanic**:
     /// `stateVersion` prevents async race conditions (stale-response rejection).
     /// Incremented (`invalidateInFlightWork()`) whenever local state changes in a way that makes in-flight AI work obsolete.
     /// Async methods (like `advance(months:)` or `askAdvisor()`) capture this value before awaiting the AI service.
     /// After the await resumes, they check if `stateVersion` is still the same. If it changed (e.g. the user clicked "Reset" or advanced again),
     /// the stale result is dropped and not applied to the state, preventing ghost mutations.
-    private var stateVersion = 0
-    private var pendingSuggestionRefreshForce: Bool?
+    var stateVersion = 0
+    var pendingSuggestionRefreshForce: Bool?
 
     static let maximumCampaignImportBytes = 5_000_000
-    private static let selectedCountryKey = "pax-historia.native.selected-country.v1"
-    private static let selectedLanguageKey = "pax-historia.native.selected-language.v1"
-    private static let selectedScenarioKey = "pax-historia.native.selected-scenario.v1"
-    private static let campaignStateKey = "pax-historia.native.campaign-state.v1"
-    private static let campaignStateEnvelopeKey = "pax-historia.native.campaign-state-envelope.v2"
-    private static let campaignStateBackupKey = "pax-historia.native.campaign-state-backup.v2"
-    private static let campaignStateEnvelopeFileName = "campaign-state-envelope-v2.json"
-    private static let campaignStateBackupFileName = "campaign-state-backup-v2.json"
-    private static let campaignStateLegacyFileName = "campaign-state-legacy-v1.json"
-    private static let maximumUserDefaultsCampaignBlobBytes = 512_000
+    static let selectedCountryKey = "pax-historia.native.selected-country.v1"
+    static let selectedLanguageKey = "pax-historia.native.selected-language.v1"
+    static let selectedScenarioKey = "pax-historia.native.selected-scenario.v1"
+    static let campaignStateKey = "pax-historia.native.campaign-state.v1"
+    static let campaignStateEnvelopeKey = "pax-historia.native.campaign-state-envelope.v2"
+    static let campaignStateBackupKey = "pax-historia.native.campaign-state-backup.v2"
+    static let campaignStateEnvelopeFileName = "campaign-state-envelope-v2.json"
+    static let campaignStateBackupFileName = "campaign-state-backup-v2.json"
+    static let campaignStateLegacyFileName = "campaign-state-legacy-v1.json"
+    static let maximumUserDefaultsCampaignBlobBytes = 512_000
+    static var suggestionRefreshTimeoutNanoseconds: UInt64 = 30_000_000_000
     private static let maximumAdministrativeCapacity = 120
 
-    private static var uiTestResetRequested: Bool {
+    static var uiTestResetRequested: Bool {
         #if DEBUG
             let environment = ProcessInfo.processInfo.environment
             let arguments = ProcessInfo.processInfo.arguments
@@ -66,18 +83,6 @@ final class NativeCampaignStore: ObservableObject {
         #else
             return false
         #endif
-    }
-
-    private static func removePersistedCampaignState(defaults: UserDefaults, persistenceDirectory: URL) {
-        defaults.removeObject(forKey: selectedCountryKey)
-        defaults.removeObject(forKey: selectedLanguageKey)
-        defaults.removeObject(forKey: selectedScenarioKey)
-        defaults.removeObject(forKey: campaignStateKey)
-        defaults.removeObject(forKey: campaignStateEnvelopeKey)
-        defaults.removeObject(forKey: campaignStateBackupKey)
-        for fileName in [campaignStateEnvelopeFileName, campaignStateBackupFileName, campaignStateLegacyFileName] {
-            try? FileManager.default.removeItem(at: persistenceDirectory.appendingPathComponent(fileName))
-        }
     }
 
     private static func currentAIProviderRoute(defaults: UserDefaults) -> (provider: String, model: String, identifier: String, detail: String) {
@@ -137,7 +142,7 @@ final class NativeCampaignStore: ObservableObject {
         }
     }
 
-    private struct CampaignLoadResult {
+    struct CampaignLoadResult {
         let state: NativeCampaignState?
         let notice: String?
     }
@@ -145,13 +150,13 @@ final class NativeCampaignStore: ObservableObject {
     /// Versioned save wrapper. The raw `NativeCampaignState` is still mirrored
     /// as a legacy fallback, but the envelope is the primary format because it
     /// gives future migrations an explicit schema boundary.
-    private struct CampaignStateEnvelope: Codable {
+    struct CampaignStateEnvelope: Codable {
         let schemaVersion: Int
         let savedAt: String
         let state: NativeCampaignState
     }
 
-    private struct PersistenceDataSource {
+    struct PersistenceDataSource {
         let data: Data
         let label: String
     }
@@ -484,7 +489,7 @@ final class NativeCampaignStore: ObservableObject {
         let action = NativePlannedAction(
             createdAt: state.gameDate,
             detail: detail,
-            id: "action-\(UUID().uuidString.lowercased())",
+            id: "action-\(state.round)-\(state.plannedActions.count + 1)",
             resolvedAt: nil,
             status: .planned,
             title: title
@@ -564,7 +569,7 @@ final class NativeCampaignStore: ObservableObject {
         lastAdvisorError = nil
         let userMessage = NativeAdvisorMessage(
             date: currentState.gameDate,
-            id: "advisor-leader-\(UUID().uuidString.lowercased())",
+            id: "advisor-leader-\(currentState.round)-\(currentState.advisorMessages.count + 1)",
             role: .leader,
             text: question
         )
@@ -582,7 +587,7 @@ final class NativeCampaignStore: ObservableObject {
             nextState.advisorMessages.insert(
                 NativeAdvisorMessage(
                     date: nextState.gameDate,
-                    id: "advisor-ai-\(UUID().uuidString.lowercased())",
+                    id: "advisor-ai-\(currentState.round)-\(currentState.advisorMessages.count + 2)",
                     role: .advisor,
                     text: answer
                 ),
@@ -616,7 +621,7 @@ final class NativeCampaignStore: ObservableObject {
         lastDiplomacyError = nil
         let leaderMessage = NativeDiplomaticMessage(
             date: currentState.gameDate,
-            id: "diplomacy-leader-\(UUID().uuidString.lowercased())",
+            id: "diplomacy-leader-\(currentState.round)-\(currentState.diplomaticThreads.count + 1)",
             speaker: currentState.country.name,
             text: message
         )
@@ -642,7 +647,7 @@ final class NativeCampaignStore: ObservableObject {
             nextThread.messages.append(
                 NativeDiplomaticMessage(
                     date: nextState.gameDate,
-                    id: "diplomacy-\(partner.code.lowercased())-\(UUID().uuidString.lowercased())",
+                    id: "diplomacy-\(partner.code.lowercased())-\(currentState.round)",
                     speaker: partner.name,
                     text: reply
                 )
@@ -668,7 +673,27 @@ final class NativeCampaignStore: ObservableObject {
         }
     }
 
-    func advance(months: Int) async {
+    // MARK: - Turn advancement with cancellation support
+
+    private var advanceTask: Task<Void, Never>?
+
+    /// Public entry point — creates and stores a cancellable Task.
+    func advance(months: Int) {
+        guard !isAdvancing else { return }
+        advanceTask?.cancel()
+        advanceTask = Task { [weak self] in
+            await self?.performAdvance(months: months)
+        }
+    }
+
+    /// Cancels any in-flight turn generation (e.g. on reset/import).
+    func cancelInFlightTurn() {
+        advanceTask?.cancel()
+        advanceTask = nil
+        invalidateInFlightWork()
+    }
+
+    func performAdvance(months: Int) async {
         guard var currentState = state, !isAdvancing else { return }
         guard currentState.victoryStatus == .ongoing else {
             lastError = "This campaign has already ended. Start or import a new campaign to continue playing."
@@ -781,7 +806,7 @@ final class NativeCampaignStore: ObservableObject {
         }
 
         do {
-            let suggestions = try await aiService.generateSuggestedActions(for: currentState)
+            let suggestions = try await suggestionsWithTimeout(for: currentState)
             guard isCurrentStateVersion(requestVersion) else { return }
             currentState.suggestedActions = suggestions
             currentState.aiReadiness = .available(tokenBudget: "sliced-guided-generation context=4096, suggestions=4x180")
@@ -804,241 +829,36 @@ final class NativeCampaignStore: ObservableObject {
         }
     }
 
-    private func persistState() {
-        guard let state else {
-            defaults.removeObject(forKey: Self.campaignStateKey)
-            defaults.removeObject(forKey: Self.campaignStateEnvelopeKey)
-            defaults.removeObject(forKey: Self.campaignStateBackupKey)
-            removePersistedCampaignFiles()
-            return
+    private func suggestionsWithTimeout(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
+        let suggestionTask = Task { @MainActor [aiService] in
+            try await aiService.generateSuggestedActions(for: state)
+        }
+        let timeoutTask = Task<[NativeSuggestedAction], Error> {
+            try await Task.sleep(nanoseconds: Self.suggestionRefreshTimeoutNanoseconds)
+            throw NativeCampaignStoreError.suggestionRefreshTimedOut
         }
 
-        // Persistence is deliberately redundant: primary versioned envelope,
-        // last-good envelope backup, and a direct legacy state blob. The read
-        // path tries them in that order so corrupt primary data can be recovered
-        // without losing old-save compatibility.
-        let envelope = CampaignStateEnvelope(
-            schemaVersion: 2,
-            savedAt: NativeGameEngine.todayStamp(),
-            state: state
-        )
-        let envelopeData: Data
-        let legacyData: Data
-        do {
-            envelopeData = try encoder.encode(envelope)
-            legacyData = try encoder.encode(state)
-        } catch {
-            logger.error("Native campaign encode failed")
-            return
-        }
+        return try await withThrowingTaskGroup(of: [NativeSuggestedAction].self) { group in
+            group.addTask { try await suggestionTask.value }
+            group.addTask { try await timeoutTask.value }
+            defer {
+                group.cancelAll()
+                suggestionTask.cancel()
+                timeoutTask.cancel()
+            }
 
-        let backupData: Data
-        if let previousPrimary = Self.primaryPersistenceData(
-            from: defaults,
-            persistenceDirectory: persistenceDirectory
-        ),
-            let previousEnvelope = try? decoder.decode(CampaignStateEnvelope.self, from: previousPrimary),
-            previousEnvelope.schemaVersion == 2
-        {
-            backupData = previousPrimary
-        } else {
-            backupData = envelopeData
-        }
-
-        do {
-            try Self.writePersistenceData(
-                backupData,
-                fileName: Self.campaignStateBackupFileName,
-                directory: persistenceDirectory
-            )
-            try Self.writePersistenceData(
-                envelopeData,
-                fileName: Self.campaignStateEnvelopeFileName,
-                directory: persistenceDirectory
-            )
-            try Self.writePersistenceData(
-                legacyData,
-                fileName: Self.campaignStateLegacyFileName,
-                directory: persistenceDirectory
-            )
-            Self.storeDefaultsFallback(backupData, forKey: Self.campaignStateBackupKey, defaults: defaults)
-            Self.storeDefaultsFallback(envelopeData, forKey: Self.campaignStateEnvelopeKey, defaults: defaults)
-            Self.storeDefaultsFallback(legacyData, forKey: Self.campaignStateKey, defaults: defaults)
-            logger.info("Native campaign persisted round=\(state.round, privacy: .public) timeline=\(state.timeline.count, privacy: .public)")
-        } catch {
-            logger.error("Native campaign file persistence failed")
+            return try await group.next() ?? []
         }
     }
 
-    private func invalidateInFlightWork() {
+    func invalidateInFlightWork() {
+        advanceTask?.cancel()
+        advanceTask = nil
         stateVersion += 1
     }
 
-    private func isCurrentStateVersion(_ version: Int) -> Bool {
+    func isCurrentStateVersion(_ version: Int) -> Bool {
         stateVersion == version
-    }
-
-    private static func loadSelectedCountry(from defaults: UserDefaults, decoder: JSONDecoder) -> PlayerCountry? {
-        guard let data = defaults.data(forKey: selectedCountryKey) else {
-            return nil
-        }
-
-        return try? decoder.decode(PlayerCountry.self, from: data)
-    }
-
-    private func removePersistedCampaignFiles() {
-        for fileName in [
-            Self.campaignStateEnvelopeFileName,
-            Self.campaignStateBackupFileName,
-            Self.campaignStateLegacyFileName
-        ] {
-            do {
-                try Self.removePersistenceData(fileName: fileName, directory: persistenceDirectory)
-            } catch {
-                logger.error("Native campaign persistence cleanup failed")
-            }
-        }
-    }
-
-    private static func loadCampaignState(
-        from defaults: UserDefaults,
-        decoder: JSONDecoder,
-        persistenceDirectory: URL
-    ) -> CampaignLoadResult {
-        let primarySources = persistenceSources(
-            defaults: defaults,
-            key: campaignStateEnvelopeKey,
-            fileName: campaignStateEnvelopeFileName,
-            directory: persistenceDirectory
-        )
-        if let primary = newestEnvelope(from: primarySources, decoder: decoder) {
-            let notice = primary.sourceLabel == "file"
-                ? nil
-                : "Loaded the newest campaign save from user-defaults because it is newer than the file copy."
-            return CampaignLoadResult(state: primary.envelope.state, notice: notice)
-        }
-
-        let backupSources = persistenceSources(
-            defaults: defaults,
-            key: campaignStateBackupKey,
-            fileName: campaignStateBackupFileName,
-            directory: persistenceDirectory
-        )
-        if let backup = newestEnvelope(from: backupSources, decoder: decoder) {
-            let notice = primarySources.isEmpty
-                ? "Loaded the last-good campaign backup because the primary save was missing."
-                : "Recovered the campaign from the last-good backup because the primary save was corrupt."
-            return CampaignLoadResult(state: backup.envelope.state, notice: "\(notice) Source: \(backup.sourceLabel).")
-        }
-
-        let legacySources = persistenceSources(
-            defaults: defaults,
-            key: campaignStateKey,
-            fileName: campaignStateLegacyFileName,
-            directory: persistenceDirectory
-        )
-        for source in legacySources {
-            if let state = try? decoder.decode(NativeCampaignState.self, from: source.data) {
-                let notice = primarySources.isEmpty
-                    ? "Loaded a legacy campaign save and will upgrade it on the next save."
-                    : "Loaded a legacy campaign save because the versioned save could not be read."
-                return CampaignLoadResult(state: state, notice: "\(notice) Source: \(source.label).")
-            }
-        }
-
-        if !primarySources.isEmpty || !backupSources.isEmpty || !legacySources.isEmpty {
-            return CampaignLoadResult(
-                state: nil,
-                notice: "Saved campaign data could not be read. A new campaign was not created until you choose a country."
-            )
-        }
-
-        return CampaignLoadResult(state: nil, notice: nil)
-    }
-
-    private static func defaultPersistenceDirectory(fileManager: FileManager = .default) -> URL {
-        let baseDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ??
-            URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        return baseDirectory
-            .appendingPathComponent("SwiftHistoria", isDirectory: true)
-            .appendingPathComponent("NativeCampaigns", isDirectory: true)
-    }
-
-    private static func primaryPersistenceData(
-        from defaults: UserDefaults,
-        persistenceDirectory: URL
-    ) -> Data? {
-        let sources = persistenceSources(
-            defaults: defaults,
-            key: campaignStateEnvelopeKey,
-            fileName: campaignStateEnvelopeFileName,
-            directory: persistenceDirectory
-        )
-        return newestEnvelope(from: sources, decoder: JSONDecoder())?.sourceData ?? sources.first?.data
-    }
-
-    private static func storeDefaultsFallback(_ data: Data, forKey key: String, defaults: UserDefaults) {
-        if data.count <= maximumUserDefaultsCampaignBlobBytes {
-            defaults.set(data, forKey: key)
-        } else {
-            defaults.removeObject(forKey: key)
-        }
-    }
-
-    private static func newestEnvelope(
-        from sources: [PersistenceDataSource],
-        decoder: JSONDecoder
-    ) -> (envelope: CampaignStateEnvelope, sourceLabel: String, sourceData: Data)? {
-        let formatter = ISO8601DateFormatter()
-        var newest: (envelope: CampaignStateEnvelope, sourceLabel: String, sourceData: Data, savedDate: Date)?
-        for source in sources {
-            guard let envelope = try? decoder.decode(CampaignStateEnvelope.self, from: source.data),
-                  envelope.schemaVersion == 2
-            else {
-                continue
-            }
-            let savedDate = formatter.date(from: envelope.savedAt) ?? .distantPast
-            if newest == nil || savedDate > newest!.savedDate {
-                newest = (envelope, source.label, source.data, savedDate)
-            }
-        }
-        guard let newest else { return nil }
-        return (newest.envelope, newest.sourceLabel, newest.sourceData)
-    }
-
-    private static func persistenceSources(
-        defaults: UserDefaults,
-        key: String,
-        fileName: String,
-        directory: URL
-    ) -> [PersistenceDataSource] {
-        var sources: [PersistenceDataSource] = []
-        if let data = readPersistenceData(fileName: fileName, directory: directory) {
-            sources.append(PersistenceDataSource(data: data, label: "file"))
-        }
-        if let data = defaults.data(forKey: key) {
-            sources.append(PersistenceDataSource(data: data, label: "user-defaults"))
-        }
-        return sources
-    }
-
-    private static func persistenceURL(fileName: String, directory: URL) -> URL {
-        directory.appendingPathComponent(fileName, isDirectory: false)
-    }
-
-    private static func readPersistenceData(fileName: String, directory: URL) -> Data? {
-        try? Data(contentsOf: persistenceURL(fileName: fileName, directory: directory))
-    }
-
-    private static func writePersistenceData(_ data: Data, fileName: String, directory: URL) throws {
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try data.write(to: persistenceURL(fileName: fileName, directory: directory), options: [.atomic])
-    }
-
-    private static func removePersistenceData(fileName: String, directory: URL) throws {
-        let url = persistenceURL(fileName: fileName, directory: directory)
-        guard FileManager.default.fileExists(atPath: url.path) else { return }
-        try FileManager.default.removeItem(at: url)
     }
 
     private static func normalizedScenarioID(_ value: String?) -> String {
@@ -1510,7 +1330,7 @@ final class NativeCampaignStore: ObservableObject {
                 eventID: "offer-accept-\(id)",
                 fiscalSpaceDelta: 0,
                 growthDelta: offer.growthDelta,
-                id: "ledger-entry-offer-accept-\(UUID().uuidString.lowercased())",
+                id: "ledger-entry-offer-accept-\(id)",
                 inflationDelta: 0.0,
                 ruleID: "diplomatic-treaty",
                 summary: "Accepted offer: \(offer.type.displayName) with \(offer.proposerCode)",
@@ -1527,7 +1347,7 @@ final class NativeCampaignStore: ObservableObject {
         let acceptEvent = NativeCampaignEvent(
             date: state.gameDate,
             description: "TREATY SIGNED: We have accepted the \(offer.type.displayName) proposal from \(offer.proposerCode). Effects: \(offer.description)",
-            id: "offer-accept-event-\(id)-\(UUID().uuidString.lowercased())",
+            id: "offer-accept-event-\(id)",
             importance: .major,
             kind: .diplomacy,
             linkedActionIDs: [],
@@ -1558,7 +1378,7 @@ final class NativeCampaignStore: ObservableObject {
         let rejectEvent = NativeCampaignEvent(
             date: state.gameDate,
             description: "PROPOSAL REJECTED: We declined the \(offer.type.displayName) proposal from \(offer.proposerCode). Relations deteriorated slightly.",
-            id: "offer-reject-event-\(id)-\(UUID().uuidString.lowercased())",
+            id: "offer-reject-event-\(id)",
             importance: .minor,
             kind: .diplomacy,
             linkedActionIDs: [],
@@ -1617,7 +1437,7 @@ final class NativeCampaignStore: ObservableObject {
                     eventID: "offer-counter-accept-\(id)",
                     fiscalSpaceDelta: 0,
                     growthDelta: offer.growthDelta,
-                    id: "ledger-entry-offer-counter-accept-\(UUID().uuidString.lowercased())",
+                    id: "ledger-entry-offer-counter-accept-\(id)",
                     inflationDelta: 0.0,
                     ruleID: "diplomatic-treaty",
                     summary: "Accepted counter-offer: \(offer.type.displayName) with \(offer.proposerCode)",
@@ -1634,7 +1454,7 @@ final class NativeCampaignStore: ObservableObject {
             let acceptEvent = NativeCampaignEvent(
                 date: state.gameDate,
                 description: "COUNTER-PROPOSAL ACCEPTED: \(proposerCode) accepted our counter-terms for the \(offer.type.displayName). Benefits improved by 25%!",
-                id: "offer-counter-accept-event-\(id)-\(UUID().uuidString.lowercased())",
+                id: "offer-counter-accept-event-\(id)",
                 importance: .major,
                 kind: .diplomacy,
                 linkedActionIDs: [],
@@ -1651,7 +1471,7 @@ final class NativeCampaignStore: ObservableObject {
             let rejectEvent = NativeCampaignEvent(
                 date: state.gameDate,
                 description: "COUNTER-PROPOSAL REJECTED: \(proposerCode) declined our counter-terms for the \(offer.type.displayName). Negotiations broke down and the proposal was cancelled.",
-                id: "offer-counter-reject-event-\(id)-\(UUID().uuidString.lowercased())",
+                id: "offer-counter-reject-event-\(id)",
                 importance: .major,
                 kind: .diplomacy,
                 linkedActionIDs: [],
@@ -1671,6 +1491,7 @@ final class NativeCampaignStore: ObservableObject {
 enum NativeCampaignStoreError: LocalizedError {
     case campaignImportTooLarge(actualBytes: Int, maximumBytes: Int)
     case noCampaignToExport
+    case suggestionRefreshTimedOut
 
     var errorDescription: String? {
         switch self {
@@ -1680,6 +1501,8 @@ enum NativeCampaignStoreError: LocalizedError {
             return String(format: "Campaign import is too large (%.1f MB). Maximum supported size is %.1f MB.", actualMB, maximumMB)
         case .noCampaignToExport:
             return "There is no native campaign to export yet."
+        case .suggestionRefreshTimedOut:
+            return "Suggested actions took too long to refresh. Keep drafting manual orders or retry from Settings after checking the selected AI provider."
         }
     }
 }

@@ -29,21 +29,53 @@ struct NativeWorldEconomicsPanel: View {
             let countryCodes = ["GLOBAL", "USA", "CHN", "BRA", "DEU", "JPN", "GBR", "FRA", "IND", "RUS", "ZAF", "AUS"]
             VStack(spacing: 12) {
                 ForEach(countryCodes, id: \.self) { code in
+                    let visibility = NativeGameEngine.intelVisibility(forCountryCode: code, in: state)
                     let ledger = state.economicLedgers[code] ?? NativeEconomicLedger.starting(for: PlayerCountry(code: code, name: code), scenario: NativeScenarioCatalog.scenario(for: state.scenarioID))
                     let resolvedName = (code == "RUS" && state.scenarioID == "soviet-triumph") ? "Soviet Union" : (CountryCatalog.all.first(where: { $0.code == code })?.name ?? (code == "GLOBAL" ? "Global System" : code))
 
-                    ExpansionEconomicCard(
-                        code: code,
-                        name: resolvedName,
-                        ledger: ledger,
-                        isPlayer: code == state.country.code,
-                        scenarioID: state.scenarioID
-                    )
+                    if visibility == .hidden, code != "GLOBAL", code != state.country.code {
+                        // Fog of war: rival data is masked
+                        ExpansionEconomicCard(
+                            code: code,
+                            name: resolvedName,
+                            ledger: maskedLedger(),
+                            isPlayer: false,
+                            scenarioID: state.scenarioID,
+                            visibilityLabel: "CLASSIFIED"
+                        )
+                    } else {
+                        ExpansionEconomicCard(
+                            code: code,
+                            name: resolvedName,
+                            ledger: ledger,
+                            isPlayer: code == state.country.code,
+                            scenarioID: state.scenarioID,
+                            visibilityLabel: visibility == .partial ? "PARTIAL INTEL" : nil
+                        )
+                    }
                 }
             }
         }
         .padding(.vertical, 8)
         .accessibilityIdentifier("native-world-economics-panel")
+    }
+
+    /// Returns a zeroed-out ledger for fog-of-war masking.
+    private func maskedLedger() -> NativeEconomicLedger {
+        NativeEconomicLedger(
+            budgetBalancePercentGDP: 0,
+            entries: [],
+            fiscalSpaceIndex: 0,
+            inflationPercent: 0,
+            nominalGDPTrillions: 0,
+            publicDebtPercentGDP: 0,
+            realGrowthPercent: 0,
+            tradeBalancePercentGDP: 0,
+            unemploymentPercent: 0,
+            securityIndex: 0,
+            rebelControlPercent: 0,
+            resourceReserves: [:]
+        )
     }
 }
 
@@ -53,6 +85,7 @@ struct ExpansionEconomicCard: View {
     let ledger: NativeEconomicLedger
     let isPlayer: Bool
     let scenarioID: String
+    var visibilityLabel: String?
 
     @State private var isExpanded = false
 
@@ -116,11 +149,25 @@ struct ExpansionEconomicCard: View {
                                     .background(Color(hex: "#b862ff").opacity(0.2), in: RoundedRectangle(cornerRadius: 3))
                                     .foregroundStyle(Color(hex: "#b862ff"))
                             }
+                            if let label = visibilityLabel {
+                                Text(label)
+                                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                    .padding(.horizontal, 4)
+                                    .padding(.vertical, 1)
+                                    .background(Color.softRed.opacity(0.15), in: RoundedRectangle(cornerRadius: 3))
+                                    .foregroundStyle(Color.softRed)
+                            }
                         }
 
-                        Text("GDP \(String(format: "$%.2fT", ledger.nominalGDPTrillions)) · Growth \(ledger.realGrowthPercent >= 0 ? "+" : "")\(String(format: "%.1f%%", ledger.realGrowthPercent))")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        if visibilityLabel == "CLASSIFIED" {
+                            Text("INTELLIGENCE GAP — DATA REDACTED")
+                                .font(.caption2.monospaced())
+                                .foregroundStyle(Color.softRed.opacity(0.7))
+                        } else {
+                            Text("GDP \(String(format: "$%.2fT", ledger.nominalGDPTrillions)) · Growth \(ledger.realGrowthPercent >= 0 ? "+" : "")\(String(format: "%.1f%%", ledger.realGrowthPercent))")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
                     }
 
                     Spacer()

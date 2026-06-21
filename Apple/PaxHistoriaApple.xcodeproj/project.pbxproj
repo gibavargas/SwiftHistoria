@@ -7,8 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		002CD4FFBBDC30D049551BD0 /* NativeGameView+Overlays.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A485366A3A14D42F508174 /* NativeGameView+Overlays.swift */; };
 		04950C6760499D3DEDEC22F1 /* NativeGeopoliticalMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E64CFD59D62B55AC8C72F2D /* NativeGeopoliticalMap.swift */; };
 		0B07CB2A56CB4FAF0FD9FF09 /* NativeTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EF6A87A13040FF905FFF5F /* NativeTypography.swift */; };
+		167FDAF23DD3C785B6F0BFE9 /* NativeRateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEB0653EC506C7D7FFEEA99 /* NativeRateLimiter.swift */; };
+		1BEB039B991B8F4438C4726E /* NativeCampaignStore+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBFC0EE9C0379ADC45E2C8CE /* NativeCampaignStore+Persistence.swift */; };
+		219FE7363F15FD7EB74B30EF /* NativeGameEngine+Victory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8975A239E8936ACF39AC8A /* NativeGameEngine+Victory.swift */; };
+		298A5ABAB6BE358D4A3FF184 /* NativeGameEngine+Victory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8975A239E8936ACF39AC8A /* NativeGameEngine+Victory.swift */; };
+		374ABC6B0AF2ABC34341EE8C /* NativeGameView+Report.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC3CAFBD0368A8216088E3E /* NativeGameView+Report.swift */; };
+		3ABAE231B4915F73DDEC7536 /* NativeFoundationModelService+Prompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD0A08D730A3A4AE913E7738 /* NativeFoundationModelService+Prompts.swift */; };
 		3DF127D52FDF71C600B72996 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000001 /* Assets.xcassets */; };
 		3DF127D62FDF71C600B72996 /* countries.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E0 /* countries.geojson */; };
 		3DF127D72FDF71C600B72996 /* states.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E1 /* states.geojson */; };
@@ -25,24 +32,16 @@
 		3DF127E22FDF71C600B72996 /* cities.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E2 /* cities.geojson */; };
 		3DF127E32FDF71C600B72996 /* land.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E3 /* land.geojson */; };
 		4B313FCE5D69F69D12ADCA4D /* NativeContextualHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */; };
+		4BCA6882281DAAF6D91938CC /* DynamicAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE229A5C669A93DC05CC7EB0 /* DynamicAIService.swift */; };
 		5F42D795D46921CBDD9F1002 /* NativeOpenRouterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */; };
-		F10000000000000000000101 /* NativeGameShellShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000103 /* NativeGameShellShared.swift */; };
-		F10000000000000000000102 /* NativeGameShellShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000103 /* NativeGameShellShared.swift */; };
-		F10000000000000000000104 /* NativeMapComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000106 /* NativeMapComponents.swift */; };
-		F10000000000000000000105 /* NativeMapComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000106 /* NativeMapComponents.swift */; };
-		F10000000000000000000107 /* NativeOverviewComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000109 /* NativeOverviewComponents.swift */; };
-		F10000000000000000000108 /* NativeOverviewComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000109 /* NativeOverviewComponents.swift */; };
-		F1000000000000000000010A /* NativeIntelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010C /* NativeIntelComponents.swift */; };
-		F1000000000000000000010B /* NativeIntelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010C /* NativeIntelComponents.swift */; };
-		F1000000000000000000010D /* NativeOrdersComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010F /* NativeOrdersComponents.swift */; };
-		F1000000000000000000010E /* NativeOrdersComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010F /* NativeOrdersComponents.swift */; };
-		F10000000000000000000110 /* NativeSettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000112 /* NativeSettingsComponents.swift */; };
-		F10000000000000000000111 /* NativeSettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000112 /* NativeSettingsComponents.swift */; };
-		F10000000000000000000113 /* NativeTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EF6A87A13040FF905FFF5F /* NativeTypography.swift */; };
-		F10000000000000000000114 /* NativeQuickActionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801F3CC5E4D679F95A9F6655 /* NativeQuickActionCatalog.swift */; };
-		F10000000000000000000115 /* NativeContextualHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */; };
-		F10000000000000000000116 /* NativeGeopoliticalMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E64CFD59D62B55AC8C72F2D /* NativeGeopoliticalMap.swift */; };
-		F10000000000000000000117 /* NativeOpenRouterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */; };
+		66D0663507297F5A6B3CF100 /* NativeWorldMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBDA4D60396B285CB9D1E5E /* NativeWorldMap.swift */; };
+		6DC06FEEEC66BAD0673B0A8F /* DynamicAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE229A5C669A93DC05CC7EB0 /* DynamicAIService.swift */; };
+		7A52D39A00675402B2C8B3C7 /* NativeGameEngine+RegionalOrders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FFD966862F5E7B1C4159846 /* NativeGameEngine+RegionalOrders.swift */; };
+		7D81DBB1A96E2A9D3688E466 /* NativeGameView+Report.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC3CAFBD0368A8216088E3E /* NativeGameView+Report.swift */; };
+		91D1CE1EF1B4F3F8194A345E /* NativeWorldMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBDA4D60396B285CB9D1E5E /* NativeWorldMap.swift */; };
+		92DC19CA7FBD0588376EA519 /* NativeGameEngine+Dice.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10C45C422245811A0A8CC43 /* NativeGameEngine+Dice.swift */; };
+		9BAC38EEA0402C8C0D66A9D2 /* NativeEmbeddingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA40BA8130B3E84A09A1F85 /* NativeEmbeddingModel.swift */; };
+		9D6EB3A16DB39EA55FDC11D2 /* NativeGameEngine+Dice.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10C45C422245811A0A8CC43 /* NativeGameEngine+Dice.swift */; };
 		A10000000000000000000010 /* PaxHistoriaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000001 /* PaxHistoriaApp.swift */; };
 		A10000000000000000000011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* ContentView.swift */; };
 		A10000000000000000000017 /* PlayerCountry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* PlayerCountry.swift */; };
@@ -85,10 +84,38 @@
 		A100000000000000000000FB /* NativeZAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FC /* NativeZAIService.swift */; };
 		A1000000000000AAAA000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000AAAA000001 /* Localizable.xcstrings */; };
 		A1000000000000AAAA000003 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000AAAA000001 /* Localizable.xcstrings */; };
+		A9C6C1664B222334D747DC72 /* NativeModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59D04D350C19D6D7A8E0C871 /* NativeModuleTests.swift */; };
 		B20000000000000000000003 /* NativeMetalMapBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* NativeMetalMapBackdrop.swift */; };
 		B20000000000000000000004 /* NativeMetalMapBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* NativeMetalMapBackdrop.swift */; };
+		B6379D7A73994FC0F3EBA6FD /* NativeEconomicModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 603C327AE840A2A8220AE141 /* NativeEconomicModels.swift */; };
+		BA34B24F6E97E8B3DBAAEE85 /* NativeEmbeddingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA40BA8130B3E84A09A1F85 /* NativeEmbeddingModel.swift */; };
+		C69FF108AA2118AC6289612E /* NativeGameEngine+RegionalOrders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FFD966862F5E7B1C4159846 /* NativeGameEngine+RegionalOrders.swift */; };
 		C711A78BB26E09BF714C9188 /* NativeQuickActionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801F3CC5E4D679F95A9F6655 /* NativeQuickActionCatalog.swift */; };
+		C8F0051C547C7E745BEEA9C5 /* NativeGameView+Rows.swift in Sources */ = {isa = PBXBuildFile; fileRef = E145CBC007C9EDF93856022F /* NativeGameView+Rows.swift */; };
 		E10000000000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000001 /* Assets.xcassets */; };
+		E67A73BE7C89EA6C8F742FD6 /* NativeEconomicModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 603C327AE840A2A8220AE141 /* NativeEconomicModels.swift */; };
+		E840C3AFAF5454DA27A458C1 /* NativeRateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEB0653EC506C7D7FFEEA99 /* NativeRateLimiter.swift */; };
+		EA8C0B64EBEF8CB8D03725B1 /* NativeGameView+Overlays.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A485366A3A14D42F508174 /* NativeGameView+Overlays.swift */; };
+		F10000000000000000000101 /* NativeGameShellShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000103 /* NativeGameShellShared.swift */; };
+		F10000000000000000000102 /* NativeGameShellShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000103 /* NativeGameShellShared.swift */; };
+		F10000000000000000000104 /* NativeMapComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000106 /* NativeMapComponents.swift */; };
+		F10000000000000000000105 /* NativeMapComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000106 /* NativeMapComponents.swift */; };
+		F10000000000000000000107 /* NativeOverviewComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000109 /* NativeOverviewComponents.swift */; };
+		F10000000000000000000108 /* NativeOverviewComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000109 /* NativeOverviewComponents.swift */; };
+		F1000000000000000000010A /* NativeIntelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010C /* NativeIntelComponents.swift */; };
+		F1000000000000000000010B /* NativeIntelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010C /* NativeIntelComponents.swift */; };
+		F1000000000000000000010D /* NativeOrdersComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010F /* NativeOrdersComponents.swift */; };
+		F1000000000000000000010E /* NativeOrdersComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000010F /* NativeOrdersComponents.swift */; };
+		F10000000000000000000110 /* NativeSettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000112 /* NativeSettingsComponents.swift */; };
+		F10000000000000000000111 /* NativeSettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000112 /* NativeSettingsComponents.swift */; };
+		F10000000000000000000113 /* NativeTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EF6A87A13040FF905FFF5F /* NativeTypography.swift */; };
+		F10000000000000000000114 /* NativeQuickActionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801F3CC5E4D679F95A9F6655 /* NativeQuickActionCatalog.swift */; };
+		F10000000000000000000115 /* NativeContextualHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */; };
+		F10000000000000000000116 /* NativeGeopoliticalMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E64CFD59D62B55AC8C72F2D /* NativeGeopoliticalMap.swift */; };
+		F10000000000000000000117 /* NativeOpenRouterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */; };
+		F7A73A38DB0526F945C79CC9 /* NativeFoundationModelService+Prompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD0A08D730A3A4AE913E7738 /* NativeFoundationModelService+Prompts.swift */; };
+		F8C2F1EDAF794B7AC14D6F23 /* NativeCampaignStore+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBFC0EE9C0379ADC45E2C8CE /* NativeCampaignStore+Persistence.swift */; };
+		FBD0FA7B9B73A0A447A5E302 /* NativeGameView+Rows.swift in Sources */ = {isa = PBXBuildFile; fileRef = E145CBC007C9EDF93856022F /* NativeGameView+Rows.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -109,10 +136,19 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2AEB0653EC506C7D7FFEEA99 /* NativeRateLimiter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeRateLimiter.swift; sourceTree = "<group>"; };
 		2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeOpenRouterService.swift; sourceTree = "<group>"; };
 		2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeContextualHelp.swift; sourceTree = "<group>"; };
+		39A485366A3A14D42F508174 /* NativeGameView+Overlays.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameView+Overlays.swift"; sourceTree = "<group>"; };
+		4FBDA4D60396B285CB9D1E5E /* NativeWorldMap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeWorldMap.swift; sourceTree = "<group>"; };
+		59D04D350C19D6D7A8E0C871 /* NativeModuleTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeModuleTests.swift; sourceTree = "<group>"; };
+		5D8975A239E8936ACF39AC8A /* NativeGameEngine+Victory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameEngine+Victory.swift"; sourceTree = "<group>"; };
+		5FFD966862F5E7B1C4159846 /* NativeGameEngine+RegionalOrders.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameEngine+RegionalOrders.swift"; sourceTree = "<group>"; };
+		603C327AE840A2A8220AE141 /* NativeEconomicModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeEconomicModels.swift; sourceTree = "<group>"; };
 		801F3CC5E4D679F95A9F6655 /* NativeQuickActionCatalog.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeQuickActionCatalog.swift; sourceTree = "<group>"; };
+		9BC3CAFBD0368A8216088E3E /* NativeGameView+Report.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameView+Report.swift"; sourceTree = "<group>"; };
 		9E64CFD59D62B55AC8C72F2D /* NativeGeopoliticalMap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeGeopoliticalMap.swift; sourceTree = "<group>"; };
+		9EA40BA8130B3E84A09A1F85 /* NativeEmbeddingModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeEmbeddingModel.swift; sourceTree = "<group>"; };
 		A10000000000000000000001 /* PaxHistoriaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxHistoriaApp.swift; sourceTree = "<group>"; };
 		A10000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A10000000000000000000008 /* PlayerCountry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCountry.swift; sourceTree = "<group>"; };
@@ -143,14 +179,19 @@
 		A100000000000000000000FC /* NativeZAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeZAIService.swift; sourceTree = "<group>"; };
 		A1000000000000AAAA000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		B20000000000000000000001 /* NativeMetalMapBackdrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeMetalMapBackdrop.swift; sourceTree = "<group>"; };
+		BD0A08D730A3A4AE913E7738 /* NativeFoundationModelService+Prompts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeFoundationModelService+Prompts.swift"; sourceTree = "<group>"; };
+		CE229A5C669A93DC05CC7EB0 /* DynamicAIService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DynamicAIService.swift; sourceTree = "<group>"; };
 		D3EF6A87A13040FF905FFF5F /* NativeTypography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeTypography.swift; sourceTree = "<group>"; };
+		DBFC0EE9C0379ADC45E2C8CE /* NativeCampaignStore+Persistence.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeCampaignStore+Persistence.swift"; sourceTree = "<group>"; };
+		E10000000000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E10C45C422245811A0A8CC43 /* NativeGameEngine+Dice.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameEngine+Dice.swift"; sourceTree = "<group>"; };
+		E145CBC007C9EDF93856022F /* NativeGameView+Rows.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameView+Rows.swift"; sourceTree = "<group>"; };
 		F10000000000000000000103 /* NativeGameShellShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeGameShellShared.swift; sourceTree = "<group>"; };
 		F10000000000000000000106 /* NativeMapComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeMapComponents.swift; sourceTree = "<group>"; };
 		F10000000000000000000109 /* NativeOverviewComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeOverviewComponents.swift; sourceTree = "<group>"; };
 		F1000000000000000000010C /* NativeIntelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeIntelComponents.swift; sourceTree = "<group>"; };
 		F1000000000000000000010F /* NativeOrdersComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeOrdersComponents.swift; sourceTree = "<group>"; };
 		F10000000000000000000112 /* NativeSettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSettingsComponents.swift; sourceTree = "<group>"; };
-		E10000000000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -213,16 +254,16 @@
 				A1000000000000000000000B /* NativeCampaignModels.swift */,
 				A1000000000000000000000C /* NativeGameEngine.swift */,
 				A1000000000000000000000D /* NativeFoundationModelService.swift */,
-					A1000000000000000000000E /* NativeGameView.swift */,
-					A1000000000000000000000F /* NativeGameShell.swift */,
-					F10000000000000000000103 /* NativeGameShellShared.swift */,
-					F10000000000000000000106 /* NativeMapComponents.swift */,
-					F10000000000000000000109 /* NativeOverviewComponents.swift */,
-					F1000000000000000000010C /* NativeIntelComponents.swift */,
-					F1000000000000000000010F /* NativeOrdersComponents.swift */,
-					F10000000000000000000112 /* NativeSettingsComponents.swift */,
-					A10000000000000000000013 /* NativeCountryCoordinates.swift */,
-					A10000000000000000000014 /* Native2010WorldModel.swift */,
+				A1000000000000000000000E /* NativeGameView.swift */,
+				A1000000000000000000000F /* NativeGameShell.swift */,
+				F10000000000000000000103 /* NativeGameShellShared.swift */,
+				F10000000000000000000106 /* NativeMapComponents.swift */,
+				F10000000000000000000109 /* NativeOverviewComponents.swift */,
+				F1000000000000000000010C /* NativeIntelComponents.swift */,
+				F1000000000000000000010F /* NativeOrdersComponents.swift */,
+				F10000000000000000000112 /* NativeSettingsComponents.swift */,
+				A10000000000000000000013 /* NativeCountryCoordinates.swift */,
+				A10000000000000000000014 /* Native2010WorldModel.swift */,
 				A10000000000000000000015 /* NativeStrategyContextDatabase.swift */,
 				A1000000000000000000009A /* NativeWorldEconomicsPanel.swift */,
 				A1000000000000000000009E /* GeopoliticalMapData.swift */,
@@ -232,6 +273,19 @@
 				2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */,
 				9E64CFD59D62B55AC8C72F2D /* NativeGeopoliticalMap.swift */,
 				2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */,
+				2AEB0653EC506C7D7FFEEA99 /* NativeRateLimiter.swift */,
+				4FBDA4D60396B285CB9D1E5E /* NativeWorldMap.swift */,
+				39A485366A3A14D42F508174 /* NativeGameView+Overlays.swift */,
+				9BC3CAFBD0368A8216088E3E /* NativeGameView+Report.swift */,
+				E145CBC007C9EDF93856022F /* NativeGameView+Rows.swift */,
+				5D8975A239E8936ACF39AC8A /* NativeGameEngine+Victory.swift */,
+				E10C45C422245811A0A8CC43 /* NativeGameEngine+Dice.swift */,
+				5FFD966862F5E7B1C4159846 /* NativeGameEngine+RegionalOrders.swift */,
+				BD0A08D730A3A4AE913E7738 /* NativeFoundationModelService+Prompts.swift */,
+				DBFC0EE9C0379ADC45E2C8CE /* NativeCampaignStore+Persistence.swift */,
+				CE229A5C669A93DC05CC7EB0 /* DynamicAIService.swift */,
+				603C327AE840A2A8220AE141 /* NativeEconomicModels.swift */,
+				9EA40BA8130B3E84A09A1F85 /* NativeEmbeddingModel.swift */,
 			);
 			path = PaxHistoriaApple;
 			sourceTree = "<group>";
@@ -253,6 +307,7 @@
 				A10000000000000000000033 /* NativeBackendTests.swift */,
 				A100000000000000000000A3 /* NativeE2ETests.swift */,
 				A100000000000000000000C3 /* NativeZAITests.swift */,
+				59D04D350C19D6D7A8E0C871 /* NativeModuleTests.swift */,
 			);
 			path = PaxHistoriaAppleTests;
 			sourceTree = "<group>";
@@ -443,25 +498,25 @@
 		A10000000000000000000070 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-				files = (
-					A100000000000000000000FA /* NativeZAIService.swift in Sources */,
-					F10000000000000000000101 /* NativeGameShellShared.swift in Sources */,
-					A10000000000000000000010 /* PaxHistoriaApp.swift in Sources */,
-					A10000000000000000000011 /* ContentView.swift in Sources */,
+			files = (
+				A100000000000000000000FA /* NativeZAIService.swift in Sources */,
+				F10000000000000000000101 /* NativeGameShellShared.swift in Sources */,
+				A10000000000000000000010 /* PaxHistoriaApp.swift in Sources */,
+				A10000000000000000000011 /* ContentView.swift in Sources */,
 				A10000000000000000000017 /* PlayerCountry.swift in Sources */,
 				A10000000000000000000018 /* NativeCampaignStore.swift in Sources */,
 				A10000000000000000000019 /* CountrySelectionView.swift in Sources */,
 				A1000000000000000000002A /* NativeCampaignModels.swift in Sources */,
 				A1000000000000000000002C /* NativeGameEngine.swift in Sources */,
 				A1000000000000000000002E /* NativeFoundationModelService.swift in Sources */,
-					A1000000000000000000003A /* NativeGameView.swift in Sources */,
-					A1000000000000000000003C /* NativeGameShell.swift in Sources */,
-					F10000000000000000000104 /* NativeMapComponents.swift in Sources */,
-					F10000000000000000000107 /* NativeOverviewComponents.swift in Sources */,
-					F1000000000000000000010A /* NativeIntelComponents.swift in Sources */,
-					F1000000000000000000010D /* NativeOrdersComponents.swift in Sources */,
-					F10000000000000000000110 /* NativeSettingsComponents.swift in Sources */,
-					A1000000000000000000003E /* NativeCountryCoordinates.swift in Sources */,
+				A1000000000000000000003A /* NativeGameView.swift in Sources */,
+				A1000000000000000000003C /* NativeGameShell.swift in Sources */,
+				F10000000000000000000104 /* NativeMapComponents.swift in Sources */,
+				F10000000000000000000107 /* NativeOverviewComponents.swift in Sources */,
+				F1000000000000000000010A /* NativeIntelComponents.swift in Sources */,
+				F1000000000000000000010D /* NativeOrdersComponents.swift in Sources */,
+				F10000000000000000000110 /* NativeSettingsComponents.swift in Sources */,
+				A1000000000000000000003E /* NativeCountryCoordinates.swift in Sources */,
 				A10000000000000000000044 /* Native2010WorldModel.swift in Sources */,
 				A10000000000000000000046 /* NativeStrategyContextDatabase.swift in Sources */,
 				A1000000000000000000009B /* NativeWorldEconomicsPanel.swift in Sources */,
@@ -472,42 +527,68 @@
 				4B313FCE5D69F69D12ADCA4D /* NativeContextualHelp.swift in Sources */,
 				04950C6760499D3DEDEC22F1 /* NativeGeopoliticalMap.swift in Sources */,
 				5F42D795D46921CBDD9F1002 /* NativeOpenRouterService.swift in Sources */,
+				167FDAF23DD3C785B6F0BFE9 /* NativeRateLimiter.swift in Sources */,
+				91D1CE1EF1B4F3F8194A345E /* NativeWorldMap.swift in Sources */,
+				002CD4FFBBDC30D049551BD0 /* NativeGameView+Overlays.swift in Sources */,
+				7D81DBB1A96E2A9D3688E466 /* NativeGameView+Report.swift in Sources */,
+				C8F0051C547C7E745BEEA9C5 /* NativeGameView+Rows.swift in Sources */,
+				219FE7363F15FD7EB74B30EF /* NativeGameEngine+Victory.swift in Sources */,
+				92DC19CA7FBD0588376EA519 /* NativeGameEngine+Dice.swift in Sources */,
+				C69FF108AA2118AC6289612E /* NativeGameEngine+RegionalOrders.swift in Sources */,
+				F7A73A38DB0526F945C79CC9 /* NativeFoundationModelService+Prompts.swift in Sources */,
+				1BEB039B991B8F4438C4726E /* NativeCampaignStore+Persistence.swift in Sources */,
+				4BCA6882281DAAF6D91938CC /* DynamicAIService.swift in Sources */,
+				B6379D7A73994FC0F3EBA6FD /* NativeEconomicModels.swift in Sources */,
+				BA34B24F6E97E8B3DBAAEE85 /* NativeEmbeddingModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A10000000000000000000071 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-				files = (
-					A100000000000000000000FB /* NativeZAIService.swift in Sources */,
-					F10000000000000000000102 /* NativeGameShellShared.swift in Sources */,
-					A10000000000000000000020 /* PaxHistoriaApp.swift in Sources */,
-					A10000000000000000000021 /* ContentView.swift in Sources */,
+			files = (
+				A100000000000000000000FB /* NativeZAIService.swift in Sources */,
+				F10000000000000000000102 /* NativeGameShellShared.swift in Sources */,
+				A10000000000000000000020 /* PaxHistoriaApp.swift in Sources */,
+				A10000000000000000000021 /* ContentView.swift in Sources */,
 				A10000000000000000000027 /* PlayerCountry.swift in Sources */,
 				A10000000000000000000028 /* NativeCampaignStore.swift in Sources */,
 				A10000000000000000000029 /* CountrySelectionView.swift in Sources */,
 				A1000000000000000000002B /* NativeCampaignModels.swift in Sources */,
 				A1000000000000000000002D /* NativeGameEngine.swift in Sources */,
 				A1000000000000000000002F /* NativeFoundationModelService.swift in Sources */,
-					A1000000000000000000003B /* NativeGameView.swift in Sources */,
-					A1000000000000000000003D /* NativeGameShell.swift in Sources */,
-					F10000000000000000000105 /* NativeMapComponents.swift in Sources */,
-					F10000000000000000000108 /* NativeOverviewComponents.swift in Sources */,
-					F1000000000000000000010B /* NativeIntelComponents.swift in Sources */,
-					F1000000000000000000010E /* NativeOrdersComponents.swift in Sources */,
-					F10000000000000000000111 /* NativeSettingsComponents.swift in Sources */,
-					A1000000000000000000003F /* NativeCountryCoordinates.swift in Sources */,
+				A1000000000000000000003B /* NativeGameView.swift in Sources */,
+				A1000000000000000000003D /* NativeGameShell.swift in Sources */,
+				F10000000000000000000105 /* NativeMapComponents.swift in Sources */,
+				F10000000000000000000108 /* NativeOverviewComponents.swift in Sources */,
+				F1000000000000000000010B /* NativeIntelComponents.swift in Sources */,
+				F1000000000000000000010E /* NativeOrdersComponents.swift in Sources */,
+				F10000000000000000000111 /* NativeSettingsComponents.swift in Sources */,
+				A1000000000000000000003F /* NativeCountryCoordinates.swift in Sources */,
 				A10000000000000000000045 /* Native2010WorldModel.swift in Sources */,
 				A10000000000000000000047 /* NativeStrategyContextDatabase.swift in Sources */,
-					A1000000000000000000009C /* NativeWorldEconomicsPanel.swift in Sources */,
-					A1000000000000000000009F /* GeopoliticalMapData.swift in Sources */,
-					B20000000000000000000004 /* NativeMetalMapBackdrop.swift in Sources */,
-					F10000000000000000000113 /* NativeTypography.swift in Sources */,
-					F10000000000000000000114 /* NativeQuickActionCatalog.swift in Sources */,
-					F10000000000000000000115 /* NativeContextualHelp.swift in Sources */,
-					F10000000000000000000116 /* NativeGeopoliticalMap.swift in Sources */,
-					F10000000000000000000117 /* NativeOpenRouterService.swift in Sources */,
-				);
+				A1000000000000000000009C /* NativeWorldEconomicsPanel.swift in Sources */,
+				A1000000000000000000009F /* GeopoliticalMapData.swift in Sources */,
+				B20000000000000000000004 /* NativeMetalMapBackdrop.swift in Sources */,
+				F10000000000000000000113 /* NativeTypography.swift in Sources */,
+				F10000000000000000000114 /* NativeQuickActionCatalog.swift in Sources */,
+				F10000000000000000000115 /* NativeContextualHelp.swift in Sources */,
+				F10000000000000000000116 /* NativeGeopoliticalMap.swift in Sources */,
+				F10000000000000000000117 /* NativeOpenRouterService.swift in Sources */,
+				E840C3AFAF5454DA27A458C1 /* NativeRateLimiter.swift in Sources */,
+				66D0663507297F5A6B3CF100 /* NativeWorldMap.swift in Sources */,
+				EA8C0B64EBEF8CB8D03725B1 /* NativeGameView+Overlays.swift in Sources */,
+				374ABC6B0AF2ABC34341EE8C /* NativeGameView+Report.swift in Sources */,
+				FBD0FA7B9B73A0A447A5E302 /* NativeGameView+Rows.swift in Sources */,
+				298A5ABAB6BE358D4A3FF184 /* NativeGameEngine+Victory.swift in Sources */,
+				9D6EB3A16DB39EA55FDC11D2 /* NativeGameEngine+Dice.swift in Sources */,
+				7A52D39A00675402B2C8B3C7 /* NativeGameEngine+RegionalOrders.swift in Sources */,
+				3ABAE231B4915F73DDEC7536 /* NativeFoundationModelService+Prompts.swift in Sources */,
+				F8C2F1EDAF794B7AC14D6F23 /* NativeCampaignStore+Persistence.swift in Sources */,
+				6DC06FEEEC66BAD0673B0A8F /* DynamicAIService.swift in Sources */,
+				E67A73BE7C89EA6C8F742FD6 /* NativeEconomicModels.swift in Sources */,
+				9BAC38EEA0402C8C0D66A9D2 /* NativeEmbeddingModel.swift in Sources */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A10000000000000000000074 /* Sources */ = {
@@ -517,6 +598,7 @@
 				A10000000000000000000034 /* NativeBackendTests.swift in Sources */,
 				A100000000000000000000A4 /* NativeE2ETests.swift in Sources */,
 				A100000000000000000000C4 /* NativeZAITests.swift in Sources */,
+				A9C6C1664B222334D747DC72 /* NativeModuleTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

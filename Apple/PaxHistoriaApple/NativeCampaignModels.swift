@@ -162,6 +162,92 @@ enum NativeAIBudgetPriority: String, Codable, CaseIterable, Identifiable, Hashab
     }
 }
 
+/// **Tech Tree Eras (#7)**: progressive research eras unlocked by accumulating
+/// research points. Each era grants a per-turn real-growth bonus and raises the
+/// research threshold required to reach the next era.
+enum NativeTechEra: String, Codable, CaseIterable, Identifiable, Hashable {
+    case industrial
+    case digital
+    case aiAge = "ai-age"
+    case biotech
+    case cleanEnergy = "clean-energy"
+
+    var id: String {
+        rawValue
+    }
+
+    var displayName: String {
+        switch self {
+        case .industrial: String(localized: "Industrial")
+        case .digital: String(localized: "Digital")
+        case .aiAge: String(localized: "AI Age")
+        case .biotech: String(localized: "Biotech")
+        case .cleanEnergy: String(localized: "Clean Energy")
+        }
+    }
+
+    /// 0-based position in the progression ladder.
+    var index: Int {
+        switch self {
+        case .industrial: 0
+        case .digital: 1
+        case .aiAge: 2
+        case .biotech: 3
+        case .cleanEnergy: 4
+        }
+    }
+
+    /// Ordered progression from earliest to most advanced era.
+    static let progression: [NativeTechEra] = [.industrial, .digital, .aiAge, .biotech, .cleanEnergy]
+
+    var next: NativeTechEra? {
+        let nextIndex = index + 1
+        guard Self.progression.indices.contains(nextIndex) else { return nil }
+        return Self.progression[nextIndex]
+    }
+
+    /// Per-turn real-growth bonus (percentage points) granted by this era.
+    var growthBonus: Double {
+        switch self {
+        case .industrial: 0.0
+        case .digital: 0.5
+        case .aiAge: 1.0
+        case .biotech: 1.5
+        case .cleanEnergy: 2.0
+        }
+    }
+
+    /// Total research points required to advance from this era into the next.
+    /// Follows the `100 * targetEraIndex` ladder (digital=100, aiAge=200, ...).
+    var researchThreshold: Int {
+        100 * (index + 1)
+    }
+
+    /// Safely constructs an era from a raw string, falling back to industrial.
+    static func from(_ raw: String?) -> NativeTechEra {
+        NativeTechEra(rawValue: raw ?? "") ?? .industrial
+    }
+}
+
+/// Intelligence visibility level for fog of war.
+/// Determines what economic/diplomatic data the player can see for each country.
+enum NativeIntelVisibility: String, Codable, Hashable {
+    /// Ally or player — full ledger, relationships, doctrines visible
+    case full
+    /// Neutral — GDP, stability visible; detailed entries hidden
+    case partial
+    /// Rival — only name and flag; all data masked as CLASSIFIED
+    case hidden
+
+    var displayName: String {
+        switch self {
+        case .full: "Full Intelligence"
+        case .partial: "Partial Intelligence"
+        case .hidden: "Intelligence Gap"
+        }
+    }
+}
+
 struct NativeAICountryState: Codable, Hashable, Identifiable {
     var countryCode: String
     var doctrine: NativeAIDoctrine
@@ -310,6 +396,18 @@ struct NativeCampaignState: Codable, Hashable {
     var budgetServicesSlider: Double
     var budgetDiplomacySlider: Double
 
+    // Tech Tree (#7): research progression. `techEra` stores the raw era value
+    // (see NativeTechEra) and `researchPoints` accumulates toward the next era.
+    var techEra: String
+    var researchPoints: Int
+    /// Research budget allocation (0-1). Independent of the military/services/
+    /// diplomacy revenue split, so it does not participate in their 100% rebalance.
+    var budgetResearchSlider: Double
+
+    // Military Units (#8): standing forces for the player's country.
+    // Keys: "infantry", "armor", "air", "naval". Values = unit counts.
+    var militaryUnits: [String: Int]
+
     init(
         actionMemory: [NativeActionMemory] = [],
         advisorMessages: [NativeAdvisorMessage] = [],
@@ -344,7 +442,11 @@ struct NativeCampaignState: Codable, Hashable {
         activeOffers: [NativeDiplomaticOffer] = [],
         budgetMilitarySlider: Double = 0.33,
         budgetServicesSlider: Double = 0.34,
-        budgetDiplomacySlider: Double = 0.33
+        budgetDiplomacySlider: Double = 0.33,
+        techEra: String = NativeTechEra.industrial.rawValue,
+        researchPoints: Int = 0,
+        budgetResearchSlider: Double = 0.15,
+        militaryUnits: [String: Int]? = nil
     ) {
         self.actionMemory = actionMemory
         self.advisorMessages = advisorMessages
@@ -394,6 +496,10 @@ struct NativeCampaignState: Codable, Hashable {
         self.budgetMilitarySlider = budgetMilitarySlider
         self.budgetServicesSlider = budgetServicesSlider
         self.budgetDiplomacySlider = budgetDiplomacySlider
+        self.techEra = NativeTechEra.from(techEra).rawValue
+        self.researchPoints = max(0, researchPoints)
+        self.budgetResearchSlider = min(1.0, max(0.0, budgetResearchSlider.isFinite ? budgetResearchSlider : 0.15))
+        self.militaryUnits = militaryUnits ?? Self.defaultMilitaryUnits(forCode: country.code)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -431,6 +537,10 @@ struct NativeCampaignState: Codable, Hashable {
         case budgetMilitarySlider
         case budgetServicesSlider
         case budgetDiplomacySlider
+        case techEra
+        case researchPoints
+        case budgetResearchSlider
+        case militaryUnits
     }
 
     /// **Schema Normalization Mechanic**:
@@ -492,6 +602,13 @@ struct NativeCampaignState: Codable, Hashable {
         budgetMilitarySlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetMilitarySlider)) ?? 0.33
         budgetServicesSlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetServicesSlider)) ?? 0.34
         budgetDiplomacySlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetDiplomacySlider)) ?? 0.33
+        // Tech Tree (#7) & Military Units (#8): tolerant decoding for old saves.
+        techEra = NativeTechEra.from(try? container.decodeIfPresent(String.self, forKey: .techEra)).rawValue
+        researchPoints = (try? container.decodeIfPresent(Int.self, forKey: .researchPoints)) ?? 0
+        let decodedResearchSlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetResearchSlider)) ?? 0.15
+        budgetResearchSlider = (decodedResearchSlider.isFinite && decodedResearchSlider >= 0 && decodedResearchSlider <= 1) ? decodedResearchSlider : 0.15
+        let decodedUnits = (try? container.decodeIfPresent([String: Int].self, forKey: .militaryUnits)) ?? [:]
+        militaryUnits = decodedUnits.isEmpty ? Self.defaultMilitaryUnits(forCode: country.code) : decodedUnits
     }
 
     private static func decodeLossyArray<Element: Decodable>(
@@ -500,6 +617,33 @@ struct NativeCampaignState: Codable, Hashable {
         forKey key: CodingKeys
     ) -> [Element] {
         (try? container.decodeIfPresent(LossyDecodableArray<Element>.self, forKey: key)?.elements) ?? []
+    }
+
+    /// **Military Units (#8)**: starting force composition biased by country.
+    /// Recognized military powers receive large standing armies; regional powers
+    /// a modest force; all others a small defensive garrison.
+    static func defaultMilitaryUnits(forCode code: String) -> [String: Int] {
+        let militaryPowers: Set = [
+            "USA", "RUS", "CHN", "IND", "GBR", "FRA", "DEU", "JPN", "KOR",
+            "ISR", "PAK", "TUR", "EGY", "BRA", "IRN"
+        ]
+        let regionalPowers: Set = [
+            "SAU", "ITA", "ESP", "CAN", "AUS", "UKR", "POL", "IDN", "VNM",
+            "NGA", "ZAF", "MEX", "ARG", "PRK", "DZA", "MAR"
+        ]
+        if militaryPowers.contains(code) {
+            return ["infantry": 40, "armor": 20, "air": 15, "naval": 8]
+        } else if regionalPowers.contains(code) {
+            return ["infantry": 20, "armor": 8, "air": 5, "naval": 3]
+        } else {
+            return ["infantry": 10, "armor": 2, "air": 1, "naval": 0]
+        }
+    }
+
+    /// Convenience typed accessor for the current tech era.
+    var techEraTyped: NativeTechEra {
+        get { NativeTechEra.from(techEra) }
+        set { techEra = newValue.rawValue }
     }
 
     private static func conflictsFromLegacyMapState(
@@ -1030,7 +1174,7 @@ struct NativeAIReadiness: Codable, Hashable {
 
     private static func failureAvailability(for error: Error) -> String {
         guard let foundationError = error as? NativeFoundationModelError else {
-            return "apple-foundation-error"
+            return "ai-provider-error"
         }
 
         switch foundationError {

@@ -4,7 +4,7 @@ This document is the first stop for humans and LLM agents trying to work safely 
 
 ## Product Boundary
 
-SwiftHistoria is currently developed as a Swift-native Apple app under `Apple/`. The older React/Vite app in `src/` and the Express server in `server/` are kept as reference material, test fixtures, asset tooling, and behavioral context. New product features should normally land in the Swift-native app unless a task explicitly targets the web reference runtime.
+SwiftHistoria is developed as a Swift-native Apple app under `Apple/`. New product features should land in the Swift-native implementation.
 
 That boundary matters because the Apple app must remain native SwiftUI. Do not reintroduce `WKWebView`, JavaScript bridges, bundled `dist` assets, or Node server dependencies into the Apple targets.
 
@@ -17,22 +17,6 @@ The active native Apple product. It contains the SwiftUI UI, campaign state stor
 `Apple/PaxHistoriaAppleTests/`
 
 Native backend and end-to-end tests for state restoration, generated turn validation, persistence recovery, and Swift-native product boundaries.
-
-`src/`
-
-Legacy React/Vite reference client. It still documents useful runtime ideas: PMTiles/map asset loading, save-shape normalization, provider configuration, AI prompt flow, and older UI affordances.
-
-`server/`
-
-Legacy Express reference server used for library/scenario asset management and local runtime JSON endpoints. This is not part of the native Apple runtime.
-
-`public/`
-
-Static assets and sample save data used by the web reference runtime and tests. Large geospatial assets are expected to be Git LFS-backed.
-
-`tests/`
-
-Node tests that guard the cross-runtime contracts, asset assumptions, and native Apple project boundaries.
 
 `script/`
 
@@ -127,32 +111,9 @@ Preserve these guardrails:
 - Keep metric deltas clamped before storing state.
 - Do not silently insert fake model output after an AI failure. Surface the error and preserve player-entered context.
 
-## Legacy Web Reference Runtime
-
-The web client and server still help explain older concepts:
-
-- `src/runtime/gameState.js` normalizes old JSON save shapes for actions, chats, events, world state, and game data.
-- `src/Game/AI/gameplay.js` shows the older prompt orchestration flow and deterministic fallback approach.
-- `src/Game/AI/appleBridge.js` documents the old WebKit message contract used before the native rewrite.
-- `server/server.js` serves library/scenario CRUD and binary asset range requests for the web reference app.
-
-Treat these as reference unless a task asks for web support. Do not infer that a feature implemented in `src/` is automatically product-ready in the native app.
-
 ## Tests And Verification
 
 Useful commands:
-
-```bash
-npm test
-```
-
-Runs Node contract tests, including native Apple project boundary tests.
-
-```bash
-npm run lint
-```
-
-Runs ESLint over the JavaScript/React reference code.
 
 ```bash
 script/build_and_run.sh --verify
@@ -160,7 +121,7 @@ script/build_and_run.sh --verify
 
 Runs the native Apple verification path when Xcode tooling is available.
 
-When a change touches native state, AI generation, persistence, or Apple target wiring, prefer at least the Node tests plus the native verification script if the host can run it.
+When a change touches native state, AI generation, persistence, or Apple target wiring, prefer the native verification script if the host can run it.
 
 ## High-Risk Change Checklist
 

@@ -4,23 +4,13 @@ This guide is written for future AI coding agents and maintainers. Its goal is t
 
 ## Fast Orientation
 
-SwiftHistoria has an active native Apple implementation and an older web reference implementation.
-
-Active product path:
+SwiftHistoria is a native Apple implementation.
 
 ```text
 Apple/PaxHistoriaApple/
 ```
 
-Reference/runtime path:
-
-```text
-src/
-server/
-public/
-```
-
-If a task says "Swift native", "Mac native", "iOS", "Apple", "Foundation Models", or "no web", stay in the active product path unless the user explicitly expands scope.
+If a task says "Swift native", "Mac native", "iOS", "Apple", "Foundation Models", or "no web", stay in the active product path.
 
 ## Read These First
 
@@ -29,7 +19,6 @@ If a task says "Swift native", "Mac native", "iOS", "Apple", "Foundation Models"
 3. `Apple/PaxHistoriaApple/NativeGameEngine.swift`
 4. `Apple/PaxHistoriaApple/NativeFoundationModelService.swift`
 5. `Apple/PaxHistoriaApple/NativeStrategyContextDatabase.swift`
-6. `tests/native-apple-project.test.mjs`
 
 These files define the state, generation, persistence, and native-boundary contracts.
 
@@ -83,13 +72,12 @@ Own SwiftUI presentation. They should delegate meaningful state changes to `Nati
 
 When adding a feature:
 
-1. Decide whether it is active native work or legacy web reference work.
-2. Find the state owner and add fields to the smallest stable model.
-3. Add backward-compatible decoding defaults for persisted state.
-4. Add a store method for mutations instead of mutating state directly in views.
-5. If AI output is involved, update prompts and validation together.
-6. Add or update tests that assert the contract, not incidental UI text.
-7. Run focused tests.
+1. Find the state owner and add fields to the smallest stable model.
+2. Add backward-compatible decoding defaults for persisted state.
+3. Add a store method for mutations instead of mutating state directly in views.
+4. If AI output is involved, update prompts and validation together.
+5. Add or update tests that assert the contract, not incidental UI text.
+6. Run focused tests.
 
 ## Async Safety Pattern
 
@@ -160,7 +148,6 @@ rg "CampaignStateEnvelope|campaign-state-envelope" Apple/PaxHistoriaApple
 rg "validated\\(|apply\\(" Apple/PaxHistoriaApple/NativeGameEngine.swift
 rg "generateSlicedTurn|generateStructuredJSON|clampedFoundationPrompt" Apple/PaxHistoriaApple
 rg "NativeStrategyContextDatabase" Apple/PaxHistoriaApple
-rg "doesNotMatch\\(.*WKWebView|JavaScriptCore|dist" tests
 ```
 
 ## Verification Choices
@@ -168,20 +155,12 @@ rg "doesNotMatch\\(.*WKWebView|JavaScriptCore|dist" tests
 Small docs-only change:
 
 ```bash
-npm test
-```
-
-JavaScript reference runtime change:
-
-```bash
-npm test
-npm run lint
+script/lint.sh
 ```
 
 Native state, AI, or project-boundary change:
 
 ```bash
-npm test
 script/build_and_run.sh --verify
 ```
 

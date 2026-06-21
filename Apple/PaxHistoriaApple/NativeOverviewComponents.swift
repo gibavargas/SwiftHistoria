@@ -629,7 +629,7 @@ struct NativeSuggestedActionsPanel: View {
                         .font(NativeTypography.sectionTitle())
                         .foregroundStyle(Color.glowingCyan)
                         .help("AI-generated recommendations based on your current situation.")
-                    Text("Provider: \(store.selectedAIProviderPreference.providerName)")
+                    Text("Provider: \(suggestionProviderName)")
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Color.alertGold)
                         .accessibilityIdentifier("native-suggestions-provider-label")
@@ -673,6 +673,13 @@ struct NativeSuggestedActionsPanel: View {
                     .foregroundStyle(.secondary)
             }
         }
+    }
+
+    private var suggestionProviderName: String {
+        let provider = store.lastAIProviderUsed
+        return provider == "None" || provider == "Unknown"
+            ? store.selectedAIProviderPreference.providerName
+            : provider
     }
 }
 

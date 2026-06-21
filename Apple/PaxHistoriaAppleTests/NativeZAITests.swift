@@ -167,5 +167,4 @@ final class NativeZAITests: XCTestCase {
             XCTAssertTrue(error.localizedDescription.contains("finish_reason=length"))
         }
     }
-
 }

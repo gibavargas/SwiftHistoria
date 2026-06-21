@@ -95,7 +95,7 @@ struct NativeGameShell: View {
                             .keyboardShortcut("o", modifiers: [.command])
 
                             Button {
-                                Task { await store.advance(months: 1) }
+                                store.advance(months: 1)
                             } label: {
                                 Label("Advance", systemImage: "calendar.badge.clock")
                                     .labelStyle(.titleAndIcon)

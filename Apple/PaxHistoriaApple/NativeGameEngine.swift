@@ -180,436 +180,11 @@ enum NativeGameEngine {
         )
     }
 
-    private enum NativeRegionOrderKind {
-        case autonomy
-        case fortify
-        case invade
-        case rebuild
-        case stabilize
-        case tradeCorridor
-        case withdraw
+    // Multi-language order classifier. Detects regional orders in English,
+    // Portuguese, and Spanish so the game works regardless of the player's
+    // selected language or the LLM's response language.
 
-        var displayName: String {
-            switch self {
-            case .autonomy: "autonomy"
-            case .fortify: "fortification"
-            case .invade: "invasion"
-            case .rebuild: "rebuild"
-            case .stabilize: "stabilization"
-            case .tradeCorridor: "trade corridor"
-            case .withdraw: "withdrawal"
-            }
-        }
-    }
-
-    private static func regionOrderKind(from text: String) -> NativeRegionOrderKind? {
-        let trimmed = sanitizeFoundationModelText(text)
-        if trimmed.hasPrefix("Invade ") { return .invade }
-        if trimmed.hasPrefix("Stabilize ") { return .stabilize }
-        if trimmed.hasPrefix("Fortify ") { return .fortify }
-        if trimmed.hasPrefix("Withdraw from ") { return .withdraw }
-        if trimmed.hasPrefix("Negotiate autonomy for ") { return .autonomy }
-        if trimmed.hasPrefix("Rebuild ") { return .rebuild }
-        if trimmed.hasPrefix("Open trade corridor through ") { return .tradeCorridor }
-        return nil
-    }
-
-    private static func regionID(from text: String) -> String? {
-        guard let range = text.range(of: "(ID: "),
-              let endRange = text.range(of: ")", range: range.upperBound ..< text.endIndex)
-        else {
-            return nil
-        }
-        let regionID = String(text[range.upperBound ..< endRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-        return regionID.isEmpty ? nil : regionID
-    }
-
-    private static func fnv1aHash(_ seed: String) -> UInt64 {
-        var hash: UInt64 = 1_469_598_103_934_665_603
-        for byte in seed.utf8 {
-            hash ^= UInt64(byte)
-            hash &*= 1_099_511_628_211
-        }
-        return hash
-    }
-
-    private static func stablePercentage(seed: String) -> Double {
-        Double(fnv1aHash(seed) % 10001) / 100.0
-    }
-
-    private static func deterministicDie(seed: String) -> Int {
-        Int(fnv1aHash(seed) % 6) + 1
-    }
-
-    private static func rollDice(seed: String, count: Int) -> [Int] {
-        var rolls: [Int] = []
-        for i in 0 ..< count {
-            let die = deterministicDie(seed: "\(seed)-die-\(i)")
-            rolls.append(die)
-        }
-        return rolls
-    }
-
-    private static func roll512DiceFriction(
-        scenarioID: String,
-        gameDate: String,
-        round: Int,
-        playerCountryCode _: String
-    ) -> [NativeCampaignEvent] {
-        let turnSeed = "\(scenarioID)-\(gameDate)-round-\(round)-512dice"
-        var frictionCount = 0
-        var events: [NativeCampaignEvent] = []
-
-        // 1. Roll 512 virtual dice with a 5% threshold
-        for i in 0 ..< 512 {
-            let dieSeed = "\(turnSeed)-die-\(i)"
-            let roll = stablePercentage(seed: dieSeed)
-            if roll < 5.0 {
-                frictionCount += 1
-
-                // Check specific dice to trigger specific narrative events
-                switch i {
-                case 13:
-                    let eventId = "512dice-plague-\(gameDate)"
-                    events.append(NativeCampaignEvent(
-                        date: gameDate,
-                        description: "A major disease epidemic has spread through commercial hubs. Quarantines and worker absenteeism disrupt local and international supply chains.",
-                        id: eventId,
-                        importance: .severe,
-                        kind: .crisis,
-                        linkedActionIDs: [],
-                        notable: true,
-                        playerRelated: false,
-                        strategicEffects: [
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-stability",
-                                magnitude: -4,
-                                summary: "Epidemic quarantine suppresses stability.",
-                                target: "global",
-                                track: .internalStability
-                            ),
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-econ",
-                                magnitude: -3,
-                                summary: "Labor shortages degrade economic resilience.",
-                                target: "global",
-                                track: .economicResilience
-                            )
-                        ],
-                        title: "Virulent Epidemic Outbreak"
-                    ))
-                case 42:
-                    let eventId = "512dice-volcano-\(gameDate)"
-                    events.append(NativeCampaignEvent(
-                        date: gameDate,
-                        description: "A major tectonic volcanic eruption has spewed massive ash clouds into the upper atmosphere. Solar radiation is reduced, cooling global climates and impacting agricultural yields.",
-                        id: eventId,
-                        importance: .severe,
-                        kind: .world,
-                        linkedActionIDs: [],
-                        notable: true,
-                        playerRelated: false,
-                        strategicEffects: [
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-econ",
-                                magnitude: -3,
-                                summary: "Reduced crop yields drag economic resilience.",
-                                target: "global",
-                                track: .economicResilience
-                            ),
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-stability",
-                                magnitude: -1,
-                                summary: "Food price inflation spikes localized unrest.",
-                                target: "global",
-                                track: .internalStability
-                            )
-                        ],
-                        title: "Tectonic Eruption & Climate Cooling"
-                    ))
-                case 88:
-                    let eventId = "512dice-fiscal-\(gameDate)"
-                    events.append(NativeCampaignEvent(
-                        date: gameDate,
-                        description: "Credit markets tighten suddenly following high sovereign default risks. Interbank lending freezes, dragging down investor confidence.",
-                        id: eventId,
-                        importance: .major,
-                        kind: .economy,
-                        linkedActionIDs: [],
-                        notable: true,
-                        playerRelated: false,
-                        strategicEffects: [
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-market",
-                                magnitude: -5,
-                                summary: "Credit freeze collapses market confidence.",
-                                target: "global",
-                                track: .marketConfidence
-                            )
-                        ],
-                        title: "Sovereign Debt Credit Panic"
-                    ))
-                case 121:
-                    let eventId = "512dice-revolts-\(gameDate)"
-                    events.append(NativeCampaignEvent(
-                        date: gameDate,
-                        description: "Widespread strikes and peasant revolts erupt due to compounding economic stress and taxes, causing security concerns in major urban areas.",
-                        id: eventId,
-                        importance: .major,
-                        kind: .crisis,
-                        linkedActionIDs: [],
-                        notable: true,
-                        playerRelated: false,
-                        strategicEffects: [
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-stability",
-                                magnitude: -4,
-                                summary: "Widespread protests drop stability.",
-                                target: "global",
-                                track: .internalStability
-                            )
-                        ],
-                        title: "Widespread Labor & Civil Unrest"
-                    ))
-                case 201:
-                    let eventId = "512dice-pirates-\(gameDate)"
-                    events.append(NativeCampaignEvent(
-                        date: gameDate,
-                        description: "Pirate activity and regional blockades surge in crucial shipping straits. Global trade logistics suffer delays and increased security insurance rates.",
-                        id: eventId,
-                        importance: .minor,
-                        kind: .world,
-                        linkedActionIDs: [],
-                        notable: false,
-                        playerRelated: false,
-                        strategicEffects: [
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-econ",
-                                magnitude: -3,
-                                summary: "Trade lane friction decreases economic resilience.",
-                                target: "global",
-                                track: .economicResilience
-                            )
-                        ],
-                        title: "Surge in Maritime Piracy"
-                    ))
-                case 315:
-                    let eventId = "512dice-blight-\(gameDate)"
-                    events.append(NativeCampaignEvent(
-                        date: gameDate,
-                        description: "A virulent plant fungus attacks staple grains. Low food supply triggers high prices and drops standard of living.",
-                        id: eventId,
-                        importance: .major,
-                        kind: .economy,
-                        linkedActionIDs: [],
-                        notable: true,
-                        playerRelated: false,
-                        strategicEffects: [
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-econ",
-                                magnitude: -3,
-                                summary: "Blight decreases economic resilience.",
-                                target: "global",
-                                track: .economicResilience
-                            )
-                        ],
-                        title: "Agrarian Crop Blight"
-                    ))
-                case 412:
-                    let eventId = "512dice-schism-\(gameDate)"
-                    events.append(NativeCampaignEvent(
-                        date: gameDate,
-                        description: "A polarization of ideas splits domestic and international governing bodies, complicating diplomatic consensus.",
-                        id: eventId,
-                        importance: .minor,
-                        kind: .diplomacy,
-                        linkedActionIDs: [],
-                        notable: false,
-                        playerRelated: false,
-                        strategicEffects: [
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-diplomacy",
-                                magnitude: -2,
-                                summary: "Governing polarization reduces diplomatic leverage.",
-                                target: "global",
-                                track: .diplomaticLeverage
-                            )
-                        ],
-                        title: "Ideological Polarization"
-                    ))
-                case 501:
-                    let eventId = "512dice-breakthrough-\(gameDate)"
-                    events.append(NativeCampaignEvent(
-                        date: gameDate,
-                        description: "A sudden breakthrough in metallurgy and industrial tooling rolls out across manufacturing hubs, accelerating efficiency.",
-                        id: eventId,
-                        importance: .major,
-                        kind: .economy,
-                        linkedActionIDs: [],
-                        notable: true,
-                        playerRelated: false,
-                        strategicEffects: [
-                            NativeStrategicEffect(
-                                date: gameDate,
-                                eventId: eventId,
-                                id: "\(eventId)-effect-market",
-                                magnitude: 4,
-                                summary: "Industrial advancement boosts market confidence.",
-                                target: "global",
-                                track: .marketConfidence
-                            )
-                        ],
-                        title: "Manufacturing & Metallurgical Breakthrough"
-                    ))
-                default:
-                    break
-                }
-            }
-        }
-
-        // 2. Generate the overall global turbulence event based on total friction count
-        let overallEventId = "512dice-overall-\(gameDate)"
-        if frictionCount < 15 {
-            events.append(NativeCampaignEvent(
-                date: gameDate,
-                description: "With only \(frictionCount) global friction points active (out of 512), the world experiences a rare Golden Age of peace and prosperity. Productivity and domestic satisfaction surge.",
-                id: overallEventId,
-                importance: .major,
-                kind: .world,
-                linkedActionIDs: [],
-                notable: true,
-                playerRelated: false,
-                strategicEffects: [
-                    NativeStrategicEffect(
-                        date: gameDate,
-                        eventId: overallEventId,
-                        id: "\(overallEventId)-effect-stability",
-                        magnitude: 5,
-                        summary: "Era of peace raises domestic stability.",
-                        target: "global",
-                        track: .internalStability
-                    ),
-                    NativeStrategicEffect(
-                        date: gameDate,
-                        eventId: overallEventId,
-                        id: "\(overallEventId)-effect-market",
-                        magnitude: 4,
-                        summary: "Global optimism boosts market confidence.",
-                        target: "global",
-                        track: .marketConfidence
-                    )
-                ],
-                title: "Global Pax Era (Golden Age)"
-            ))
-        } else if frictionCount >= 15, frictionCount <= 35 {
-            events.append(NativeCampaignEvent(
-                date: gameDate,
-                description: "Normal historical friction recorded at \(frictionCount) points. Standard seasonal fluctuations, minor trade disruptions, and normal labor turnover slightly impact economic resilient buffers.",
-                id: overallEventId,
-                importance: .minor,
-                kind: .world,
-                linkedActionIDs: [],
-                notable: false,
-                playerRelated: false,
-                strategicEffects: [
-                    NativeStrategicEffect(
-                        date: gameDate,
-                        eventId: overallEventId,
-                        id: "\(overallEventId)-effect-econ",
-                        magnitude: -1,
-                        summary: "Routine friction slightly drags economic resilience.",
-                        target: "global",
-                        track: .economicResilience
-                    )
-                ],
-                title: "Historical Friction: Minor Setbacks"
-            ))
-        } else if frictionCount >= 36, frictionCount <= 45 {
-            events.append(NativeCampaignEvent(
-                date: gameDate,
-                description: "High global friction detected at \(frictionCount) points. Strained resources, border administrative congestion, and localized labor disputes threaten domestic stability.",
-                id: overallEventId,
-                importance: .major,
-                kind: .crisis,
-                linkedActionIDs: [],
-                notable: true,
-                playerRelated: false,
-                strategicEffects: [
-                    NativeStrategicEffect(
-                        date: gameDate,
-                        eventId: overallEventId,
-                        id: "\(overallEventId)-effect-stability",
-                        magnitude: -3,
-                        summary: "Widespread friction drags internal stability.",
-                        target: "global",
-                        track: .internalStability
-                    )
-                ],
-                title: "Global Turbulence: Severe Crises"
-            ))
-        } else {
-            events.append(NativeCampaignEvent(
-                date: gameDate,
-                description: "Systemic collapse conditions met with \(frictionCount) friction points. Co-occurring natural, economic, and political crises shock the international order.",
-                id: overallEventId,
-                importance: .severe,
-                kind: .crisis,
-                linkedActionIDs: [],
-                notable: true,
-                playerRelated: false,
-                strategicEffects: [
-                    NativeStrategicEffect(
-                        date: gameDate,
-                        eventId: overallEventId,
-                        id: "\(overallEventId)-effect-stability",
-                        magnitude: -6,
-                        summary: "Severe cascading instability shocks governments.",
-                        target: "global",
-                        track: .internalStability
-                    ),
-                    NativeStrategicEffect(
-                        date: gameDate,
-                        eventId: overallEventId,
-                        id: "\(overallEventId)-effect-econ",
-                        magnitude: -5,
-                        summary: "Systemic trade breakdown erodes economic resilience.",
-                        target: "global",
-                        track: .economicResilience
-                    ),
-                    NativeStrategicEffect(
-                        date: gameDate,
-                        eventId: overallEventId,
-                        id: "\(overallEventId)-effect-market",
-                        magnitude: -5,
-                        summary: "Panic in credit markets drops market confidence.",
-                        target: "global",
-                        track: .marketConfidence
-                    )
-                ],
-                title: "BLACK SWAN: Systemic Global Crisis"
-            ))
-        }
-
-        return events
-    }
+    // Public wrapper for deterministic percentage used by AI drift simulation.
 
     static func action(from text: String, date: String) -> NativePlannedAction? {
         let trimmed = sanitizeFoundationModelText(text)
@@ -624,7 +199,7 @@ enum NativeGameEngine {
         return NativePlannedAction(
             createdAt: date,
             detail: trimmed,
-            id: "action-\(UUID().uuidString.lowercased())",
+            id: "action-\(date)-\(fnv1aHash(trimmed) % 100_000)",
             resolvedAt: nil,
             status: .planned,
             title: String(title)
@@ -842,7 +417,7 @@ enum NativeGameEngine {
                 }
             }
 
-            if action.status == .planned, actionText.hasPrefix("Invade ") {
+            if action.status == .planned, regionOrderKind(from: actionText) == .invade {
                 if let regionID = regionID(from: actionText) {
                     if let region = GeopoliticalMapData.regionByID[regionID] {
                         let defenderCode = state.regionOccupations[region.id] ?? region.countryCode
@@ -855,7 +430,16 @@ enum NativeGameEngine {
                             if state.budgetMilitarySlider > 0.3 { return 2 }
                             return 1
                         }()
-                        let attackerModifier = state.budgetMilitarySlider > 0.8 ? 1 : 0
+                        let baseAttackerModifier = state.budgetMilitarySlider > 0.8 ? 1 : 0
+                        // **Military Units (#8)**: armor and air wings boost the
+                        // attacker. Armor/air units each contribute +1 per ~10
+                        // units (scaled for balance on a d6 dice system).
+                        let armorUnits = state.militaryUnits["armor", default: 0]
+                        let airUnits = state.militaryUnits["air", default: 0]
+                        let armorBonus = min(1, armorUnits / 10)
+                        let airBonus = min(1, airUnits / 10)
+                        let unitAttackBonus = armorBonus + airBonus
+                        let attackerModifier = baseAttackerModifier + unitAttackBonus
 
                         // Defender parameters: Local regions defend harder (>0.4 yields 2 dice). AI defends based on budgetPriority.
                         let defenderDiceCount: Int = {
@@ -911,7 +495,7 @@ enum NativeGameEngine {
 
                         // Detailed Battle Log
                         let defenderName = state.aiCountryStates[defenderCode]?.countryCode ?? defenderCode
-                        let battleLog = "Dice Battle for \(region.name): Attacker rolled \(attackerRawRolls) (Mil: +\(attackerModifier) -> \(attackerSorted)). Defender \(defenderName) rolled \(defenderRawRolls) (Terrain: +\(terrainModifier), Mil: +\(defenderModifier) -> \(defenderSorted)). Matchups: \(matchupDetails.joined(separator: ", "))."
+                        let battleLog = "Dice Battle for \(region.name): Attacker rolled \(attackerRawRolls) (Mil: +\(baseAttackerModifier), Units: +\(unitAttackBonus) [armor:\(armorUnits), air:\(airUnits)] -> \(attackerSorted)). Defender \(defenderName) rolled \(defenderRawRolls) (Terrain: +\(terrainModifier), Mil: +\(defenderModifier) -> \(defenderSorted)). Matchups: \(matchupDetails.joined(separator: ", "))."
 
                         var next = action
                         next.status = .resolved
@@ -1128,7 +712,7 @@ enum NativeGameEngine {
                     eventID: "occupation-fallout-\(targetDate)",
                     fiscalSpaceDelta: 0,
                     growthDelta: occupiedGrowthHit + falloutGrowthHit,
-                    id: "ledger-entry-penalty-\(UUID().uuidString.lowercased())",
+                    id: "ledger-entry-penalty-\(targetDate)",
                     inflationDelta: falloutInflationHit,
                     ruleID: "territorial-crisis",
                     summary: "Penalties from \(occupiedCount) occupied / \(falloutCount) fallout regions",
@@ -1148,7 +732,7 @@ enum NativeGameEngine {
             let collapseEvent = NativeCampaignEvent(
                 date: targetDate,
                 description: "COLLAPSE: Government authority has completely dissolved. The nation has entered a period of total anarchic collapse.",
-                id: "stability-collapse-\(targetDate)-\(UUID().uuidString.lowercased())",
+                id: "stability-collapse-\(targetDate)",
                 importance: .severe,
                 kind: .crisis,
                 linkedActionIDs: [],
@@ -1170,7 +754,7 @@ enum NativeGameEngine {
                     eventID: "crisis-\(targetDate)",
                     fiscalSpaceDelta: 0,
                     growthDelta: -1.0,
-                    id: "ledger-entry-crisis-\(UUID().uuidString.lowercased())",
+                    id: "ledger-entry-crisis-\(targetDate)",
                     inflationDelta: 2.0,
                     ruleID: "stability-crisis",
                     summary: "Economic drag from stability crisis",
@@ -1186,7 +770,7 @@ enum NativeGameEngine {
             let crisisEvent = NativeCampaignEvent(
                 date: targetDate,
                 description: "CRISIS ALERT: Stability is dangerously low (\(targetStability)%). Severe civil unrest, supply chain bottlenecks, and hyperinflation have been triggered across the nation.",
-                id: "stability-crisis-\(targetDate)-\(UUID().uuidString.lowercased())",
+                id: "stability-crisis-\(targetDate)",
                 importance: .severe,
                 kind: .crisis,
                 linkedActionIDs: [],
@@ -1248,10 +832,43 @@ enum NativeGameEngine {
             economicLedgers: &finalLedgers
         )
 
+        // **GDP Growth Mechanic**: nominal GDP compounds from real growth each turn.
+        // Without this, victory conditions referencing nominalGDPTrillions are unreachable.
+        let yearFraction = Double(months) / 12.0
+        for (code, var ledger) in finalLedgers {
+            let growthMultiplier = 1.0 + (ledger.realGrowthPercent / 100.0) * yearFraction
+            ledger.nominalGDPTrillions = Swift.max(0.01, ledger.nominalGDPTrillions * growthMultiplier)
+
+            // **P1-3: Resource depletion** — industrial budget drives extraction.
+            // Higher budget = more extraction = faster depletion + trade bonus.
+            // Scarcity (< 20% of default) penalizes growth.
+            let industryBudget = (code == state.country.code) ? state.budgetMilitarySlider : 0.3
+            let extractionRate = 2.0 * industryBudget * yearFraction
+            var resourceTradeBonus = 0.0
+            var scarcityPenalty = 0.0
+            for (resource, reserves) in ledger.resourceReserves {
+                let depleted = Swift.max(0, reserves - extractionRate * 10)
+                ledger.resourceReserves[resource] = depleted
+                // Trade bonus from resource production
+                resourceTradeBonus += depleted * 0.01
+                // Scarcity penalty when below 20% of default (30 for most, varies)
+                let defaultLevel = NativeEconomicLedger.defaultResourceReserves()[resource] ?? 30.0
+                if depleted < defaultLevel * 0.2 {
+                    scarcityPenalty -= 0.3
+                }
+            }
+            ledger.tradeBalancePercentGDP = clampDouble(ledger.tradeBalancePercentGDP + resourceTradeBonus * yearFraction, -20, 20)
+            if scarcityPenalty != 0 {
+                ledger.realGrowthPercent = clampDouble(ledger.realGrowthPercent + scarcityPenalty * yearFraction, -12, 16)
+            }
+
+            finalLedgers[code] = ledger
+        }
+
         var finalState = NativeCampaignState(
             actionMemory: actionMemory,
             advisorMessages: state.advisorMessages,
-            aiReadiness: .available(tokenBudget: "guided-generation context=4096, maxResponse=760"),
+            aiReadiness: .available(tokenBudget: "provider-specific context, maxResponse=760"),
             country: state.country,
             diplomaticThreads: state.diplomaticThreads,
             dynamicCountries: nextDynamicCountries,
@@ -1292,7 +909,7 @@ enum NativeGameEngine {
                 let winEvent = NativeCampaignEvent(
                     date: targetDate,
                     description: "VICTORY: Your administration successfully achieved all objectives for scenario \(state.scenarioName)!",
-                    id: "victory-\(targetDate)-\(UUID().uuidString.lowercased())",
+                    id: "victory-\(targetDate)",
                     importance: .major,
                     kind: .world,
                     linkedActionIDs: [],
@@ -1306,7 +923,7 @@ enum NativeGameEngine {
                 let timeoutEvent = NativeCampaignEvent(
                     date: targetDate,
                     description: "DEFEAT: Time has run out. Your administration failed to meet the objectives by the deadline.",
-                    id: "timeout-\(targetDate)-\(UUID().uuidString.lowercased())",
+                    id: "timeout-\(targetDate)",
                     importance: .severe,
                     kind: .world,
                     linkedActionIDs: [],
@@ -1325,194 +942,6 @@ enum NativeGameEngine {
             events: Array(finalState.timeline.prefix(generatedEvents.count + 2))
         )
         return finalState
-    }
-
-    private static func unresolvedRegionalOrderEvent(
-        kind: NativeRegionOrderKind,
-        action: NativePlannedAction,
-        targetDate: String
-    ) -> NativeCampaignEvent {
-        NativeCampaignEvent(
-            date: targetDate,
-            description: "The regional command could not be executed because its region marker is missing or no longer matches the current map. Open the map and issue a fresh \(kind.displayName) order from a region detail panel.",
-            id: "regional-invalid-\(action.id)-\(targetDate)",
-            importance: .minor,
-            kind: .action,
-            linkedActionIDs: [action.id],
-            notable: false,
-            playerRelated: true,
-            strategicEffects: [],
-            title: "Regional Order Not Executed"
-        )
-    }
-
-    private static func resolveRegionalOrder(
-        kind: NativeRegionOrderKind,
-        action: NativePlannedAction,
-        region: MapRegion,
-        state: NativeCampaignState,
-        targetDate: String,
-        regionOccupations: inout [String: String],
-        nuclearFalloutRegions: inout [String],
-        regionConflicts: inout [String: NativeRegionConflictState]
-    ) -> NativeCampaignEvent {
-        let eventID: String
-        let title: String
-        let description: String
-        let importance: NativeEventImportance
-        let effects: [(NativeStrategicTrack, Int, String)]
-
-        switch kind {
-        case .stabilize:
-            if region.countryCode == state.country.code || regionOccupations[region.id] == "REB" {
-                regionOccupations.removeValue(forKey: region.id)
-            }
-            regionConflicts[region.id] = NativeRegionConflictState(
-                controllerCode: regionOccupations[region.id] ?? region.countryCode,
-                intensity: 2,
-                mode: .stabilization,
-                originalCountryCode: region.countryCode,
-                regionID: region.id,
-                summary: "Administrative stabilization teams reduced visible conflict pressure.",
-                updatedAt: targetDate
-            )
-            eventID = "regional-stabilize-\(region.id)-\(targetDate)"
-            title = "Stabilization Corridor Opened in \(region.name)"
-            description = "Regional administrators opened a stabilization corridor in \(region.name), prioritizing local services, de-escalation channels, and public-security coordination."
-            importance = .major
-            effects = [
-                (.internalStability, 2, "Stabilization lowers domestic conflict pressure."),
-                (.economicResilience, 1, "Restored local administration supports service delivery.")
-            ]
-        case .fortify:
-            regionConflicts[region.id] = NativeRegionConflictState(
-                controllerCode: regionOccupations[region.id] ?? state.country.code,
-                intensity: 3,
-                mode: .stabilization,
-                originalCountryCode: region.countryCode,
-                regionID: region.id,
-                summary: "Defensive works and logistics reserves hardened the regional posture.",
-                updatedAt: targetDate
-            )
-            eventID = "regional-fortify-\(region.id)-\(targetDate)"
-            title = "\(region.name) Fortification Program"
-            description = "Defense planners fortified \(region.name), expanding logistics reserves and local readiness while signaling a firmer posture to nearby rivals."
-            importance = .major
-            effects = [
-                (.militaryReadiness, 2, "Fortification improves regional defensive readiness."),
-                (.worldTension, 1, "Visible military works increase external concern.")
-            ]
-        case .withdraw:
-            if regionOccupations[region.id] == state.country.code, region.countryCode != state.country.code {
-                regionOccupations.removeValue(forKey: region.id)
-            }
-            regionConflicts[region.id] = NativeRegionConflictState(
-                controllerCode: region.countryCode,
-                intensity: 1,
-                mode: .stabilization,
-                originalCountryCode: region.countryCode,
-                regionID: region.id,
-                summary: "Withdrawal reduced occupation burden and opened de-escalation channels.",
-                updatedAt: targetDate
-            )
-            eventID = "regional-withdraw-\(region.id)-\(targetDate)"
-            title = "Withdrawal from \(region.name)"
-            description = "The cabinet authorized a managed withdrawal from \(region.name), lowering occupation costs and converting the file into a monitored de-escalation channel."
-            importance = .major
-            effects = [
-                (.worldTension, -2, "Withdrawal lowers external friction."),
-                (.internalStability, 1, "Lower occupation burden improves domestic legitimacy.")
-            ]
-        case .autonomy:
-            if region.countryCode == state.country.code {
-                regionOccupations.removeValue(forKey: region.id)
-            }
-            regionConflicts[region.id] = NativeRegionConflictState(
-                controllerCode: region.countryCode,
-                intensity: 2,
-                mode: .stabilization,
-                originalCountryCode: region.countryCode,
-                regionID: region.id,
-                summary: "Autonomy talks traded central control for lower insurgency pressure.",
-                updatedAt: targetDate
-            )
-            eventID = "regional-autonomy-\(region.id)-\(targetDate)"
-            title = "\(region.name) Autonomy Framework"
-            description = "Negotiators opened an autonomy framework for \(region.name), exchanging limited local discretion for a calmer security environment and clearer tax-service obligations."
-            importance = .major
-            effects = [
-                (.diplomaticLeverage, 1, "Autonomy talks improve negotiated legitimacy."),
-                (.internalStability, 1, "Local concessions reduce insurgency pressure.")
-            ]
-        case .rebuild:
-            nuclearFalloutRegions.removeAll { $0 == region.id }
-            regionConflicts[region.id] = NativeRegionConflictState(
-                controllerCode: regionOccupations[region.id] ?? region.countryCode,
-                intensity: 2,
-                mode: .stabilization,
-                originalCountryCode: region.countryCode,
-                regionID: region.id,
-                summary: "Reconstruction teams repaired critical systems and reduced exclusion-zone pressure.",
-                updatedAt: targetDate
-            )
-            eventID = "regional-rebuild-\(region.id)-\(targetDate)"
-            title = "\(region.name) Reconstruction Push"
-            description = "Reconstruction agencies concentrated engineers, public-health teams, and logistics contractors in \(region.name), repairing damage and restoring economic access."
-            importance = .major
-            effects = [
-                (.economicResilience, 2, "Reconstruction restores productive capacity."),
-                (.internalStability, 1, "Visible recovery improves local legitimacy.")
-            ]
-        case .tradeCorridor:
-            regionConflicts[region.id] = NativeRegionConflictState(
-                controllerCode: regionOccupations[region.id] ?? region.countryCode,
-                intensity: 1,
-                mode: .stabilization,
-                originalCountryCode: region.countryCode,
-                regionID: region.id,
-                summary: "A protected trade corridor improved predictable market access.",
-                updatedAt: targetDate
-            )
-            eventID = "regional-corridor-\(region.id)-\(targetDate)"
-            title = "\(region.name) Trade Corridor"
-            description = "Transport ministries opened a monitored trade corridor through \(region.name), prioritizing customs reliability, service access, and market confidence."
-            importance = .minor
-            effects = [
-                (.marketConfidence, 2, "Reliable corridor access raises market confidence."),
-                (.economicResilience, 1, "Trade throughput supports resilience.")
-            ]
-        case .invade:
-            eventID = "regional-noop-\(region.id)-\(targetDate)"
-            title = "Regional Order Deferred"
-            description = "The regional order for \(region.name) was deferred for standard military resolution."
-            importance = .minor
-            effects = []
-        }
-
-        let strategicEffects = effects.enumerated().map { index, effect in
-            NativeStrategicEffect(
-                date: targetDate,
-                eventId: eventID,
-                id: "\(eventID)-effect-\(index)",
-                magnitude: effect.1,
-                summary: effect.2,
-                target: state.country.code,
-                track: effect.0
-            )
-        }
-
-        return NativeCampaignEvent(
-            date: targetDate,
-            description: description,
-            id: eventID,
-            importance: importance,
-            kind: .action,
-            linkedActionIDs: [action.id],
-            notable: true,
-            playerRelated: true,
-            strategicEffects: strategicEffects,
-            title: title
-        )
     }
 
     private static func processSovereigntyChanges(
@@ -2005,7 +1434,7 @@ enum NativeGameEngine {
         Swift.max(lower, Swift.min(upper, value))
     }
 
-    private static func getYear(from dateString: String) -> Int? {
+    static func getYear(from dateString: String) -> Int? {
         let parts = dateString.split(separator: "-")
         if let first = parts.first, let year = Int(first) {
             return year
@@ -2013,139 +1442,15 @@ enum NativeGameEngine {
         return nil
     }
 
-    static func evaluateVictoryStatus(for state: NativeCampaignState) -> NativeVictoryStatus {
-        if state.stability <= 0 {
-            return .lostCollapse
-        }
+    // MARK: - Fog of War
 
-        guard let currentYear = getYear(from: state.gameDate) else {
-            return .ongoing
-        }
-
-        let pLedger = state.economicLedger
-        let occupiedCount = state.regionOccupations.filter { key, val in
-            let reg = GeopoliticalMapData.regionByID[key]
-            return reg?.countryCode == state.country.code && val != state.country.code
-        }.count
-
-        switch state.scenarioID {
-        case "default":
-            if state.stability >= 80, pLedger.tradeBalancePercentGDP >= 0.0, occupiedCount == 0 {
-                return .won
-            }
-            if currentYear > 2030 {
-                return .lostTimeout
-            }
-        case "fragmented-markets":
-            if state.stability >= 75, pLedger.nominalGDPTrillions >= 15.0, pLedger.fiscalSpaceIndex >= 60 {
-                return .won
-            }
-            if currentYear > 2040 {
-                return .lostTimeout
-            }
-        case "resilience-decade":
-            if state.stability >= 80, pLedger.securityIndex >= 85, pLedger.rebelControlPercent <= 5.0 {
-                return .won
-            }
-            if currentYear > 2050 {
-                return .lostTimeout
-            }
-        case "soviet-triumph":
-            let occupiedRivals = state.regionOccupations.filter { key, val in
-                let reg = GeopoliticalMapData.regionByID[key]
-                return reg?.countryCode != state.country.code && val == state.country.code
-            }.count
-            if state.stability >= 80, state.worldTension >= 80, occupiedRivals >= 2 {
-                return .won
-            }
-            if currentYear > 2005 {
-                return .lostTimeout
-            }
-        case "pax-cybernetica":
-            if state.stability >= 85, pLedger.nominalGDPTrillions >= 25.0, pLedger.tradeBalancePercentGDP >= 2.0 {
-                return .won
-            }
-            if currentYear > 2065 {
-                return .lostTimeout
-            }
-        case "solarpunk-dawn":
-            if state.stability >= 85, pLedger.rebelControlPercent <= 0.1, pLedger.securityIndex >= 80 {
-                return .won
-            }
-            if currentYear > 2070 {
-                return .lostTimeout
-            }
-        default:
-            if state.stability >= 85, currentYear <= 2040 {
-                return .won
-            }
-            if currentYear > 2040 {
-                return .lostTimeout
-            }
-        }
-
-        return .ongoing
-    }
-
-    static func campaignObjectives(for state: NativeCampaignState) -> [NativeCampaignObjective] {
-        let pLedger = state.economicLedger
-        let playerCode = GeopoliticalMapData.canonicalCountryCode(state.country.code)
-        let occupiedCoreCount = state.regionOccupations.filter { key, val in
-            let reg = GeopoliticalMapData.regionByID[key]
-            return GeopoliticalMapData.canonicalCountryCode(reg?.countryCode ?? "") == playerCode &&
-                GeopoliticalMapData.canonicalCountryCode(val) != playerCode
-        }.count
-        let coreRegionCount = max(1, GeopoliticalMapData.regions(forCountryCode: state.country.code).count)
-        let occupiedRivals = state.regionOccupations.filter { key, val in
-            let reg = GeopoliticalMapData.regionByID[key]
-            return GeopoliticalMapData.canonicalCountryCode(reg?.countryCode ?? "") != playerCode &&
-                GeopoliticalMapData.canonicalCountryCode(val) == playerCode
-        }.count
-
-        switch state.scenarioID {
-        case "default":
-            return [
-                objective(id: "stability", title: "Domestic legitimacy", detail: "Reach 80 stability before the post-crisis decade closes.", current: state.stability, target: 80, suffix: "/100", deadline: "2030", complete: state.stability >= 80),
-                objective(id: "trade", title: "External balance", detail: "Bring trade balance to zero or better.", current: pLedger.tradeBalancePercentGDP, target: 0, suffix: "% GDP", deadline: "2030", complete: pLedger.tradeBalancePercentGDP >= 0),
-                objective(id: "core", title: "Territorial integrity", detail: "Keep all core regions out of occupation or guerrilla control.", current: max(0, coreRegionCount - occupiedCoreCount), target: coreRegionCount, suffix: " secure", deadline: "2030", complete: occupiedCoreCount == 0)
-            ]
-        case "fragmented-markets":
-            return [
-                objective(id: "stability", title: "Bloc stability", detail: "Hold 75 stability in a fractured market order.", current: state.stability, target: 75, suffix: "/100", deadline: "2040", complete: state.stability >= 75),
-                objective(id: "gdp", title: "Economic mass", detail: "Reach $15T nominal GDP.", current: pLedger.nominalGDPTrillions, target: 15, prefix: "$", suffix: "T", deadline: "2040", complete: pLedger.nominalGDPTrillions >= 15),
-                objective(id: "fiscal", title: "Fiscal room", detail: "Preserve 60 fiscal-space index.", current: pLedger.fiscalSpaceIndex, target: 60, suffix: "/100", deadline: "2040", complete: pLedger.fiscalSpaceIndex >= 60)
-            ]
-        case "resilience-decade":
-            return [
-                objective(id: "stability", title: "Institutional trust", detail: "Reach 80 stability through patient delivery.", current: state.stability, target: 80, suffix: "/100", deadline: "2050", complete: state.stability >= 80),
-                objective(id: "security", title: "Public security", detail: "Reach 85 public-security index.", current: pLedger.securityIndex, target: 85, suffix: "/100", deadline: "2050", complete: pLedger.securityIndex >= 85),
-                objective(id: "insurgency", title: "Local calm", detail: "Reduce rebel control to 5% or less.", current: max(0, 100 - pLedger.rebelControlPercent), target: 95, suffix: "% calm", deadline: "2050", complete: pLedger.rebelControlPercent <= 5)
-            ]
-        case "soviet-triumph":
-            return [
-                objective(id: "stability", title: "Command legitimacy", detail: "Reach 80 stability under hegemonic pressure.", current: state.stability, target: 80, suffix: "/100", deadline: "2005", complete: state.stability >= 80),
-                objective(id: "tension", title: "Bipolar leverage", detail: "Keep world tension at 80 or higher.", current: state.worldTension, target: 80, suffix: "/100", deadline: "2005", complete: state.worldTension >= 80),
-                objective(id: "rivals", title: "Forward control", detail: "Occupy at least two rival regions.", current: occupiedRivals, target: 2, suffix: " regions", deadline: "2005", complete: occupiedRivals >= 2)
-            ]
-        case "pax-cybernetica":
-            return [
-                objective(id: "stability", title: "Protocol legitimacy", detail: "Reach 85 stability.", current: state.stability, target: 85, suffix: "/100", deadline: "2065", complete: state.stability >= 85),
-                objective(id: "gdp", title: "Network scale", detail: "Reach $25T nominal GDP.", current: pLedger.nominalGDPTrillions, target: 25, prefix: "$", suffix: "T", deadline: "2065", complete: pLedger.nominalGDPTrillions >= 25),
-                objective(id: "trade", title: "Data-trade surplus", detail: "Reach +2% trade balance.", current: pLedger.tradeBalancePercentGDP, target: 2, suffix: "% GDP", deadline: "2065", complete: pLedger.tradeBalancePercentGDP >= 2)
-            ]
-        case "solarpunk-dawn":
-            return [
-                objective(id: "stability", title: "Cooperative legitimacy", detail: "Reach 85 stability.", current: state.stability, target: 85, suffix: "/100", deadline: "2070", complete: state.stability >= 85),
-                objective(id: "rebel", title: "Zero insurgency", detail: "Reduce rebel control to zero.", current: max(0, 100 - pLedger.rebelControlPercent), target: 100, suffix: "% calm", deadline: "2070", complete: pLedger.rebelControlPercent <= 0.1),
-                objective(id: "security", title: "Bioregion security", detail: "Hold 80 public-security index.", current: pLedger.securityIndex, target: 80, suffix: "/100", deadline: "2070", complete: pLedger.securityIndex >= 80)
-            ]
-        default:
-            return [
-                objective(id: "stability", title: "Regime durability", detail: "Reach 85 stability.", current: state.stability, target: 85, suffix: "/100", deadline: "2040", complete: state.stability >= 85),
-                objective(id: "security", title: "Strategic security", detail: "Keep public security above 70.", current: pLedger.securityIndex, target: 70, suffix: "/100", deadline: "2040", complete: pLedger.securityIndex >= 70),
-                objective(id: "tension", title: "Manage global friction", detail: "Keep world tension below 70.", current: max(0, 100 - state.worldTension), target: 31, suffix: " safe", deadline: "2040", complete: state.worldTension < 70)
-            ]
-        }
+    /// Determines intelligence visibility for a country based on relationship with the player.
+    static func intelVisibility(forCountryCode code: String, in state: NativeCampaignState) -> NativeIntelVisibility {
+        if code == state.country.code { return .full }
+        let relation = state.aiCountryStates[code]?.relationshipScores[state.country.code] ?? 0
+        if relation > 50 { return .full }
+        if relation > 0 { return .partial }
+        return .hidden
     }
 
     static func afterActionReport(for turn: NativeGeneratedTurn, state: NativeCampaignState) -> NativeAfterActionReport {
@@ -2165,64 +1470,5 @@ enum NativeGameEngine {
             resolvedOrderCount: resolvedOrderCount,
             summary: sanitizeFoundationModelText(turn.summary)
         )
-    }
-
-    private static func objective(
-        id: String,
-        title: String,
-        detail: String,
-        current: Double,
-        target: Double,
-        prefix: String = "",
-        suffix: String,
-        deadline: String,
-        complete: Bool
-    ) -> NativeCampaignObjective {
-        let progress = target == 0 ? (complete ? 1.0 : 0.0) : max(0, min(1, current / target))
-        return NativeCampaignObjective(
-            currentValue: "\(prefix)\(formatObjectiveNumber(current))\(suffix)",
-            detail: detail,
-            deadline: deadline,
-            id: id,
-            isComplete: complete,
-            progress: progress,
-            targetValue: "\(prefix)\(formatObjectiveNumber(target))\(suffix)",
-            title: title
-        )
-    }
-
-    private static func objective(
-        id: String,
-        title: String,
-        detail: String,
-        current: Int,
-        target: Int,
-        prefix: String = "",
-        suffix: String,
-        deadline: String,
-        complete: Bool
-    ) -> NativeCampaignObjective {
-        objective(
-            id: id,
-            title: title,
-            detail: detail,
-            current: Double(current),
-            target: Double(target),
-            prefix: prefix,
-            suffix: suffix,
-            deadline: deadline,
-            complete: complete
-        )
-    }
-
-    private static func formatObjectiveNumber(_ value: Double) -> String {
-        if value.rounded() == value {
-            return "\(Int(value))"
-        }
-        return String(format: "%.1f", value)
-    }
-
-    private static func signed(_ value: Int) -> String {
-        value >= 0 ? "+\(value)" : "\(value)"
     }
 }

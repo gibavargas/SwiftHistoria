@@ -1,3353 +1,3609 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    " ": {},
-    "%@": {},
-    "%@ (%@)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ (%2$@)"
+  "sourceLanguage" : "en",
+  "strings" : {
+    " " : {
+
+    },
+    "·" : {
+
+    },
+    "// %@ queued" : {
+
+    },
+    "%@" : {
+
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@ · ROUND %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · ROUND %3$@"
+          }
+        }
+      }
+    },
+    "%@ · %@/100" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@/100"
           }
         }
       }
     },
-    "%@ / %@ COGNITIVE LANES RESOLVED": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ / %2$@ COGNITIVE LANES RESOLVED"
+    "%@ · %@/100 world tension" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@/100 world tension"
           }
         }
       }
     },
-    "%@ countries available": {},
-    "%@ · %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ · %2$@"
+    "%@ · ROUND %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · ROUND %2$@"
           }
         }
       }
     },
-    "%@ · %@ · ROUND %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ · %2$@ · ROUND %3$@"
+    "%@ · Round %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Round %2$@ · %3$@"
           }
         }
       }
     },
-    "%@ · %@/100": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ · %2$@/100"
+    "%@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$@)"
           }
         }
       }
     },
-    "%@ · %@/100 world tension": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ · %2$@/100 world tension"
+    "%@ / %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ / %2$@"
           }
         }
       }
     },
-    "%@ · ROUND %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ · ROUND %2$@"
+    "%@ / %@ COGNITIVE LANES RESOLVED" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ / %2$@ COGNITIVE LANES RESOLVED"
           }
         }
       }
     },
-    "%@ · Round %@ · %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ · Round %2$@ · %3$@"
+    "%@ // STATUS" : {
+
+    },
+    "%@ API Key" : {
+
+    },
+    "%@ countries available" : {
+
+    },
+    "%@ ORDERS" : {
+
+    },
+    "%@/%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@/%2$@"
+          }
+        }
+      }
+    },
+    "%@/100" : {
+
+    },
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
           }
         }
       }
     },
-    "%@%%": {},
-    "%@%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@%2$@"
+    "%@%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@ %3$@"
           }
         }
       }
     },
-    "%@%@ %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@%2$@ %3$@"
+    "%@%@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@%%"
           }
         }
       }
+    },
+    "%@%%" : {
+
+    },
+    "+%@" : {
+
+    },
+    "⚠ BUDGET WARNING" : {
+
     },
-    "%@%@%%": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@%2$@%%"
+    "2010 COMMITMENTS" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COMPROMISOS 2010"
           }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COMPROMISSOS 2010"
+          }
         }
       }
     },
-    "%@/%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@/%2$@"
+    "2010 DIPLOMATIC ALIGNMENT" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALINEACIÓN DIPLOMÁTICA 2010"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALINHAMENTO DIPLOMÁTICO 2010"
           }
         }
       }
     },
-    "%@/100": {},
-    "// %@ queued": {},
-    "2010 COMMITMENTS": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "COMPROMISOS 2010"
+    "2010 TENSION SIGNALS" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SEÑALES DE TENSIÓN 2010"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "COMPROMISSOS 2010"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SINAIS DE TENSÃO 2010"
           }
         }
       }
     },
-    "2010 DIPLOMATIC ALIGNMENT": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ALINEACIÓN DIPLOMÁTICA 2010"
+    "Accept" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aceptar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ALINHAMENTO DIPLOMÁTICO 2010"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aceitar"
           }
         }
       }
     },
-    "2010 TENSION SIGNALS": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SEÑALES DE TENSIÓN 2010"
+    "ACKNOWLEDGE & CLOSE DOSSIER" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONFIRMAR Y CERRAR DOSIER"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SINAIS DE TENSÃO 2010"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONFIRMAR & FECHAR DOSSIÊ"
           }
         }
       }
     },
-    "ACKNOWLEDGE & CLOSE DOSSIER": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CONFIRMAR Y CERRAR DOSIER"
+    "Action consequence" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consecuencia de la acción"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CONFIRMAR & FECHAR DOSSIÊ"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consequência da ação"
           }
         }
       }
     },
-    "ACTIVE SIMULATION CHANNEL": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CANAL DE SIMULACIÓN ACTIVO"
+    "Actions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acciones"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CANAL DE SIMULAÇÃO ATIVO"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ações"
           }
         }
       }
     },
-    "ADVANCE TURN": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "AVANZAR TURNO"
+    "ACTIVE SIMULATION CHANNEL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ACTIVE SIMULATION CHANNEL"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CANAL DE SIMULACIÓN ACTIVO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "AVANÇAR TURNO"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CANAL DE SIMULAÇÃO ATIVO"
           }
         }
       }
     },
-    "ADVISOR BRIEF": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "INFORME DEL CONSEJERO"
+    "Add order" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir orden"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "BRIEFING DO CONSELHEIRO"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar ordem"
           }
         }
       }
     },
-    "AI PROVIDER": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PROVEEDOR DE IA"
+    "Advance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanzar"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PROVEDOR DE IA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avançar"
           }
         }
       }
     },
-    "AI Provider": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proveedor de IA"
+    "Advance rounds to trigger strategic consequences and read the timeline." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avance turnos para activar consecuencias estratégicas y lea la línea de tiempo."
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Provedor de IA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avance rodadas para acionar consequências estratégicas e leia a linha do tempo."
           }
         }
       }
     },
-    "ANALYZING CAMPAIGN TRACKS...": {
-      "extractionState": "stale",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ANALIZANDO PISTAS DE LA CAMPAÑA..."
+    "Advance time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanzar tiempo"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ANALISANDO TRILHAS DA CAMPANHA..."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avançar tempo"
           }
         }
       }
     },
-    "APPLE FM ENGINE // STATUS": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MOTOR APPLE FM // ESTADO"
+    "Advance time menu" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menú de avance de tiempo"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MOTOR APPLE FM // ESTADO"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menu de avanço de tempo"
           }
         }
       }
     },
-    "AUTO-SAVE ONLY (IRON MAN)": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GUARDADO AUTOMÁTICO (IRON MAN)"
+    "ADVANCE TURN" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AVANZAR TURNO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SALVAMENTO AUTOMÁTICO (IRON MAN)"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AVANÇAR TURNO"
           }
         }
       }
     },
-    "AVAILABILITY:": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DISPONIBILIDAD:"
+    "Advisor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advisor"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DISPONIBILIDADE:"
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consejero"
           }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conselheiro"
+          }
         }
       }
     },
-    "Accept": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aceptar"
+    "ADVISOR BRIEF" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INFORME DEL CONSEJERO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aceitar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BRIEFING DO CONSELHEIRO"
           }
         }
       }
     },
-    "Action consequence": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Consecuencia de la acción"
+    "Advisor question" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pregunta al consejero"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Consequência da ação"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pergunta ao conselheiro"
           }
         }
       }
     },
-    "Actions": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acciones"
+    "AI Provider" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI Provider"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proveedor de IA"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provedor de IA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ações"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provedor de IA"
           }
         }
       }
     },
-    "Add order": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Añadir orden"
+    "AI PROVIDER" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PROVEEDOR DE IA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adicionar ordem"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PROVEDOR DE IA"
           }
         }
       }
     },
-    "Advance": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avanzar"
+    "AI Provider Setup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI Provider Setup"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avançar"
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración del Proveedor de IA"
           }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração do Provedor de IA"
+          }
         }
       }
+    },
+    "Analyzing campaign tracks..." : {
+
     },
-    "Advance rounds to trigger strategic consequences and read the timeline.": {
-      "extractionState": "stale",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avance turnos para activar consecuencias estratégicas y lea la línea de tiempo."
+    "ANALYZING CAMPAIGN TRACKS..." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ANALIZANDO PISTAS DE LA CAMPAÑA..."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avance rodadas para acionar consequências estratégicas e leia a linha do tempo."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ANALISANDO TRILHAS DA CAMPANHA..."
           }
         }
       }
     },
-    "Advance time": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avanzar tiempo"
+    "APPLE FM ENGINE // STATUS" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MOTOR APPLE FM // ESTADO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avançar tempo"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MOTOR APPLE FM // ESTADO"
           }
         }
       }
     },
-    "Advance time menu": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Menú de avance de tiempo"
+    "Apple Foundation" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Foundation"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Menu de avanço de tempo"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Foundation"
           }
         }
       }
     },
-    "Advisor": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Consejero"
+    "Apply Suggestion" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar Sugerencia"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Conselheiro"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar Sugestão"
           }
         }
       }
     },
-    "Advisor question": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pregunta al consejero"
+    "Ask" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preguntar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pergunta ao conselheiro"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perguntar"
           }
         }
       }
     },
-    "Analyzing campaign tracks...": {},
-    "Apple Foundation": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Foundation"
+    "AUTO-SAVE ONLY (IRON MAN)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GUARDADO AUTOMÁTICO (IRON MAN)"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Foundation"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SALVAMENTO AUTOMÁTICO (IRON MAN)"
           }
         }
       }
     },
-    "Apply Suggestion": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aplicar Sugerencia"
+    "AVAILABILITY:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DISPONIBILIDAD:"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aplicar Sugestão"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DISPONIBILIDADE:"
           }
         }
       }
     },
-    "Ask": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preguntar"
+    "Budget balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance presupuestario"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Perguntar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balanço orçamentário"
           }
         }
       }
     },
-    "Budget balance": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Balance presupuestario"
+    "CALCULATING GEOPOLITICAL SHIFTS..." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CALCULANDO CAMBIOS GEOPOLÍTICOS..."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Balanço orçamentário"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CALCULANDO MUDANÇAS GEOPOLÍTICAS..."
           }
         }
       }
     },
-    "CALCULATING GEOPOLITICAL SHIFTS...": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CALCULANDO CAMBIOS GEOPOLÍTICOS..."
+    "Campaign" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campaña"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CALCULANDO MUDANÇAS GEOPOLÍTICAS..."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campanha"
           }
         }
       }
     },
-    "CHRONOLOGICAL SIGNALS": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SEÑALES CRONOLÓGICAS"
+    "Capacity" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capacidad"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SINAIS CRONOLÓGICOS"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capacidade"
           }
         }
       }
     },
-    "CONSEQUENCES": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CONSECUENCIAS"
+    "Capacity after %@" : {
+
+    },
+    "Cerrado" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sabana"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CONSEQUÊNCIAS"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrado"
           }
         }
       }
     },
-    "Campaign": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Campaña"
+    "Choose a country to begin." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elija un país para comenzar."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Campanha"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha um país para começar."
           }
         }
       }
     },
-    "Capacity": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Capacidad"
+    "Choose a nation" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige una nación"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Capacidade"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha uma nação"
           }
         }
       }
     },
-    "Cerrado": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sabana"
+    "Choose AI Provider" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose AI Provider"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir Proveedor de IA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cerrado"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolher Provedor de IA"
           }
         }
       }
     },
-    "Choose Country": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elegir País"
+    "Choose Country" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Country"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolher País"
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir País"
           }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolher País"
+          }
         }
       }
     },
-    "Choose a country to begin.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elija un país para comenzar."
+    "Choose the nation you wish to direct in the simulator." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elija la nación que desea dirigir en el simulador."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolha um país para começar."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha a nação que deseja dirigir no simulador."
           }
         }
       }
     },
-    "Choose a nation": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elige una nación"
+    "Choose your scenario, language, and country to begin." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige el escenario, idioma y país para comenzar."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolha uma nação"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha o cenário, idioma e país para começar."
           }
         }
       }
     },
-    "Choose the nation you wish to direct in the simulator.": {
-      "extractionState": "stale",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elija la nación que desea dirigir en el simulador."
+    "CHRONOLOGICAL SIGNALS" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SEÑALES CRONOLÓGICAS"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolha a nação que deseja dirigir no simulador."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SINAIS CRONOLÓGICOS"
           }
         }
       }
     },
-    "Choose your scenario, language, and country to begin.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elige el escenario, idioma y país para comenzar."
+    "City" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciudad"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolha o cenário, idioma e país para começar."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cidade"
           }
         }
       }
     },
-    "City": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ciudad"
+    "Clear search" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar búsqueda"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cidade"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpar busca"
           }
         }
       }
     },
-    "Clear search": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Borrar búsqueda"
+    "Close report" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar informe"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limpar busca"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fechar relatório"
           }
         }
       }
     },
-    "Close report": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cerrar informe"
+    "Collaborative" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colaborativo"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fechar relatório"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colaborativo"
+          }
+        }
+      }
+    },
+    "Conflict" : {
+
+    },
+    "Conflict Mode: %@ · Intensity %@/5" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Conflict Mode: %1$@ · Intensity %2$@/5"
           }
         }
       }
     },
-    "Collaborative": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Colaborativo"
+    "Conflicts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conflictos"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Colaborativo"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conflitos"
           }
         }
       }
     },
-    "Conflict": {},
-    "Conflict Mode: %@ · Intensity %@/5": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Conflict Mode: %1$@ · Intensity %2$@/5"
+    "CONSEQUENCES" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONSECUENCIAS"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONSEQUÊNCIAS"
           }
         }
       }
     },
-    "Conflicts": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Conflictos"
+    "Contested border" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frontera disputada"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Conflitos"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fronteira disputada"
           }
         }
       }
     },
-    "Contested border": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frontera disputada"
+    "Continue to AI Setup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue to AI Setup"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fronteira disputada"
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar a Configuración de IA"
           }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar para Configuração de IA"
+          }
         }
       }
     },
-    "Continue to Choose Country": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Continuar a Elegir País"
+    "Continue to Choose Country" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar a Elegir País"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Continuar para Escolher País"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar para Escolher País"
           }
         }
       }
     },
-    "Conventional occupation": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ocupación convencional"
+    "Conventional occupation" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocupación convencional"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ocupação convencional"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocupação convencional"
           }
         }
       }
+    },
+    "Cost %@" : {
+
     },
-    "Cost: %@ Capacity": {},
-    "Counter": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contraoferta"
+    "Cost: %@ Capacity" : {
+
+    },
+    "Counter" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contraoferta"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contraproposta"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contraproposta"
           }
         }
       }
     },
-    "Countries": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Países"
+    "Countries" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Países"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Países"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Países"
           }
         }
       }
     },
-    "Crisis Action": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acción de Crisis"
+    "Crisis Action" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acción de Crisis"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ação de Crise"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ação de Crise"
+          }
+        }
+      }
+    },
+    "Current Occupier: %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Current Occupier: %1$@ (%2$@)"
           }
         }
       }
     },
-    "Current Occupier: %@ (%@)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Current Occupier: %1$@ (%2$@)"
+    "Defensive" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Defensivo"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Defensivo"
           }
         }
       }
     },
-    "DESK": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CENTRO"
+    "Describe a concrete policy, investment, or diplomatic action." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describa una política, inversión o acción diplomática concreta."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CENTRO"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descreva uma política, investimento ou ação diplomática concreta."
           }
         }
       }
     },
-    "DOMESTIC BUDGET ALLOCATION": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ASIGNACIÓN PRESUPUESTARIA"
+    "Describe a policy, investment, or diplomatic move. It runs when you advance the turn." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describe una política, inversión o acción diplomática. Se ejecuta al avanzar el turno."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ALOCAÇÃO ORÇAMENTÁRIA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descreva uma política, investimento ou ação diplomática. Executa ao avançar o turno."
           }
         }
       }
     },
-    "Defensive": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Defensivo"
+    "DESK" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CENTRO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Defensivo"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CENTRO"
           }
         }
       }
     },
-    "Describe a concrete policy, investment, or diplomatic action.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Describa una política, inversión o acción diplomática concreta."
+    "Difficulty" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dificultad"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Descreva uma política, investimento ou ação diplomática concreta."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dificuldade"
           }
         }
       }
     },
-    "Describe a policy, investment, or diplomatic move. It runs when you advance the turn.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Describe una política, inversión o acción diplomática. Se ejecuta al avanzar el turno."
+    "Diplomacy" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diplomacia"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Descreva uma política, investimento ou ação diplomática. Executa ao avançar o turno."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diplomacia"
           }
         }
       }
     },
-    "Difficulty": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dificultad"
+    "Diplomacy & Foreign Aid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diplomacia y Ayuda Externa"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dificuldade"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diplomacia & Ajuda Externa"
           }
         }
       }
     },
-    "Diplomacy": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Diplomacia"
+    "Diplomatic directives can coordinate resources, trade corridors, or border stability." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las directivas diplomáticas pueden coordinar recursos, corredores comerciales o estabilidad fronteriza."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Diplomacia"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diretivas diplomáticas podem coordenar recursos, corredores comerciais ou estabilidade fronteiriça."
           }
         }
       }
     },
-    "Diplomacy & Foreign Aid": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Diplomacia y Ayuda Externa"
+    "Diplomatic Leverage" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Influencia Diplomática"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Diplomacia & Ajuda Externa"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Influência Diplomática"
           }
         }
       }
     },
-    "Diplomatic Leverage": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Influencia Diplomática"
+    "Diplomatic message" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensaje diplomático"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Influência Diplomática"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensagem diplomática"
           }
         }
       }
     },
-    "Diplomatic directives can coordinate resources, trade corridors, or border stability.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Las directivas diplomáticas pueden coordinar recursos, corredores comerciales o estabilidad fronteriza."
+    "Directives" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Directivas"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Diretivas diplomáticas podem coordenar recursos, corredores comerciais ou estabilidade fronteiriça."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diretivas"
           }
         }
       }
     },
-    "Diplomatic message": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mensaje diplomático"
+    "Directives should describe concrete policy, investment, or diplomatic initiatives." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las directivas deben describir políticas, inversiones o iniciativas diplomáticas concretas."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mensagem diplomática"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diretivas devem descrever políticas, investimentos ou iniciativas diplomáticas concretas."
           }
         }
       }
     },
-    "Directives": {
-      "extractionState": "stale",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Directivas"
+    "Distribute your administrative and financial resources. Sliders auto-balance to total 100%." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distribuya sus recursos administrativos y financieros. Los deslizadores se equilibran para totalizar 100%."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Diretivas"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distribua seus recursos administrativos e financeiros. Os controles deslizantes equilibram para totalizar 100%."
           }
         }
       }
     },
-    "Directives should describe concrete policy, investment, or diplomatic initiatives.": {
-      "extractionState": "stale",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Las directivas deben describir políticas, inversiones o iniciativas diplomáticas concretas."
+    "DOMESTIC BUDGET ALLOCATION" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ASIGNACIÓN PRESUPUESTARIA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Diretivas devem descrever políticas, investimentos ou iniciativas diplomáticas concretas."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALOCAÇÃO ORÇAMENTÁRIA"
           }
         }
       }
     },
-    "Distribute your administrative and financial resources. Sliders auto-balance to total 100%.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Distribuya sus recursos administrativos y financieros. Los deslizadores se equilibran para totalizar 100%."
+    "Domestic response" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respuesta doméstica"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Distribua seus recursos administrativos e financeiros. Os controles deslizantes equilibram para totalizar 100%."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resposta doméstica"
           }
         }
       }
     },
-    "Domestic response": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Respuesta doméstica"
+    "Draft enqueued policy orders or leverage advisor intelligence." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redacte órdenes de política o use la inteligencia del consejero."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resposta doméstica"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redija ordens de política ou use a inteligência do conselheiro."
           }
         }
       }
     },
-    "Draft enqueued policy orders or leverage advisor intelligence.": {
-      "extractionState": "stale",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Redacte órdenes de política o use la inteligencia del consejero."
+    "Draft order" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrador de orden"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Redija ordens de política ou use a inteligência do conselheiro."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rascunho de ordem"
           }
         }
       }
+    },
+    "e.g., \"Fund grid modernization\" or \"Establish logistics buffers with neighboring states.\"" : {
+
+    },
+    "e.g., \"Propose a technology sharing treaty\" or \"Request naval cooperation.\"" : {
+
     },
-    "Draft order": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Borrador de orden"
+    "e.g., \"What economic threats should we prioritize?\" or \"Is world tension stable?\"" : {
+
+    },
+    "Economic Event" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento Económico"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rascunho de ordem"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento Econômico"
           }
         }
       }
     },
-    "ECONOMIC LEDGER": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "LIBRO ECONÓMICO"
+    "ECONOMIC LEDGER" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LIBRO ECONÓMICO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "LIVRO ECONÔMICO"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LIVRO ECONÔMICO"
           }
         }
       }
     },
-    "EXIT TO MAIN MENU": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SALIR AL MENÚ"
+    "Economic model" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelo económico"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SAIR PARA O MENU"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelo econômico"
           }
         }
       }
     },
-    "Economic Event": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Evento Económico"
+    "Economic Resilience" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resiliencia Económica"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Evento Econômico"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resiliência Econômica"
           }
         }
       }
     },
-    "Economic Resilience": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resiliencia Económica"
+    "Economics" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Economía"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resiliência Econômica"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Economia"
           }
         }
       }
     },
-    "Economic model": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Modelo económico"
+    "Economy" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Economía"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Modelo econômico"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Economia"
           }
         }
       }
     },
-    "Economics": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Economía"
+    "English" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inglés"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Economia"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inglês"
           }
         }
       }
     },
-    "Economy": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Economía"
+    "Events" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Economia"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eventos"
           }
         }
       }
     },
-    "English": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inglés"
+    "EXIT TO MAIN MENU" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SALIR AL MENÚ"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inglês"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SAIR PARA O MENU"
           }
         }
       }
     },
-    "Events": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eventos"
+    "Expansionist" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expansionista"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eventos"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expansionista"
           }
         }
       }
     },
-    "Expansionist": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Expansionista"
+    "Export save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar guardado"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Expansionista"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar save"
           }
         }
       }
     },
-    "Export save": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exportar guardado"
+    "External facts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hechos externos"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exportar save"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fatos externos"
           }
         }
       }
     },
-    "External facts": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hechos externos"
+    "Fallout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contaminación"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fatos externos"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contaminação"
           }
         }
       }
     },
-    "Fallout": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contaminación"
+    "Filed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivado"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contaminação"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivado"
           }
         }
       }
     },
-    "Filed": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Archivado"
+    "Find your country" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encuentra tu país"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arquivado"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontre seu país"
           }
         }
       }
     },
-    "Find your country": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Encuentra tu país"
+    "Forest" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bosque"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Encontre seu país"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Floresta"
           }
         }
       }
     },
-    "Forest": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bosque"
+    "Free tier: 20 requests/minute. Get a key at openrouter.ai/keys." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free tier: 20 requests/minute. Get a key at openrouter.ai/keys."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan gratuito: 20 solicitudes/minuto. Obtenga una clave en openrouter.ai/keys."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Floresta"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plano gratuito: 20 requisições/minuto. Obtenha uma chave em openrouter.ai/keys."
           }
         }
       }
     },
-    "GDP %@ · Growth %@%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "GDP %1$@ · Growth %2$@%3$@"
+    "GDP %@ · Growth %@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "GDP %1$@ · Growth %2$@%3$@"
           }
         }
       }
     },
-    "GDP: %@ · Growth: %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "GDP: %1$@ · Growth: %2$@"
+    "GDP: %@ · Growth: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "GDP: %1$@ · Growth: %2$@"
           }
         }
       }
     },
-    "GEOPOLITICAL PERIOD REPORT": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "INFORME DEL PERÍODO GEOPOLÍTICO"
+    "GEOPOLITICAL PERIOD REPORT" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INFORME DEL PERÍODO GEOPOLÍTICO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "RELATÓRIO DO PERÍODO GEOPOLÍTICO"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RELATÓRIO DO PERÍODO GEOPOLÍTICO"
           }
         }
       }
     },
-    "GLOBAL ECONOMIC DOSSIER": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DOSIER ECONÓMICO GLOBAL"
+    "GLOBAL ECONOMIC DOSSIER" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DOSIER ECONÓMICO GLOBAL"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DOSSIÊ ECONÔMICO GLOBAL"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DOSSIÊ ECONÔMICO GLOBAL"
           }
         }
       }
     },
-    "Global Event": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Evento Global"
+    "Global Event" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento Global"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Evento Global"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento Global"
           }
         }
       }
     },
-    "Growth %@%%": {},
-    "Guerrilla control": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Control guerrillero"
+    "Growth %@%%" : {
+
+    },
+    "Guerrilla control" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control guerrillero"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Controle guerrilheiro"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controle guerrilheiro"
           }
         }
       }
     },
-    "Hide dossier": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ocultar dosier"
+    "Hide dossier" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar dosier"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ocultar dossiê"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar dossiê"
           }
         }
       }
     },
-    "Hide orders": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ocultar órdenes"
+    "Hide orders" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar órdenes"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ocultar ordens"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar ordens"
           }
         }
       }
     },
-    "How to play": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cómo jugar"
+    "How to play" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cómo jugar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Como jogar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Como jogar"
           }
         }
       }
     },
-    "INTEL REPORT // CLASS-%@": {},
-    "INTERFACE LANGUAGE": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "IDIOMA DE LA INTERFAZ"
+    "Import save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar guardado"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "IDIOMA DA INTERFACE"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar save"
           }
         }
       }
     },
-    "Import save": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Importar guardado"
+    "Inquiries can focus on stability, tension, threat levels, or advisor recommendations." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las consultas pueden centrarse en estabilidad, tensión, niveles de amenaza o recomendaciones."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Importar save"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consultas podem focar em estabilidade, tensão, níveis de ameaça ou recomendações."
           }
         }
       }
     },
-    "Inquiries can focus on stability, tension, threat levels, or advisor recommendations.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Las consultas pueden centrarse en estabilidad, tensión, niveles de amenaza o recomendaciones."
+    "Intel" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intel"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Consultas podem focar em estabilidade, tensão, níveis de ameaça ou recomendações."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intel"
           }
         }
       }
+    },
+    "INTEL REPORT // CLASS-%@" : {
+
+    },
+    "INTELLIGENCE GAP — DATA REDACTED" : {
+
     },
-    "Intel": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Intel"
+    "INTERFACE LANGUAGE" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IDIOMA DE LA INTERFAZ"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Intel"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IDIOMA DA INTERFACE"
           }
         }
       }
     },
-    "Internal Stability": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estabilidad Interna"
+    "Internal Stability" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estabilidad Interna"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estabilidade Interna"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estabilidade Interna"
           }
         }
       }
     },
-    "Iron Man": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Iron Man"
+    "Iron Man" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iron Man"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Iron Man"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iron Man"
           }
         }
       }
     },
-    "Isolationist": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aislacionista"
+    "Isolationist" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aislacionista"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Isolacionista"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Isolacionista"
           }
         }
       }
     },
-    "LAST DIAGNOSTIC:": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ÚLTIMO DIAGNÓSTICO:"
+    "Language" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ÚLTIMO DIAGNÓSTICO:"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma"
           }
         }
       }
     },
-    "Language": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Idioma"
+    "Language will sync on the next app launch. Restart to apply UI changes." : {
+
+    },
+    "Language will sync on the next campaign save." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El idioma se sincronizará en el próximo guardado de la campaña."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Idioma"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O idioma sincronizará no próximo salvamento da campanha."
           }
         }
       }
     },
-    "Language will sync on the next app launch. Restart to apply UI changes.": {},
-    "Language will sync on the next campaign save.": {
-      "extractionState": "stale",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "El idioma se sincronizará en el próximo guardado de la campaña."
+    "LAST DIAGNOSTIC:" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ÚLTIMO DIAGNÓSTICO:"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O idioma sincronizará no próximo salvamento da campanha."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ÚLTIMO DIAGNÓSTICO:"
           }
         }
       }
     },
-    "Latest event": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Último evento"
+    "Latest event" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Último evento"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Último evento"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Último evento"
           }
         }
       }
     },
-    "Library": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Archivo"
+    "Library" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivo"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arquivo"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivo"
           }
         }
       }
     },
-    "Map": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mapa"
+    "Map" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Map"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapa"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mapa"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapa"
           }
         }
       }
     },
-    "Market Confidence": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confianza del Mercado"
+    "Market Confidence" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confianza del Mercado"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confiança do Mercado"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confiança do Mercado"
           }
         }
       }
     },
-    "Mercantile": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mercantil"
+    "Mercantile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mercantil"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mercantil"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mercantil"
           }
         }
       }
     },
-    "Military Alliance": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alianza Militar"
+    "Military Alliance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alianza Militar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aliança Militar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aliança Militar"
           }
         }
       }
     },
-    "Military Readiness": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preparación Militar"
+    "Military Readiness" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparación Militar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preparação Militar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparação Militar"
           }
         }
       }
     },
-    "Military Spending": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gasto Militar"
+    "Military Spending" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto Militar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gasto Militar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto Militar"
           }
         }
       }
     },
-    "Mountain": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Montaña"
+    "Mountain" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montaña"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Montanha"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montanha"
           }
         }
       }
     },
-    "Nation Policy": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Política Nacional"
+    "Nation Policy" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Política Nacional"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Política Nacional"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Política Nacional"
           }
         }
       }
     },
-    "Neutral": {},
-    "Neutral %@%%": {},
-    "New Campaign": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nueva Campaña"
+    "Neutral" : {
+
+    },
+    "Neutral %@%%" : {
+
+    },
+    "New Campaign" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Campaign"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva Campaña"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nova Campanha"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova Campanha"
           }
         }
       }
     },
-    "New order": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nueva orden"
+    "New order" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva orden"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nova ordem"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova ordem"
           }
         }
       }
     },
-    "No advisory suggestions available.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ninguna sugerencia disponible."
+    "No advisory suggestions available." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna sugerencia disponible."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhuma sugestão disponível."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma sugestão disponível."
           }
         }
       }
     },
-    "No campaign loaded": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ninguna campaña cargada"
+    "No campaign loaded" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna campaña cargada"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhuma campanha carregada"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma campanha carregada"
           }
         }
       }
     },
-    "No campaign loaded.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ninguna campaña cargada."
+    "No campaign loaded." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna campaña cargada."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhuma campanha carregada."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma campanha carregada."
           }
         }
       }
     },
-    "No country matched that search.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ningún país coincide con la búsqueda."
+    "No country matched that search." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún país coincide con la búsqueda."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhum país corresponde à busca."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum país corresponde à busca."
           }
         }
       }
     },
-    "No events yet": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sin eventos aún"
+    "No events yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin eventos aún"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhum evento ainda"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum evento ainda"
           }
         }
       }
     },
-    "No events yet.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sin eventos aún."
+    "No events yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin eventos aún."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhum evento ainda."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum evento ainda."
           }
         }
       }
     },
-    "No historical directives logged.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ningún historial de directivas."
+    "No historical directives logged." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún historial de directivas."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhum histórico de diretivas."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum histórico de diretivas."
           }
         }
       }
     },
-    "No messages yet.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sin mensajes aún."
+    "No messages yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin mensajes aún."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhuma mensagem ainda."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma mensagem ainda."
           }
         }
       }
     },
-    "No orders queued.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sin órdenes en cola."
+    "No orders queued." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin órdenes en cola."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhuma ordem na fila."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma ordem na fila."
           }
         }
       }
     },
-    "No specific signals logged this period.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ninguna señal específica en este período."
+    "No specific signals logged this period." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna señal específica en este período."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nenhum sinal específico neste período."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum sinal específico neste período."
           }
         }
       }
     },
-    "Non-Aggression Pact": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pacto de No Agresión"
+    "Non-Aggression Pact" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pacto de No Agresión"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pacto de Não-Agressão"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pacto de Não-Agressão"
           }
         }
       }
     },
-    "Normal": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Normal"
+    "Normal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Normal"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
           }
         }
       }
     },
-    "Nuclear fallout": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contaminación nuclear"
+    "Nuclear fallout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contaminación nuclear"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contaminação nuclear"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contaminação nuclear"
           }
         }
       }
     },
-    "OPENROUTER (FREE) CONFIGURATION": {},
-    "Ocean": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Océano"
+    "Ocean" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Océano"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oceano"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oceano"
           }
         }
       }
     },
-    "Open the campaign dossier": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Abra el dosier de la campaña"
+    "Open the campaign dossier" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra el dosier de la campaña"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Abra o dossiê da campanha"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra o dossiê da campanha"
           }
         }
       }
     },
-    "OpenRouter": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OpenRouter"
+    "OpenRouter" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OpenRouter"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OpenRouter"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OpenRouter"
           }
         }
       }
     },
-    "OpenRouter is selected, but no API key is saved. Turn resolution will fall back to Z.AI if configured, otherwise Apple Foundation Models.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OpenRouter está seleccionado, pero no hay clave de API guardada. La resolución del turno usará Z.AI si está configurado; de lo contrario, Apple Foundation Models."
+    "OPENROUTER (FREE) CONFIGURATION" : {
+
+    },
+    "OpenRouter is selected, but no API key is saved. Turn resolution will fall back to Z.AI if configured, otherwise Apple Foundation Models." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OpenRouter está seleccionado, pero no hay clave de API guardada. La resolución del turno usará Z.AI si está configurado; de lo contrario, Apple Foundation Models."
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OpenRouter está selecionado, mas nenhuma chave de API foi salva. A resolução do turno cairá para Z.AI se configurado; caso contrário, Apple Foundation Models."
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OpenRouter está selecionado, mas nenhuma chave de API foi salva. A resolução do turno cairá para Z.AI se configurado; caso contrário, Apple Foundation Models."
           }
         }
       }
+    },
+    "Oppose %@%%" : {
+
     },
-    "Oppose %@%%": {},
-    "Order Invasion (Cost: 40)": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ordenar Invasión (Coste: 40)"
+    "Order Invasion (Cost: 40)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenar Invasión (Coste: 40)"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ordenar Invasão (Custo: 40)"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenar Invasão (Custo: 40)"
           }
         }
       }
     },
-    "Orders": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Órdenes"
+    "Orders" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orders"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ordens"
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Órdenes"
           }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordens"
+          }
         }
       }
     },
-    "Original Sovereign: %@ (%@)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Original Sovereign: %1$@ (%2$@)"
+    "Original Sovereign: %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Original Sovereign: %1$@ (%2$@)"
           }
         }
       }
     },
-    "Overview": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vista General"
+    "Overview" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista General"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Visão Geral"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visão Geral"
           }
         }
       }
     },
-    "PLAYER": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "JUGADOR"
+    "Pax Historia" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pax Historia"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "JOGADOR"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pax Historia"
           }
         }
       }
     },
-    "PLAYER TRANSMISSION": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "TRANSMISIÓN DEL JUGADOR"
+    "Plains" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Llanuras"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "TRANSMISSÃO DO JOGADOR"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planícies"
           }
         }
       }
     },
-    "POLL MODEL STATUS": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VERIFICAR ESTADO DEL MODELO"
+    "Plan concrete instruments, accept suggestions from the selected AI provider, and advance only when the queue is ready." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planifica instrumentos concretos, acepta sugerencias del proveedor de IA seleccionado y avanza solo cuando la cola esté lista."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VERIFICAR ESTADO DO MODELO"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planeje instrumentos concretos, aceite sugestões do provedor de IA selecionado e avance só quando a fila estiver pronta."
           }
         }
       }
+    },
+    "Player" : {
+
     },
-    "PUBLIC OPINION": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OPINIÓN PÚBLICA"
+    "PLAYER" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JUGADOR"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OPINIÃO PÚBLICA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JOGADOR"
           }
         }
       }
     },
-    "Pax Historia": {
-      "extractionState": "stale",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pax Historia"
+    "PLAYER TRANSMISSION" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRANSMISIÓN DEL JUGADOR"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pax Historia"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRANSMISSÃO DO JOGADOR"
           }
         }
       }
     },
-    "Plains": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Llanuras"
+    "POLL MODEL STATUS" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VERIFICAR ESTADO DEL MODELO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planícies"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VERIFICAR ESTADO DO MODELO"
           }
         }
       }
     },
-    "Plan concrete instruments, accept suggestions from the selected AI provider, and advance only when the queue is ready.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planifica instrumentos concretos, acepta sugerencias del proveedor de IA seleccionado y avanza solo cuando la cola esté lista."
+    "Portuguese" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portugués"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planeje instrumentos concretos, aceite sugestões do provedor de IA selecionado e avance só quando a fila estiver pronta."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Português"
           }
         }
       }
     },
-    "Player": {},
-    "Portuguese": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Portugués"
+    "Projections of fiscal space, GDP growth, inflation, public debt, and trade balances across all major game polities. Selected policies dynamically trigger domestic and external adjustments." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proyecciones de espacio fiscal, crecimiento del PIB, inflación, deuda pública y balanzas comerciales en todas las principales naciones del juego. Las políticas seleccionadas activan ajustes domésticos y externos dinámicamente."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Português"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projeções de espaço fiscal, crescimento do PIB, inflação, dívida pública e balanças comerciais em todas as principais nações do jogo. Políticas selecionadas disparam ajustes domésticos e externos dinamicamente."
           }
         }
       }
     },
-    "Projections of fiscal space, GDP growth, inflation, public debt, and trade balances across all major game polities. Selected policies dynamically trigger domestic and external adjustments.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proyecciones de espacio fiscal, crecimiento del PIB, inflación, deuda pública y balanzas comerciales en todas las principales naciones del juego. Las políticas seleccionadas activan ajustes domésticos y externos dinámicamente."
+    "Proposals from other nations" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Propuestas de otras naciones"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Projeções de espaço fiscal, crescimento do PIB, inflação, dívida pública e balanças comerciais em todas as principais nações do jogo. Políticas selecionadas disparam ajustes domésticos e externos dinamicamente."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Propostas de outras nações"
           }
         }
       }
     },
-    "Proposals from other nations": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Propuestas de otras naciones"
+    "Provider: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proveedor: %@"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Propostas de outras nações"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provedor: %@"
           }
         }
       }
     },
-    "Provider: %@": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proveedor: %@"
+    "PUBLIC OPINION" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OPINIÓN PÚBLICA"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Provedor: %@"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OPINIÃO PÚBLICA"
           }
         }
       }
     },
-    "Public Security: %@ · Insurgency: %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Public Security: %1$@ · Insurgency: %2$@"
+    "Public Security: %@ · Insurgency: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Public Security: %1$@ · Insurgency: %2$@"
           }
         }
       }
     },
-    "Public Services & Welfare": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Servicios Públicos y Bienestar"
+    "Public Services & Welfare" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Servicios Públicos y Bienestar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Serviços Públicos & Bem-Estar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serviços Públicos & Bem-Estar"
           }
         }
       }
     },
-    "Quick actions": {},
-    "RECENT FISCAL ENTRIES": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ASIENTOS FISCALES RECIENTES"
+    "Quick actions" : {
+
+    },
+    "RECENT FISCAL ENTRIES" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ASIENTOS FISCALES RECIENTES"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "LANÇAMENTOS FISCAIS RECENTES"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LANÇAMENTOS FISCAIS RECENTES"
           }
         }
       }
     },
-    "RESET & DELETE SAVE": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "REINICIAR Y BORRAR PARTIDA"
+    "Recent orders" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Órdenes recientes"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "REINICIAR & APAGAR SAVE"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordens recentes"
           }
         }
       }
     },
-    "RESUME SAVED CAMPAIGN": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "REANUDAR CAMPAÑA GUARDADA"
+    "Refresh suggestions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar sugerencias"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "RETOMAR CAMPANHA SALVA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizar sugestões"
           }
         }
       }
     },
-    "ROUND %@": {},
-    "Recent orders": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Órdenes recientes"
+    "Regional orders" : {
+
+    },
+    "Reject" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechazar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ordens recentes"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejeitar"
           }
         }
       }
     },
-    "Refresh suggestions": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Actualizar sugerencias"
+    "Relations" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relaciones"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Atualizar sugestões"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relações"
           }
         }
       }
     },
-    "Reject": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechazar"
+    "Request an assessment of the current geopolitical environment." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solicite una evaluación del entorno geopolítico actual."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rejeitar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solicite uma avaliação do ambiente geopolítico atual."
           }
         }
       }
     },
-    "Relations": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Relaciones"
+    "RESET & DELETE SAVE" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "REINICIAR Y BORRAR PARTIDA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Relações"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "REINICIAR & APAGAR SAVE"
           }
         }
       }
     },
-    "Request an assessment of the current geopolitical environment.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Solicite una evaluación del entorno geopolítico actual."
+    "Resume Campaign" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reanudar Campaña"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Solicite uma avaliação do ambiente geopolítico atual."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retomar Campanha"
           }
         }
       }
     },
-    "Resume Campaign": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reanudar Campaña"
+    "RESUME SAVED CAMPAIGN" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "REANUDAR CAMPAÑA GUARDADA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Retomar Campanha"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RETOMAR CAMPANHA SALVA"
           }
         }
       }
+    },
+    "Round %@" : {
+
     },
-    "Round %@": {},
-    "SAVE CAMPAIGN": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GUARDAR CAMPAÑA"
+    "ROUND %@" : {
+
+    },
+    "Sandbox" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo Libre"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SALVAR CAMPANHA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo Livre"
           }
         }
       }
     },
-    "SCENARIOS": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ESCENARIOS"
+    "SAVE CAMPAIGN" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GUARDAR CAMPAÑA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CENÁRIOS"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SALVAR CAMPANHA"
           }
         }
       }
     },
-    "SECURE TRANSMISSION": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "TRANSMISIÓN SEGURA"
+    "Save data" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos de guardado"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "TRANSMISSÃO SEGURA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dados de save"
           }
         }
       }
     },
-    "SIMULATION ACTIVE // %@": {},
-    "SUMMARY ANALYSIS": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ANÁLISIS RESUMIDO"
+    "Scenario archive" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivo de escenarios"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ANÁLISE RESUMIDA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivo de cenários"
           }
         }
       }
     },
-    "SWIFT HISTORIA COMMAND CENTER": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CENTRO DE COMANDO PAX HISTORIA"
+    "Scenario Setup" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración del Escenario"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CENTRO DE COMANDO PAX HISTORIA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuração do Cenário"
           }
         }
       }
     },
-    "SYSTEM": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SISTEMA"
+    "Scenario: %@" : {
+
+    },
+    "SCENARIOS" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ESCENARIOS"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SISTEMA"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CENÁRIOS"
           }
         }
       }
     },
-    "Sandbox": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Modo Libre"
+    "Sea" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Modo Livre"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mar"
           }
         }
       }
     },
-    "Save data": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Datos de guardado"
+    "Search country or ISO code" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar país o código ISO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dados de save"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar país ou código ISO"
           }
         }
       }
     },
-    "Scenario Setup": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Configuración del Escenario"
+    "SECURE TRANSMISSION" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRANSMISIÓN SEGURA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Configuração do Cenário"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRANSMISSÃO SEGURA"
           }
         }
       }
     },
-    "Scenario archive": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Archivo de escenarios"
+    "Security Anxiety" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansiedad de Seguridad"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arquivo de cenários"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansiedade de Segurança"
           }
         }
       }
     },
-    "Scenario: %@": {},
-    "Sea": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mar"
+    "Select a geopolitical scenario from the stack above." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccione un escenario geopolítico de la pila de arriba."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecione um cenário geopolítico da pilha acima."
           }
         }
       }
+    },
+    "Select how SwiftHistoria generates turns. You can change this later in Settings." : {
+
     },
-    "Search country or ISO code": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Buscar país o código ISO"
+    "Send" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Buscar país ou código ISO"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar"
           }
         }
       }
     },
-    "Security Anxiety": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ansiedad de Seguridad"
+    "SESSION TOKENS:" : {
+
+    },
+    "Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ansiedade de Segurança"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurações"
           }
         }
       }
     },
-    "Select a geopolitical scenario from the stack above.": {
-      "extractionState": "stale",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seleccione un escenario geopolítico de la pila de arriba."
+    "Show dossier" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar dosier"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Selecione um cenário geopolítico da pilha acima."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar dossiê"
           }
         }
       }
     },
-    "Send": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enviar"
+    "Shows selected country focus, 2010 alignments, and current world tension." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra el enfoque del país, alineaciones de 2010 y tensión mundial actual."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enviar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra o foco do país, alinhamentos de 2010 e tensão mundial atual."
           }
         }
       }
     },
-    "Settings": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Configuración"
+    "SIMULATION ACTIVE // %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SIMULATION ACTIVE // %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SIMULACIÓN ACTIVA // %@"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Configurações"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SIMULAÇÃO ATIVA // %@"
           }
         }
       }
     },
-    "Show dossier": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostrar dosier"
+    "Spanish" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Español"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostrar dossiê"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espanhol"
           }
         }
       }
     },
-    "Shows selected country focus, 2010 alignments, and current world tension.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Muestra el enfoque del país, alineaciones de 2010 y tensión mundial actual."
+    "Stability" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estabilidad"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostra o foco do país, alinhamentos de 2010 e tensão mundial atual."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estabilidade"
           }
         }
       }
     },
-    "Spanish": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Español"
+    "Stabilization corridor" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corredor de estabilización"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Espanhol"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corredor de estabilização"
           }
         }
       }
     },
-    "Stability": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estabilidad"
+    "Strait" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrecho"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estabilidade"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estreito"
           }
         }
       }
     },
-    "Stabilization corridor": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Corredor de estabilización"
+    "Submit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Corredor de estabilização"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar"
           }
         }
       }
     },
-    "Strait": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estrecho"
+    "Suggested actions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acciones sugeridas"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estreito"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ações sugeridas"
           }
         }
       }
     },
-    "Submit": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enviar"
+    "Suggestions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugerencias"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enviar"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugestões"
           }
         }
       }
     },
-    "Suggested actions": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acciones sugeridas"
+    "SUMMARY ANALYSIS" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ANÁLISIS RESUMIDO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ações sugeridas"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ANÁLISE RESUMIDA"
           }
         }
       }
     },
-    "Suggestions": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sugerencias"
+    "Support %@%%" : {
+
+    },
+    "Swamp" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantano"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sugestões"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pântano"
           }
         }
       }
     },
-    "Support %@%%": {},
-    "Swamp": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pantano"
+    "SWIFT HISTORIA COMMAND CENTER" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CENTRO DE COMANDO PAX HISTORIA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pântano"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CENTRO DE COMANDO PAX HISTORIA"
           }
         }
       }
     },
-    "SwiftHistoria": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pax Historia"
+    "SwiftHistoria" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pax Historia"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pax Historia"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pax Historia"
           }
         }
       }
     },
-    "TACTICAL DELTAS": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DELTAS TÁCTICOS"
+    "SYSTEM" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SISTEMA"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DELTAS TÁTICOS"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SISTEMA"
           }
         }
       }
     },
-    "TIMELINE": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "LÍNEA DE TIEMPO"
+    "TACTICAL DELTAS" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DELTAS TÁCTICOS"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "LINHA DO TEMPO"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DELTAS TÁTICOS"
           }
         }
       }
     },
-    "Tension": {},
-    "Terrain: %@ (%@)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Terrain: %1$@ (%2$@)"
+    "Tension" : {
+
+    },
+    "Terrain: %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Terrain: %1$@ (%2$@)"
           }
         }
       }
     },
-    "Territory Demarcation": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Demarcación Territorial"
+    "Territory Demarcation" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demarcación Territorial"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Demarcação Territorial"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demarcação Territorial"
           }
         }
       }
     },
-    "Trade Agreement": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acuerdo Comercial"
+    "TIMELINE" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LÍNEA DE TIEMPO"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acordo Comercial"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LINHA DO TEMPO"
           }
         }
       }
     },
-    "Try a country name or ISO code.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pruebe un nombre de país o código ISO."
+    "Trade Agreement" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acuerdo Comercial"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tente um nome de país ou código ISO."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acordo Comercial"
           }
         }
       }
     },
-    "Turn Resolution": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resolución de Turno"
+    "Try a country name or ISO code." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pruebe un nombre de país o código ISO."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resolução de Turno"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tente um nome de país ou código ISO."
           }
         }
       }
     },
-    "Turn synthesis": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Síntesis del turno"
+    "Turn Resolution" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolución de Turno"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Síntese do turno"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolução de Turno"
           }
         }
       }
     },
-    "Use Apple's on-device System Language Model. No external API key required.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usa el System Language Model local de Apple. No requiere clave de API externa."
+    "Turn synthesis" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Síntesis del turno"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usa o System Language Model local da Apple. Nenhuma chave de API externa é necessária."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Síntese do turno"
           }
         }
       }
     },
-    "Use OpenRouter free models first, then fall back only if the route is unavailable.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usa primero los modelos gratuitos de OpenRouter; solo recurre al fallback si la ruta no está disponible."
+    "Use Apple's on-device System Language Model. No external API key required." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el System Language Model local de Apple. No requiere clave de API externa."
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usa primeiro os modelos gratuitos do OpenRouter; só recorre a fallback se a rota estiver indisponível."
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa o System Language Model local da Apple. Nenhuma chave de API externa é necessária."
           }
         }
       }
     },
-    "Use Z.AI GLM models first, then fall back to Apple if unavailable.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usa primero los modelos GLM de Z.AI; recurre a Apple si no está disponible."
+    "Use OpenRouter free models first, then fall back only if the route is unavailable." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa primero los modelos gratuitos de OpenRouter; solo recurre al fallback si la ruta no está disponible."
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usa primeiro os modelos GLM da Z.AI; recorre à Apple se estiver indisponível."
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa primeiro os modelos gratuitos do OpenRouter; só recorre a fallback se a rota estiver indisponível."
           }
         }
       }
     },
-    "Used when AI Provider is set to OpenRouter. Routes through OpenRouter's unified Free Models Router (openrouter/free).": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se usa cuando el Proveedor de IA está configurado como OpenRouter. Enruta por el Free Models Router unificado de OpenRouter (openrouter/free)."
+    "Use Z.AI GLM models first, then fall back to Apple if unavailable." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa primero los modelos GLM de Z.AI; recurre a Apple si no está disponible."
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usado quando o Provedor de IA está definido como OpenRouter. Roteia pelo Free Models Router unificado do OpenRouter (openrouter/free)."
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa primeiro os modelos GLM da Z.AI; recorre à Apple se estiver indisponível."
           }
         }
       }
     },
-    "Used when AI Provider is set to Z.AI. GLM lanes can run concurrently, with Apple Foundation Models as safety fallback if unavailable.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usado cuando el Proveedor de IA está configurado como Z.AI. Las rutas GLM pueden ejecutarse en paralelo, con Apple Foundation Models como fallback de seguridad si no está disponible."
+    "Used when AI Provider is set to OpenRouter. Routes through OpenRouter's unified Free Models Router (openrouter/free)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se usa cuando el Proveedor de IA está configurado como OpenRouter. Enruta por el Free Models Router unificado de OpenRouter (openrouter/free)."
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usado quando o Provedor de IA está definido como Z.AI. As lanes GLM podem rodar em paralelo, com Apple Foundation Models como fallback de segurança se indisponível."
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usado quando o Provedor de IA está definido como OpenRouter. Roteia pelo Free Models Router unificado do OpenRouter (openrouter/free)."
           }
         }
       }
     },
-    "World Tension": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tensión Mundial"
+    "Used when AI Provider is set to Z.AI. GLM lanes can run concurrently, with Apple Foundation Models as safety fallback if unavailable." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usado cuando el Proveedor de IA está configurado como Z.AI. Las rutas GLM pueden ejecutarse en paralelo, con Apple Foundation Models como fallback de seguridad si no está disponible."
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tensão Mundial"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usado quando o Provedor de IA está definido como Z.AI. As lanes GLM podem rodar em paralelo, com Apple Foundation Models como fallback de segurança se indisponível."
           }
         }
       }
     },
-    "Z.AI": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Z.AI"
+    "World Tension" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tensión Mundial"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Z.AI"
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tensão Mundial"
           }
         }
       }
     },
-    "Z.AI (GLM-5.1) CONFIGURATION": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CONFIGURACIÓN Z.AI (GLM-5.1)"
+    "Z.AI" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Z.AI"
           }
         },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CONFIGURAÇÃO Z.AI (GLM-5.1)"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Z.AI"
           }
         }
       }
     },
-    "Z.AI is selected, but no API key is saved. Turn resolution will fall back to Apple Foundation Models.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Z.AI está seleccionado, pero no hay clave de API guardada. La resolución del turno usará Apple Foundation Models."
+    "Z.AI (GLM-5.1) CONFIGURATION" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONFIGURACIÓN Z.AI (GLM-5.1)"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Z.AI está selecionado, mas nenhuma chave de API foi salva. A resolução do turno cairá para Apple Foundation Models."
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONFIGURAÇÃO Z.AI (GLM-5.1)"
           }
         }
       }
     },
-    "e.g., \"Fund grid modernization\" or \"Establish logistics buffers with neighboring states.\"": {},
-    "e.g., \"Propose a technology sharing treaty\" or \"Request naval cooperation.\"": {},
-    "e.g., \"What economic threats should we prioritize?\" or \"Is world tension stable?\"": {},
-    "·": {}
+    "Z.AI is selected, but no API key is saved. Turn resolution will fall back to Apple Foundation Models." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Z.AI está seleccionado, pero no hay clave de API guardada. La resolución del turno usará Apple Foundation Models."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Z.AI está selecionado, mas nenhuma chave de API foi salva. A resolução do turno cairá para Apple Foundation Models."
+          }
+        }
+      }
+    }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

@@ -118,14 +118,21 @@ enum NativeQuickActionCatalog {
         if let action = action(matching: directive) {
             return action.cost
         }
-        let trimmed = sanitizeFoundationModelText(directive)
-        if trimmed.hasPrefix("Invade ") { return 40 }
-        if trimmed.hasPrefix("Stabilize ") { return 25 }
-        if trimmed.hasPrefix("Fortify ") { return 35 }
-        if trimmed.hasPrefix("Withdraw from ") { return 10 }
-        if trimmed.hasPrefix("Negotiate autonomy for ") { return 30 }
-        if trimmed.hasPrefix("Rebuild ") { return 35 }
-        if trimmed.hasPrefix("Open trade corridor through ") { return 25 }
+        let trimmed = sanitizeFoundationModelText(directive).lowercased()
+        let firstWord = trimmed.split(separator: " ").first.map(String.init) ?? ""
+        // Multi-language invasion detection (EN/PT/ES)
+        let invadeWords: Set = ["invade", "invadir", "atacar", "attack", "conquer", "conquistar"]
+        if invadeWords.contains(firstWord) { return 40 }
+        let stabilizeWords: Set = ["stabilize", "estabilizar", "pacificar", "pacify"]
+        if stabilizeWords.contains(firstWord) { return 25 }
+        let fortifyWords: Set = ["fortify", "fortificar", "reforzar", "reforçar", "defend", "defender"]
+        if fortifyWords.contains(firstWord) { return 35 }
+        let withdrawWords: Set = ["withdraw", "retirar", "retirarse", "recuar"]
+        if withdrawWords.contains(firstWord) { return 10 }
+        if trimmed.hasPrefix("negotiate autonomy") || trimmed.hasPrefix("negociar autonomia") { return 30 }
+        let rebuildWords: Set = ["rebuild", "reconstruir", "reconstrução"]
+        if rebuildWords.contains(firstWord) { return 35 }
+        if trimmed.hasPrefix("open trade corridor") || trimmed.hasPrefix("abrir corredor") { return 25 }
         return nil
     }
 

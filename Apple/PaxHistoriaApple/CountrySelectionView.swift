@@ -13,7 +13,25 @@ struct CountrySelectionView: View {
     let onResumeCampaign: () -> Void
 
     @State private var query = ""
-    @State private var setupStep = 0 // 0: Scenario/Language; 1: Choose Country
+    @State private var setupStep = 0 // 0: Scenario/Language; 1: AI Provider; 2: Choose Country
+    @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderRaw: String = NativeAIProviderPreference.openRouter.rawValue
+    @AppStorage("OPENROUTER_API_KEY") private var openRouterKey: String = ""
+    @AppStorage("ZAI_API_KEY") private var zaiKey: String = ""
+
+    private var selectedProvider: NativeAIProviderPreference {
+        NativeAIProviderPreference(rawValue: aiProviderRaw) ?? .openRouter
+    }
+
+    private var canProceedFromProviderStep: Bool {
+        switch selectedProvider {
+        case .appleFoundation:
+            true
+        case .openRouter:
+            !openRouterKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        case .zai:
+            !zaiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+    }
 
     private var filteredCountries: [PlayerCountry] {
         let mapped = countries.map { country -> PlayerCountry in
@@ -70,7 +88,7 @@ struct CountrySelectionView: View {
                                         }
                                     } label: {
                                         HStack {
-                                            Text("Continue to Choose Country")
+                                            Text("Continue to AI Setup")
                                                 .fontWeight(.bold)
                                             Image(systemName: "arrow.right")
                                         }
@@ -84,18 +102,78 @@ struct CountrySelectionView: View {
                                 .padding(20)
                                 .frame(maxWidth: 520, alignment: .leading)
                             }
+                        } else if setupStep == 1 {
+                            // Step 1: AI Provider Setup
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 20) {
+                                    HStack {
+                                        Button {
+                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                                setupStep = 0
+                                            }
+                                        } label: {
+                                            HStack(spacing: 6) {
+                                                Image(systemName: "chevron.left").fontWeight(.bold)
+                                                Text("Scenario Setup").fontWeight(.semibold)
+                                            }
+                                            .font(.subheadline)
+                                            .foregroundStyle(selectedScenarioAccentColor)
+                                        }
+                                        Spacer()
+                                    }
+
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("Choose AI Provider")
+                                            .font(.title2.weight(.bold))
+                                        Text("Select how SwiftHistoria generates turns. You can change this later in Settings.")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    VStack(spacing: 12) {
+                                        ForEach(NativeAIProviderPreference.allCases, id: \.rawValue) { provider in
+                                            providerCard(provider)
+                                        }
+                                    }
+
+                                    if selectedProvider == .openRouter || selectedProvider == .zai {
+                                        apiKeyField(for: selectedProvider)
+                                    }
+
+                                    Button {
+                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                            setupStep = 2
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text("Continue to Choose Country")
+                                                .fontWeight(.bold)
+                                            Image(systemName: "arrow.right")
+                                        }
+                                        .frame(maxWidth: .infinity, minHeight: 46)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(selectedScenarioAccentColor)
+                                    .disabled(!canProceedFromProviderStep)
+                                    .opacity(canProceedFromProviderStep ? 1.0 : 0.5)
+                                    .accessibilityIdentifier("native-provider-continue")
+                                }
+                                .padding(20)
+                                .frame(maxWidth: 520, alignment: .leading)
+                            }
                         } else {
+                            // Step 2: Choose Country
                             VStack(spacing: 0) {
                                 HStack {
                                     Button {
                                         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                            setupStep = 0
+                                            setupStep = 1
                                         }
                                     } label: {
                                         HStack(spacing: 6) {
                                             Image(systemName: "chevron.left")
                                                 .fontWeight(.bold)
-                                            Text("Scenario Setup")
+                                            Text("AI Provider Setup")
                                                 .fontWeight(.semibold)
                                         }
                                         .font(.subheadline)
@@ -115,13 +193,81 @@ struct CountrySelectionView: View {
                             }
                         }
                     }
-                    .navigationTitle(setupStep == 0 ? "New Campaign" : "Choose Country")
+                    .navigationTitle(setupStep == 0 ? "New Campaign" : setupStep == 1 ? "AI Provider" : "Choose Country")
                     .navigationBarTitleDisplayMode(.inline)
                 }
             #endif
         }
         .tint(selectedScenarioAccentColor)
         .preferredColorScheme(.dark)
+    }
+
+    // MARK: - AI Provider Setup Components
+
+    @ViewBuilder
+    private func providerCard(_ provider: NativeAIProviderPreference) -> some View {
+        let isSelected = selectedProvider == provider
+        Button {
+            aiProviderRaw = provider.rawValue
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: provider == .appleFoundation ? "cpu" : provider == .openRouter ? "network" : "bolt.fill")
+                    .font(.title3)
+                    .foregroundStyle(isSelected ? Color.white : selectedScenarioAccentColor)
+                    .frame(width: 32)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(provider.title)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text(provider.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.white)
+                }
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? selectedScenarioAccentColor.opacity(0.85) : Color.white.opacity(0.05))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(isSelected ? selectedScenarioAccentColor : Color.white.opacity(0.12), lineWidth: isSelected ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("native-provider-\(provider.rawValue)")
+    }
+
+    @ViewBuilder
+    private func apiKeyField(for provider: NativeAIProviderPreference) -> some View {
+        let key: Binding<String> = provider == .openRouter ? $openRouterKey : $zaiKey
+        let placeholder = provider == .openRouter ? "sk-or-v1-..." : "your-zai-key"
+
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\(provider.title) API Key")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+
+            SecureField(placeholder, text: key)
+                .textFieldStyle(.roundedBorder)
+                .autocorrectionDisabled()
+                .accessibilityIdentifier("native-\(provider.rawValue)-key-field")
+
+            Text(provider == .openRouter
+                ? "Free tier: 20 requests/minute. Get a key at openrouter.ai/keys."
+                : "Get a key at z.ai")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     private var setupPanel: some View {

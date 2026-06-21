@@ -168,7 +168,7 @@ struct NativeGeopoliticalMap: View {
                             }
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(entry.name)
+                        .accessibilityLabel("\(entry.name), \(relationWord(for: entry.code)), \(stabilityWord(for: entry.code))")
                         .accessibilityHint(entry.regionID == nil ? "Country appears as a city marker on the strategic map." : "Select country on the strategic map.")
                         .accessibilityIdentifier("native-map-country-\(entry.code)")
                     }
@@ -268,6 +268,27 @@ struct NativeGeopoliticalMap: View {
                 }
             }
         }
+    }
+
+    // MARK: - Accessibility helpers
+
+    private func relationWord(for code: String) -> String {
+        if code == playerCountryCode { return "your nation" }
+        if let relations = state.aiCountryStates[code]?.relationshipScores[playerCountryCode] {
+            if relations > 50 { return "ally" }
+            if relations < -30 { return "rival" }
+            return "neutral"
+        }
+        return "neutral"
+    }
+
+    private func stabilityWord(for code: String) -> String {
+        if let ledger = state.economicLedgers[code] {
+            if ledger.securityIndex >= 80 { return "stable" }
+            if ledger.securityIndex < 40 { return "unstable" }
+            return "moderate stability"
+        }
+        return "unknown stability"
     }
 }
 

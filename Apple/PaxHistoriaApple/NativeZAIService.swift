@@ -69,11 +69,66 @@ enum NativeJSONExtraction {
     }
 }
 
+// MARK: - Cost Telemetry
+
+struct NativeTokenUsage: Equatable {
+    let prompt: Int
+    let completion: Int
+    let total: Int
+}
+
+/// Shared session-wide token usage counter. External AI providers report their
+/// `usage` payload here after each call; the campaign store republishes the
+/// running totals into SwiftUI and raises a budget warning past 100k tokens.
+@MainActor
+final class NativeTokenUsageTracker: ObservableObject {
+    static let shared = NativeTokenUsageTracker()
+    static let budgetLimit = 100_000
+
+    @Published private(set) var promptTokens = 0
+    @Published private(set) var completionTokens = 0
+    @Published private(set) var totalTokens = 0
+    @Published private(set) var budgetExceeded = false
+
+    private let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeTokenUsageTracker")
+    private init() {}
+
+    func record(_ usage: NativeTokenUsage) {
+        guard usage.total > 0 else { return }
+        promptTokens += usage.prompt
+        completionTokens += usage.completion
+        totalTokens += usage.total
+        if totalTokens > Self.budgetLimit, !budgetExceeded {
+            budgetExceeded = true
+            logger.warning("TOKEN BUDGET WARNING: session total \(self.totalTokens) tokens exceeded \(Self.budgetLimit) limit")
+        }
+    }
+
+    func reset() {
+        promptTokens = 0
+        completionTokens = 0
+        totalTokens = 0
+        budgetExceeded = false
+    }
+}
+
 @MainActor
 class NativeZAIService: NativeAIService {
     let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeZAIService")
     let defaults: UserDefaults
-    private let promptHarness = NativeFoundationModelService()
+    let promptHarness = NativeFoundationModelService()
+
+    // MARK: - Cost telemetry (base class tracking)
+
+    var sessionPromptTokens: Int = 0
+    var sessionCompletionTokens: Int = 0
+    var sessionTotalTokens: Int {
+        sessionPromptTokens + sessionCompletionTokens
+    }
+
+    var tokenBudgetWarning: Bool {
+        sessionTotalTokens > 100_000
+    }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -83,6 +138,12 @@ class NativeZAIService: NativeAIService {
     /// OpenRouter and other non-Z.AI providers should override to false.
     var includesThinkingField: Bool {
         true
+    }
+
+    /// Whether the provider supports SSE streaming responses.
+    /// OpenRouter overrides to true; Z.AI keeps the non-streaming path.
+    var supportsStreaming: Bool {
+        false
     }
 
     var modelLanes: [ZAIModelLane] = [
@@ -138,7 +199,7 @@ class NativeZAIService: NativeAIService {
             return .unavailable("\(providerDisplayName) API Key not configured in System Settings.")
         }
         do {
-            _ = try await executeZAIRequest(
+            _ = try await executeProviderRequest(
                 prompt: "Return exactly this JSON: {\"ok\":true}",
                 maxTokens: 16,
                 temperature: 0.0,
@@ -561,7 +622,7 @@ class NativeZAIService: NativeAIService {
         for attempt in 1 ... 2 {
             do {
                 logger.info("Z.AI text generation attempt=\(attempt)")
-                let text = try await executeZAIRequest(
+                let text = try await executeProviderRequest(
                     prompt: textPrompt(prompt, repairNotes: repairNotes),
                     maxTokens: maxTokens,
                     temperature: attempt == 1 ? 0.05 : 0.20,
@@ -597,7 +658,7 @@ class NativeZAIService: NativeAIService {
         \(schema)
         """
 
-        let rawResponse = try await executeZAIRequest(
+        let rawResponse = try await executeProviderRequest(
             prompt: combinedPrompt,
             maxTokens: maximumResponseTokens,
             temperature: temperature,
@@ -617,17 +678,21 @@ class NativeZAIService: NativeAIService {
         throw NativeFoundationModelError.generationFailed("Z.AI returned invalid strict JSON.")
     }
 
-    func executeZAIRequest(
+    func executeProviderRequest(
         prompt: String,
         maxTokens: Int,
         temperature: Double,
         responseFormat: String? = nil,
-        thinkingEnabled: Bool = true
+        thinkingEnabled: Bool = true,
+        onStreamProgress: (@MainActor (String) -> Void)? = nil
     ) async throws -> String {
         let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !key.isEmpty else {
             throw NativeFoundationModelError.modelUnavailable("\(providerDisplayName) API Key is empty. Please set it in system settings.")
         }
+
+        // Clamp external-provider prompts to avoid wasting requests on context overflow.
+        let clampedPrompt = prompt.count > 32000 ? NativePromptHarness.clamped(prompt, characterLimit: 32000) : prompt
 
         let systemMsg: [String: Any] = [
             "role": "system",
@@ -636,79 +701,238 @@ class NativeZAIService: NativeAIService {
 
         let userMsg: [String: Any] = [
             "role": "user",
-            "content": prompt
+            "content": clampedPrompt
         ]
 
         var lastError: Error?
         for lane in orderedModelLanes {
             try await lane.limiter.enter()
             var releaseLane = true
-            var request = URLRequest(url: apiEndpoint)
-            request.httpMethod = "POST"
-            request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue("en-US,en", forHTTPHeaderField: "Accept-Language")
-            request.timeoutInterval = thinkingEnabled ? 90 : 45
 
-            var payload: [String: Any] = [
-                "model": lane.name,
-                "messages": [systemMsg, userMsg],
-                "stream": false,
-                "temperature": temperature,
-                "max_tokens": maxTokens
-            ]
-            if includesThinkingField {
-                payload["thinking"] = [
-                    "type": thinkingEnabled ? "enabled" : "disabled"
+            // Rate limiting + retry with exponential backoff for OpenRouter/Z.AI
+            let maxRetries = 2
+            for attempt in 0 ... maxRetries {
+                await NativeRateLimiter.shared.acquire()
+
+                var request = URLRequest(url: apiEndpoint)
+                request.httpMethod = "POST"
+                request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.setValue("en-US,en", forHTTPHeaderField: "Accept-Language")
+                // OpenRouter ranking headers (harmless for Z.AI, beneficial for OR)
+                request.setValue("https://github.com/gibavargas/swifthistoria", forHTTPHeaderField: "HTTP-Referer")
+                request.setValue("SwiftHistoria", forHTTPHeaderField: "X-Title")
+                // Enforce 60s turn limit: never exceed 60s per request
+                let computedTimeout = min(thinkingEnabled ? 90.0 : 45.0, 60.0)
+                request.timeoutInterval = computedTimeout
+
+                var payload: [String: Any] = [
+                    "model": lane.name,
+                    "messages": [systemMsg, userMsg],
+                    "stream": false,
+                    "temperature": temperature,
+                    "max_tokens": maxTokens
                 ]
-            }
-            if let responseFormat {
-                payload["response_format"] = ["type": responseFormat]
-            }
-
-            do {
-                request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-                let (data, response) = try await URLSession.shared.data(for: request)
-
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    throw NativeFoundationModelError.generationFailed("Invalid response format from \(providerDisplayName) model=\(lane.name).")
+                if includesThinkingField {
+                    payload["thinking"] = [
+                        "type": thinkingEnabled ? "enabled" : "disabled"
+                    ]
                 }
-
-                guard httpResponse.statusCode == 200 else {
-                    let errorText = String(data: data, encoding: .utf8) ?? "HTTP \(httpResponse.statusCode)"
-                    throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned status \(httpResponse.statusCode) model=\(lane.name): \(errorText)")
+                if let responseFormat {
+                    payload["response_format"] = ["type": responseFormat]
                 }
 
                 do {
-                    let content = try Self.decodeCompletionContent(from: data, providerDisplayName: providerDisplayName)
-                    lane.limiter.exit()
-                    releaseLane = false
-                    return content
-                } catch {
-                    if thinkingEnabled {
+                    // Streaming path (e.g. OpenRouter text responses). Accumulates
+                    // SSE delta chunks and emits progress; falls back to the
+                    // non-streaming request below if SSE parsing fails.
+                    if supportsStreaming, responseFormat == nil {
+                        var streamPayload = payload
+                        streamPayload["stream"] = true
+                        streamPayload["stream_options"] = ["include_usage": true]
+                        var streamRequest = request
+                        streamRequest.httpBody = try JSONSerialization.data(withJSONObject: streamPayload)
+                        do {
+                            let (content, usage) = try await performStreamingRequest(
+                                request: streamRequest,
+                                lane: lane,
+                                onProgress: onStreamProgress
+                            )
+                            if let usage {
+                                sessionPromptTokens += usage.prompt
+                                sessionCompletionTokens += usage.completion
+                                logger.info("\(self.providerDisplayName, privacy: .public) streamed tokens: prompt=\(usage.prompt, privacy: .public) completion=\(usage.completion, privacy: .public)")
+                            }
+                            lane.limiter.exit()
+                            releaseLane = false
+                            return content
+                        } catch is CancellationError {
+                            lane.limiter.exit()
+                            releaseLane = false
+                            throw CancellationError()
+                        } catch {
+                            logger.warning("\(self.providerDisplayName, privacy: .public) streaming failed; falling back to non-streaming: \(error.localizedDescription, privacy: .public)")
+                            // fall through to the non-streaming request below
+                        }
+                    }
+
+                    request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+                    let (data, response) = try await URLSession.shared.data(for: request)
+
+                    guard let httpResponse = response as? HTTPURLResponse else {
+                        throw NativeFoundationModelError.generationFailed("Invalid response format from \(providerDisplayName) model=\(lane.name).")
+                    }
+
+                    if httpResponse.statusCode == 429 {
+                        // Rate limited — exponential backoff before retrying
+                        let retryAfter = Double(httpResponse.value(forHTTPHeaderField: "Retry-After") ?? "") ?? 0
+                        let backoff = retryAfter > 0 ? retryAfter : (2.0 * pow(2.0, Double(attempt)))
+                        if attempt < maxRetries {
+                            logger.warning("\(self.providerDisplayName, privacy: .public) 429 rate limited; backing off \(backoff)s before retry \(attempt + 1)/\(maxRetries)")
+                            try? await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
+                            continue
+                        }
+                        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) rate limited after \(maxRetries + 1) attempts. Model=\(lane.name).")
+                    }
+
+                    guard httpResponse.statusCode == 200 else {
+                        let errorText = String(data: data, encoding: .utf8) ?? "HTTP \(httpResponse.statusCode)"
+                        // Retry on 5xx server errors
+                        if (500 ... 599).contains(httpResponse.statusCode), attempt < maxRetries {
+                            logger.warning("\(self.providerDisplayName, privacy: .public) HTTP \(httpResponse.statusCode); retrying \(attempt + 1)/\(maxRetries)")
+                            try? await Task.sleep(nanoseconds: UInt64(1.5 * pow(2.0, Double(attempt)) * 1_000_000_000))
+                            continue
+                        }
+                        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned status \(httpResponse.statusCode) model=\(lane.name): \(errorText)")
+                    }
+
+                    do {
+                        let content = try Self.decodeCompletionContent(from: data, providerDisplayName: providerDisplayName)
+                        // Parse token usage for cost telemetry
+                        if let usage = Self.parseTokenUsage(from: data) {
+                            sessionPromptTokens += usage.prompt
+                            sessionCompletionTokens += usage.completion
+                            logger.info("\(self.providerDisplayName, privacy: .public) tokens: prompt=\(usage.prompt, privacy: .public) completion=\(usage.completion, privacy: .public) session_total=\(self.sessionPromptTokens + self.sessionCompletionTokens, privacy: .public)")
+                        }
                         lane.limiter.exit()
                         releaseLane = false
-                        logger.error("\(self.providerDisplayName, privacy: .public) visible content failed with thinking; retrying without thinking model=\(lane.name, privacy: .public) error=\(error.localizedDescription, privacy: .public)")
-                        return try await executeZAIRequest(
-                            prompt: prompt,
-                            maxTokens: maxTokens,
-                            temperature: temperature,
-                            responseFormat: responseFormat,
-                            thinkingEnabled: false
-                        )
+                        return content
+                    } catch {
+                        if thinkingEnabled {
+                            lane.limiter.exit()
+                            releaseLane = false
+                            logger.error("\(self.providerDisplayName, privacy: .public) visible content failed with thinking; retrying without thinking model=\(lane.name, privacy: .public) error=\(error.localizedDescription, privacy: .public)")
+                            return try await executeProviderRequest(
+                                prompt: prompt,
+                                maxTokens: maxTokens,
+                                temperature: temperature,
+                                responseFormat: responseFormat,
+                                thinkingEnabled: false
+                            )
+                        }
+                        throw error
                     }
-                    throw error
-                }
-            } catch {
-                if releaseLane {
+                } catch is CancellationError {
                     lane.limiter.exit()
+                    releaseLane = false
+                    logger.info("\(self.providerDisplayName, privacy: .public) request cancelled (Turn cancellation)")
+                    throw CancellationError()
+                } catch {
+                    if attempt < maxRetries {
+                        let backoff = 1.5 * pow(2.0, Double(attempt))
+                        logger.warning("\(self.providerDisplayName, privacy: .public) attempt \(attempt + 1) failed: \(error.localizedDescription, privacy: .public); backing off \(backoff)s")
+                        try? await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
+                        continue
+                    }
+                    if releaseLane { lane.limiter.exit() }
+                    lastError = error
+                    logger.error("\(self.providerDisplayName, privacy: .public) request failed model=\(lane.name, privacy: .public) limit=\(lane.maxConcurrent) error=\(error.localizedDescription, privacy: .public)")
+                    break // move to next lane
                 }
-                lastError = error
-                logger.error("\(self.providerDisplayName, privacy: .public) request failed model=\(lane.name, privacy: .public) limit=\(lane.maxConcurrent) error=\(error.localizedDescription, privacy: .public)")
             }
         }
 
         throw lastError ?? NativeFoundationModelError.generationFailed("\(providerDisplayName) request failed for all configured models.")
+    }
+
+    /// Streams an SSE chat-completion response, accumulating `choices[0].delta.content`
+    /// chunks and (when present) the final `usage` object. Throws on non-200 status
+    /// or when no visible content is produced, so the caller can fall back to the
+    /// non-streaming path.
+    private func performStreamingRequest(
+        request: URLRequest,
+        lane: ZAIModelLane,
+        onProgress: (@MainActor (String) -> Void)?
+    ) async throws -> (content: String, usage: (prompt: Int, completion: Int, total: Int)?) {
+        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NativeFoundationModelError.generationFailed("Invalid streaming response from \(providerDisplayName) model=\(lane.name).")
+        }
+        guard httpResponse.statusCode == 200 else {
+            throw NativeFoundationModelError.generationFailed("\(providerDisplayName) streaming returned status \(httpResponse.statusCode) model=\(lane.name).")
+        }
+
+        var accumulated = ""
+        var usage: (prompt: Int, completion: Int, total: Int)?
+        var sawChunk = false
+
+        for try await line in bytes.lines {
+            if Task.isCancelled { throw CancellationError() }
+            guard line.hasPrefix("data:") else { continue }
+            let payloadText = line.dropFirst("data:".count).trimmingCharacters(in: .whitespaces)
+            if payloadText == "[DONE]" { break }
+            guard let chunkData = payloadText.data(using: .utf8),
+                  let object = try? JSONSerialization.jsonObject(with: chunkData) as? [String: Any]
+            else { continue }
+            sawChunk = true
+            if let choices = object["choices"] as? [[String: Any]],
+               let firstChoice = choices.first,
+               let delta = firstChoice["delta"] as? [String: Any],
+               let deltaContent = delta["content"] as? String
+            {
+                accumulated += deltaContent
+                if let onProgress { onProgress(accumulated) }
+            }
+            if let usageObject = object["usage"] as? [String: Any] {
+                let prompt = (usageObject["prompt_tokens"] as? Int) ?? 0
+                let completion = (usageObject["completion_tokens"] as? Int) ?? 0
+                let total = (usageObject["total_tokens"] as? Int) ?? (prompt + completion)
+                usage = (prompt, completion, total)
+            }
+        }
+
+        let cleaned = Self.strippingZAIThinkingTags(from: accumulated)
+        if cleaned.isEmpty {
+            if sawChunk {
+                logger.warning("\(self.providerDisplayName, privacy: .public) streaming produced no visible delta content model=\(lane.name, privacy: .public)")
+            }
+            throw NativeFoundationModelError.generationFailed("\(providerDisplayName) streaming produced no visible content model=\(lane.name).")
+        }
+        return (cleaned, usage)
+    }
+
+    nonisolated static func parseTokenUsage(from data: Data) -> (prompt: Int, completion: Int, total: Int)? {
+        struct UsageResponse: Decodable {
+            struct Usage: Decodable {
+                var promptTokens: Int?
+                var completionTokens: Int?
+                var totalTokens: Int?
+
+                enum CodingKeys: String, CodingKey {
+                    case promptTokens = "prompt_tokens"
+                    case completionTokens = "completion_tokens"
+                    case totalTokens = "total_tokens"
+                }
+            }
+
+            var usage: Usage?
+        }
+        guard let decoded = try? JSONDecoder().decode(UsageResponse.self, from: data) else { return nil }
+        guard let usage = decoded.usage else { return nil }
+        let prompt = usage.promptTokens ?? 0
+        let completion = usage.completionTokens ?? 0
+        let total = usage.totalTokens ?? (prompt + completion)
+        return (prompt, completion, total)
     }
 
     nonisolated static func decodeCompletionContent(from data: Data, providerDisplayName: String = "Z.AI") throws -> String {
@@ -779,7 +1003,7 @@ class NativeZAIService: NativeAIService {
         NativePromptHarness.sharedSystemPrompt
     }
 
-    private func isValidNativeSuggestion(_ suggestion: NativeSuggestedAction) -> Bool {
+    func isValidNativeSuggestion(_ suggestion: NativeSuggestedAction) -> Bool {
         hasConcreteFoundationText(suggestion.title, minimumWords: 2) &&
             hasConcreteFoundationText(suggestion.detail, minimumWords: 8) &&
             hasConcreteFoundationText(suggestion.rationale, minimumWords: 8) &&
@@ -1016,7 +1240,7 @@ private struct ZAIEventDraft: Decodable {
         playerRelated: Bool
     ) -> NativeCampaignEvent {
         let eventDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        let eventID = "zai-event-\(state.round)-\(index)-\(UUID().uuidString.prefix(6).lowercased())"
+        let eventID = "zai-event-\(state.round)-\(index)"
 
         let target = effectTarget == "GLOBAL" ? "GLOBAL" : (effectTarget == "PLAYER" ? state.country.code : effectTarget)
         let normalizedTrack = effectTrack
@@ -1108,264 +1332,9 @@ private struct ZAISuggestedAction: Decodable {
     static let schemaInstructions = """
     {
       "title": "Short imperative title for the civic proposal.",
-      "detail": "Concrete board-game planning proposal with primary mechanic.",
-      "rationale": "Why this proposal fits current state.",
+      "detail": "Accept-ready board-game order with bounded instrument, generic agency or sector, timing, primary mechanic, secondary mechanic, capacity fit, and intended game effect.",
+      "rationale": "Why this proposal fits the current campaign state and objectives, explicitly naming the primary affected mechanic and one connected secondary mechanic.",
       "urgency": "immediate, soon, or opportunistic"
     }
     """
-}
-
-@MainActor
-class DynamicAIService: NativeAIService {
-    private let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "DynamicAIService")
-    private let defaults: UserDefaults
-    private let openRouterService: NativeOpenRouterService
-    private let zaiService: NativeZAIService
-    private let foundationService = NativeFoundationModelService()
-
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-        self.openRouterService = NativeOpenRouterService(defaults: defaults)
-        self.zaiService = NativeZAIService(defaults: defaults)
-    }
-
-    private var providerPreference: NativeAIProviderPreference {
-        NativeAIProviderPreference.current(defaults: defaults)
-    }
-
-    private var hasOpenRouterKey: Bool {
-        let key = defaults.string(forKey: "OPENROUTER_API_KEY") ?? ""
-        return !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    private var hasZAIKey: Bool {
-        let key = defaults.string(forKey: "ZAI_API_KEY") ?? ""
-        return !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    func checkReadiness() async -> NativeAIReadiness {
-        switch providerPreference {
-        case .appleFoundation:
-            return await foundationService.checkReadiness()
-        case .openRouter:
-            if hasOpenRouterKey {
-                let openRouterReadiness = await openRouterService.checkReadiness()
-                if openRouterReadiness.ok {
-                    return openRouterReadiness
-                }
-                if hasZAIKey {
-                    let zaiReadiness = await zaiService.checkReadiness()
-                    if zaiReadiness.ok {
-                        return .available(tokenBudget: "OpenRouter unavailable; Z.AI fallback verified")
-                    }
-                }
-                let appleReadiness = await foundationService.checkReadiness()
-                if appleReadiness.ok {
-                    return .available(tokenBudget: "OpenRouter unavailable; Apple Foundation Models fallback verified")
-                }
-                return openRouterReadiness
-            }
-            if hasZAIKey { return await zaiService.checkReadiness() }
-            return await foundationService.checkReadiness()
-        case .zai:
-            if hasZAIKey { return await zaiService.checkReadiness() }
-            return await foundationService.checkReadiness()
-        }
-    }
-
-    private func generateWithAppleFallback<T>(
-        label: String,
-        operation: () async throws -> T,
-        appleOperation: () async throws -> T
-    ) async throws -> T {
-        do {
-            return try await operation()
-        } catch {
-            logger.error("\(label, privacy: .public) failed; trying Apple Foundation Models. error=\(error.localizedDescription, privacy: .public)")
-            do {
-                return try await appleOperation()
-            } catch {
-                logger.error("Apple Foundation fallback also failed. apple_error=\(error.localizedDescription, privacy: .public)")
-                throw error
-            }
-        }
-    }
-
-    func generateTurn(for state: NativeCampaignState, months: Int) async throws -> NativeGeneratedTurn {
-        switch providerPreference {
-        case .appleFoundation:
-            return try await foundationService.generateTurn(for: state, months: months)
-        case .openRouter:
-            if hasOpenRouterKey {
-                do {
-                    logger.info("OpenRouter turn generation started round=\(state.round)")
-                    return try await openRouterService.generateTurn(for: state, months: months)
-                } catch {
-                    logger.error("OpenRouter turn failed; trying configured fallback. openrouter_error=\(error.localizedDescription, privacy: .public)")
-                }
-            }
-            if hasZAIKey {
-                return try await generateWithAppleFallback(
-                    label: "Z.AI turn",
-                    operation: { try await self.zaiService.generateTurn(for: state, months: months) },
-                    appleOperation: { try await self.foundationService.generateTurn(for: state, months: months) }
-                )
-            }
-            return try await foundationService.generateTurn(for: state, months: months)
-        case .zai:
-            if hasZAIKey {
-                return try await generateWithAppleFallback(
-                    label: "Z.AI turn",
-                    operation: { try await self.zaiService.generateTurn(for: state, months: months) },
-                    appleOperation: { try await self.foundationService.generateTurn(for: state, months: months) }
-                )
-            }
-            return try await foundationService.generateTurn(for: state, months: months)
-        }
-    }
-
-    func generateTurn(
-        for state: NativeCampaignState,
-        months: Int,
-        progress: @escaping @MainActor (NativeTurnProgress) -> Void
-    ) async throws -> NativeGeneratedTurn {
-        let total = NativeStrategyContextDatabase.estimatedLaneCount(for: state)
-
-        switch providerPreference {
-        case .appleFoundation:
-            return try await foundationService.generateTurn(for: state, months: months, progress: progress)
-        case .openRouter:
-            if hasOpenRouterKey {
-                do {
-                    logger.info("OpenRouter turn generation started round=\(state.round)")
-                    return try await openRouterService.generateTurn(for: state, months: months, progress: progress)
-                } catch {
-                    logger.error("OpenRouter turn failed; trying configured fallback. openrouter_error=\(error.localizedDescription, privacy: .public)")
-                    let fallbackProvider = hasZAIKey ? "Z.AI" : "Apple Foundation Models"
-                    progress(NativeTurnProgress(
-                        completedLanes: 0,
-                        detail: "OpenRouter failed: \(error.localizedDescription). Trying \(fallbackProvider) fallback now.",
-                        phase: hasZAIKey ? "Falling back to Z.AI" : "Falling back to Apple",
-                        totalLanes: total,
-                        providerName: hasZAIKey ? "Z.AI" : "Apple Foundation Models",
-                        modelName: hasZAIKey ? zaiService.primaryModelDisplayName : "System Language Model",
-                        modelIdentifier: hasZAIKey ? zaiService.primaryModelIdentifier : "SystemLanguageModel.default"
-                    ))
-                }
-            } else {
-                progress(NativeTurnProgress(
-                    completedLanes: 0,
-                    detail: hasZAIKey ? "OpenRouter is selected, but no OpenRouter API key is saved. Trying Z.AI fallback now." : "OpenRouter is selected, but no OpenRouter API key is saved. Trying Apple Foundation Models now.",
-                    phase: hasZAIKey ? "Falling back to Z.AI" : "Falling back to Apple",
-                    totalLanes: total,
-                    providerName: hasZAIKey ? "Z.AI" : "Apple Foundation Models",
-                    modelName: hasZAIKey ? zaiService.primaryModelDisplayName : "System Language Model",
-                    modelIdentifier: hasZAIKey ? zaiService.primaryModelIdentifier : "SystemLanguageModel.default"
-                ))
-            }
-            if hasZAIKey {
-                do {
-                    return try await zaiService.generateTurn(for: state, months: months, progress: progress)
-                } catch {
-                    logger.error("Z.AI turn failed; trying Apple Foundation Models. z_ai_error=\(error.localizedDescription, privacy: .public)")
-                    progress(NativeTurnProgress(
-                        completedLanes: 0,
-                        detail: "Z.AI failed: \(error.localizedDescription). Trying Apple Foundation Models now.",
-                        phase: "Falling back to Apple",
-                        totalLanes: total,
-                        providerName: "Apple Foundation Models",
-                        modelName: "System Language Model",
-                        modelIdentifier: "SystemLanguageModel.default"
-                    ))
-                }
-            }
-            return try await foundationService.generateTurn(for: state, months: months, progress: progress)
-        case .zai:
-            if hasZAIKey {
-                do {
-                    return try await zaiService.generateTurn(for: state, months: months, progress: progress)
-                } catch {
-                    logger.error("Z.AI turn failed; trying Apple Foundation Models. z_ai_error=\(error.localizedDescription, privacy: .public)")
-                    progress(NativeTurnProgress(
-                        completedLanes: 0,
-                        detail: "Z.AI failed: \(error.localizedDescription). Trying Apple Foundation Models now.",
-                        phase: "Falling back to Apple",
-                        totalLanes: total,
-                        providerName: "Apple Foundation Models",
-                        modelName: "System Language Model",
-                        modelIdentifier: "SystemLanguageModel.default"
-                    ))
-                }
-            } else {
-                progress(NativeTurnProgress(
-                    completedLanes: 0,
-                    detail: "Z.AI is selected, but no Z.AI API key is saved. Trying Apple Foundation Models now.",
-                    phase: "Falling back to Apple",
-                    totalLanes: total,
-                    providerName: "Apple Foundation Models",
-                    modelName: "System Language Model",
-                    modelIdentifier: "SystemLanguageModel.default"
-                ))
-            }
-            return try await foundationService.generateTurn(for: state, months: months, progress: progress)
-        }
-    }
-
-    func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
-        switch providerPreference {
-        case .appleFoundation:
-            return try await foundationService.generateSuggestedActions(for: state)
-        case .openRouter:
-            if hasOpenRouterKey, let result = try? await openRouterService.generateSuggestedActions(for: state) { return result }
-            if hasZAIKey {
-                return try await generateWithAppleFallback(
-                    label: "Z.AI suggestions",
-                    operation: { try await self.zaiService.generateSuggestedActions(for: state) },
-                    appleOperation: { try await self.foundationService.generateSuggestedActions(for: state) }
-                )
-            }
-            return try await foundationService.generateSuggestedActions(for: state)
-        case .zai:
-            if hasZAIKey {
-                return try await generateWithAppleFallback(
-                    label: "Z.AI suggestions",
-                    operation: { try await self.zaiService.generateSuggestedActions(for: state) },
-                    appleOperation: { try await self.foundationService.generateSuggestedActions(for: state) }
-                )
-            }
-            return try await foundationService.generateSuggestedActions(for: state)
-        }
-    }
-
-    func generateAdvisorBrief(for state: NativeCampaignState, question: String) async throws -> String {
-        switch providerPreference {
-        case .appleFoundation:
-            return try await foundationService.generateAdvisorBrief(for: state, question: question)
-        case .openRouter:
-            if hasOpenRouterKey, let result = try? await openRouterService.generateAdvisorBrief(for: state, question: question) { return result }
-            if hasZAIKey, let result = try? await zaiService.generateAdvisorBrief(for: state, question: question) { return result }
-            return try await foundationService.generateAdvisorBrief(for: state, question: question)
-        case .zai:
-            if hasZAIKey, let result = try? await zaiService.generateAdvisorBrief(for: state, question: question) { return result }
-            return try await foundationService.generateAdvisorBrief(for: state, question: question)
-        }
-    }
-
-    func generateDiplomaticReply(
-        for state: NativeCampaignState,
-        thread: NativeDiplomaticThread,
-        message: String
-    ) async throws -> String {
-        switch providerPreference {
-        case .appleFoundation:
-            return try await foundationService.generateDiplomaticReply(for: state, thread: thread, message: message)
-        case .openRouter:
-            if hasOpenRouterKey, let result = try? await openRouterService.generateDiplomaticReply(for: state, thread: thread, message: message) { return result }
-            if hasZAIKey, let result = try? await zaiService.generateDiplomaticReply(for: state, thread: thread, message: message) { return result }
-            return try await foundationService.generateDiplomaticReply(for: state, thread: thread, message: message)
-        case .zai:
-            if hasZAIKey, let result = try? await zaiService.generateDiplomaticReply(for: state, thread: thread, message: message) { return result }
-            return try await foundationService.generateDiplomaticReply(for: state, thread: thread, message: message)
-        }
-    }
 }

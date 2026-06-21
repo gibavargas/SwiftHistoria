@@ -59,7 +59,7 @@ struct NativeSettingsPanel: View {
 
                 NativeLanguagePicker(store: store, state: state)
                 NativeScenarioPicker(store: store)
-                NativeAIStatusPanel(readiness: state.aiReadiness)
+                NativeAIStatusPanel(readiness: state.aiReadiness, sessionTotalTokens: store.sessionTokenUsage.total)
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("AI PROVIDER")
@@ -277,7 +277,14 @@ struct NativeScenarioPicker: View {
 
 struct NativeAIStatusPanel: View {
     let readiness: NativeAIReadiness
+    var sessionTotalTokens: Int = 0
     @State private var pulsing = false
+    @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderPreferenceRaw: String = NativeAIProviderPreference.openRouter.rawValue
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var selectedProviderName: String {
+        (NativeAIProviderPreference(rawValue: aiProviderPreferenceRaw) ?? .openRouter).providerName
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -288,12 +295,13 @@ struct NativeAIStatusPanel: View {
                     .opacity(pulsing ? 0.4 : 1.0)
                     .scaleEffect(pulsing ? 1.2 : 1.0)
                     .onAppear {
+                        guard !reduceMotion else { return }
                         withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
                             pulsing = true
                         }
                     }
 
-                Text("APPLE FM ENGINE // STATUS")
+                Text("\(selectedProviderName.uppercased()) // STATUS")
                     .font(.system(.caption, design: .monospaced).weight(.bold))
                     .foregroundStyle(.secondary)
             }
@@ -315,6 +323,20 @@ struct NativeAIStatusPanel: View {
                     Text(readiness.checkedAt.isEmpty ? "NEVER" : readiness.checkedAt.uppercased())
                         .font(.system(.caption, design: .monospaced).weight(.bold))
                         .foregroundStyle(Color.iceBlue)
+                }
+
+                HStack {
+                    Text("SESSION TOKENS:")
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                    Text(String(format: "%.1fk", Double(sessionTotalTokens) / 1000.0))
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(sessionTotalTokens > 100_000 ? Color.softRed : Color.neonTeal)
+                    if sessionTotalTokens > 100_000 {
+                        Text("⚠ BUDGET WARNING")
+                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            .foregroundStyle(Color.softRed)
+                    }
                 }
             }
             .padding(10)

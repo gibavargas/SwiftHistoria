@@ -7,10 +7,10 @@ import OSLog
 /// from `NativeZAIService` — only the endpoint, API key, model list, and thinking
 /// field differ. OpenRouter uses the same OpenAI-compatible chat completions API.
 @MainActor
-final class NativeOpenRouterService: NativeZAIService {
+class NativeOpenRouterService: NativeZAIService {
     private let orLogger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeOpenRouterService")
     private var openRouterModelLanes: [ZAIModelLane] = [
-        ZAIModelLane(name: "openrouter/free", displayName: "Free Models Router", maxConcurrent: 4)
+        ZAIModelLane(name: "openrouter/free", displayName: "Free Models Router", maxConcurrent: 5)
     ]
 
     /// Unified free-model router exposed at https://openrouter.ai/openrouter/free.
@@ -41,6 +41,10 @@ final class NativeOpenRouterService: NativeZAIService {
         false
     }
 
+    override var supportsStreaming: Bool {
+        true
+    }
+
     override var providerDisplayName: String {
         "OpenRouter"
     }
@@ -54,18 +58,80 @@ final class NativeOpenRouterService: NativeZAIService {
         if key.isEmpty {
             return .unavailable("OpenRouter API Key not configured in System Settings.")
         }
-        do {
-            _ = try await executeZAIRequest(
-                prompt: "Return exactly this JSON: {\"ok\":true}",
-                maxTokens: 16,
-                temperature: 0.0,
-                responseFormat: "json_object",
-                thinkingEnabled: false
-            )
-            return .available(tokenBudget: "OpenRouter free models verified")
-        } catch {
-            orLogger.error("OpenRouter readiness probe failed: \(error.localizedDescription, privacy: .public)")
-            return .failure(error)
+        orLogger.info("OpenRouter readiness configured for openrouter/free without spending a free-router request")
+        return .available(tokenBudget: "OpenRouter free router configured; live calls validate on use")
+    }
+
+    override func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
+        let focusAreas = [
+            "fiscal ledger, budget balance, debt, and market confidence",
+            "public security, insurgency pressure, and stabilization capacity",
+            "diplomacy, trade balance, global friction, and regional relations",
+            "infrastructure, energy, climate resilience, unemployment, and service access"
+        ]
+        let prompt = """
+        \(promptHarness.makeSuggestionBatchPrompt(for: state, focusAreas: focusAreas))
+
+        Required JSON schema:
+        {
+          "suggestions": [
+            {
+              "title": "Short imperative title for the civic proposal.",
+              "detail": "Accept-ready board-game order with bounded instrument, generic agency or sector, timing, primary mechanic, secondary mechanic, capacity fit, and intended game effect.",
+              "rationale": "Why this proposal fits the current campaign state and objectives, explicitly naming the primary affected mechanic and one connected secondary mechanic.",
+              "urgency": "immediate, soon, or opportunistic"
+            }
+          ]
         }
+
+        Return one strict JSON object only. Do not include markdown fences, prose, schema labels, or comments.
+        """
+
+        let rawResponse = try await executeProviderRequest(
+            prompt: prompt,
+            maxTokens: 1400,
+            temperature: 0.1,
+            responseFormat: "json_object",
+            thinkingEnabled: false
+        )
+
+        let decoder = JSONDecoder()
+        for candidate in NativeJSONExtraction.candidates(from: rawResponse) {
+            guard let data = candidate.data(using: .utf8),
+                  let decoded = try? decoder.decode(OpenRouterSuggestionBatch.self, from: data)
+            else {
+                continue
+            }
+            let suggestions = decoded.suggestions
+                .enumerated()
+                .map { index, suggestion in suggestion.toNativeSuggestion(state: state, index: index) }
+                .filter { isValidNativeSuggestion($0) }
+            guard suggestions.count >= 3 else { continue }
+            orLogger.info("OpenRouter batched suggestions validated count=\(suggestions.count, privacy: .public)")
+            return Array(suggestions.prefix(4))
+        }
+
+        throw NativeFoundationModelError.invalidSuggestedActions("OpenRouter Free returned invalid suggested actions JSON.")
+    }
+}
+
+private struct OpenRouterSuggestionBatch: Decodable {
+    var suggestions: [OpenRouterSuggestedAction]
+}
+
+private struct OpenRouterSuggestedAction: Decodable {
+    var title: String
+    var detail: String
+    var rationale: String
+    var urgency: String
+
+    func toNativeSuggestion(state: NativeCampaignState, index: Int) -> NativeSuggestedAction {
+        NativeSuggestedAction(
+            detail: sanitizeFoundationModelText(detail),
+            id: "suggestion-\(state.country.code.lowercased())-\(state.round)-openrouter-\(index + 1)",
+            rationale: sanitizeFoundationModelText(rationale),
+            title: sanitizeFoundationModelText(title),
+            urgency: normalizedFoundationUrgency(urgency)
+        )
     }
 }

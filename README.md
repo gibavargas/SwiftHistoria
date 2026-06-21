@@ -62,7 +62,7 @@ For architectural orientation, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md
 ```bash
 git clone https://github.com/gibavargas/SwiftHistoria.git
 cd SwiftHistoria
-script/build_apple.sh
+script/build_and_run.sh --verify
 ```
 
 To build and launch the macOS app from the command line:
@@ -79,7 +79,7 @@ script/build_and_run.sh
 
 ```bash
 script/lint.sh          # SwiftFormat (style) + SwiftLint (semantic), strict
-script/format.sh        # auto-fix style with SwiftFormat
+script/lint.sh --fix    # auto-fix style with SwiftFormat, then re-check
 ```
 
 Requires `swiftlint` and `swiftformat` — install once with Homebrew:

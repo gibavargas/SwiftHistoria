@@ -543,11 +543,11 @@ struct NativeFloatingAdvanceButton: View {
 
     var body: some View {
         Menu {
-            Button("Advance 1 Month") { Task { await store.advance(months: 1) } }
+            Button("Advance 1 Month") { store.advance(months: 1) }
                 .accessibilityIdentifier("native-advance-1")
-            Button("Advance 3 Months") { Task { await store.advance(months: 3) } }
+            Button("Advance 3 Months") { store.advance(months: 3) }
                 .accessibilityIdentifier("native-advance-3")
-            Button("Advance 1 Year") { Task { await store.advance(months: 12) } }
+            Button("Advance 1 Year") { store.advance(months: 12) }
                 .accessibilityIdentifier("native-advance-12")
         } label: {
             HStack(spacing: 8) {
@@ -657,11 +657,11 @@ struct NativeAdvanceMenu: View {
 
     var body: some View {
         Menu {
-            Button("1 month") { Task { await store.advance(months: 1) } }
+            Button("1 month") { store.advance(months: 1) }
                 .accessibilityIdentifier("native-advance-1")
-            Button("3 months") { Task { await store.advance(months: 3) } }
+            Button("3 months") { store.advance(months: 3) }
                 .accessibilityIdentifier("native-advance-3")
-            Button("1 year") { Task { await store.advance(months: 12) } }
+            Button("1 year") { store.advance(months: 12) }
                 .accessibilityIdentifier("native-advance-12")
         } label: {
             if store.isAdvancing {

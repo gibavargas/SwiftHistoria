@@ -1,56 +1,5 @@
 import Foundation
 
-private enum NativeTinyEmbeddingModel {
-    private static let dimensions = 64
-
-    static func embed(_ text: String) -> [Float] {
-        var vector = Array(repeating: Float(0), count: dimensions)
-        for token in tokens(text) {
-            let hash = token.unicodeScalars.reduce(UInt64(5381)) { ($0 << 5) &+ $0 &+ UInt64($1.value) }
-            let index = Int(hash % UInt64(dimensions))
-            vector[index] += (hash & 1) == 0 ? 1 : -1
-        }
-        let norm = sqrt(vector.reduce(Float(0)) { $0 + $1 * $1 })
-        guard norm > 0 else { return vector }
-        return vector.map { $0 / norm }
-    }
-
-    static func cosine(_ lhs: [Float], _ rhs: [Float]) -> Double {
-        Double(zip(lhs, rhs).reduce(Float(0)) { $0 + $1.0 * $1.1 })
-    }
-
-    private static func tokens(_ text: String) -> [String] {
-        let base = text.lowercased()
-            .components(separatedBy: CharacterSet.alphanumerics.inverted)
-            .filter { $0.count > 2 }
-        return base.flatMap { token in [token] + aliases[token, default: []] }
-    }
-
-    private static let aliases: [String: [String]] = [
-        "airport": ["logistics", "corridor", "trade"],
-        "border": ["security", "sovereignty", "conflict"],
-        "budget": ["fiscal", "debt", "capacity"],
-        "corridor": ["logistics", "trade", "infrastructure"],
-        "debt": ["budget", "fiscal", "market"],
-        "diplomacy": ["relations", "treaty", "leverage"],
-        "education": ["services", "capacity", "stability"],
-        "energy": ["infrastructure", "resilience", "industry"],
-        "fiscal": ["budget", "debt", "capacity"],
-        "inflation": ["prices", "market", "stability"],
-        "insurgency": ["security", "stabilization", "rebel"],
-        "market": ["confidence", "trade", "growth"],
-        "port": ["logistics", "corridor", "trade"],
-        "rail": ["logistics", "corridor", "infrastructure"],
-        "rebel": ["insurgency", "security", "stabilization"],
-        "security": ["stabilization", "insurgency", "resilience"],
-        "services": ["education", "health", "stability"],
-        "stability": ["services", "security", "legitimacy"],
-        "stabilization": ["security", "insurgency", "resilience"],
-        "trade": ["corridor", "market", "diplomacy"],
-        "unemployment": ["jobs", "growth", "stability"]
-    ]
-}
-
 private extension NativeEventImportance {
     var semanticWeight: Int {
         switch self {
@@ -60,6 +9,8 @@ private extension NativeEventImportance {
         }
     }
 }
+
+// Test-friendly accessors for the private embedding model
 
 enum NativeFoundationTurnLane: String, Codable, CaseIterable, Hashable, Identifiable {
     case external
@@ -159,6 +110,9 @@ struct NativeEconomicLedger: Codable, Hashable {
     var unemploymentPercent: Double
     var securityIndex: Double
     var rebelControlPercent: Double
+    /// Dynamic resource reserves (P1-3). Keys: "oil", "minerals", "agriculture", "rare_earths".
+    /// Values represent relative abundance (0-100 scale). Depleted by industrial budget each turn.
+    var resourceReserves: [String: Double]
 
     enum CodingKeys: String, CodingKey {
         case budgetBalancePercentGDP
@@ -172,6 +126,7 @@ struct NativeEconomicLedger: Codable, Hashable {
         case unemploymentPercent
         case securityIndex
         case rebelControlPercent
+        case resourceReserves
     }
 
     init(
@@ -185,7 +140,8 @@ struct NativeEconomicLedger: Codable, Hashable {
         tradeBalancePercentGDP: Double,
         unemploymentPercent: Double,
         securityIndex: Double = 80.0,
-        rebelControlPercent: Double = 0.0
+        rebelControlPercent: Double = 0.0,
+        resourceReserves: [String: Double] = [:]
     ) {
         self.budgetBalancePercentGDP = budgetBalancePercentGDP
         self.entries = entries
@@ -198,6 +154,7 @@ struct NativeEconomicLedger: Codable, Hashable {
         self.unemploymentPercent = unemploymentPercent
         self.securityIndex = securityIndex
         self.rebelControlPercent = rebelControlPercent
+        self.resourceReserves = resourceReserves.isEmpty ? NativeEconomicLedger.defaultResourceReserves() : resourceReserves
     }
 
     init(from decoder: Decoder) throws {
@@ -213,6 +170,27 @@ struct NativeEconomicLedger: Codable, Hashable {
         unemploymentPercent = try container.decode(Double.self, forKey: .unemploymentPercent)
         securityIndex = (try? container.decodeIfPresent(Double.self, forKey: .securityIndex)) ?? 80.0
         rebelControlPercent = (try? container.decodeIfPresent(Double.self, forKey: .rebelControlPercent)) ?? 0.0
+        resourceReserves = (try? container.decodeIfPresent([String: Double].self, forKey: .resourceReserves)) ?? NativeEconomicLedger.defaultResourceReserves()
+    }
+
+    /// Default balanced resource reserves for a new country.
+    static func defaultResourceReserves() -> [String: Double] {
+        ["oil": 30.0, "minerals": 40.0, "agriculture": 50.0, "rare_earths": 15.0]
+    }
+
+    /// Resource reserves biased by country code — major producers get higher reserves.
+    static func resourceReserves(forCountryCode code: String) -> [String: Double] {
+        var reserves = defaultResourceReserves()
+        let oilProducers: Set = ["SAU", "RUS", "USA", "IRN", "IRQ", "ARE", "KWT", "VEN", "NGA", "CAN", "BRA", "NOR"]
+        let mineralProducers: Set = ["AUS", "CHN", "CHL", "PER", "ZAF", "RUS", "COD", "IDN"]
+        let agricultureProducers: Set = ["USA", "BRA", "CHN", "IND", "ARG", "FRA", "AUS", "CAN"]
+        let rareEarthProducers: Set = ["CHN", "AUS", "USA", "RUS", "IND", "BRA"]
+
+        if oilProducers.contains(code) { reserves["oil"] = 80.0 }
+        if mineralProducers.contains(code) { reserves["minerals"] = 75.0 }
+        if agricultureProducers.contains(code) { reserves["agriculture"] = 80.0 }
+        if rareEarthProducers.contains(code) { reserves["rare_earths"] = 60.0 }
+        return reserves
     }
 
     static func starting(for country: PlayerCountry, scenario: NativeScenario) -> NativeEconomicLedger {
@@ -1309,23 +1287,36 @@ enum NativeStrategyContextDatabase {
             pLedger.securityIndex = clampDouble(pLedger.securityIndex + milSecurityDelta, 0, 100)
             pLedger.rebelControlPercent = clampDouble(pLedger.rebelControlPercent + milRebelDelta, 0, 100)
             pLedger.publicDebtPercentGDP = clampDouble(pLedger.publicDebtPercentGDP + milDebtDelta, 1, 260)
-            pLedger.realGrowthPercent = clampDouble(pLedger.realGrowthPercent + milGrowthDelta + serGrowthDelta, -12, 16)
+
+            // **Tech Tree (#7)**: the active research era grants a per-turn
+            // real-growth bonus (digital +0.5%, aiAge +1%, biotech +1.5%,
+            // cleanEnergy +2%, scaled by elapsed months).
+            let era = state.techEraTyped
+            let techGrowthDelta = era.growthBonus * Double(months)
+
+            // **Military Units (#8)**: standing-army maintenance. Each unit
+            // costs 0.01% growth per turn, annualized by elapsed months so it
+            // composes consistently with the GDP compounding line in `apply`.
+            let totalUnits = state.militaryUnits.values.reduce(0, +)
+            let maintenanceGrowthDelta = -Double(totalUnits) * 0.01 * Double(months)
+
+            pLedger.realGrowthPercent = clampDouble(pLedger.realGrowthPercent + milGrowthDelta + serGrowthDelta + techGrowthDelta + maintenanceGrowthDelta, -12, 16)
 
             pLedger.unemploymentPercent = clampDouble(pLedger.unemploymentPercent + serUnemploymentDelta, 1, 35)
             pLedger.budgetBalancePercentGDP = clampDouble(pLedger.budgetBalancePercentGDP + serBudgetDelta, -12, 12)
             pLedger.tradeBalancePercentGDP = clampDouble(pLedger.tradeBalancePercentGDP + dipTradeDelta, -20, 20)
 
-            if milGrowthDelta != 0 || serGrowthDelta != 0 || serBudgetDelta != 0 || dipTradeDelta != 0 {
+            if milGrowthDelta != 0 || serGrowthDelta != 0 || serBudgetDelta != 0 || dipTradeDelta != 0 || techGrowthDelta != 0 || maintenanceGrowthDelta != 0 {
                 let sliderEntry = NativeEconomicLedgerEntry(
                     budgetBalanceDelta: serBudgetDelta,
                     debtDelta: milDebtDelta,
                     eventID: "budget-slider-\(state.round)",
                     fiscalSpaceDelta: 0,
-                    growthDelta: milGrowthDelta + serGrowthDelta,
-                    id: "ledger-entry-slider-\(UUID().uuidString.lowercased())",
+                    growthDelta: milGrowthDelta + serGrowthDelta + techGrowthDelta + maintenanceGrowthDelta,
+                    id: "ledger-entry-slider-\(state.country.code.lowercased())-\(state.gameDate)",
                     inflationDelta: 0.0,
                     ruleID: "budget-allocation",
-                    summary: "Adjustments from budget sliders",
+                    summary: "Adjustments from budget sliders, \(era.displayName) research bonus, and military upkeep",
                     tradeBalanceDelta: dipTradeDelta,
                     turnDate: state.gameDate,
                     securityDelta: milSecurityDelta,
@@ -1335,6 +1326,41 @@ enum NativeStrategyContextDatabase {
             }
 
             state.economicLedgers[state.country.code] = pLedger
+
+            // **Tech Tree (#7)**: accumulate research points from the research
+            // budget slider and advance the era when the threshold is met.
+            let researchYearFraction = Double(months) / 12.0
+            let researchGain = Int((state.budgetResearchSlider * 100.0 * researchYearFraction).rounded())
+            if researchGain > 0 {
+                state.researchPoints += researchGain
+            }
+            if let nextEra = era.next, state.researchPoints >= era.researchThreshold {
+                state.researchPoints = 0
+                state.techEraTyped = nextEra
+                let eraEvent = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: "Our research programs crossed the \(era.researchThreshold)-point threshold, ushering the nation into the \(nextEra.displayName) era. Real-growth outlook improves by \(String(format: "%+.1f", nextEra.growthBonus))%/turn.",
+                    id: "tech-era-advance-\(nextEra.rawValue)-\(state.gameDate)",
+                    importance: .major,
+                    kind: .economy,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [
+                        NativeStrategicEffect(
+                            date: state.gameDate,
+                            eventId: "tech-era-advance-\(nextEra.rawValue)-\(state.gameDate)",
+                            id: "tech-era-effect-\(nextEra.rawValue)-\(state.gameDate)",
+                            magnitude: 1,
+                            summary: "\(nextEra.displayName) era unlocked: +\(String(format: "%.1f", nextEra.growthBonus))%/turn growth.",
+                            target: state.country.code,
+                            track: .economicResilience
+                        )
+                    ],
+                    title: "TECH ADVANCE: \(nextEra.displayName) Era"
+                )
+                state.timeline.insert(eraEvent, at: 0)
+            }
 
             if serStabilityDelta != 0 {
                 state.stability = max(0, min(100, state.stability + serStabilityDelta))
@@ -1510,7 +1536,7 @@ enum NativeStrategyContextDatabase {
                             eventID: "agenda-\(code.lowercased())-\(state.round)",
                             fiscalSpaceDelta: 0,
                             growthDelta: growthDelta,
-                            id: "ledger-entry-agenda-\(code.lowercased())-\(UUID().uuidString.lowercased())",
+                            id: "ledger-entry-agenda-\(code.lowercased())-\(state.gameDate)",
                             inflationDelta: 0.0,
                             ruleID: "agenda-completion",
                             summary: "\(code) completed agenda: \(oldAgenda)",
@@ -1530,7 +1556,7 @@ enum NativeStrategyContextDatabase {
                 let agendaEvent = NativeCampaignEvent(
                     date: state.gameDate,
                     description: "\(code) has completed their multi-turn agenda: \"\(oldAgenda)\". Geopolitical alignment analysis: \(consequenceDetail)",
-                    id: "agenda-event-\(code.lowercased())-\(UUID().uuidString.lowercased())",
+                    id: "agenda-event-\(code.lowercased())-\(state.gameDate)",
                     importance: .major,
                     kind: .world,
                     linkedActionIDs: [],
@@ -1540,7 +1566,7 @@ enum NativeStrategyContextDatabase {
                         NativeStrategicEffect(
                             date: state.gameDate,
                             eventId: "agenda-event-\(code.lowercased())",
-                            id: "agenda-effect-\(code.lowercased())-\(UUID().uuidString.lowercased())",
+                            id: "agenda-effect-\(code.lowercased())-\(state.gameDate)",
                             magnitude: stabilityDelta,
                             summary: "Stability altered by \(code)'s completed agenda",
                             target: state.country.code,
@@ -1631,7 +1657,7 @@ enum NativeStrategyContextDatabase {
                     }
 
                     let newOffer = NativeDiplomaticOffer(
-                        id: "offer-\(code.lowercased())-\(UUID().uuidString.lowercased())",
+                        id: "offer-\(code.lowercased())-\(state.gameDate)",
                         proposerCode: code,
                         type: type,
                         description: desc,
@@ -1703,10 +1729,261 @@ enum NativeStrategyContextDatabase {
             state.economicLedgers[code] = ledger
         }
 
+        // MARK: - P1-1: Adversarial AI Behavior & Victory Pursuit (#9)
+
+        // AI invasions: military/expansionist AI countries with hostile relationships may attack rivals.
+        // **AI Pursues Victory (#9)**: expansionist AI near a conquest victory
+        // (>= 2 occupied rival regions) are far more aggressive and actually
+        // occupy conquered territory rather than merely contesting borders.
+        for code in strategicCodes {
+            guard let aiState = state.aiCountryStates[code] else { continue }
+            guard aiState.doctrine == .expansionist || aiState.doctrine == .defensive else { continue }
+            guard aiState.budgetPriority == .military else { continue }
+
+            // Count rival regions this AI currently controls (victory signal).
+            let occupiedRivals = state.regionOccupations.filter { key, val in
+                guard val == code else { return false }
+                let reg = GeopoliticalMapData.regionByID[key]
+                return reg?.countryCode != code && reg?.countryCode != nil
+            }.count
+            let nearConquestVictory = occupiedRivals >= 2
+            // Boost invasion aggressiveness when close to a territorial victory.
+            let invasionChance = nearConquestVictory ? 35 : 15
+
+            // Find a rival with relationship < -50
+            for (targetCode, score) in aiState.relationshipScores {
+                guard score < -50 else { continue }
+                guard strategicCodes.contains(targetCode) || targetCode == state.country.code else { continue }
+
+                // Deterministic chance per turn to launch an invasion
+                let invasionSeed = "\(state.scenarioID)-\(state.gameDate)-\(code)-invade-\(targetCode)"
+                let invasionRoll = Int(NativeGameEngine.stablePercentagePublic(seed: invasionSeed) * 100)
+                guard invasionRoll < invasionChance else { continue }
+
+                // Find a border region of the target to contest
+                let targetRegions = GeopoliticalMapData.regions(forCountryCode: targetCode)
+                guard let targetRegion = targetRegions.first else { continue }
+
+                // Near-victory AI occupies; otherwise it contests the border.
+                if nearConquestVictory {
+                    state.regionOccupations[targetRegion.id] = code
+                }
+                state.regionConflicts[targetRegion.id] = NativeRegionConflictState(
+                    controllerCode: code,
+                    intensity: nearConquestVictory ? 4 : 3,
+                    mode: nearConquestVictory ? .conventionalOccupation : .contestedBorder,
+                    originalCountryCode: targetCode,
+                    regionID: targetRegion.id,
+                    sourceEventID: "ai-invasion-\(code)-\(targetCode)-\(state.gameDate)",
+                    summary: "\(code) launched a military incursion against \(targetCode)\(nearConquestVictory ? " in a push for regional dominance." : ".")",
+                    updatedAt: state.gameDate
+                )
+
+                // Relationship penalty for the invasion
+                state.aiCountryStates[code]?.relationshipScores[targetCode] = max(-100, score - 5)
+
+                // Create an event
+                let invasionEvent = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: "\(code) launched a military incursion against \(targetCode) in the \(targetRegion.name) region. Border conflict escalating.",
+                    id: "ai-invasion-\(code)-\(targetCode)-\(state.gameDate)",
+                    importance: .major,
+                    kind: .crisis,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: targetCode == state.country.code,
+                    strategicEffects: [],
+                    title: "\(code) Invades \(targetCode)"
+                )
+                state.timeline.insert(invasionEvent, at: 0)
+                break // One invasion per AI per turn
+            }
+        }
+
+        // **AI Pursues Victory (#9) — Mercantile doctrine**: prioritize trade
+        // offers and relationship building with the strongest economic partners.
+        for code in strategicCodes {
+            guard var aiState = state.aiCountryStates[code] else { continue }
+            guard aiState.doctrine == .mercantile || aiState.budgetPriority == .growth else { continue }
+
+            // Identify this AI's top economic partners (largest GDP ledgers).
+            let partnerCodes = strategicCodes.filter { $0 != code }
+                .sorted { lhs, rhs in
+                    let l = state.economicLedgers[lhs]?.nominalGDPTrillions ?? 0
+                    let r = state.economicLedgers[rhs]?.nominalGDPTrillions ?? 0
+                    return l > r
+                }
+                .prefix(3)
+
+            for partnerCode in partnerCodes {
+                let current = aiState.relationshipScores[partnerCode] ?? 0
+                // Mercantile AI gradually warms to economic partners.
+                aiState.relationshipScores[partnerCode] = max(-100, min(100, current + Int(1.0 * Double(months))))
+            }
+
+            // Mercantile AI proposes trade agreements more readily with partners.
+            let hasPending = state.activeOffers.contains { $0.proposerCode == code && $0.status == .pending }
+            if !hasPending {
+                for partnerCode in partnerCodes {
+                    guard partnerCode != state.country.code else { continue }
+                    let tradeSeed = "\(state.scenarioID)-\(state.gameDate)-\(code)-trade-\(partnerCode)"
+                    let tradeRoll = Int(NativeGameEngine.stablePercentagePublic(seed: tradeSeed) * 100)
+                    guard tradeRoll < 25 else { continue }
+                    let tradeOffer = NativeDiplomaticOffer(
+                        id: "ai-trade-\(code.lowercased())-\(partnerCode.lowercased())-\(state.gameDate)",
+                        proposerCode: code,
+                        type: .tradeAgreement,
+                        description: "\(code) extended a trade corridor proposal to \(partnerCode) to deepen commercial ties.",
+                        stabilityCost: 0,
+                        relationshipEffect: 10,
+                        growthDelta: 0.2,
+                        status: .accepted,
+                        turnProposed: state.round
+                    )
+                    state.activeOffers.append(tradeOffer)
+                    break
+                }
+            }
+            state.aiCountryStates[code] = aiState
+        }
+
+        // **AI Pursues Victory (#9) — Rival Threat**: when any AI country is
+        // within 20% of a scenario victory (progress >= 80), warn the player.
+        let existingThreatIDs = Set(state.timeline.filter { $0.id.hasPrefix("rival-threat-") }.map(\.id))
+        for code in strategicCodes {
+            guard code != state.country.code else { continue }
+            let progress = aiVictoryProgress(forCode: code, in: state)
+            guard progress >= 80 else { continue }
+            let threatID = "rival-threat-\(code.lowercased())-\(state.gameDate)"
+            guard !existingThreatIDs.contains(threatID) else { continue }
+            let threatEvent = NativeCampaignEvent(
+                date: state.gameDate,
+                description: "Intelligence analysts report \(code) is within striking distance of scenario victory (≈\(Int(progress))% of objectives). Its growing stability and economic mass could trigger an AI win unless countered.",
+                id: threatID,
+                importance: .severe,
+                kind: .crisis,
+                linkedActionIDs: [],
+                notable: true,
+                playerRelated: true,
+                strategicEffects: [
+                    NativeStrategicEffect(
+                        date: state.gameDate,
+                        eventId: threatID,
+                        id: "\(threatID)-effect",
+                        magnitude: 1,
+                        summary: "\(code) approaches victory conditions.",
+                        target: state.country.code,
+                        track: .securityAnxiety
+                    )
+                ],
+                title: "RIVAL THREAT: \(code) Near Victory"
+            )
+            state.timeline.insert(threatEvent, at: 0)
+        }
+
+        // Coalition formation: when worldTension > 60, allies form mutual defense pacts
+        if state.worldTension > 60 {
+            for code in strategicCodes {
+                guard let aiState = state.aiCountryStates[code] else { continue }
+                let playerScore = aiState.relationshipScores[state.country.code] ?? 0
+                guard playerScore < -30 else { continue }
+
+                // Find another AI that is friendly to this one and hostile to the player
+                for (otherCode, otherScore) in aiState.relationshipScores {
+                    guard otherScore > 40 else { continue }
+                    guard let otherAI = state.aiCountryStates[otherCode] else { continue }
+                    let otherPlayerScore = otherAI.relationshipScores[state.country.code] ?? 0
+                    guard otherPlayerScore < -30 else { continue }
+
+                    // Check if pact already exists
+                    let pactExists = state.activeOffers.contains { offer in
+                        offer.proposerCode == code && offer.type == .militaryAlliance && offer.status == .accepted
+                    }
+                    guard !pactExists else { continue }
+
+                    // Deterministic 20% chance
+                    let coalitionSeed = "\(state.scenarioID)-\(state.gameDate)-coalition-\(code)-\(otherCode)"
+                    let coalitionRoll = Int(NativeGameEngine.stablePercentagePublic(seed: coalitionSeed) * 100)
+                    guard coalitionRoll < 20 else { continue }
+
+                    let pactOffer = NativeDiplomaticOffer(
+                        id: "coalition-\(code)-\(otherCode)-\(state.gameDate)",
+                        proposerCode: code,
+                        type: .militaryAlliance,
+                        description: "\(code) and \(otherCode) signed a mutual defense pact against growing threats.",
+                        stabilityCost: 0,
+                        relationshipEffect: 10,
+                        growthDelta: 0,
+                        status: .accepted,
+                        turnProposed: state.round
+                    )
+                    state.activeOffers.append(pactOffer)
+
+                    let coalitionEvent = NativeCampaignEvent(
+                        date: state.gameDate,
+                        description: "COALITION: \(code) and \(otherCode) formalized a mutual defense pact amid rising global tensions. Both nations committed to collective security against perceived threats.",
+                        id: "coalition-event-\(code)-\(otherCode)-\(state.gameDate)",
+                        importance: .major,
+                        kind: .diplomacy,
+                        linkedActionIDs: [],
+                        notable: true,
+                        playerRelated: true,
+                        strategicEffects: [],
+                        title: "Defense Pact: \(code) + \(otherCode)"
+                    )
+                    state.timeline.insert(coalitionEvent, at: 0)
+                    break
+                }
+            }
+        }
+
+        // Player invasion response: allies of invaded countries penalize the player
+        let playerOccupations = state.regionOccupations.filter { key, val in
+            let reg = GeopoliticalMapData.regionByID[key]
+            return reg?.countryCode != state.country.code && val == state.country.code
+        }
+        for (regionID, _) in playerOccupations {
+            guard let region = GeopoliticalMapData.regionByID[regionID] else { continue }
+            let defenderCode = region.countryCode
+            // Find allies of the defender (relationship > 50 to defender)
+            for (allyCode, aiState) in state.aiCountryStates {
+                let allyToDefender = aiState.relationshipScores[defenderCode] ?? 0
+                guard allyToDefender > 50 else { continue }
+                // Penalize relationship with player
+                let currentScore = aiState.relationshipScores[state.country.code] ?? 0
+                state.aiCountryStates[allyCode]?.relationshipScores[state.country.code] = max(-100, currentScore - 3)
+            }
+        }
+
         // Sync player's main ledger
         if let playerLedger = state.economicLedgers[state.country.code] {
             state.economicLedger = playerLedger
         }
+    }
+
+    /// **AI Pursues Victory (#9)**: a lightweight 0-100 progress score for an
+    /// AI country toward a generic scenario victory, derived from its economic
+    /// ledger (a proxy for the player-only `stability`/victory metrics). A score
+    /// >= 80 means the AI is within ~20% of victory and should trigger warnings.
+    static func aiVictoryProgress(forCode code: String, in state: NativeCampaignState) -> Double {
+        guard let ledger = state.economicLedgers[code] else { return 0 }
+        var score = 0.0
+        // Stability proxy from public security (0-40 pts).
+        score += min(40.0, ledger.securityIndex * 0.4)
+        // Fiscal strength (0-20 pts).
+        score += min(20.0, Double(ledger.fiscalSpaceIndex) * 0.2)
+        // Growth health (0-20 pts; 10% growth => full).
+        score += min(20.0, max(0.0, ledger.realGrowthPercent) * 2.0)
+        // Economic mass (0-20 pts; $40T => full).
+        score += min(20.0, max(0.0, ledger.nominalGDPTrillions) * 0.5)
+        // Bonus for controlled rival territory (conquest scenarios).
+        let occupiedRivals = state.regionOccupations.filter { key, val in
+            guard val == code else { return false }
+            let reg = GeopoliticalMapData.regionByID[key]
+            return reg?.countryCode != code && reg?.countryCode != nil
+        }.count
+        score += min(20.0, Double(occupiedRivals) * 10.0)
+        return min(100.0, max(0.0, score))
     }
 }
 

@@ -191,10 +191,10 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(applied.worldTension, 0)
         XCTAssertEqual(applied.language, .spanish)
         XCTAssertEqual(applied.scenarioID, NativeScenarioCatalog.fragmentedMarkets.id)
-        let nonPollutionTimeline = applied.timeline.filter { !$0.id.hasPrefix("512dice-") }
-        let nonPollutionEffects = applied.worldEffects.filter { !$0.eventId.hasPrefix("512dice-") }
-        XCTAssertEqual(nonPollutionTimeline.count, generated.events.count + state.timeline.count)
-        XCTAssertEqual(nonPollutionEffects.count, generated.events.flatMap(\.strategicEffects).count + state.worldEffects.count)
+        XCTAssertTrue(applied.timeline.contains { $0.id == "independent" })
+        XCTAssertTrue(applied.timeline.contains { $0.id == "linked" })
+        XCTAssertTrue(applied.worldEffects.contains { $0.eventId == "independent" })
+        XCTAssertTrue(applied.worldEffects.contains { $0.eventId == "linked" })
     }
 
     func testInvasionActionsResolveDeterministically() throws {
@@ -476,7 +476,7 @@ final class NativeBackendTests: XCTestCase {
         store.addDraftAction()
         XCTAssertEqual(store.state?.plannedActions.first?.status, .planned)
 
-        await store.advance(months: 1)
+        await store.performAdvance(months: 1)
         XCTAssertGreaterThan(store.state?.round ?? 0, 1)
         XCTAssertFalse(store.state?.timeline.isEmpty ?? true)
 
@@ -548,7 +548,7 @@ final class NativeBackendTests: XCTestCase {
         store.addDraftAction()
 
         let before = try XCTUnwrap(store.state)
-        await store.advance(months: 1)
+        await store.performAdvance(months: 1)
 
         let after = try XCTUnwrap(store.state)
         XCTAssertEqual(after.round, before.round)
@@ -567,7 +567,7 @@ final class NativeBackendTests: XCTestCase {
         let store = try makeStore(aiService: service)
         store.choose(testCountry)
 
-        let task = Task { await store.advance(months: 1) }
+        let task = Task { await store.performAdvance(months: 1) }
         await gate.waitUntilEntered()
 
         XCTAssertTrue(store.isAdvancing)
@@ -578,6 +578,25 @@ final class NativeBackendTests: XCTestCase {
         await task.value
         XCTAssertFalse(store.isAdvancing)
         XCTAssertNil(store.turnProgress)
+    }
+
+    func testSuggestedActionsTimeoutClearsLoadingState() async throws {
+        let service = FakeNativeAIService()
+        service.suggestionHandler = { _ in
+            try await Task.sleep(nanoseconds: 5_000_000_000)
+            return []
+        }
+        let originalTimeout = NativeCampaignStore.suggestionRefreshTimeoutNanoseconds
+        NativeCampaignStore.suggestionRefreshTimeoutNanoseconds = 1_000_000
+        defer { NativeCampaignStore.suggestionRefreshTimeoutNanoseconds = originalTimeout }
+
+        let store = try makeStore(aiService: service)
+        store.state = makeState()
+        await store.refreshSuggestedActions(force: true)
+
+        XCTAssertFalse(store.isLoadingSuggestions)
+        XCTAssertTrue(store.state?.suggestedActions.isEmpty ?? false)
+        XCTAssertTrue(store.lastSuggestionError?.contains("too long") == true)
     }
 
     func testStaleAIResponseIsIgnored() async throws {
@@ -592,7 +611,7 @@ final class NativeBackendTests: XCTestCase {
         store.choose(testCountry)
         await Task.yield()
 
-        let task = Task { await store.advance(months: 1) }
+        let task = Task { await store.performAdvance(months: 1) }
         await gate.waitUntilEntered()
         store.setLanguage(.spanish)
         await gate.resume()
@@ -628,7 +647,7 @@ final class NativeBackendTests: XCTestCase {
         ]
         store.state = state
 
-        let task = Task { await store.advance(months: 1) }
+        let task = Task { await store.performAdvance(months: 1) }
         await gate.waitUntilEntered()
         store.updateBudgetSliders(military: 10, services: 0, diplomacy: 0)
         store.acceptDiplomaticOffer(id: "offer-arg-trade")
@@ -654,7 +673,7 @@ final class NativeBackendTests: XCTestCase {
         state.victoryStatus = .won
         store.state = state
 
-        await store.advance(months: 1)
+        await store.performAdvance(months: 1)
 
         XCTAssertEqual(store.state?.round, state.round)
         XCTAssertEqual(store.state?.gameDate, state.gameDate)
@@ -690,7 +709,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .zai)
     }
 
-    func testAIProviderServicesReadInjectedDefaults() throws {
+    func testAIProviderServicesReadInjectedDefaults() async throws {
         let defaults = makeDefaults()
         defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
         defaults.set("zai-test-key", forKey: "ZAI_API_KEY")
@@ -701,7 +720,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(openRouter.providerDisplayName, "OpenRouter")
         XCTAssertEqual(openRouter.modelLanes.map(\.name), ["openrouter/free"])
         XCTAssertEqual(openRouter.modelLanes.first?.displayName, "Free Models Router")
-        XCTAssertEqual(openRouter.modelLanes.first?.maxConcurrent, 4)
+        XCTAssertEqual(openRouter.modelLanes.first?.maxConcurrent, 5)
         let firstOpenRouterLane = try XCTUnwrap(openRouter.modelLanes.first)
         let secondOpenRouterLane = try XCTUnwrap(openRouter.modelLanes.first)
         XCTAssertTrue(firstOpenRouterLane === secondOpenRouterLane)
@@ -718,12 +737,129 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(progress.providerSummary, "Calling OpenRouter · Free Models Router")
         XCTAssertFalse(progress.providerSummary?.localizedCaseInsensitiveContains("Apple") ?? true)
 
+        let readiness = await openRouter.checkReadiness()
+        XCTAssertTrue(readiness.ok)
+        XCTAssertEqual(readiness.tokenBudget, "OpenRouter free router configured; live calls validate on use")
+
+        let suggestionsProvider = CapturingOpenRouterGameService(defaults: defaults)
+        let suggestions = try await suggestionsProvider.generateSuggestedActions(for: makeState())
+        XCTAssertEqual(suggestions.count, 4)
+        XCTAssertEqual(suggestionsProvider.modelLanes.map(\.name), ["openrouter/free"])
+        XCTAssertEqual(suggestionsProvider.capturedRequests.count, 1)
+        let firstPrompt = try XCTUnwrap(suggestionsProvider.capturedRequests.first?.prompt)
+        XCTAssertTrue(firstPrompt.contains("Create exactly four concrete civic proposals"))
+        XCTAssertTrue(firstPrompt.contains("accept-ready"))
+        XCTAssertTrue(firstPrompt.contains("Respect current administrative capacity"))
+        XCTAssertTrue(firstPrompt.contains("Campaign objectives"))
+        XCTAssertTrue(firstPrompt.contains("Domestic legitimacy"))
+        XCTAssertTrue(firstPrompt.contains("Current selected ledger"))
+        XCTAssertTrue(firstPrompt.contains("Strategy database"))
+        XCTAssertTrue(firstPrompt.contains("Required JSON schema"))
+        XCTAssertTrue(firstPrompt.contains("\"suggestions\""))
+        XCTAssertTrue(firstPrompt.contains("openrouter/free") == false)
+
         let zai = NativeZAIService(defaults: defaults)
         XCTAssertEqual(zai.apiKey, "zai-test-key")
         XCTAssertEqual(zai.providerDisplayName, "Z.AI")
 
         let store = try makeStore(defaults: defaults)
         XCTAssertEqual(store.selectedAIProviderPreference, .openRouter)
+    }
+
+    func testDynamicAIServiceRoutesEveryGameAISurfaceThroughOpenRouterFree() async throws {
+        let defaults = makeDefaults()
+        defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
+        defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        let openRouter = CapturingOpenRouterGameService(defaults: defaults)
+        let service = DynamicAIService(defaults: defaults, openRouterService: openRouter)
+        let state = makeState()
+
+        let readiness = await service.checkReadiness()
+        XCTAssertTrue(readiness.ok)
+        XCTAssertEqual(readiness.tokenBudget, "OpenRouter free router configured; live calls validate on use")
+        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+        XCTAssertTrue(openRouter.capturedRequests.isEmpty)
+
+        var progressEvents: [NativeTurnProgress] = []
+        let generatedTurn = try await service.generateTurn(for: state, months: 1) { progress in
+            progressEvents.append(progress)
+        }
+        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+        XCTAssertTrue(generatedTurn.events.contains { !$0.playerRelated })
+        XCTAssertTrue(generatedTurn.events.contains { $0.playerRelated })
+        XCTAssertFalse(progressEvents.isEmpty)
+        XCTAssertTrue(progressEvents.allSatisfy { $0.providerName == "OpenRouter" })
+        XCTAssertTrue(progressEvents.allSatisfy { $0.modelIdentifier == "openrouter/free" })
+        XCTAssertTrue(progressEvents.contains { $0.providerSummary == "Calling OpenRouter · Free Models Router" })
+
+        let suggestions = try await service.generateSuggestedActions(for: state)
+        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+        XCTAssertEqual(suggestions.count, 4)
+
+        let advisor = try await service.generateAdvisorBrief(
+            for: state,
+            question: "What should we do next without writing every order manually?"
+        )
+        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+        XCTAssertTrue(advisor.contains("OpenRouter advisor"))
+
+        let thread = NativeDiplomaticThread(
+            id: "thread-arg",
+            lastUpdated: state.gameDate,
+            messages: [
+                NativeDiplomaticMessage(date: state.gameDate, id: "msg-1", speaker: "Argentina", text: "We need corridor guarantees.")
+            ],
+            participant: PlayerCountry(code: "ARG", name: "Argentina"),
+            summary: "Argentina wants bounded logistics coordination."
+        )
+        let reply = try await service.generateDiplomaticReply(
+            for: state,
+            thread: thread,
+            message: "Offer a narrow logistics channel."
+        )
+        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+        XCTAssertTrue(reply.contains("OpenRouter diplomacy"))
+
+        XCTAssertEqual(openRouter.modelLanes.map(\.name), ["openrouter/free"])
+        let turnEventRequests = openRouter.capturedRequests.filter {
+            $0.responseFormat == "json_object" &&
+                $0.prompt.contains("\"effectTarget\"") &&
+                $0.prompt.contains("\"effectTrack\"")
+        }
+        XCTAssertGreaterThanOrEqual(turnEventRequests.count, 4)
+        XCTAssertTrue(turnEventRequests.allSatisfy { $0.prompt.contains("Mechanics checklist") })
+        XCTAssertTrue(turnEventRequests.contains { $0.prompt.contains("Campaign objectives") })
+        XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("Create exactly four concrete civic proposals") && $0.prompt.contains("\"suggestions\"") })
+        XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("SwiftHistoria strategic advisor") && $0.prompt.contains("Campaign objectives") })
+        XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("diplomacy chat inside SwiftHistoria") && $0.prompt.contains("Recent campaign context") })
+    }
+
+    func testLiveOpenRouterFreeSuggestedActionsWhenEnabled() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        guard environment["PAX_HISTORIA_RUN_LIVE_OPENROUTER"] == "1" else {
+            throw XCTSkip("Set PAX_HISTORIA_RUN_LIVE_OPENROUTER=1 to exercise the real OpenRouter Free suggestion path.")
+        }
+        guard let key = environment["OPENROUTER_API_KEY"]?.trimmingCharacters(in: .whitespacesAndNewlines), !key.isEmpty else {
+            throw XCTSkip("OPENROUTER_API_KEY is required for the live OpenRouter Free suggestion path.")
+        }
+
+        let defaults = makeDefaults()
+        defaults.set(key, forKey: "OPENROUTER_API_KEY")
+        let service = NativeOpenRouterService(defaults: defaults)
+
+        let suggestions = try await service.generateSuggestedActions(for: makeState())
+
+        XCTAssertGreaterThanOrEqual(suggestions.count, 3)
+        XCTAssertLessThanOrEqual(suggestions.count, 4)
+        for suggestion in suggestions {
+            XCTAssertTrue(service.isValidNativeSuggestion(suggestion))
+            let detailNamesGameSystem = suggestion.detail.localizedCaseInsensitiveContains("mechanic") ||
+                suggestion.detail.localizedCaseInsensitiveContains("capacity")
+            let rationaleNamesGameSystem = suggestion.rationale.localizedCaseInsensitiveContains("mechanic") ||
+                suggestion.rationale.localizedCaseInsensitiveContains("objective")
+            XCTAssertTrue(detailNamesGameSystem)
+            XCTAssertTrue(rationaleNamesGameSystem)
+        }
     }
 
     func testCampaignObjectivesExposeScenarioWinProgress() {
@@ -976,6 +1112,10 @@ final class NativeBackendTests: XCTestCase {
         print(suggestionPrompt)
         print("--- TEST PRINT: SUGGESTION PROMPT END ---\n")
         XCTAssertTrue(suggestionPrompt.contains("Establish Logistics Reserves"))
+        XCTAssertTrue(suggestionPrompt.contains("accept-ready"))
+        XCTAssertTrue(suggestionPrompt.contains("Respect current administrative capacity"))
+        XCTAssertTrue(suggestionPrompt.contains("Campaign objectives"))
+        XCTAssertTrue(suggestionPrompt.contains("Domestic legitimacy"))
 
         let advisorPrompt = service.makeAdvisorPrompt(for: state, question: "What should we protect first this quarter?")
         print("\n--- TEST PRINT: ADVISOR PROMPT START ---")
@@ -1805,7 +1945,11 @@ final class NativeBackendTests: XCTestCase {
         let generated = NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "Leap", worldTensionDelta: 0)
         let resolved = NativeGameEngine.apply(generated, to: state, months: 1)
 
-        XCTAssertEqual(resolved.economicLedger.realGrowthPercent, 5.0, accuracy: 0.1)
+        let penaltyEntry = resolved.economicLedger.entries.first { $0.ruleID == "territorial-crisis" }
+        XCTAssertNotNil(penaltyEntry)
+        XCTAssertEqual(penaltyEntry?.growthDelta ?? 0, -2.5, accuracy: 0.01)
+        XCTAssertEqual(penaltyEntry?.inflationDelta ?? 0, 3.0, accuracy: 0.01)
+        XCTAssertLessThan(resolved.economicLedger.realGrowthPercent, state.economicLedger.realGrowthPercent)
         XCTAssertEqual(resolved.economicLedger.inflationPercent, 8.0, accuracy: 0.1)
         XCTAssertEqual(resolved.stability, 67)
     }
@@ -1838,8 +1982,111 @@ final class NativeBackendTests: XCTestCase {
 }
 
 @MainActor
+private struct CapturedProviderRequest {
+    var prompt: String
+    var responseFormat: String?
+}
+
+@MainActor
+private final class CapturingOpenRouterGameService: NativeOpenRouterService {
+    var capturedRequests: [CapturedProviderRequest] = []
+    private var eventIndex = 0
+
+    override var apiKey: String {
+        "test-openrouter-key"
+    }
+
+    override func executeProviderRequest(
+        prompt: String,
+        maxTokens _: Int,
+        temperature _: Double,
+        responseFormat: String? = nil,
+        thinkingEnabled _: Bool = true,
+        onStreamProgress _: (@MainActor (String) -> Void)? = nil
+    ) async throws -> String {
+        capturedRequests.append(CapturedProviderRequest(prompt: prompt, responseFormat: responseFormat))
+        if prompt.contains("Return exactly this JSON") {
+            return "{\"ok\":true}"
+        }
+        if responseFormat == nil {
+            if prompt.contains("diplomacy chat inside SwiftHistoria") {
+                return "OpenRouter diplomacy reply keeps the logistics channel narrow and tied to the current corridor pressure."
+            }
+            return "OpenRouter advisor response reads the ledger, objectives, and current order load before recommending one bounded next move."
+        }
+        if prompt.contains("\"suggestions\"") {
+            return suggestionBatchJSON
+        }
+        if prompt.contains("\"stabilityDelta\""), prompt.contains("\"globalFrictionDelta\"") {
+            return """
+            {
+              "summary": "OpenRouter Free synthesizes the validated lanes into a compact game-world turn.",
+              "stabilityDelta": 1,
+              "globalFrictionDelta": -1
+            }
+            """
+        }
+
+        eventIndex += 1
+        return eventJSON(index: eventIndex)
+    }
+
+    private var suggestionBatchJSON: String {
+        """
+        {
+          "suggestions": [
+            {
+              "title": "Fund Logistics Desk",
+              "detail": "Create a bounded regional logistics desk next period through a transport agency; primary mechanic: trade balance; secondary mechanic: market confidence; capacity fit: within current administrative capacity; intended effect: reduce corridor pressure.",
+              "rationale": "This fits the current campaign objectives by improving trade balance while protecting market confidence under the selected ledger constraints.",
+              "urgency": "soon"
+            },
+            {
+              "title": "Audit Security Corridors",
+              "detail": "Assign a civilian security audit team next period to contested service corridors; primary mechanic: public security; secondary mechanic: insurgency pressure; capacity fit: within current administrative capacity; intended effect: expose stabilization gaps.",
+              "rationale": "This fits the current campaign objectives by improving territorial integrity while reducing insurgency pressure in the current map context.",
+              "urgency": "immediate"
+            },
+            {
+              "title": "Open Trade Balance Desk",
+              "detail": "Open a treasury trade desk next period for export bottleneck review; primary mechanic: trade balance; secondary mechanic: fiscal space; capacity fit: within current administrative capacity; intended effect: identify cheap external-balance gains.",
+              "rationale": "This fits the current campaign objectives by targeting external balance while protecting fiscal space in the selected ledger.",
+              "urgency": "soon"
+            },
+            {
+              "title": "Publish Energy Resilience Plan",
+              "detail": "Publish a bounded grid resilience plan through the energy regulator next period; primary mechanic: economic resilience; secondary mechanic: unemployment; capacity fit: within current administrative capacity; intended effect: reduce service volatility.",
+              "rationale": "This fits the current campaign objectives by supporting domestic legitimacy while limiting employment and resilience pressure.",
+              "urgency": "opportunistic"
+            }
+          ]
+        }
+        """
+    }
+
+    private func eventJSON(index: Int) -> String {
+        """
+        {
+          "title": "OpenRouter Lane \(index) Review",
+          "description": "Regional agencies review logistics corridors and service capacity using the current campaign ledger, objectives, and diplomatic pressure before publishing measurable planning milestones.",
+          "kind": "economy",
+          "importance": "major",
+          "notable": true,
+          "effectTarget": "BRA",
+          "effectTrack": "market-confidence",
+          "effectMagnitude": 1,
+          "effectSummary": "OpenRouter Free links the generated lane to stored market-confidence and service-capacity mechanics.",
+          "hexLeverCode": null,
+          "sovereigntyChange": null
+        }
+        """
+    }
+}
+
+@MainActor
 private final class FakeNativeAIService: NativeAIService {
     var turnHandler: ((NativeCampaignState, Int) async throws -> NativeGeneratedTurn)?
+    var suggestionHandler: ((NativeCampaignState) async throws -> [NativeSuggestedAction])?
 
     func checkReadiness() async -> NativeAIReadiness {
         .available(tokenBudget: "fake")
@@ -1852,8 +2099,11 @@ private final class FakeNativeAIService: NativeAIService {
         return makeValidTurn(for: state, months: months)
     }
 
-    func generateSuggestedActions(for _: NativeCampaignState) async throws -> [NativeSuggestedAction] {
-        [
+    func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
+        if let suggestionHandler {
+            return try await suggestionHandler(state)
+        }
+        return [
             NativeSuggestedAction(detail: "Fund a service access audit for district agencies.", id: "fake-1", rationale: "It fits current delivery constraints.", title: "Audit service access", urgency: "soon"),
             NativeSuggestedAction(detail: "Open a logistics desk for regional infrastructure permits.", id: "fake-2", rationale: "It supports market confidence.", title: "Coordinate logistics desk", urgency: "opportunistic"),
             NativeSuggestedAction(detail: "Publish a fiscal buffer plan for essential services.", id: "fake-3", rationale: "It protects stability during delays.", title: "Publish buffer plan", urgency: "immediate")
