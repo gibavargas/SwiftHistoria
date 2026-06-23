@@ -982,14 +982,14 @@ class NativeZAIService: NativeAIService {
         let content = firstChoice.message.content?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let reasoning = firstChoice.message.reasoningContent?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
+        if !content.isEmpty {
+            return strippingZAIThinkingTags(from: content)
+        }
+
         if let reason = firstChoice.finishReason,
            ["length", "sensitive", "model_context_window_exceeded", "network_error"].contains(reason)
         {
             throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned no visible content (finish_reason=\(reason), choices=\(decoded.choices.count), content_chars=\(content.count), reasoning_chars=\(reasoning.count)).")
-        }
-
-        if !content.isEmpty {
-            return strippingZAIThinkingTags(from: content)
         }
 
         throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned no visible content (finish_reason=\(firstChoice.finishReason ?? "nil"), choices=\(decoded.choices.count), content_chars=\(content.count), reasoning_chars=\(reasoning.count)).")

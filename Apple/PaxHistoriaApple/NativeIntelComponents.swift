@@ -141,6 +141,7 @@ struct NativeDetailScroll<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .center)
         }
         .background(.black.opacity(0.94))
+        .scrollDismissesKeyboard(.interactively)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
 }

@@ -276,6 +276,8 @@ struct EconomicRow: View {
 
 struct NativeTimelineFooter: View {
     @ObservedObject var store: NativeCampaignStore
+    let currentDate: String
+    let startDate: String
     let currentYear: Int
     let baseYear: Int
     let onShowEvents: () -> Void
@@ -326,23 +328,35 @@ struct NativeTimelineFooter: View {
                 .fixedSize(horizontal: true, vertical: false)
 
             NativeAdaptiveYearRail(
+                currentDate: currentDate,
+                startDate: startDate,
                 currentYear: currentYear,
                 baseYear: baseYear,
                 isEnabled: store.state != nil
             )
-            .frame(maxWidth: .infinity, minHeight: 34)
+            .frame(maxWidth: .infinity, minHeight: 48)
         }
     }
 }
 
 private struct NativeAdaptiveYearRail: View {
+    let currentDate: String
+    let startDate: String
     let currentYear: Int
     let baseYear: Int
     let isEnabled: Bool
     private let totalYears = 9
-    private let minimumLabelSpacing: CGFloat = 54
+    private let minimumLabelSpacing: CGFloat = 86
     private var clampedStep: Int {
         max(0, min(totalYears - 1, currentYear - baseYear))
+    }
+
+    private func dateLabel(for index: Int) -> String {
+        if index == clampedStep {
+            return currentDate
+        }
+        let steppedDate = NativeGameEngine.advance(date: startDate, months: index * 12)
+        return steppedDate == startDate || NativeGameEngine.isValidDate(steppedDate) ? steppedDate : String(baseYear + index)
     }
 
     private func visibleYearIndexes(for width: CGFloat) -> Set<Int> {
@@ -371,12 +385,17 @@ private struct NativeAdaptiveYearRail: View {
                     let x = CGFloat(i) * spacing + 2
                     VStack(spacing: 4) {
                         if visibleIndexes.contains(i) {
-                            Text("\(year)")
-                                .font(.system(size: isCurrent ? 11 : 10, design: .monospaced).weight(.bold))
-                                .foregroundStyle(isCurrent ? Color.glowingCyan : .secondary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.85)
-                                .fixedSize(horizontal: true, vertical: false)
+                            VStack(spacing: 1) {
+                                Text(String(year))
+                                    .font(.system(size: isCurrent ? 11 : 10, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(isCurrent ? Color.glowingCyan : .secondary)
+                                Text(dateLabel(for: i))
+                                    .font(.system(size: isCurrent ? 8 : 7, design: .monospaced).weight(.semibold))
+                                    .foregroundStyle(isCurrent ? Color.glowingCyan.opacity(0.9) : .secondary.opacity(0.72))
+                            }
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.72)
+                            .fixedSize(horizontal: true, vertical: false)
                         } else {
                             Text(" ")
                                 .font(.system(size: 10, design: .monospaced).weight(.bold))
@@ -387,12 +406,13 @@ private struct NativeAdaptiveYearRail: View {
                             .shadow(color: isCurrent ? Color.glowingCyan.opacity(0.75) : .clear, radius: 4)
                     }
                     .frame(width: minimumLabelSpacing)
-                    .position(x: x, y: 16)
+                    .position(x: x, y: 21)
                     .opacity(isEnabled ? 1 : 0.45)
+                    .accessibilityLabel("Timeline \(String(year)), \(dateLabel(for: i))")
                 }
             }
         }
-        .frame(height: 34)
+        .frame(height: 48)
     }
 }
 
@@ -541,13 +561,18 @@ struct NativeFloatingAdvanceButton: View {
         store.state?.plannedActions.filter { $0.status == .planned }.count ?? 0
     }
 
+    private func advanceTitle(months: Int, title: String) -> String {
+        guard let date = store.state?.gameDate else { return title }
+        return "\(title) (\(NativeGameEngine.advance(date: date, months: months)))"
+    }
+
     var body: some View {
         Menu {
-            Button("Advance 1 Month") { store.advance(months: 1) }
+            Button(advanceTitle(months: 1, title: "Advance 1 Month")) { store.advance(months: 1) }
                 .accessibilityIdentifier("native-advance-1")
-            Button("Advance 3 Months") { store.advance(months: 3) }
+            Button(advanceTitle(months: 3, title: "Advance 3 Months")) { store.advance(months: 3) }
                 .accessibilityIdentifier("native-advance-3")
-            Button("Advance 1 Year") { store.advance(months: 12) }
+            Button(advanceTitle(months: 12, title: "Advance 1 Year")) { store.advance(months: 12) }
                 .accessibilityIdentifier("native-advance-12")
         } label: {
             HStack(spacing: 8) {
@@ -655,13 +680,18 @@ struct NativeCommandButton: View {
 struct NativeAdvanceMenu: View {
     @ObservedObject var store: NativeCampaignStore
 
+    private func advanceTitle(months: Int, title: String) -> String {
+        guard let date = store.state?.gameDate else { return title }
+        return "\(title) (\(NativeGameEngine.advance(date: date, months: months)))"
+    }
+
     var body: some View {
         Menu {
-            Button("1 month") { store.advance(months: 1) }
+            Button(advanceTitle(months: 1, title: "1 month")) { store.advance(months: 1) }
                 .accessibilityIdentifier("native-advance-1")
-            Button("3 months") { store.advance(months: 3) }
+            Button(advanceTitle(months: 3, title: "3 months")) { store.advance(months: 3) }
                 .accessibilityIdentifier("native-advance-3")
-            Button("1 year") { store.advance(months: 12) }
+            Button(advanceTitle(months: 12, title: "1 year")) { store.advance(months: 12) }
                 .accessibilityIdentifier("native-advance-12")
         } label: {
             if store.isAdvancing {

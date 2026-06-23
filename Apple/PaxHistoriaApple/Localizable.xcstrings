@@ -2448,6 +2448,9 @@
     "Oppose %@%%" : {
 
     },
+    "Optional. Campaign saves stay local for fast launches and are mirrored to Turso in the background when both fields are set." : {
+
+    },
     "Order Invasion (Cost: 40)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3475,6 +3478,9 @@
           }
         }
       }
+    },
+    "TURSO SAVE MIRROR" : {
+
     },
     "Use Apple's on-device System Language Model. No external API key required." : {
       "localizations" : {

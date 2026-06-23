@@ -1,6 +1,6 @@
 # Pax Historia Apple App Audit Report
 
-Run completed: 2026-06-22T00:02:05Z
+Run completed: 2026-06-23T00:49:14Z
 
 ## Scope
 
@@ -9,18 +9,20 @@ Legacy web/server behavior was treated as reference-only unless visible in the a
 
 Canonical spreadsheet source of truth: `/Users/jvguidi/Ideia/pax-historia/audit/feature_inventory.csv`
 
-The requested `.xlsx` export could not be produced because the artifact spreadsheet runtime (`@oai/artifact-tool`) was unavailable in this environment. The canonical ledger is therefore a standards-compliant CSV with all required columns.
+The canonical ledger is a standards-compliant CSV with all required columns.
 
 ## Totals
 
 - Total features/user stories found: 40
 - Total user stories tested or reviewed against code paths: 40
 - Final status `Done`: 40
-- Bugs/UX/logistical issues found: 6 confirmed issues
-- Issues fixed in this run: 6
+- Bugs/UX/logistical issues found: 6 confirmed issues in the full audit; 0 new issues in this refresh
+- Issues fixed in this refresh: 0 app-code fixes; audit artifacts updated with current test evidence
 - Remaining app issues blocking this audit: 0
 
 ## Confirmed Issues And Fixes
+
+No new app-code bugs were confirmed in this refresh. The previously documented fixes remain verified:
 
 1. macOS setup skipped the AI provider configuration step.
    - Fix: added provider setup to the macOS setup panel and blocked country start until selected provider configuration is usable.
@@ -42,39 +44,44 @@ The requested `.xlsx` export could not be produced because the artifact spreadsh
 
 ## Files Changed By This Audit
 
+Current refresh:
+
+- `/Users/jvguidi/Ideia/pax-historia/audit/feature_inventory.csv`
+- `/Users/jvguidi/Ideia/pax-historia/audit/final_report.md`
+
+Earlier full-audit fix pass:
+
 - `/Users/jvguidi/Ideia/pax-historia/Apple/PaxHistoriaApple/CountrySelectionView.swift`
 - `/Users/jvguidi/Ideia/pax-historia/Apple/PaxHistoriaApple/NativeFoundationModelService.swift`
 - `/Users/jvguidi/Ideia/pax-historia/Apple/PaxHistoriaApple/NativeSettingsComponents.swift`
 - `/Users/jvguidi/Ideia/pax-historia/Apple/PaxHistoriaAppleTests/NativeBackendTests.swift`
 - `/Users/jvguidi/Ideia/pax-historia/Apple/PaxHistoriaAppleUITests/PaxHistoriaiOSUITests.swift`
-- `/Users/jvguidi/Ideia/pax-historia/audit/feature_inventory.csv`
-- `/Users/jvguidi/Ideia/pax-historia/audit/final_report.md`
 
-The worktree also contained unrelated pre-existing modifications before this audit; those were not reverted.
+The worktree also contains a per-user Xcode UI state change that was not part of this audit and was not reverted.
 
 ## Validation Evidence
 
 Passed:
 
+- CSV ledger parse check: 40 rows, 40 final `Done`
 - `script/lint.sh`
-- Focused macOS XCTest for OpenRouter routing:
-  `xcodebuild test -project Apple/PaxHistoriaApple.xcodeproj -scheme PaxHistoriaMac -configuration Debug -destination platform=macOS -derivedDataPath .build/xcode -only-testing:PaxHistoriaMacTests/NativeBackendTests/testDynamicAIServiceRoutesEveryGameAISurfaceThroughOpenRouterFree`
 - Full macOS XCTest:
   `xcodebuild test -project Apple/PaxHistoriaApple.xcodeproj -scheme PaxHistoriaMac -configuration Debug -destination platform=macOS -derivedDataPath .build/xcode`
 - `./script/build_and_run.sh --verify`
+- iOS UI smoke test on booted `PaxHistoria-iPhone-SE` iOS 26.5 simulator:
+  `xcodebuild test -project Apple/PaxHistoriaApple.xcodeproj -scheme PaxHistoriaiOS -configuration Debug -destination id=AEB9562A-23CA-4B40-84AB-7DB632B95AE7 -derivedDataPath .build/xcode-ios -only-testing:PaxHistoriaiOSUITests/PaxHistoriaiOSUITests/testCountrySelectionStartsNativeGameAndNavigatesCoreTabs`
+- `git diff --check`
 
 Notes:
 
 - Two live-provider tests were skipped because live API environment variables were not configured.
-- The iOS UI test source was corrected, but a dedicated iOS Simulator UI run was not executed in this pass.
-- SwiftFormat printed a cache-directory warning for `/Users/jvguidi/Library/Caches/com.charcoaldesign.swiftformat`; formatting and lint still completed successfully.
+- The dedicated iOS smoke run now covers the provider-first onboarding path, Brazil search, map, orders, advisor, diplomacy, diplomatic network, and events navigation.
 
 ## Remaining Known Issues
 
-- `.xlsx` export is blocked by missing local spreadsheet artifact tooling; the CSV ledger is the canonical spreadsheet for this run.
 - No full manual VoiceOver pass was performed; accessibility was audited from labels/identifiers/reduced-motion code and compile/test evidence.
 - Live OpenRouter/Z.AI/provider checks require real API environment configuration.
 
 ## Final Confidence
 
-High for the audited Apple-native code paths covered by static inspection, lint, full macOS XCTest, and launch verification. Medium for iOS-specific runtime behavior until the corrected UI test is executed on an iOS Simulator.
+High for the audited Apple-native code paths covered by static inspection, lint, full macOS XCTest, macOS launch verification, and the dedicated iOS Simulator smoke test. Medium for live-provider and full manual VoiceOver coverage because those require external API keys and human assistive-tech validation.

@@ -34,6 +34,14 @@
 		3DF127E32FDF71C600B72996 /* land.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E3 /* land.geojson */; };
 		4B313FCE5D69F69D12ADCA4D /* NativeContextualHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */; };
 		4BCA6882281DAAF6D91938CC /* DynamicAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE229A5C669A93DC05CC7EB0 /* DynamicAIService.swift */; };
+		51A1E9B42F7C4D2AA7B10001 /* NativeArmyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A1E9B42F7C4D2AA7B10003 /* NativeArmyModel.swift */; };
+		51A1E9B42F7C4D2AA7B10002 /* NativeArmyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A1E9B42F7C4D2AA7B10003 /* NativeArmyModel.swift */; };
+		51A1E9B42F7C4D2AA7B10004 /* NativeBuildingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A1E9B42F7C4D2AA7B10006 /* NativeBuildingModel.swift */; };
+		51A1E9B42F7C4D2AA7B10005 /* NativeBuildingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A1E9B42F7C4D2AA7B10006 /* NativeBuildingModel.swift */; };
+		51A1E9B42F7C4D2AA7B10007 /* BackgroundSimulationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A1E9B42F7C4D2AA7B10009 /* BackgroundSimulationService.swift */; };
+		51A1E9B42F7C4D2AA7B10008 /* BackgroundSimulationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A1E9B42F7C4D2AA7B10009 /* BackgroundSimulationService.swift */; };
+		51A1E9B42F7C4D2AA7B1000A /* NativeDatabaseContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A1E9B42F7C4D2AA7B1000C /* NativeDatabaseContext.swift */; };
+		51A1E9B42F7C4D2AA7B1000B /* NativeDatabaseContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A1E9B42F7C4D2AA7B1000C /* NativeDatabaseContext.swift */; };
 		5F42D795D46921CBDD9F1002 /* NativeOpenRouterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4ED6FF0D39E813542C2098 /* NativeOpenRouterService.swift */; };
 		66D0663507297F5A6B3CF100 /* NativeWorldMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBDA4D60396B285CB9D1E5E /* NativeWorldMap.swift */; };
 		6DC06FEEEC66BAD0673B0A8F /* DynamicAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE229A5C669A93DC05CC7EB0 /* DynamicAIService.swift */; };
@@ -143,6 +151,10 @@
 		39A485366A3A14D42F508174 /* NativeGameView+Overlays.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameView+Overlays.swift"; sourceTree = "<group>"; };
 		418C52F097563CA17D4E0014 /* NativeErrorPathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeErrorPathTests.swift; sourceTree = "<group>"; };
 		4FBDA4D60396B285CB9D1E5E /* NativeWorldMap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeWorldMap.swift; sourceTree = "<group>"; };
+		51A1E9B42F7C4D2AA7B10003 /* NativeArmyModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeArmyModel.swift; sourceTree = "<group>"; };
+		51A1E9B42F7C4D2AA7B10006 /* NativeBuildingModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeBuildingModel.swift; sourceTree = "<group>"; };
+		51A1E9B42F7C4D2AA7B10009 /* BackgroundSimulationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundSimulationService.swift; sourceTree = "<group>"; };
+		51A1E9B42F7C4D2AA7B1000C /* NativeDatabaseContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeDatabaseContext.swift; sourceTree = "<group>"; };
 		59D04D350C19D6D7A8E0C871 /* NativeModuleTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeModuleTests.swift; sourceTree = "<group>"; };
 		5D8975A239E8936ACF39AC8A /* NativeGameEngine+Victory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameEngine+Victory.swift"; sourceTree = "<group>"; };
 		5FFD966862F5E7B1C4159846 /* NativeGameEngine+RegionalOrders.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameEngine+RegionalOrders.swift"; sourceTree = "<group>"; };
@@ -288,6 +300,10 @@
 				CE229A5C669A93DC05CC7EB0 /* DynamicAIService.swift */,
 				603C327AE840A2A8220AE141 /* NativeEconomicModels.swift */,
 				9EA40BA8130B3E84A09A1F85 /* NativeEmbeddingModel.swift */,
+				51A1E9B42F7C4D2AA7B10003 /* NativeArmyModel.swift */,
+				51A1E9B42F7C4D2AA7B10006 /* NativeBuildingModel.swift */,
+				51A1E9B42F7C4D2AA7B10009 /* BackgroundSimulationService.swift */,
+				51A1E9B42F7C4D2AA7B1000C /* NativeDatabaseContext.swift */,
 			);
 			path = PaxHistoriaApple;
 			sourceTree = "<group>";
@@ -543,6 +559,10 @@
 				4BCA6882281DAAF6D91938CC /* DynamicAIService.swift in Sources */,
 				B6379D7A73994FC0F3EBA6FD /* NativeEconomicModels.swift in Sources */,
 				BA34B24F6E97E8B3DBAAEE85 /* NativeEmbeddingModel.swift in Sources */,
+				51A1E9B42F7C4D2AA7B10001 /* NativeArmyModel.swift in Sources */,
+				51A1E9B42F7C4D2AA7B10004 /* NativeBuildingModel.swift in Sources */,
+				51A1E9B42F7C4D2AA7B10007 /* BackgroundSimulationService.swift in Sources */,
+				51A1E9B42F7C4D2AA7B1000A /* NativeDatabaseContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -591,6 +611,10 @@
 				6DC06FEEEC66BAD0673B0A8F /* DynamicAIService.swift in Sources */,
 				E67A73BE7C89EA6C8F742FD6 /* NativeEconomicModels.swift in Sources */,
 				9BAC38EEA0402C8C0D66A9D2 /* NativeEmbeddingModel.swift in Sources */,
+				51A1E9B42F7C4D2AA7B10002 /* NativeArmyModel.swift in Sources */,
+				51A1E9B42F7C4D2AA7B10005 /* NativeBuildingModel.swift in Sources */,
+				51A1E9B42F7C4D2AA7B10008 /* BackgroundSimulationService.swift in Sources */,
+				51A1E9B42F7C4D2AA7B1000B /* NativeDatabaseContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

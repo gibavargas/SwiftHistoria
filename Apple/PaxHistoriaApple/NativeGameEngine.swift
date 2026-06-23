@@ -894,13 +894,19 @@ enum NativeGameEngine {
             regionOccupations: nextRegionOccupations,
             nuclearFalloutRegions: nextNuclearRegions,
             regionConflicts: nextRegionConflicts,
+            mapArmies: state.mapArmies,
+            mapBuildings: state.mapBuildings,
             // New strategy fields
             administrativeCapacity: nextCapacity,
             victoryStatus: nextVictoryStatus,
             activeOffers: state.activeOffers,
             budgetMilitarySlider: state.budgetMilitarySlider,
             budgetServicesSlider: state.budgetServicesSlider,
-            budgetDiplomacySlider: state.budgetDiplomacySlider
+            budgetDiplomacySlider: state.budgetDiplomacySlider,
+            techEra: state.techEra,
+            researchPoints: state.researchPoints,
+            budgetResearchSlider: state.budgetResearchSlider,
+            militaryUnits: state.militaryUnits
         )
 
         if finalState.victoryStatus == .ongoing {
@@ -937,6 +943,7 @@ enum NativeGameEngine {
         }
 
         NativeStrategyContextDatabase.simulateAIDrift(state: &finalState, months: months)
+        finalState = BackgroundSimulationService.shared.simulatedTurn(finalState)
         finalState.semanticMemory = NativeStrategyContextDatabase.updatedSemanticMemory(
             state: finalState,
             events: Array(finalState.timeline.prefix(generatedEvents.count + 2))

@@ -161,7 +161,7 @@ class NativeOpenRouterService: NativeZAIService {
         for attempt in 1 ... 2 {
             let rawResponse = try await executeProviderRequest(
                 prompt: prompt + repairNote,
-                maxTokens: 1400,
+                maxTokens: 2600,
                 temperature: attempt == 1 ? 0.1 : 0.0,
                 responseFormat: "json_object",
                 thinkingEnabled: false

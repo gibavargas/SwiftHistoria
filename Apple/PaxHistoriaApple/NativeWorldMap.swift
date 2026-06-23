@@ -483,6 +483,9 @@ struct NativeWorldMap: View {
         let relation = sectorRelation(code: occupierCode, playerCode: state.country.code, sectorsByCode: sectorsByCode)
         let relationStanceColor = relationColor(relation)
         let conflictLayerColor = conflict.map(conflictColor) ?? relationStanceColor.opacity(0.75)
+        let strategyLayerColor = state.mapArmies.contains { $0.currentRegionID == reg.id } || state.mapBuildings.contains { $0.regionID == reg.id }
+            ? Color.glowingCyan
+            : relationStanceColor.opacity(0.45)
         let economyLayerColor = economyColor(for: state.economicLedgers[occupierCode])
         let falloutLayerColor = state.nuclearFalloutRegions.contains(reg.id) || conflict?.mode == .nuclearFallout
             ? NativeWarRoomTheme.alertAmber
@@ -492,6 +495,8 @@ struct NativeWorldMap: View {
             relationStanceColor
         case .conflicts:
             conflictLayerColor
+        case .strategy:
+            strategyLayerColor
         case .economy:
             economyLayerColor
         case .fallout:
@@ -631,6 +636,76 @@ struct NativeWorldMap: View {
         }
     }
 
+    private func drawStrategicMarkers(context: GraphicsContext, visibleRect: CGRect, scaleX: CGFloat, scaleY: CGFloat) {
+        let armiesByRegion = Dictionary(grouping: state.mapArmies, by: \.currentRegionID)
+        let buildingsByRegion = Dictionary(grouping: state.mapBuildings, by: \.regionID)
+        let markerRegionIDs = Set(armiesByRegion.keys).union(buildingsByRegion.keys)
+
+        for regionID in markerRegionIDs.sorted() {
+            guard let region = GeopoliticalMapData.regionByID[regionID],
+                  visibleRect.contains(region.center)
+            else { continue }
+
+            let armies = armiesByRegion[regionID, default: []]
+            let buildings = buildingsByRegion[regionID, default: []]
+            let center = CGPoint(x: region.center.x * scaleX, y: region.center.y * scaleY)
+
+            if !buildings.isEmpty {
+                drawBuildingMarker(context: context, center: CGPoint(x: center.x - 7 / zoomScale, y: center.y + 7 / zoomScale), buildings: buildings)
+            }
+
+            if !armies.isEmpty {
+                drawArmyMarker(context: context, center: CGPoint(x: center.x + 8 / zoomScale, y: center.y - 8 / zoomScale), armies: armies)
+            }
+
+            for army in armies where army.targetRegionID != nil && army.targetRegionID != regionID {
+                guard let targetID = army.targetRegionID,
+                      let target = GeopoliticalMapData.regionByID[targetID]
+                else { continue }
+                var route = Path()
+                route.move(to: center)
+                route.addLine(to: CGPoint(x: target.center.x * scaleX, y: target.center.y * scaleY))
+                context.stroke(
+                    route,
+                    with: .color(Color.glowingCyan.opacity(0.55)),
+                    style: StrokeStyle(lineWidth: 1.2 / zoomScale, dash: [4, 3].map { $0 / zoomScale }, dashPhase: animationPhase / zoomScale)
+                )
+            }
+        }
+    }
+
+    private func drawArmyMarker(context: GraphicsContext, center: CGPoint, armies: [NativeArmySnapshot]) {
+        let strongest = armies.max { $0.strength < $1.strength }
+        let totalStrength = armies.map(\.strength).reduce(0, +)
+        let owner = strongest?.countryCode ?? "AI"
+        let radius = max(6, min(13, CGFloat(totalStrength) / 7)) / zoomScale
+        let rect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
+        let isPlayer = armies.contains { $0.countryCode == state.country.code }
+        let color = isPlayer ? Color.glowingCyan : Color.softRed
+
+        context.fill(Path(ellipseIn: rect), with: .color(Color.deepSlate.opacity(0.88)))
+        context.stroke(Path(ellipseIn: rect), with: .color(color.opacity(0.92)), lineWidth: 1.6 / zoomScale)
+
+        let label = Text(String(owner.prefix(3)).uppercased())
+            .font(.system(size: 6.5 / zoomScale, weight: .black, design: .monospaced))
+            .foregroundColor(color)
+        context.draw(label, at: center, anchor: .center)
+    }
+
+    private func drawBuildingMarker(context: GraphicsContext, center: CGPoint, buildings: [NativeBuildingSnapshot]) {
+        let maxLevel = buildings.map(\.level).max() ?? 1
+        let size = CGFloat(9 + maxLevel) / zoomScale
+        let rect = CGRect(x: center.x - size / 2, y: center.y - size / 2, width: size, height: size)
+        let path = Path(roundedRect: rect, cornerRadius: 2 / zoomScale)
+        context.fill(path, with: .color(Color.deepSlate.opacity(0.85)))
+        context.stroke(path, with: .color(Color.alertGold.opacity(0.9)), lineWidth: 1.4 / zoomScale)
+
+        let label = Text("\(buildings.count)")
+            .font(.system(size: 6 / zoomScale, weight: .black, design: .monospaced))
+            .foregroundColor(Color.alertGold)
+        context.draw(label, at: center, anchor: .center)
+    }
+
     private func drawMap(context: GraphicsContext, size: CGSize, scaleX: CGFloat, scaleY: CGFloat) {
         // Calculate visible bounding box for culling
         let minLocalX = (-size.width / 2.0 - offset.width) / zoomScale + size.width / 2.0
@@ -697,6 +772,10 @@ struct NativeWorldMap: View {
                     context.draw(nameText, at: scaledCenter, anchor: .center)
                 }
             }
+        }
+
+        if selectedLayer == .strategy || zoomScale >= 1.2 {
+            drawStrategicMarkers(context: context, visibleRect: visibleRect, scaleX: scaleX, scaleY: scaleY)
         }
 
         // Draw state borders when zoomed in (LOD)

@@ -159,6 +159,56 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(applied.worldTension, 40)
     }
 
+    func testStrategicDatabaseBatchesAndFetchesRegionalMapState() throws {
+        let database = try NativeDatabaseContext(inMemory: true)
+        let armies = (0 ..< 5000).map { index in
+            NativeArmySnapshot(
+                countryCode: index.isMultiple(of: 2) ? "USA" : "BRA",
+                currentRegionID: index.isMultiple(of: 3) ? "USA" : "BRA",
+                id: "army-\(index)",
+                strength: 10 + index % 70,
+                type: index.isMultiple(of: 5) ? .armor : .infantry
+            )
+        }
+        let buildings = [
+            NativeBuildingSnapshot(ownerCountryCode: "USA", regionID: "USA", type: .fortress),
+            NativeBuildingSnapshot(ownerCountryCode: "BRA", regionID: "BRA", type: .market)
+        ]
+
+        try database.replaceStrategicMapState(armies: armies, buildings: buildings)
+
+        XCTAssertEqual(try database.allArmies().count, 5000)
+        XCTAssertEqual(try database.allBuildings().count, 2)
+        XCTAssertEqual(try database.armies(in: "USA").count, 1667)
+        XCTAssertEqual(try database.buildings(in: "BRA").first?.type, .market)
+    }
+
+    func testBackgroundSimulationCreatesVisibleStrategicMapActions() {
+        var state = makeState()
+        state.aiCountryStates = [
+            "ARG": NativeAICountryState(
+                countryCode: "ARG",
+                doctrine: .expansionist,
+                budgetPriority: .military,
+                relationshipScores: [state.country.code: -70],
+                multiTurnAgenda: "Probe border readiness.",
+                agendaProgress: 40
+            )
+        ]
+        state.economicLedgers["ARG"] = NativeStrategyContextDatabase.startingEconomicLedger(
+            forCode: "ARG",
+            scenario: NativeScenarioCatalog.defaultScenario
+        )
+
+        let simulated = BackgroundSimulationService.shared.simulatedTurn(state)
+
+        XCTAssertFalse(simulated.mapArmies.isEmpty)
+        XCTAssertTrue(simulated.mapArmies.allSatisfy { !$0.currentRegionID.isEmpty })
+        XCTAssertEqual(simulated.timeline, state.timeline)
+        XCTAssertEqual(simulated.worldEffects, state.worldEffects)
+        XCTAssertTrue(simulated.lastSummary.contains("Background simulation added"))
+    }
+
     func testStateApplicationResolvesOnlyLinkedActionsAndClampsMetrics() throws {
         var state = makeState()
         let firstAction = try XCTUnwrap(NativeGameEngine.action(from: "Fund grid modernization through a public service bond.", date: state.gameDate))
@@ -757,6 +807,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(firstPrompt.contains("Required JSON schema"))
         XCTAssertTrue(firstPrompt.contains("\"suggestions\""))
         XCTAssertTrue(firstPrompt.contains("openrouter/free") == false)
+        XCTAssertEqual(suggestionsProvider.capturedRequests.first?.maxTokens, 2600)
 
         let zai = NativeZAIService(defaults: defaults)
         XCTAssertEqual(zai.apiKey, "zai-test-key")
@@ -872,6 +923,29 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(suggestions.count, 3)
         XCTAssertTrue(suggestions.allSatisfy { openRouter.isValidNativeSuggestion($0) })
         XCTAssertEqual(suggestions.map(\.urgency), ["soon", "immediate", "opportunistic"])
+    }
+
+    func testOpenRouterLengthFinishReasonKeepsVisibleContentForRepairParsing() throws {
+        let payload = """
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{ \\"suggestions\\": [ { \\"title\\": \\"Fund Logistics Desk\\", \\"detail\\": \\"Create a bounded desk"
+              },
+              "finish_reason": "length"
+            }
+          ]
+        }
+        """
+
+        let content = try NativeZAIService.decodeCompletionContent(
+            from: XCTUnwrap(payload.data(using: .utf8)),
+            providerDisplayName: "OpenRouter"
+        )
+
+        XCTAssertTrue(content.contains("\"suggestions\""))
+        XCTAssertTrue(content.contains("Fund Logistics Desk"))
     }
 
     func testDynamicAIServiceKeepsSelectedOpenRouterFailuresOnOpenRouter() async throws {
@@ -2337,6 +2411,7 @@ final class NativeBackendTests: XCTestCase {
 @MainActor
 private struct CapturedProviderRequest {
     var prompt: String
+    var maxTokens: Int
     var responseFormat: String?
 }
 
@@ -2352,13 +2427,13 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
 
     override func executeProviderRequest(
         prompt: String,
-        maxTokens _: Int,
+        maxTokens: Int,
         temperature _: Double,
         responseFormat: String? = nil,
         thinkingEnabled _: Bool = true,
         onStreamProgress _: (@MainActor (String) -> Void)? = nil
     ) async throws -> String {
-        capturedRequests.append(CapturedProviderRequest(prompt: prompt, responseFormat: responseFormat))
+        capturedRequests.append(CapturedProviderRequest(prompt: prompt, maxTokens: maxTokens, responseFormat: responseFormat))
         if prompt.contains("Return exactly this JSON") {
             return "{\"ok\":true}"
         }

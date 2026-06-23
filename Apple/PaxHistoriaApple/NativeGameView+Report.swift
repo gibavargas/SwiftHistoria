@@ -71,6 +71,7 @@ struct ActionRow: View {
         }
         .padding(12)
         .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 10)
+        .accessibilityIdentifier("native-order-row-\(action.id)")
     }
 }
 
@@ -318,5 +319,6 @@ struct NativeTurnReportView: View {
         .frame(minWidth: 500, minHeight: 600)
         .background(Color.spaceBlack.ignoresSafeArea())
         .preferredColorScheme(.dark)
+        .accessibilityIdentifier("native-turn-report")
     }
 }

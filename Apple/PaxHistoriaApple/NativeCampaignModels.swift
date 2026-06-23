@@ -387,6 +387,8 @@ struct NativeCampaignState: Codable, Hashable {
     var regionOccupations: [String: String]
     var nuclearFalloutRegions: [String]
     var regionConflicts: [String: NativeRegionConflictState]
+    var mapArmies: [NativeArmySnapshot]
+    var mapBuildings: [NativeBuildingSnapshot]
 
     // New Grand Strategy Layer fields
     var administrativeCapacity: Int
@@ -437,6 +439,8 @@ struct NativeCampaignState: Codable, Hashable {
         regionOccupations: [String: String] = [:],
         nuclearFalloutRegions: [String] = [],
         regionConflicts: [String: NativeRegionConflictState] = [:],
+        mapArmies: [NativeArmySnapshot] = [],
+        mapBuildings: [NativeBuildingSnapshot] = [],
         administrativeCapacity: Int = 100,
         victoryStatus: NativeVictoryStatus = .ongoing,
         activeOffers: [NativeDiplomaticOffer] = [],
@@ -490,6 +494,8 @@ struct NativeCampaignState: Codable, Hashable {
         self.regionOccupations = regionOccupations
         self.nuclearFalloutRegions = nuclearFalloutRegions
         self.regionConflicts = regionConflicts
+        self.mapArmies = mapArmies
+        self.mapBuildings = mapBuildings
         self.administrativeCapacity = administrativeCapacity
         self.victoryStatus = victoryStatus
         self.activeOffers = activeOffers
@@ -531,6 +537,8 @@ struct NativeCampaignState: Codable, Hashable {
         case regionOccupations
         case nuclearFalloutRegions
         case regionConflicts
+        case mapArmies
+        case mapBuildings
         case administrativeCapacity
         case victoryStatus
         case activeOffers
@@ -573,6 +581,8 @@ struct NativeCampaignState: Codable, Hashable {
         regionOccupations = (try? container.decodeIfPresent([String: String].self, forKey: .regionOccupations)) ?? [:]
         nuclearFalloutRegions = (try? container.decodeIfPresent([String].self, forKey: .nuclearFalloutRegions)) ?? []
         regionConflicts = (try? container.decodeIfPresent([String: NativeRegionConflictState].self, forKey: .regionConflicts)) ?? [:]
+        mapArmies = Self.decodeLossyArray(NativeArmySnapshot.self, from: container, forKey: .mapArmies)
+        mapBuildings = Self.decodeLossyArray(NativeBuildingSnapshot.self, from: container, forKey: .mapBuildings)
         if regionConflicts.isEmpty {
             regionConflicts = Self.conflictsFromLegacyMapState(
                 occupations: regionOccupations,

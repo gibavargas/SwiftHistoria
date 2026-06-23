@@ -221,6 +221,8 @@ struct NativeOverviewScreen: View {
 
                 NativeTimelineFooter(
                     store: store,
+                    currentDate: state.gameDate,
+                    startDate: state.startDate,
                     currentYear: currentYear,
                     baseYear: startYear,
                     onShowEvents: onShowEvents

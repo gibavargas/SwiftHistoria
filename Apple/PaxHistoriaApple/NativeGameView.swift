@@ -128,6 +128,7 @@ enum SectorRelation {
 enum NativeWarRoomMapLayer: String, CaseIterable, Identifiable {
     case relations
     case conflicts
+    case strategy
     case economy
     case fallout
 
@@ -139,6 +140,7 @@ enum NativeWarRoomMapLayer: String, CaseIterable, Identifiable {
         switch self {
         case .relations: "Relations"
         case .conflicts: "Conflicts"
+        case .strategy: "Strategy"
         case .economy: "Economy"
         case .fallout: "Fallout"
         }

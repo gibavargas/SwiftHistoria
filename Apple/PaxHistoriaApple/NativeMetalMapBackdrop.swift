@@ -68,9 +68,11 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
     #endif
 
     private func makeView(context: Context) -> PlatformMTKView {
-        let view = PlatformMTKView(frame: .zero, device: MTLCreateSystemDefaultDevice())
-        view.isPaused = false
-        view.enableSetNeedsDisplay = false
+        let view = PlatformMTKView(frame: CGRect(x: 0, y: 0, width: 1, height: 1), device: MTLCreateSystemDefaultDevice())
+        let shouldAnimate = isAdvancing && !reduceMotion
+        view.isPaused = !shouldAnimate
+        view.enableSetNeedsDisplay = !shouldAnimate
+        view.autoResizeDrawable = true
         view.preferredFramesPerSecond = reduceMotion ? 12 : 30
         view.framebufferOnly = true
         view.clearColor = MTLClearColor(red: 0.047, green: 0.082, blue: 0.125, alpha: 1.0)
@@ -81,11 +83,18 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
     }
 
     private func updateView(_ view: PlatformMTKView, coordinator: Coordinator) {
+        let shouldAnimate = isAdvancing && !reduceMotion
+        view.isPaused = !shouldAnimate
+        view.enableSetNeedsDisplay = !shouldAnimate
         view.preferredFramesPerSecond = reduceMotion ? 12 : 30
         coordinator.zoomScale = Float(zoomScale)
         coordinator.offset = SIMD2<Float>(Float(offset.width), Float(offset.height))
         coordinator.isAdvancing = isAdvancing
         coordinator.reduceMotion = reduceMotion
+        let drawableSize = view.drawableSize
+        if !shouldAnimate, drawableSize.width > 0, drawableSize.height > 0 {
+            view.setNeedsDisplay(view.bounds)
+        }
     }
 
     final class Coordinator: NSObject, MTKViewDelegate {
@@ -226,6 +235,8 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
         func mtkView(_: MTKView, drawableSizeWillChange _: CGSize) {}
 
         func draw(in view: MTKView) {
+            let drawableSize = view.drawableSize
+            guard drawableSize.width > 0, drawableSize.height > 0 else { return }
             guard let pipelineState,
                   let commandQueue,
                   let drawable = view.currentDrawable,
@@ -237,7 +248,7 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
             }
 
             var uniforms = NativeMetalMapUniforms(
-                viewportSize: SIMD2<Float>(Float(view.drawableSize.width), Float(view.drawableSize.height)),
+                viewportSize: SIMD2<Float>(Float(drawableSize.width), Float(drawableSize.height)),
                 offset: offset,
                 time: reduceMotion ? 0 : Float((CACurrentMediaTime() - startTime) * -20),
                 zoomScale: max(1, zoomScale),
