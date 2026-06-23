@@ -5,15 +5,19 @@ import OSLog
 ///
 /// Stress-test results: OpenRouter enforces 20 requests/minute per key.
 /// This limiter tracks timestamps in a sliding 60-second window and
-/// blocks (suspends) new requests until capacity is available, preventing
-/// wasted 429 responses. With a 30% safety margin, the effective limit is 14/min.
+/// blocks (suspends) new requests until capacity is available.
+///
+/// Conservative limit: 8 req/min (60% margin) to account for:
+/// - Retry storms where multiple lanes fail simultaneously
+/// - OpenRouter counting ALL requests (including 429s) against the limit
+/// - Sub-second timing jitter between lanes
 actor NativeRateLimiter {
     static let shared = NativeRateLimiter()
 
     /// OpenRouter hard limit: 20 req/min (confirmed via stress-test)
     static let providerLimit = 20
-    /// 30% safety margin → 14 req/min effective
-    static let effectiveLimit = Int(Double(providerLimit) * 0.7)
+    /// 60% safety margin → 8 req/min effective (very conservative to avoid 429 storms)
+    static let effectiveLimit = 8
 
     private var timestamps: [Date] = []
     private let windowDuration: TimeInterval = 60.0

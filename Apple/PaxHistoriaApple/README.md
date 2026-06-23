@@ -85,6 +85,8 @@ The optional 8-character `hexLeverCode` lets generated events nudge the simulati
 
 The native app writes a versioned envelope, a last-good envelope backup, and a legacy state file. It also mirrors key data in `UserDefaults`.
 
+If `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are configured in Settings or the process environment, saves are also mirrored through Turso SQL-over-HTTP into `native_campaign_saves`. Turso writes run in the background so local file persistence remains the fast launch path; Turso is used for recovery only when no local file or `UserDefaults` copy is available.
+
 When changing persisted models, keep old saves readable:
 
 - Use `decodeIfPresent` for new fields.

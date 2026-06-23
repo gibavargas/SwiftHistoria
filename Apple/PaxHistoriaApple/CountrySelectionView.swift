@@ -276,6 +276,7 @@ struct CountrySelectionView: View {
                 header
                 scenarioDeck
                 languageDeck
+                providerSetupDeck
                 searchField
             }
             .padding(20)
@@ -309,6 +310,18 @@ struct CountrySelectionView: View {
                     .listRowBackground(Color.clear)
                     .accessibilityIdentifier("native-country-empty")
                 } else {
+                    if !canProceedFromProviderStep {
+                        Label(
+                            "Choose Apple Foundation Models or enter the selected provider API key before starting.",
+                            systemImage: "exclamationmark.triangle"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(Color.alertGold)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .listRowBackground(Color.clear)
+                        .accessibilityIdentifier("native-provider-start-warning")
+                    }
+
                     ForEach(filteredCountries) { country in
                         Button {
                             onSelect(country)
@@ -317,6 +330,7 @@ struct CountrySelectionView: View {
                                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                         }
                         .buttonStyle(.plain)
+                        .disabled(!canProceedFromProviderStep)
                         .accessibilityLabel("\(country.name), ISO code \(country.code)")
                         .accessibilityHint("Starts a campaign as \(country.name).")
                         .accessibilityIdentifier("native-country-option-\(country.code)")
@@ -463,6 +477,44 @@ struct CountrySelectionView: View {
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("native-language-picker")
+        }
+        .padding(14)
+        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.18), cornerRadius: 10)
+    }
+
+    private var providerSetupDeck: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("AI Provider", systemImage: "cpu")
+                    .font(NativeWarRoomTheme.labelFont(.subheadline))
+                    .foregroundStyle(NativeWarRoomTheme.brass)
+                Spacer()
+                Text(selectedProvider.title)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(selectedScenarioAccentColor)
+            }
+
+            Text("Select how turns, suggestions, advisor answers, and diplomacy replies are generated.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(spacing: 10) {
+                ForEach(NativeAIProviderPreference.allCases, id: \.rawValue) { provider in
+                    providerCard(provider)
+                }
+            }
+
+            if selectedProvider == .openRouter || selectedProvider == .zai {
+                apiKeyField(for: selectedProvider)
+            }
+
+            if !canProceedFromProviderStep {
+                Label("An API key is required for the selected external provider.", systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(Color.alertGold)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(14)
         .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.18), cornerRadius: 10)

@@ -16,6 +16,15 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         XCTAssertTrue(continueButton.waitForExistence(timeout: 8))
         continueButton.tap()
 
+        let appleProvider = app.buttons["native-provider-appleFoundation"]
+        XCTAssertTrue(appleProvider.waitForExistence(timeout: 8))
+        appleProvider.tap()
+
+        let providerContinueButton = app.buttons["native-provider-continue"]
+        XCTAssertTrue(providerContinueButton.waitForExistence(timeout: 4))
+        XCTAssertTrue(providerContinueButton.isEnabled)
+        providerContinueButton.tap()
+
         let searchField = app.textFields["native-country-search"]
         XCTAssertTrue(searchField.waitForExistence(timeout: 8))
         XCTAssertTrue(element("native-country-list", in: app).waitForExistence(timeout: 4))

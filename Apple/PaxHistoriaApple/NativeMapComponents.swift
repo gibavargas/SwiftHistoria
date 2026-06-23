@@ -720,10 +720,16 @@ struct TurnTransitionOverlay: View {
                     }
 
                     if let progress = store.turnProgress {
-                        Text(progress.phase.uppercased())
-                            .font(.system(.title3, design: .monospaced).weight(.black))
-                            .foregroundStyle(.white)
-                            .padding(.top, 4)
+                        HStack(spacing: 4) {
+                            Text(progress.phase.uppercased())
+                                .font(.system(.title3, design: .monospaced).weight(.black))
+                                .foregroundStyle(.white)
+                            // Animated dots
+                            Text("...")
+                                .font(.system(.title3, design: .monospaced).weight(.black))
+                                .foregroundStyle(Color.glowingCyan)
+                        }
+                        .padding(.top, 4)
 
                         ProgressView(value: progress.fraction)
                             .tint(Color.glowingCyan)
@@ -733,6 +739,16 @@ struct TurnTransitionOverlay: View {
                         Text("\(progress.completedLanes) / \(progress.totalLanes) COGNITIVE LANES RESOLVED")
                             .font(.system(.caption, design: .monospaced).weight(.semibold))
                             .foregroundStyle(Color.iceBlue)
+
+                        // Skeleton shimmer placeholders for upcoming event cards
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(0 ..< 3, id: \.self) { _ in
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.white.opacity(0.06))
+                                    .frame(height: 14)
+                            }
+                        }
+                        .padding(.top, 8)
                     } else {
                         Text("CALCULATING GEOPOLITICAL SHIFTS...")
                             .font(.system(.subheadline, design: .monospaced).weight(.bold))

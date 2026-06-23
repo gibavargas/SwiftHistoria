@@ -1226,13 +1226,13 @@ enum NativeFoundationModelError: LocalizedError {
         case .unsupportedOS:
             "This OS does not expose the FoundationModels framework required by the native game."
         case let .modelUnavailable(reason):
-            "Apple Foundation Models are unavailable: \(reason)."
+            "Selected AI provider is unavailable: \(reason)."
         case let .generationFailed(reason):
-            "Apple Foundation Models generation failed: \(reason)."
+            "Selected AI provider generation failed: \(reason)."
         case let .invalidGeneratedTurn(reason):
-            "Apple Foundation Models returned an invalid turn: \(reason)."
+            "Selected AI provider returned an invalid turn: \(reason)."
         case let .invalidSuggestedActions(reason):
-            "Apple Foundation Models returned invalid suggested actions: \(reason)."
+            "Selected AI provider returned invalid suggested actions: \(reason)."
         }
     }
 }

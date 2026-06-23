@@ -12,7 +12,9 @@ struct NativeContextualHelpOverlay: View {
         ("Orders", "checklist",
          "Add policy orders by typing or using Quick Actions below the editor. Orders run when you advance the turn."),
         ("Advisor", "brain.head.profile",
-         "Ask the AI advisor for assessments of threats, stability, or opportunities. Check Diplomacy to negotiate with other nations.")
+         "Ask the AI advisor for assessments of threats, stability, or opportunities. Check Diplomacy to negotiate with other nations."),
+        ("Advance", "calendar.badge.clock",
+         "Advance a month, quarter, or year when your orders are ready. The selected AI provider resolves the turn and any provider failure stays visible.")
     ]
 
     var body: some View {

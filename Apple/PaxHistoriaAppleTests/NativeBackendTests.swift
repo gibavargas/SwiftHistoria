@@ -720,7 +720,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(openRouter.providerDisplayName, "OpenRouter")
         XCTAssertEqual(openRouter.modelLanes.map(\.name), ["openrouter/free"])
         XCTAssertEqual(openRouter.modelLanes.first?.displayName, "Free Models Router")
-        XCTAssertEqual(openRouter.modelLanes.first?.maxConcurrent, 5)
+        XCTAssertEqual(openRouter.modelLanes.first?.maxConcurrent, 3)
         let firstOpenRouterLane = try XCTUnwrap(openRouter.modelLanes.first)
         let secondOpenRouterLane = try XCTUnwrap(openRouter.modelLanes.first)
         XCTAssertTrue(firstOpenRouterLane === secondOpenRouterLane)
@@ -821,17 +821,183 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(reply.contains("OpenRouter diplomacy"))
 
         XCTAssertEqual(openRouter.modelLanes.map(\.name), ["openrouter/free"])
-        let turnEventRequests = openRouter.capturedRequests.filter {
+        let unifiedTurnRequests = openRouter.capturedRequests.filter {
             $0.responseFormat == "json_object" &&
-                $0.prompt.contains("\"effectTarget\"") &&
-                $0.prompt.contains("\"effectTrack\"")
+                $0.prompt.contains("Resolve one SwiftHistoria turn in a single OpenRouter Free response")
         }
-        XCTAssertGreaterThanOrEqual(turnEventRequests.count, 4)
-        XCTAssertTrue(turnEventRequests.allSatisfy { $0.prompt.contains("Mechanics checklist") })
-        XCTAssertTrue(turnEventRequests.contains { $0.prompt.contains("Campaign objectives") })
+        XCTAssertEqual(unifiedTurnRequests.count, 1)
+        XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("Required JSON schema") })
+        XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("\"events\"") })
+        XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("Campaign objectives") })
         XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("Create exactly four concrete civic proposals") && $0.prompt.contains("\"suggestions\"") })
         XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("SwiftHistoria strategic advisor") && $0.prompt.contains("Campaign objectives") })
         XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("diplomacy chat inside SwiftHistoria") && $0.prompt.contains("Recent campaign context") })
+    }
+
+    func testOpenRouterSuggestionsAcceptFreeModelSchemaVariants() async throws {
+        let defaults = makeDefaults()
+        defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
+        let openRouter = CapturingOpenRouterGameService(defaults: defaults)
+        openRouter.suggestionResponse = """
+        {
+          "actions": [
+            {
+              "name": "Stage Export Credit Review",
+              "summary": "Create a bounded treasury export-credit review next period for firms already near customs clearance.",
+              "expectedOutcome": "Primary mechanic: trade balance; secondary mechanic: market confidence; capacity fit: within current administrative capacity.",
+              "rationale": "This targets the external-balance objective without adding a broad subsidy program.",
+              "priority": "soon"
+            },
+            {
+              "action": "Open Corridor Security Audit",
+              "description": "Assign a civilian audit team to logistics corridors where service disruption would raise local anxiety.",
+              "effectTrack": "public security and insurgency pressure",
+              "risk": "May expose procurement delays before mitigation funding is ready.",
+              "why": "This protects territorial integrity while keeping the order narrow.",
+              "timing": "immediate"
+            },
+            {
+              "proposal": "Publish Grid Reserve Schedule",
+              "detail": "Publish a regulator-led grid reserve schedule for peak months with measurable maintenance windows.",
+              "primaryMechanic": "economic resilience and domestic legitimacy",
+              "justification": "This supports domestic legitimacy by reducing visible service volatility.",
+              "urgency": "opportunistic"
+            }
+          ]
+        }
+        """
+
+        let suggestions = try await openRouter.generateSuggestedActions(for: makeState())
+
+        XCTAssertEqual(suggestions.count, 3)
+        XCTAssertTrue(suggestions.allSatisfy { openRouter.isValidNativeSuggestion($0) })
+        XCTAssertEqual(suggestions.map(\.urgency), ["soon", "immediate", "opportunistic"])
+    }
+
+    func testDynamicAIServiceKeepsSelectedOpenRouterFailuresOnOpenRouter() async throws {
+        let defaults = makeDefaults()
+        defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
+        defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        let service = DynamicAIService(defaults: defaults, openRouterService: FailingOpenRouterGameService(defaults: defaults))
+        let state = makeState()
+
+        do {
+            _ = try await service.generateTurn(for: state, months: 1) { _ in }
+            XCTFail("Expected OpenRouter turn failure to propagate.")
+        } catch {
+            XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+            XCTAssertTrue(error.localizedDescription.contains("OpenRouter fixture failure"))
+        }
+
+        do {
+            _ = try await service.generateSuggestedActions(for: state)
+            XCTFail("Expected OpenRouter suggestion failure to propagate.")
+        } catch {
+            XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+            XCTAssertTrue(error.localizedDescription.contains("OpenRouter fixture failure"))
+        }
+
+        do {
+            _ = try await service.generateAdvisorBrief(for: state, question: "What now?")
+            XCTFail("Expected OpenRouter advisor failure to propagate.")
+        } catch {
+            XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+            XCTAssertTrue(error.localizedDescription.contains("OpenRouter fixture failure"))
+        }
+
+        let thread = NativeDiplomaticThread(
+            id: "thread-arg",
+            lastUpdated: state.gameDate,
+            messages: [
+                NativeDiplomaticMessage(date: state.gameDate, id: "msg-1", speaker: "Argentina", text: "We need corridor guarantees.")
+            ],
+            participant: PlayerCountry(code: "ARG", name: "Argentina"),
+            summary: "Argentina wants bounded logistics coordination."
+        )
+        do {
+            _ = try await service.generateDiplomaticReply(for: state, thread: thread, message: "Offer a narrow logistics channel.")
+            XCTFail("Expected OpenRouter diplomacy failure to propagate.")
+        } catch {
+            XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+            XCTAssertTrue(error.localizedDescription.contains("OpenRouter fixture failure"))
+        }
+    }
+
+    func testDynamicAIServiceDoesNotFallbackWhenOpenRouterIsSelectedWithoutKey() async throws {
+        let defaults = makeDefaults()
+        defaults.set("zai-test-key", forKey: "ZAI_API_KEY")
+        defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        let service = DynamicAIService(defaults: defaults)
+        let state = makeState()
+
+        let readiness = await service.checkReadiness()
+        XCTAssertFalse(readiness.ok)
+        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+        XCTAssertTrue(readiness.lastError.contains("OpenRouter is selected"))
+        XCTAssertFalse(readiness.tokenBudget.localizedCaseInsensitiveContains("fallback"))
+
+        do {
+            _ = try await service.generateTurn(for: state, months: 1) { progress in
+                XCTAssertEqual(progress.providerName, "OpenRouter")
+                XCTAssertEqual(progress.modelIdentifier, "openrouter/free")
+            }
+            XCTFail("Expected missing OpenRouter key to fail instead of falling back.")
+        } catch {
+            XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+            XCTAssertTrue(error.localizedDescription.contains("OpenRouter is selected"))
+        }
+
+        do {
+            _ = try await service.generateSuggestedActions(for: state)
+            XCTFail("Expected missing OpenRouter key to fail suggestions instead of falling back.")
+        } catch {
+            XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+            XCTAssertTrue(error.localizedDescription.contains("OpenRouter is selected"))
+        }
+    }
+
+    func testSaveSlotsResumeTheActiveCampaignAfterFreshLaunch() throws {
+        let defaults = makeDefaults()
+        let persistenceDirectory = try makePersistenceDirectory()
+        let store = NativeCampaignStore(
+            defaults: defaults,
+            aiService: FakeNativeAIService(),
+            persistenceDirectory: persistenceDirectory
+        )
+
+        store.choose(PlayerCountry(code: "BRA", name: "Brazil"))
+        store.setLanguage(.portuguese)
+        store.selectScenario(id: "resilience-decade")
+        store.switchSlot(2)
+        store.choose(PlayerCountry(code: "ARG", name: "Argentina"))
+        store.setLanguage(.spanish)
+        store.selectScenario(id: "solarpunk-dawn")
+        XCTAssertEqual(store.saveSlot, 2)
+        XCTAssertEqual(store.state?.country.code, "ARG")
+        XCTAssertEqual(store.state?.language, .spanish)
+        XCTAssertEqual(store.state?.scenarioID, "solarpunk-dawn")
+        XCTAssertEqual(store.slotSummary(1)?.countryName, "Brazil")
+        XCTAssertEqual(store.slotSummary(2)?.countryName, "Argentina")
+
+        let relaunched = NativeCampaignStore(
+            defaults: defaults,
+            aiService: FakeNativeAIService(),
+            persistenceDirectory: persistenceDirectory
+        )
+
+        XCTAssertEqual(relaunched.saveSlot, 2)
+        XCTAssertEqual(relaunched.state?.country.code, "ARG")
+        XCTAssertEqual(relaunched.selectedCountry?.code, "ARG")
+        XCTAssertEqual(relaunched.state?.language, .spanish)
+        XCTAssertEqual(relaunched.selectedLanguage, .spanish)
+        XCTAssertEqual(relaunched.state?.scenarioID, "solarpunk-dawn")
+        XCTAssertEqual(relaunched.selectedScenarioID, "solarpunk-dawn")
+
+        relaunched.switchSlot(1)
+        XCTAssertEqual(relaunched.state?.country.code, "BRA")
+        XCTAssertEqual(relaunched.selectedCountry?.code, "BRA")
+        XCTAssertEqual(relaunched.state?.language, .portuguese)
+        XCTAssertEqual(relaunched.selectedScenarioID, "resilience-decade")
     }
 
     func testLiveOpenRouterFreeSuggestedActionsWhenEnabled() async throws {
@@ -1361,6 +1527,193 @@ final class NativeBackendTests: XCTestCase {
             persistenceDirectory: persistenceDirectory
         )
         XCTAssertEqual(newStore.state?.gameMode, .ironman)
+    }
+
+    func testCampaignStoreSlotHelpersUseStableSuffixes() {
+        XCTAssertEqual(NativeCampaignStore.slotKey("pax-historia.native.campaign-state.v1", slot: 1), "pax-historia.native.campaign-state.v1")
+        XCTAssertEqual(NativeCampaignStore.slotKey("pax-historia.native.campaign-state.v1", slot: 2), "pax-historia.native.campaign-state.v1.slot2")
+        XCTAssertEqual(NativeCampaignStore.slotKey("pax-historia.native.campaign-state.v1", slot: 3), "pax-historia.native.campaign-state.v1.slot3")
+
+        XCTAssertEqual(NativeCampaignStore.slotFileName("campaign-state-envelope-v2.json", slot: 1), "campaign-state-envelope-v2.json")
+        XCTAssertEqual(NativeCampaignStore.slotFileName("campaign-state-envelope-v2.json", slot: 2), "campaign-state-envelope-v2-slot2.json")
+        XCTAssertEqual(NativeCampaignStore.slotFileName("campaign-state-envelope-v2.json", slot: 3), "campaign-state-envelope-v2-slot3.json")
+    }
+
+    func testTursoConfigurationNormalizesLibSQLURLs() throws {
+        let defaults = makeDefaults()
+        defaults.set("libsql://swift-historia-test.turso.io", forKey: NativeCampaignStore.tursoDatabaseURLKey)
+        defaults.set("test-token", forKey: NativeCampaignStore.tursoAuthTokenKey)
+
+        let config = try XCTUnwrap(NativeTursoCampaignPersistence.configuration(defaults: defaults, environment: [:]))
+
+        XCTAssertEqual(config.databaseURL.absoluteString, "https://swift-historia-test.turso.io")
+        XCTAssertEqual(config.pipelineURL.absoluteString, "https://swift-historia-test.turso.io/v2/pipeline")
+        XCTAssertEqual(config.authToken, "test-token")
+    }
+
+    func testTursoWritePipelineUsesBlobUpsertsAndBearerAuth() throws {
+        let config = try NativeTursoCampaignPersistence.Configuration(
+            databaseURL: XCTUnwrap(URL(string: "https://swift-historia-test.turso.io")),
+            authToken: "test-token"
+        )
+        let record = NativeTursoCampaignPersistence.Record(
+            kind: .envelope,
+            data: Data("campaign-envelope".utf8),
+            savedAt: "2026-06-21T00:00:00Z"
+        )
+        let request = NativeTursoCampaignPersistence.pipelineRequest(
+            configuration: config,
+            requests: NativeTursoCampaignPersistence.writeRequests(records: [record], slot: 2)
+        )
+
+        XCTAssertEqual(request.url?.absoluteString, "https://swift-historia-test.turso.io/v2/pipeline")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer test-token")
+        let body = try XCTUnwrap(request.httpBody)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        let requests = try XCTUnwrap(object["requests"] as? [[String: Any]])
+        XCTAssertEqual((requests.last?["type"] as? String), "close")
+
+        let upsert = try XCTUnwrap(requests.dropFirst().first?["stmt"] as? [String: Any])
+        XCTAssertTrue((upsert["sql"] as? String)?.contains("ON CONFLICT(slot, kind)") == true)
+        let args = try XCTUnwrap(upsert["args"] as? [[String: String]])
+        XCTAssertEqual(args[0]["value"], "2")
+        XCTAssertEqual(args[1]["value"], "envelope")
+        XCTAssertEqual(args[3]["type"], "blob")
+        XCTAssertEqual(args[3]["base64"], Data("campaign-envelope".utf8).base64EncodedString())
+    }
+
+    func testTursoPipelineResponseDecodesBlobRows() {
+        let base64 = Data("campaign-envelope".utf8).base64EncodedString()
+        let response = """
+        {
+          "results": [
+            {
+              "cols": [{"name": "data", "decltype": "BLOB"}],
+              "rows": [[{"type": "blob", "base64": "\(base64)"}]]
+            }
+          ]
+        }
+        """
+
+        let decoded = NativeTursoCampaignPersistence.dataBlob(fromPipelineResponse: Data(response.utf8))
+
+        XCTAssertEqual(decoded, Data("campaign-envelope".utf8))
+    }
+
+    func testFoundationTextHelpersCollapseDuplicatesAndNormalizeUrgency() {
+        XCTAssertEqual(
+            sanitizeFoundationModelText("Alpha sentence. Alpha sentence. Beta sentence."),
+            "Alpha sentence. Beta sentence."
+        )
+        XCTAssertEqual(
+            sanitizeFoundationModelText("Line one\nLine one\nLine two\nLine two"),
+            "Line one\nLine two"
+        )
+        XCTAssertTrue(hasConcreteFoundationText("Deliver a clear public transit modernization plan.", minimumWords: 4))
+        XCTAssertFalse(hasConcreteFoundationText("AppleNativeGeneratedEventDraft", minimumWords: 2))
+        XCTAssertEqual(normalizedFoundationUrgency("  IMMEDIATE  "), "immediate")
+        XCTAssertEqual(normalizedFoundationUrgency("unknown"), "soon")
+    }
+
+    func testLoadCampaignStatePrefersNewerUserDefaultsEnvelopeOverFileCopy() throws {
+        let defaults = makeDefaults()
+        let persistenceDirectory = try makePersistenceDirectory()
+        let decoder = JSONDecoder()
+        let encoder = JSONEncoder()
+
+        var fileState = makeState()
+        fileState.round = 3
+        var defaultsState = makeState()
+        defaultsState.round = 8
+
+        let fileEnvelope = NativeCampaignStore.CampaignStateEnvelope(
+            schemaVersion: 2,
+            savedAt: "2026-06-20T00:00:00Z",
+            state: fileState
+        )
+        let defaultsEnvelope = NativeCampaignStore.CampaignStateEnvelope(
+            schemaVersion: 2,
+            savedAt: "2026-06-21T00:00:00Z",
+            state: defaultsState
+        )
+
+        let envelopeURL = NativeCampaignStore.persistenceURL(
+            fileName: NativeCampaignStore.campaignStateEnvelopeFileName,
+            directory: persistenceDirectory
+        )
+        try encoder.encode(fileEnvelope).write(to: envelopeURL)
+        let encodedDefaultsEnvelope = try encoder.encode(defaultsEnvelope)
+        defaults.set(
+            encodedDefaultsEnvelope,
+            forKey: NativeCampaignStore.campaignStateEnvelopeKey
+        )
+
+        let loaded = NativeCampaignStore.loadCampaignState(
+            from: defaults,
+            decoder: decoder,
+            persistenceDirectory: persistenceDirectory
+        )
+
+        XCTAssertEqual(loaded.state?.round, defaultsState.round)
+        XCTAssertEqual(loaded.notice, "Loaded the newest campaign save from user-defaults because it is newer than the file copy.")
+    }
+
+    func testLoadCampaignStateFallsBackToBackupWhenPrimarySaveIsMissing() throws {
+        let defaults = makeDefaults()
+        let persistenceDirectory = try makePersistenceDirectory()
+        let decoder = JSONDecoder()
+        let encoder = JSONEncoder()
+
+        var backupState = makeState()
+        backupState.round = 11
+
+        let backupEnvelope = NativeCampaignStore.CampaignStateEnvelope(
+            schemaVersion: 2,
+            savedAt: "2026-06-21T00:00:00Z",
+            state: backupState
+        )
+
+        let backupURL = NativeCampaignStore.persistenceURL(
+            fileName: NativeCampaignStore.campaignStateBackupFileName,
+            directory: persistenceDirectory
+        )
+        try encoder.encode(backupEnvelope).write(to: backupURL)
+
+        let loaded = NativeCampaignStore.loadCampaignState(
+            from: defaults,
+            decoder: decoder,
+            persistenceDirectory: persistenceDirectory
+        )
+
+        XCTAssertEqual(loaded.state?.round, backupState.round)
+        XCTAssertTrue(loaded.notice?.contains("last-good campaign backup") == true)
+        XCTAssertTrue(loaded.notice?.contains("Source: file.") == true)
+    }
+
+    func testLoadCampaignStateLoadsLegacySaveWhenVersionedCopiesAreUnavailable() throws {
+        let defaults = makeDefaults()
+        let persistenceDirectory = try makePersistenceDirectory()
+        let decoder = JSONDecoder()
+        let encoder = JSONEncoder()
+
+        var legacyState = makeState()
+        legacyState.round = 14
+
+        let legacyURL = NativeCampaignStore.persistenceURL(
+            fileName: NativeCampaignStore.campaignStateLegacyFileName,
+            directory: persistenceDirectory
+        )
+        try encoder.encode(legacyState).write(to: legacyURL)
+
+        let loaded = NativeCampaignStore.loadCampaignState(
+            from: defaults,
+            decoder: decoder,
+            persistenceDirectory: persistenceDirectory
+        )
+
+        XCTAssertEqual(loaded.state?.round, legacyState.round)
+        XCTAssertTrue(loaded.notice?.contains("legacy campaign save") == true)
+        XCTAssertTrue(loaded.notice?.contains("Source: file.") == true)
     }
 
     func testHexLever8CharacterDecodingAndTacticalNudges() {
@@ -1988,8 +2341,9 @@ private struct CapturedProviderRequest {
 }
 
 @MainActor
-private final class CapturingOpenRouterGameService: NativeOpenRouterService {
+private class CapturingOpenRouterGameService: NativeOpenRouterService {
     var capturedRequests: [CapturedProviderRequest] = []
+    var suggestionResponse: String?
     private var eventIndex = 0
 
     override var apiKey: String {
@@ -2015,7 +2369,10 @@ private final class CapturingOpenRouterGameService: NativeOpenRouterService {
             return "OpenRouter advisor response reads the ledger, objectives, and current order load before recommending one bounded next move."
         }
         if prompt.contains("\"suggestions\"") {
-            return suggestionBatchJSON
+            return suggestionResponse ?? suggestionBatchJSON
+        }
+        if prompt.contains("Resolve one SwiftHistoria turn in a single OpenRouter Free response") {
+            return unifiedTurnJSON
         }
         if prompt.contains("\"stabilityDelta\""), prompt.contains("\"globalFrictionDelta\"") {
             return """
@@ -2029,6 +2386,79 @@ private final class CapturingOpenRouterGameService: NativeOpenRouterService {
 
         eventIndex += 1
         return eventJSON(index: eventIndex)
+    }
+
+    private var unifiedTurnJSON: String {
+        let linkedActionIDJSON = makeState().plannedActions.first.map { "\"\($0)\"" } ?? "null"
+        return """
+        {
+          "summary": "OpenRouter Free resolves the period by balancing logistics reform, public security, and market confidence in one validated turn.",
+          "stabilityDelta": 1,
+          "worldTensionDelta": -1,
+          "events": [
+            {
+              "title": "Regional Market Confidence Review",
+              "description": "Regional planning ministries review corridor bottlenecks and publish measurable logistics milestones before the next monthly cabinet cycle.",
+              "kind": "world",
+              "importance": "major",
+              "notable": true,
+              "playerRelated": false,
+              "linkedActionID": null,
+              "effectTarget": "GLOBAL",
+              "effectTrack": "market-confidence",
+              "effectMagnitude": 1,
+              "effectSummary": "The review improves market confidence while keeping world tension contained.",
+              "hexLeverCode": null,
+              "sovereigntyChange": null
+            },
+            {
+              "title": "OpenRouter Order Implementation Review",
+              "description": "Domestic agencies convert the queued order into bounded implementation milestones tied to fiscal space and service delivery capacity.",
+              "kind": "domestic",
+              "importance": "major",
+              "notable": true,
+              "playerRelated": true,
+              "linkedActionID": \(linkedActionIDJSON),
+              "effectTarget": "BRA",
+              "effectTrack": "economic-resilience",
+              "effectMagnitude": 1,
+              "effectSummary": "The order strengthens economic resilience through measured administrative execution.",
+              "hexLeverCode": null,
+              "sovereigntyChange": null
+            },
+            {
+              "title": "Security Capacity Audit",
+              "description": "Civilian security planners audit high-pressure municipalities and report staffing needs without expanding the campaign beyond current capacity.",
+              "kind": "domestic",
+              "importance": "minor",
+              "notable": true,
+              "playerRelated": true,
+              "linkedActionID": null,
+              "effectTarget": "BRA",
+              "effectTrack": "internal-stability",
+              "effectMagnitude": 1,
+              "effectSummary": "The audit improves internal stability by identifying pressure points before unrest grows.",
+              "hexLeverCode": null,
+              "sovereigntyChange": null
+            },
+            {
+              "title": "Trade Desk Coordination",
+              "description": "The treasury and foreign ministry align trade desk priorities with export bottlenecks and near-term diplomatic channels.",
+              "kind": "economy",
+              "importance": "minor",
+              "notable": true,
+              "playerRelated": true,
+              "linkedActionID": null,
+              "effectTarget": "BRA",
+              "effectTrack": "diplomatic-leverage",
+              "effectMagnitude": 1,
+              "effectSummary": "The coordination improves diplomatic leverage while protecting the current trade balance objective.",
+              "hexLeverCode": null,
+              "sovereigntyChange": null
+            }
+          ]
+        }
+        """
     }
 
     private var suggestionBatchJSON: String {
@@ -2080,6 +2510,24 @@ private final class CapturingOpenRouterGameService: NativeOpenRouterService {
           "sovereigntyChange": null
         }
         """
+    }
+}
+
+@MainActor
+private final class FailingOpenRouterGameService: NativeOpenRouterService {
+    override var apiKey: String {
+        "test-openrouter-key"
+    }
+
+    override func executeProviderRequest(
+        prompt _: String,
+        maxTokens _: Int,
+        temperature _: Double,
+        responseFormat _: String? = nil,
+        thinkingEnabled _: Bool = true,
+        onStreamProgress _: (@MainActor (String) -> Void)? = nil
+    ) async throws -> String {
+        throw NativeFoundationModelError.generationFailed("OpenRouter fixture failure")
     }
 }
 

@@ -59,7 +59,7 @@ enum NativeAIProviderPreference: String, CaseIterable {
         case .appleFoundation:
             "Use Apple's on-device System Language Model. No external API key required."
         case .openRouter:
-            "Use OpenRouter free models first, then fall back only if the route is unavailable."
+            "Use OpenRouter's unified Free Models Router. Requires an OpenRouter API key."
         case .zai:
             "Use Z.AI GLM models first, then fall back to Apple if unavailable."
         }

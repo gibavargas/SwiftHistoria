@@ -72,6 +72,82 @@ final class NativeCampaignStore: ObservableObject {
     static let campaignStateBackupFileName = "campaign-state-backup-v2.json"
     static let campaignStateLegacyFileName = "campaign-state-legacy-v1.json"
     static let maximumUserDefaultsCampaignBlobBytes = 512_000
+    nonisolated static let tursoDatabaseURLKey = "TURSO_DATABASE_URL"
+    nonisolated static let tursoAuthTokenKey = "TURSO_AUTH_TOKEN"
+
+    // MARK: - Save Slots (#15)
+
+    /// Active save slot (1, 2, or 3). Slot 1 uses the original unsuffixed keys for backward compat.
+    static let activeSlotKey = "pax-historia.native.active-slot.v1"
+    @Published var saveSlot: Int = 1 {
+        didSet {
+            defaults.set(saveSlot, forKey: Self.activeSlotKey)
+        }
+    }
+
+    /// Returns slot-suffixed UserDefaults key. Slot 1 → original key (backward compatible).
+    func slotKey(_ baseKey: String) -> String {
+        Self.slotKey(baseKey, slot: saveSlot)
+    }
+
+    /// Returns slot-suffixed filename. Slot 1 → original filename.
+    func slotFileName(_ baseName: String) -> String {
+        Self.slotFileName(baseName, slot: saveSlot)
+    }
+
+    static func slotKey(_ baseKey: String, slot: Int) -> String {
+        slot == 1 ? baseKey : "\(baseKey).slot\(slot)"
+    }
+
+    static func slotFileName(_ baseName: String, slot: Int) -> String {
+        slot == 1 ? baseName : baseName.replacingOccurrences(of: ".json", with: "-slot\(slot).json")
+    }
+
+    /// Checks if a slot has a saved campaign.
+    func slotHasCampaign(_ slot: Int) -> Bool {
+        slotSummary(slot) != nil
+    }
+
+    /// Gets a summary of a save slot for UI display.
+    func slotSummary(_ slot: Int) -> (countryName: String, round: Int, scenarioName: String)? {
+        let loadResult = Self.loadCampaignState(
+            from: defaults,
+            decoder: decoder,
+            persistenceDirectory: persistenceDirectory,
+            slotKey: { key in Self.slotKey(key, slot: slot) },
+            slotFileName: { name in Self.slotFileName(name, slot: slot) }
+        )
+        guard let state = loadResult.state.map(Self.normalizedLoadedState) else {
+            return nil
+        }
+        return (state.country.name, state.round, state.scenarioName)
+    }
+
+    /// Switches to a different save slot and loads its campaign (if any).
+    func switchSlot(_ slot: Int) {
+        precondition(slot >= 1 && slot <= 3, "Save slot must be 1, 2, or 3")
+        cancelInFlightTurn()
+        saveSlot = slot
+        // Reload state from the new slot
+        let loadResult = Self.loadCampaignState(
+            from: defaults,
+            decoder: decoder,
+            persistenceDirectory: persistenceDirectory,
+            slotKey: { key in Self.slotKey(key, slot: slot) },
+            slotFileName: { name in Self.slotFileName(name, slot: slot) }
+        )
+        state = loadResult.state.map(Self.normalizedLoadedState)
+        lastRecoveryNotice = loadResult.notice
+        selectedCountry = Self.loadSelectedCountry(from: defaults, decoder: decoder, key: slotKey(Self.selectedCountryKey))
+        let loadedState = state
+        selectedLanguage = NativeGameLanguage.normalized(defaults.string(forKey: slotKey(Self.selectedLanguageKey)) ?? loadedState?.language.rawValue)
+        selectedScenarioID = Self.normalizedScenarioID(defaults.string(forKey: slotKey(Self.selectedScenarioKey)) ?? loadedState?.scenarioID)
+        if selectedCountry == nil, let loadedState {
+            selectedCountry = loadedState.country
+        }
+        selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: state)
+    }
+
     static var suggestionRefreshTimeoutNanoseconds: UInt64 = 30_000_000_000
     private static let maximumAdministrativeCapacity = 120
 
@@ -106,22 +182,14 @@ final class NativeCampaignStore: ObservableObject {
                     "OpenRouter",
                     "Free Models Router",
                     "openrouter/free",
-                    "Player selected OpenRouter. Calling OpenRouter Free API first; fallback is Z.AI if configured, then Apple."
-                )
-            }
-            if hasZAIKey {
-                return (
-                    "Z.AI",
-                    "GLM-5",
-                    "glm-5",
-                    "OpenRouter is selected, but no OpenRouter API key is saved. Starting with Z.AI fallback."
+                    "Player selected OpenRouter. Calling OpenRouter Free API; failures stay on OpenRouter and are shown to the player."
                 )
             }
             return (
-                "Apple Foundation Models",
-                "System Language Model",
-                "SystemLanguageModel.default",
-                "OpenRouter is selected, but no OpenRouter API key is saved. Starting with Apple Foundation Models."
+                "OpenRouter",
+                "Free Models Router",
+                "openrouter/free",
+                "OpenRouter is selected, but no OpenRouter API key is saved. Add the key in Settings and retry."
             )
         case .zai:
             if hasZAIKey {
@@ -177,20 +245,30 @@ final class NativeCampaignStore: ObservableObject {
                 Self.removePersistedCampaignState(defaults: defaults, persistenceDirectory: self.persistenceDirectory)
             }
         #endif
-        selectedCountry = Self.loadSelectedCountry(from: defaults, decoder: decoder)
+        // Restore active save slot (#15)
+        let savedSlot = defaults.integer(forKey: Self.activeSlotKey)
+        let activeSlot = (savedSlot >= 1 && savedSlot <= 3) ? savedSlot : 1
+        selectedCountry = Self.loadSelectedCountry(
+            from: defaults,
+            decoder: decoder,
+            key: Self.slotKey(Self.selectedCountryKey, slot: activeSlot)
+        )
         let loadResult = Self.loadCampaignState(
             from: defaults,
             decoder: decoder,
-            persistenceDirectory: self.persistenceDirectory
+            persistenceDirectory: self.persistenceDirectory,
+            slotKey: { key in Self.slotKey(key, slot: activeSlot) },
+            slotFileName: { name in Self.slotFileName(name, slot: activeSlot) }
         )
         let loadedState = loadResult.state.map(Self.normalizedLoadedState)
         state = loadedState
         lastRecoveryNotice = loadResult.notice
-        let resolvedLanguage = NativeGameLanguage.normalized(defaults.string(forKey: Self.selectedLanguageKey) ?? loadedState?.language.rawValue)
+        let languageKey = Self.slotKey(Self.selectedLanguageKey, slot: activeSlot)
+        let resolvedLanguage = NativeGameLanguage.normalized(defaults.string(forKey: languageKey) ?? loadedState?.language.rawValue)
         selectedLanguage = resolvedLanguage
 
         // Ensure AppleLanguages matches the saved game language on launch.
-        if defaults.string(forKey: Self.selectedLanguageKey) != nil {
+        if defaults.string(forKey: languageKey) != nil {
             let localeCode = switch resolvedLanguage {
             case .english: "en"
             case .portuguese: "pt-BR"
@@ -199,7 +277,7 @@ final class NativeCampaignStore: ObservableObject {
             defaults.set([localeCode], forKey: "AppleLanguages")
         }
 
-        selectedScenarioID = Self.normalizedScenarioID(defaults.string(forKey: Self.selectedScenarioKey) ?? loadedState?.scenarioID)
+        selectedScenarioID = Self.normalizedScenarioID(defaults.string(forKey: Self.slotKey(Self.selectedScenarioKey, slot: activeSlot)) ?? loadedState?.scenarioID)
 
         if let selectedCountry, state == nil {
             state = NativeGameEngine.initialState(for: selectedCountry, scenario: selectedScenario, language: selectedLanguage)
@@ -210,6 +288,8 @@ final class NativeCampaignStore: ObservableObject {
             selectedScenarioID = Self.normalizedScenarioID(state.scenarioID)
         }
         selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: state)
+        // Set saveSlot after all stored properties are initialized
+        saveSlot = activeSlot
         logger.info("Native campaign store initialized hasState=\(self.state != nil, privacy: .public)")
     }
 
@@ -225,7 +305,7 @@ final class NativeCampaignStore: ObservableObject {
         guard selectedLanguage != language || state?.language != language else { return }
         invalidateInFlightWork()
         selectedLanguage = language
-        defaults.set(language.rawValue, forKey: Self.selectedLanguageKey)
+        defaults.set(language.rawValue, forKey: slotKey(Self.selectedLanguageKey))
 
         // Update the system locale so SwiftUI picks up the correct Localizable.xcstrings
         // translations on the next app launch.
@@ -254,7 +334,7 @@ final class NativeCampaignStore: ObservableObject {
         let scenario = NativeScenarioCatalog.scenario(for: id)
         invalidateInFlightWork()
         selectedScenarioID = scenario.id
-        defaults.set(scenario.id, forKey: Self.selectedScenarioKey)
+        defaults.set(scenario.id, forKey: slotKey(Self.selectedScenarioKey))
         logger.info("Native campaign scenario selected scenario=\(scenario.id, privacy: .public)")
         lastAdvisorError = nil
         lastDiplomacyError = nil
@@ -285,10 +365,10 @@ final class NativeCampaignStore: ObservableObject {
         lastTurnReport = nil
         turnProgress = nil
         selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: state)
-        defaults.set(selectedLanguage.rawValue, forKey: Self.selectedLanguageKey)
-        defaults.set(selectedScenarioID, forKey: Self.selectedScenarioKey)
+        defaults.set(selectedLanguage.rawValue, forKey: slotKey(Self.selectedLanguageKey))
+        defaults.set(selectedScenarioID, forKey: slotKey(Self.selectedScenarioKey))
         if let data = try? encoder.encode(country) {
-            defaults.set(data, forKey: Self.selectedCountryKey)
+            defaults.set(data, forKey: slotKey(Self.selectedCountryKey))
         }
         persistState()
         Task { await refreshSuggestedActions(force: true) }
@@ -309,10 +389,10 @@ final class NativeCampaignStore: ObservableObject {
         lastSuggestionError = nil
         lastTurnReport = nil
         turnProgress = nil
-        defaults.removeObject(forKey: Self.selectedCountryKey)
-        defaults.removeObject(forKey: Self.campaignStateKey)
-        defaults.removeObject(forKey: Self.campaignStateEnvelopeKey)
-        defaults.removeObject(forKey: Self.campaignStateBackupKey)
+        defaults.removeObject(forKey: slotKey(Self.selectedCountryKey))
+        defaults.removeObject(forKey: slotKey(Self.campaignStateKey))
+        defaults.removeObject(forKey: slotKey(Self.campaignStateEnvelopeKey))
+        defaults.removeObject(forKey: slotKey(Self.campaignStateBackupKey))
         removePersistedCampaignFiles()
         logger.info("Native campaign selection reset")
     }
@@ -343,7 +423,7 @@ final class NativeCampaignStore: ObservableObject {
         state = currentState
 
         if let data = try? encoder.encode(newCountry) {
-            defaults.set(data, forKey: Self.selectedCountryKey)
+            defaults.set(data, forKey: slotKey(Self.selectedCountryKey))
         }
 
         persistState()
@@ -361,7 +441,7 @@ final class NativeCampaignStore: ObservableObject {
     func exitToMainMenu() {
         invalidateInFlightWork()
         selectedCountry = nil
-        defaults.removeObject(forKey: Self.selectedCountryKey)
+        defaults.removeObject(forKey: slotKey(Self.selectedCountryKey))
         logger.info("Exited to main menu (campaign state retained for resume)")
     }
 
@@ -373,10 +453,10 @@ final class NativeCampaignStore: ObservableObject {
         selectedLanguage = state.language
         selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: state)
         if let data = try? encoder.encode(state.country) {
-            defaults.set(data, forKey: Self.selectedCountryKey)
+            defaults.set(data, forKey: slotKey(Self.selectedCountryKey))
         }
-        defaults.set(state.scenarioID, forKey: Self.selectedScenarioKey)
-        defaults.set(state.language.rawValue, forKey: Self.selectedLanguageKey)
+        defaults.set(state.scenarioID, forKey: slotKey(Self.selectedScenarioKey))
+        defaults.set(state.language.rawValue, forKey: slotKey(Self.selectedLanguageKey))
         logger.info("Resumed active campaign as \(state.country.code)")
     }
 
@@ -437,10 +517,10 @@ final class NativeCampaignStore: ObservableObject {
         turnProgress = nil
 
         if let data = try? encoder.encode(normalized.country) {
-            defaults.set(data, forKey: Self.selectedCountryKey)
+            defaults.set(data, forKey: slotKey(Self.selectedCountryKey))
         }
-        defaults.set(selectedScenarioID, forKey: Self.selectedScenarioKey)
-        defaults.set(selectedLanguage.rawValue, forKey: Self.selectedLanguageKey)
+        defaults.set(selectedScenarioID, forKey: slotKey(Self.selectedScenarioKey))
+        defaults.set(selectedLanguage.rawValue, forKey: slotKey(Self.selectedLanguageKey))
         persistState()
         logger.info("Native campaign imported bytes=\(data.count, privacy: .public) scenario=\(self.selectedScenarioID, privacy: .public)")
     }
@@ -782,12 +862,17 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func refreshSuggestedActionsIfNeeded() async {
+        guard !isAdvancing else { return }
         guard let state, state.suggestedActions.isEmpty else { return }
         await refreshSuggestedActions(force: false)
     }
 
     func refreshSuggestedActions(force: Bool) async {
         guard var currentState = state else { return }
+        guard !isAdvancing else {
+            pendingSuggestionRefreshForce = (pendingSuggestionRefreshForce ?? false) || force
+            return
+        }
         guard !isLoadingSuggestions else {
             pendingSuggestionRefreshForce = (pendingSuggestionRefreshForce ?? false) || force
             return
@@ -810,7 +895,6 @@ final class NativeCampaignStore: ObservableObject {
             guard isCurrentStateVersion(requestVersion) else { return }
             currentState.suggestedActions = suggestions
             currentState.aiReadiness = .available(tokenBudget: "sliced-guided-generation context=4096, suggestions=4x180")
-            invalidateInFlightWork()
             state = currentState
             lastSuggestionError = nil
             persistState()
@@ -821,7 +905,6 @@ final class NativeCampaignStore: ObservableObject {
             if force {
                 currentState.suggestedActions = []
             }
-            invalidateInFlightWork()
             state = currentState
             lastSuggestionError = error.localizedDescription
             persistState()

@@ -784,15 +784,17 @@ class NativeZAIService: NativeAIService {
                     }
 
                     if httpResponse.statusCode == 429 {
-                        // Rate limited — exponential backoff before retrying
-                        let retryAfter = Double(httpResponse.value(forHTTPHeaderField: "Retry-After") ?? "") ?? 0
-                        let backoff = retryAfter > 0 ? retryAfter : (2.0 * pow(2.0, Double(attempt)))
+                        // Rate limited — respect Retry-After header, default to 10s minimum
+                        let retryAfterHeader = httpResponse.value(forHTTPHeaderField: "Retry-After") ?? ""
+                        let retryAfter = Double(retryAfterHeader) ?? 0
+                        // OpenRouter typically resets every 60s; use a generous backoff
+                        let backoff = retryAfter > 0 ? min(retryAfter, 60.0) : max(10.0, 5.0 * pow(2.0, Double(attempt + 1)))
                         if attempt < maxRetries {
-                            logger.warning("\(self.providerDisplayName, privacy: .public) 429 rate limited; backing off \(backoff)s before retry \(attempt + 1)/\(maxRetries)")
-                            try? await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
+                            logger.warning("\(self.providerDisplayName, privacy: .public) 429 rate limited; backing off \(backoff)s before retry \(attempt + 1)/\(maxRetries). Retry-After header: '\(retryAfterHeader, privacy: .public)'")
+                            try await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
                             continue
                         }
-                        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) rate limited after \(maxRetries + 1) attempts. Model=\(lane.name).")
+                        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) rate limited after \(maxRetries + 1) attempts. Model=\(lane.name). Wait ~60s before advancing again.")
                     }
 
                     guard httpResponse.statusCode == 200 else {
@@ -800,7 +802,7 @@ class NativeZAIService: NativeAIService {
                         // Retry on 5xx server errors
                         if (500 ... 599).contains(httpResponse.statusCode), attempt < maxRetries {
                             logger.warning("\(self.providerDisplayName, privacy: .public) HTTP \(httpResponse.statusCode); retrying \(attempt + 1)/\(maxRetries)")
-                            try? await Task.sleep(nanoseconds: UInt64(1.5 * pow(2.0, Double(attempt)) * 1_000_000_000))
+                            try await Task.sleep(nanoseconds: UInt64(1.5 * pow(2.0, Double(attempt)) * 1_000_000_000))
                             continue
                         }
                         throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned status \(httpResponse.statusCode) model=\(lane.name): \(errorText)")
@@ -841,7 +843,13 @@ class NativeZAIService: NativeAIService {
                     if attempt < maxRetries {
                         let backoff = 1.5 * pow(2.0, Double(attempt))
                         logger.warning("\(self.providerDisplayName, privacy: .public) attempt \(attempt + 1) failed: \(error.localizedDescription, privacy: .public); backing off \(backoff)s")
-                        try? await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
+                        do {
+                            try await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
+                        } catch is CancellationError {
+                            lane.limiter.exit()
+                            releaseLane = false
+                            throw CancellationError()
+                        }
                         continue
                     }
                     if releaseLane { lane.limiter.exit() }

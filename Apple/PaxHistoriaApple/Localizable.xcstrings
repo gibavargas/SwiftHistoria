@@ -4,6 +4,9 @@
     " " : {
 
     },
+    "..." : {
+
+    },
     "·" : {
 
     },
@@ -717,6 +720,9 @@
           }
         }
       }
+    },
+    "Changing slots loads that slot immediately. Empty slots return to campaign setup." : {
+
     },
     "Choose a country to begin." : {
       "localizations" : {
@@ -2423,6 +2429,7 @@
 
     },
     "OpenRouter is selected, but no API key is saved. Turn resolution will fall back to Z.AI if configured, otherwise Apple Foundation Models." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2916,6 +2923,9 @@
         }
       }
     },
+    "SAVE SLOT" : {
+
+    },
     "Scenario archive" : {
       "localizations" : {
         "es" : {
@@ -3051,6 +3061,9 @@
     "Select how SwiftHistoria generates turns. You can change this later in Settings." : {
 
     },
+    "Select how turns, suggestions, advisor answers, and diplomacy replies are generated." : {
+
+    },
     "Send" : {
       "localizations" : {
         "es" : {
@@ -3139,6 +3152,9 @@
           }
         }
       }
+    },
+    "Slot %@" : {
+
     },
     "Spanish" : {
       "localizations" : {
@@ -3477,6 +3493,7 @@
       }
     },
     "Use OpenRouter free models first, then fall back only if the route is unavailable." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

@@ -6,6 +6,8 @@ struct NativeSettingsPanel: View {
     @AppStorage("OPENROUTER_API_KEY") private var openRouterApiKey: String = ""
     @AppStorage("ZAI_API_KEY") private var zaiApiKey: String = ""
     @AppStorage("ZAI_USE_CODING_ENDPOINT") private var zaiUseCodingEndpoint: Bool = false
+    @AppStorage(NativeCampaignStore.tursoDatabaseURLKey) private var tursoDatabaseURL: String = ""
+    @AppStorage(NativeCampaignStore.tursoAuthTokenKey) private var tursoAuthToken: String = ""
 
     private var selectedAIProviderPreference: NativeAIProviderPreference {
         NativeAIProviderPreference(rawValue: aiProviderPreferenceRaw) ?? .openRouter
@@ -59,6 +61,7 @@ struct NativeSettingsPanel: View {
 
                 NativeLanguagePicker(store: store, state: state)
                 NativeScenarioPicker(store: store)
+                NativeSaveSlotPicker(store: store)
                 NativeAIStatusPanel(readiness: state.aiReadiness, sessionTotalTokens: store.sessionTokenUsage.total)
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -86,7 +89,7 @@ struct NativeSettingsPanel: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     if selectedAIProviderPreference == .openRouter, openRouterApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Label("OpenRouter is selected, but no API key is saved. Turn resolution will fall back to Z.AI if configured, otherwise Apple Foundation Models.", systemImage: "exclamationmark.triangle")
+                        Label("OpenRouter is selected, but no API key is saved. Turn resolution, suggestions, advisor, and diplomacy requests will stay on OpenRouter and show a visible provider error until a key is saved.", systemImage: "exclamationmark.triangle")
                             .font(.system(size: 11))
                             .foregroundStyle(Color.alertGold)
                             .fixedSize(horizontal: false, vertical: true)
@@ -131,6 +134,29 @@ struct NativeSettingsPanel: View {
                         .foregroundStyle(.secondary)
 
                     Text("Used when AI Provider is set to Z.AI. GLM lanes can run concurrently, with Apple Foundation Models as safety fallback if unavailable.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.vertical, 8)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("TURSO SAVE MIRROR")
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.neonTeal)
+
+                    TextField("libsql://database-org.turso.io", text: $tursoDatabaseURL)
+                        .textFieldStyle(.roundedBorder)
+                        .textContentType(.URL)
+                        .disableAutocorrection(true)
+                        .accessibilityIdentifier("native-turso-database-url")
+
+                    SecureField("Turso database token", text: $tursoAuthToken)
+                        .textFieldStyle(.roundedBorder)
+                        .disableAutocorrection(true)
+                        .accessibilityIdentifier("native-turso-auth-token")
+
+                    Text("Optional. Campaign saves stay local for fast launches and are mirrored to Turso in the background when both fields are set.")
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -202,6 +228,55 @@ struct NativeSettingsPanel: View {
                 }
                 .accessibilityIdentifier("native-change-country")
             }
+        }
+    }
+}
+
+struct NativeSaveSlotPicker: View {
+    @ObservedObject var store: NativeCampaignStore
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("SAVE SLOT")
+                .font(.system(.subheadline, design: .monospaced).weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            Picker(
+                "Save Slot",
+                selection: Binding(
+                    get: { store.saveSlot },
+                    set: { store.switchSlot($0) }
+                )
+            ) {
+                ForEach(1 ... 3, id: \.self) { slot in
+                    Text("Slot \(slot)").tag(slot)
+                }
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("native-save-slot-picker")
+
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(1 ... 3, id: \.self) { slot in
+                    let summary = store.slotSummary(slot)
+                    HStack {
+                        Text("Slot \(slot)")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(slot == store.saveSlot ? Color.glowingCyan : .secondary)
+                        Spacer()
+                        Text(summary.map { "\($0.countryName) · Round \($0.round) · \($0.scenarioName)" } ?? "Empty")
+                            .font(.caption)
+                            .foregroundStyle(summary == nil ? .secondary : .primary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.82)
+                    }
+                    .accessibilityIdentifier("native-save-slot-summary-\(slot)")
+                }
+            }
+
+            Text("Changing slots loads that slot immediately. Empty slots return to campaign setup.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

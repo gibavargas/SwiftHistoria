@@ -66,31 +66,15 @@ class DynamicAIService: NativeAIService {
             return await foundationService.checkReadiness()
         case .openRouter:
             if hasOpenRouterKey {
+                lastProviderUsed = openRouterService.providerDisplayName
                 let openRouterReadiness = await openRouterService.checkReadiness()
                 if openRouterReadiness.ok {
-                    lastProviderUsed = openRouterService.providerDisplayName
                     return openRouterReadiness
-                }
-                if hasZAIKey {
-                    let zaiReadiness = await zaiService.checkReadiness()
-                    if zaiReadiness.ok {
-                        lastProviderUsed = zaiService.providerDisplayName
-                        return .available(tokenBudget: "OpenRouter unavailable; Z.AI fallback verified")
-                    }
-                }
-                let appleReadiness = await foundationService.checkReadiness()
-                if appleReadiness.ok {
-                    lastProviderUsed = "Apple Foundation Models"
-                    return .available(tokenBudget: "OpenRouter unavailable; Apple Foundation Models fallback verified")
                 }
                 return openRouterReadiness
             }
-            if hasZAIKey {
-                lastProviderUsed = zaiService.providerDisplayName
-                return await zaiService.checkReadiness()
-            }
-            lastProviderUsed = "Apple Foundation Models"
-            return await foundationService.checkReadiness()
+            lastProviderUsed = openRouterService.providerDisplayName
+            return .unavailable("OpenRouter is selected, but no OpenRouter API key is saved.")
         case .zai:
             if hasZAIKey {
                 lastProviderUsed = zaiService.providerDisplayName
@@ -109,25 +93,18 @@ class DynamicAIService: NativeAIService {
         case .openRouter:
             if hasOpenRouterKey {
                 do {
+                    lastProviderUsed = openRouterService.providerDisplayName
                     logger.info("OpenRouter turn generation started round=\(state.round)")
                     let result = try await openRouterService.generateTurn(for: state, months: months)
                     lastProviderUsed = openRouterService.providerDisplayName
                     return result
                 } catch {
-                    logger.error("OpenRouter turn failed; trying configured fallback. openrouter_error=\(error.localizedDescription, privacy: .public)")
+                    logger.error("OpenRouter turn failed. openrouter_error=\(error.localizedDescription, privacy: .public)")
+                    throw error
                 }
             }
-            if hasZAIKey {
-                do {
-                    let result = try await zaiService.generateTurn(for: state, months: months)
-                    lastProviderUsed = zaiService.providerDisplayName
-                    return result
-                } catch {
-                    logger.error("Z.AI turn failed; trying Apple Foundation Models. z_ai_error=\(error.localizedDescription, privacy: .public)")
-                }
-            }
-            lastProviderUsed = "Apple Foundation Models"
-            return try await foundationService.generateTurn(for: state, months: months)
+            lastProviderUsed = openRouterService.providerDisplayName
+            throw NativeFoundationModelError.modelUnavailable("OpenRouter is selected, but no OpenRouter API key is saved.")
         case .zai:
             if hasZAIKey {
                 do {
@@ -157,54 +134,27 @@ class DynamicAIService: NativeAIService {
         case .openRouter:
             if hasOpenRouterKey {
                 do {
+                    lastProviderUsed = openRouterService.providerDisplayName
                     logger.info("OpenRouter turn generation started round=\(state.round)")
                     let result = try await openRouterService.generateTurn(for: state, months: months, progress: progress)
                     lastProviderUsed = openRouterService.providerDisplayName
                     return result
                 } catch {
-                    logger.error("OpenRouter turn failed; trying configured fallback. openrouter_error=\(error.localizedDescription, privacy: .public)")
-                    let fallbackProvider = hasZAIKey ? "Z.AI" : "Apple Foundation Models"
-                    progress(NativeTurnProgress(
-                        completedLanes: 0,
-                        detail: "OpenRouter failed: \(error.localizedDescription). Trying \(fallbackProvider) fallback now.",
-                        phase: hasZAIKey ? "Falling back to Z.AI" : "Falling back to Apple",
-                        totalLanes: total,
-                        providerName: hasZAIKey ? "Z.AI" : "Apple Foundation Models",
-                        modelName: hasZAIKey ? zaiService.primaryModelDisplayName : "System Language Model",
-                        modelIdentifier: hasZAIKey ? zaiService.primaryModelIdentifier : "SystemLanguageModel.default"
-                    ))
-                }
-            } else {
-                progress(NativeTurnProgress(
-                    completedLanes: 0,
-                    detail: hasZAIKey ? "OpenRouter is selected, but no OpenRouter API key is saved. Trying Z.AI fallback now." : "OpenRouter is selected, but no OpenRouter API key is saved. Trying Apple Foundation Models now.",
-                    phase: hasZAIKey ? "Falling back to Z.AI" : "Falling back to Apple",
-                    totalLanes: total,
-                    providerName: hasZAIKey ? "Z.AI" : "Apple Foundation Models",
-                    modelName: hasZAIKey ? zaiService.primaryModelDisplayName : "System Language Model",
-                    modelIdentifier: hasZAIKey ? zaiService.primaryModelIdentifier : "SystemLanguageModel.default"
-                ))
-            }
-            if hasZAIKey {
-                do {
-                    let result = try await zaiService.generateTurn(for: state, months: months, progress: progress)
-                    lastProviderUsed = zaiService.providerDisplayName
-                    return result
-                } catch {
-                    logger.error("Z.AI turn failed; trying Apple Foundation Models. z_ai_error=\(error.localizedDescription, privacy: .public)")
-                    progress(NativeTurnProgress(
-                        completedLanes: 0,
-                        detail: "Z.AI failed: \(error.localizedDescription). Trying Apple Foundation Models now.",
-                        phase: "Falling back to Apple",
-                        totalLanes: total,
-                        providerName: "Apple Foundation Models",
-                        modelName: "System Language Model",
-                        modelIdentifier: "SystemLanguageModel.default"
-                    ))
+                    logger.error("OpenRouter turn failed. openrouter_error=\(error.localizedDescription, privacy: .public)")
+                    throw error
                 }
             }
-            lastProviderUsed = "Apple Foundation Models"
-            return try await foundationService.generateTurn(for: state, months: months, progress: progress)
+            lastProviderUsed = openRouterService.providerDisplayName
+            progress(NativeTurnProgress(
+                completedLanes: 0,
+                detail: "OpenRouter is selected, but no OpenRouter API key is saved. Add the key in Settings and retry.",
+                phase: "OpenRouter unavailable",
+                totalLanes: total,
+                providerName: openRouterService.providerDisplayName,
+                modelName: openRouterService.primaryModelDisplayName,
+                modelIdentifier: openRouterService.primaryModelIdentifier
+            ))
+            throw NativeFoundationModelError.modelUnavailable("OpenRouter is selected, but no OpenRouter API key is saved.")
         case .zai:
             if hasZAIKey {
                 do {
@@ -247,24 +197,17 @@ class DynamicAIService: NativeAIService {
         case .openRouter:
             if hasOpenRouterKey {
                 do {
+                    lastProviderUsed = openRouterService.providerDisplayName
                     let result = try await openRouterService.generateSuggestedActions(for: state)
                     lastProviderUsed = openRouterService.providerDisplayName
                     return result
                 } catch {
-                    logger.warning("Suggestions: OpenRouter failed, falling back: \(error.localizedDescription, privacy: .public)")
+                    logger.warning("Suggestions: OpenRouter failed: \(error.localizedDescription, privacy: .public)")
+                    throw error
                 }
             }
-            if hasZAIKey {
-                do {
-                    let result = try await zaiService.generateSuggestedActions(for: state)
-                    lastProviderUsed = zaiService.providerDisplayName
-                    return result
-                } catch {
-                    logger.warning("Suggestions: Z.AI failed, falling back to Apple: \(error.localizedDescription, privacy: .public)")
-                }
-            }
-            lastProviderUsed = "Apple Foundation Models"
-            return try await foundationService.generateSuggestedActions(for: state)
+            lastProviderUsed = openRouterService.providerDisplayName
+            throw NativeFoundationModelError.modelUnavailable("OpenRouter is selected, but no OpenRouter API key is saved.")
         case .zai:
             if hasZAIKey {
                 do {
@@ -288,24 +231,17 @@ class DynamicAIService: NativeAIService {
         case .openRouter:
             if hasOpenRouterKey {
                 do {
+                    lastProviderUsed = openRouterService.providerDisplayName
                     let result = try await openRouterService.generateAdvisorBrief(for: state, question: question)
                     lastProviderUsed = openRouterService.providerDisplayName
                     return result
                 } catch {
-                    logger.warning("Advisor: OpenRouter failed, falling back: \(error.localizedDescription, privacy: .public)")
+                    logger.warning("Advisor: OpenRouter failed: \(error.localizedDescription, privacy: .public)")
+                    throw error
                 }
             }
-            if hasZAIKey {
-                do {
-                    let result = try await zaiService.generateAdvisorBrief(for: state, question: question)
-                    lastProviderUsed = zaiService.providerDisplayName
-                    return result
-                } catch {
-                    logger.warning("Advisor: Z.AI failed, falling back to Apple: \(error.localizedDescription, privacy: .public)")
-                }
-            }
-            lastProviderUsed = "Apple Foundation Models"
-            return try await foundationService.generateAdvisorBrief(for: state, question: question)
+            lastProviderUsed = openRouterService.providerDisplayName
+            throw NativeFoundationModelError.modelUnavailable("OpenRouter is selected, but no OpenRouter API key is saved.")
         case .zai:
             if hasZAIKey {
                 do {
@@ -333,24 +269,17 @@ class DynamicAIService: NativeAIService {
         case .openRouter:
             if hasOpenRouterKey {
                 do {
+                    lastProviderUsed = openRouterService.providerDisplayName
                     let result = try await openRouterService.generateDiplomaticReply(for: state, thread: thread, message: message)
                     lastProviderUsed = openRouterService.providerDisplayName
                     return result
                 } catch {
-                    logger.warning("Diplomacy: OpenRouter failed, falling back: \(error.localizedDescription, privacy: .public)")
+                    logger.warning("Diplomacy: OpenRouter failed: \(error.localizedDescription, privacy: .public)")
+                    throw error
                 }
             }
-            if hasZAIKey {
-                do {
-                    let result = try await zaiService.generateDiplomaticReply(for: state, thread: thread, message: message)
-                    lastProviderUsed = zaiService.providerDisplayName
-                    return result
-                } catch {
-                    logger.warning("Diplomacy: Z.AI failed, falling back to Apple: \(error.localizedDescription, privacy: .public)")
-                }
-            }
-            lastProviderUsed = "Apple Foundation Models"
-            return try await foundationService.generateDiplomaticReply(for: state, thread: thread, message: message)
+            lastProviderUsed = openRouterService.providerDisplayName
+            throw NativeFoundationModelError.modelUnavailable("OpenRouter is selected, but no OpenRouter API key is saved.")
         case .zai:
             if hasZAIKey {
                 do {
