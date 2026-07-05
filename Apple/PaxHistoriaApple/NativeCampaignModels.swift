@@ -255,9 +255,66 @@ struct NativeAICountryState: Codable, Hashable, Identifiable {
     var relationshipScores: [String: Int] // target -> score (-100 to 100)
     var multiTurnAgenda: String
     var agendaProgress: Int // 0 to 100
+    /// Stable 12-bit policy profile (0...4095) selected from the country's seed.
+    var decisionProfileID: Int
+    /// Independent deterministic stream for this country inside the campaign.
+    var decisionSeed: UInt64
+    /// Advances after each autonomous choice without coupling countries together.
+    var decisionStep: Int
+    /// Summary of the last autonomous action taken by this country.
+    var lastAIActionSummary: String
+    /// How many turns since this country last received a visible decision.
+    var turnsSinceAIAction: Int
 
     var id: String {
         countryCode
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case countryCode, doctrine, budgetPriority, relationshipScores
+        case multiTurnAgenda, agendaProgress, decisionProfileID, decisionSeed, decisionStep
+        case lastAIActionSummary, turnsSinceAIAction
+    }
+
+    init(
+        countryCode: String,
+        doctrine: NativeAIDoctrine,
+        budgetPriority: NativeAIBudgetPriority,
+        relationshipScores: [String: Int],
+        multiTurnAgenda: String,
+        agendaProgress: Int,
+        decisionProfileID: Int = -1,
+        decisionSeed: UInt64 = 0,
+        decisionStep: Int = 0,
+        lastAIActionSummary: String = "",
+        turnsSinceAIAction: Int = 0
+    ) {
+        self.countryCode = countryCode
+        self.doctrine = doctrine
+        self.budgetPriority = budgetPriority
+        self.relationshipScores = relationshipScores
+        self.multiTurnAgenda = multiTurnAgenda
+        self.agendaProgress = agendaProgress
+        self.decisionProfileID = max(-1, min(4095, decisionProfileID))
+        self.decisionSeed = decisionSeed
+        self.decisionStep = max(0, decisionStep)
+        self.lastAIActionSummary = lastAIActionSummary
+        self.turnsSinceAIAction = turnsSinceAIAction
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        countryCode = (try? c.decodeIfPresent(String.self, forKey: .countryCode)) ?? ""
+        doctrine = (try? c.decodeIfPresent(NativeAIDoctrine.self, forKey: .doctrine)) ?? .isolationist
+        budgetPriority = (try? c.decodeIfPresent(NativeAIBudgetPriority.self, forKey: .budgetPriority)) ?? .growth
+        relationshipScores = (try? c.decodeIfPresent([String: Int].self, forKey: .relationshipScores)) ?? [:]
+        multiTurnAgenda = (try? c.decodeIfPresent(String.self, forKey: .multiTurnAgenda)) ?? ""
+        agendaProgress = (try? c.decodeIfPresent(Int.self, forKey: .agendaProgress)) ?? 0
+        decisionProfileID = max(-1, min(4095, (try? c.decodeIfPresent(Int.self, forKey: .decisionProfileID)) ?? -1))
+        decisionSeed = (try? c.decodeIfPresent(UInt64.self, forKey: .decisionSeed)) ?? 0
+        decisionStep = max(0, (try? c.decodeIfPresent(Int.self, forKey: .decisionStep)) ?? 0)
+        lastAIActionSummary = (try? c.decodeIfPresent(String.self, forKey: .lastAIActionSummary)) ?? ""
+        turnsSinceAIAction = (try? c.decodeIfPresent(Int.self, forKey: .turnsSinceAIAction)) ?? 0
     }
 }
 
@@ -370,6 +427,8 @@ struct NativeCampaignState: Codable, Hashable {
 
     var gameDate: String
     var gameMode: NativeGameMode
+    /// Campaign-wide immutable seed. Country streams and turn seeds derive from it.
+    var worldSeed: UInt64
     var lastSummary: String
     var language: NativeGameLanguage
     var plannedActions: [NativePlannedAction]
@@ -422,6 +481,7 @@ struct NativeCampaignState: Codable, Hashable {
         aiCountryStates: [String: NativeAICountryState]? = nil,
         gameDate: String,
         gameMode: NativeGameMode = .normal,
+        worldSeed: UInt64 = 0,
         lastSummary: String,
         language: NativeGameLanguage = .english,
         plannedActions: [NativePlannedAction],
@@ -477,6 +537,7 @@ struct NativeCampaignState: Codable, Hashable {
         self.aiCountryStates = aiCountryStates ?? [:]
         self.gameDate = gameDate
         self.gameMode = gameMode
+        self.worldSeed = worldSeed
         self.lastSummary = lastSummary
         self.language = language
         self.plannedActions = plannedActions
@@ -520,6 +581,7 @@ struct NativeCampaignState: Codable, Hashable {
         case aiCountryStates
         case gameDate
         case gameMode
+        case worldSeed
         case lastSummary
         case language
         case plannedActions
@@ -591,6 +653,7 @@ struct NativeCampaignState: Codable, Hashable {
         }
         gameDate = (try? container.decodeIfPresent(String.self, forKey: .gameDate)) ?? decodedScenario.gameDate
         gameMode = (try? container.decodeIfPresent(NativeGameMode.self, forKey: .gameMode)) ?? .normal
+        worldSeed = (try? container.decodeIfPresent(UInt64.self, forKey: .worldSeed)) ?? 0
         lastSummary = (try? container.decodeIfPresent(String.self, forKey: .lastSummary)) ?? "\(decodedScenario.openingSummary) \(country.name) needs to turn intent into concrete plans."
         language = NativeGameLanguage.normalized(try? container.decodeIfPresent(String.self, forKey: .language))
         plannedActions = Self.decodeLossyArray(NativePlannedAction.self, from: container, forKey: .plannedActions)
@@ -633,21 +696,23 @@ struct NativeCampaignState: Codable, Hashable {
     /// Recognized military powers receive large standing armies; regional powers
     /// a modest force; all others a small defensive garrison.
     static func defaultMilitaryUnits(forCode code: String) -> [String: Int] {
-        let militaryPowers: Set = [
-            "USA", "RUS", "CHN", "IND", "GBR", "FRA", "DEU", "JPN", "KOR",
-            "ISR", "PAK", "TUR", "EGY", "BRA", "IRN"
-        ]
-        let regionalPowers: Set = [
-            "SAU", "ITA", "ESP", "CAN", "AUS", "UKR", "POL", "IDN", "VNM",
-            "NGA", "ZAF", "MEX", "ARG", "PRK", "DZA", "MAR"
-        ]
-        if militaryPowers.contains(code) {
-            return ["infantry": 40, "armor": 20, "air": 15, "naval": 8]
-        } else if regionalPowers.contains(code) {
-            return ["infantry": 20, "armor": 8, "air": 5, "naval": 3]
-        } else {
-            return ["infantry": 10, "armor": 2, "air": 1, "naval": 0]
-        }
+        let profile = Native2010WorldModel.profile(for: PlayerCountry(code: code, name: code))
+        let gdp = profile.nominalGDPTrillions
+        let spend = profile.militarySpendingPercent
+        let corruption = profile.corruptionIndex
+
+        let milSpendCoeff = spend / 2.0
+        let corruptionCoeff = 1.0 - (Double(corruption) / 100.0) * 0.6
+        let mpi = gdp * milSpendCoeff * corruptionCoeff
+
+        let total = min(150, max(12, Int((mpi * 4.0).rounded()) + 15))
+
+        let infantry = Int(Double(total) * 0.50)
+        let armor = Int(Double(total) * 0.25)
+        let air = Int(Double(total) * 0.15)
+        let naval = max(0, total - infantry - armor - air)
+
+        return ["infantry": infantry, "armor": armor, "air": air, "naval": naval]
     }
 
     /// Convenience typed accessor for the current tech era.
@@ -939,13 +1004,88 @@ struct NativeDiplomaticMessage: Codable, Hashable, Identifiable {
     var text: String
 }
 
+/// The deterministic outcome of a resolved planned action.
+///
+/// - `success`: The action succeeded and its full primary effects were applied.
+/// - `partial`: The action partially succeeded; reduced positive effects were applied.
+/// - `failure`: The action failed; a negative stability/economic penalty was applied instead.
+enum NativeActionOutcome: String, Codable, Hashable {
+    case success
+    case partial
+    case failure
+}
+
 struct NativePlannedAction: Codable, Hashable, Identifiable {
+    /// Capacity paid when this matrix cell entered the queue.
+    var administrativeCost: Int
+    /// Matrix action family used to preserve intent through turn adjudication.
+    var decisionKind: String
     var createdAt: String
     var detail: String
     var id: String
+    /// The recorded outcome of this action after resolution. Nil while still `.planned`.
+    var outcome: NativeActionOutcome?
     var resolvedAt: String?
     var status: NativeActionStatus
     var title: String
+    /// Mechanic tracks parsed from the suggestion's primaryMechanic/secondaryMechanic fields at acceptance time.
+    var mechanicTracks: [NativeStrategicTrack]
+    var targetCountryCode: String?
+    var targetRegionID: String?
+    var sovereigntyChange: NativeSovereigntyChange?
+
+    private enum CodingKeys: String, CodingKey {
+        case administrativeCost, createdAt, decisionKind, detail, id, outcome, resolvedAt, status, title, mechanicTracks
+        case targetCountryCode, targetRegionID, sovereigntyChange
+    }
+
+    init(
+        administrativeCost: Int = 0,
+        createdAt: String,
+        decisionKind: String = "policy",
+        detail: String,
+        id: String,
+        outcome: NativeActionOutcome? = nil,
+        resolvedAt: String? = nil,
+        status: NativeActionStatus,
+        title: String,
+        mechanicTracks: [NativeStrategicTrack] = [],
+        targetCountryCode: String? = nil,
+        targetRegionID: String? = nil,
+        sovereigntyChange: NativeSovereigntyChange? = nil
+    ) {
+        self.administrativeCost = max(0, administrativeCost)
+        self.createdAt = createdAt
+        self.decisionKind = decisionKind
+        self.detail = detail
+        self.id = id
+        self.outcome = outcome
+        self.resolvedAt = resolvedAt
+        self.status = status
+        self.title = title
+        self.mechanicTracks = mechanicTracks
+        self.targetCountryCode = targetCountryCode
+        self.targetRegionID = targetRegionID
+        self.sovereigntyChange = sovereigntyChange
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        administrativeCost = max(0, (try? c.decodeIfPresent(Int.self, forKey: .administrativeCost)) ?? 0)
+        createdAt = (try? c.decodeIfPresent(String.self, forKey: .createdAt)) ?? ""
+        decisionKind = (try? c.decodeIfPresent(String.self, forKey: .decisionKind)) ?? "policy"
+        detail = (try? c.decodeIfPresent(String.self, forKey: .detail)) ?? ""
+        id = (try? c.decodeIfPresent(String.self, forKey: .id)) ?? UUID().uuidString
+        outcome = try? c.decodeIfPresent(NativeActionOutcome.self, forKey: .outcome)
+        resolvedAt = try? c.decodeIfPresent(String.self, forKey: .resolvedAt)
+        let rawStatus = (try? c.decodeIfPresent(String.self, forKey: .status)) ?? "planned"
+        status = NativeActionStatus(rawValue: rawStatus) ?? .planned
+        title = (try? c.decodeIfPresent(String.self, forKey: .title)) ?? ""
+        mechanicTracks = (try? c.decodeIfPresent([NativeStrategicTrack].self, forKey: .mechanicTracks)) ?? []
+        targetCountryCode = try? c.decodeIfPresent(String.self, forKey: .targetCountryCode)
+        targetRegionID = try? c.decodeIfPresent(String.self, forKey: .targetRegionID)
+        sovereigntyChange = try? c.decodeIfPresent(NativeSovereigntyChange.self, forKey: .sovereigntyChange)
+    }
 }
 
 enum NativeActionStatus: String, Codable, Hashable {
@@ -996,11 +1136,74 @@ struct NativeDiplomaticOffer: Codable, Hashable, Identifiable {
 }
 
 struct NativeSuggestedAction: Codable, Hashable, Identifiable {
+    var actionKind: String
+    var administrativeCost: Int
     var detail: String
     var id: String
     var rationale: String
     var title: String
     var urgency: String
+    /// Extracted from detail or AI output; one of the canonical mechanic raw values.
+    var primaryMechanic: String
+    /// Extracted from detail or AI output; one of the canonical mechanic raw values.
+    var secondaryMechanic: String
+    var matrixColumn: Int
+    var matrixRow: Int
+    /// Fingerprint of the non-queue world snapshot used to generate this board.
+    var matrixStateFingerprint: UInt64
+    var targetCountryCode: String?
+    var targetRegionID: String?
+    var sovereigntyChange: NativeSovereigntyChange?
+
+    private enum CodingKeys: String, CodingKey {
+        case actionKind, administrativeCost, detail, id, rationale, title, urgency
+        case primaryMechanic, secondaryMechanic, matrixColumn, matrixRow, matrixStateFingerprint
+        case targetCountryCode, targetRegionID, sovereigntyChange
+    }
+
+    init(detail: String, id: String, rationale: String, title: String, urgency: String,
+         primaryMechanic: String = "", secondaryMechanic: String = "",
+         actionKind: String = "policy", administrativeCost: Int = 0,
+         matrixRow: Int = -1, matrixColumn: Int = -1,
+         matrixStateFingerprint: UInt64 = 0,
+         targetCountryCode: String? = nil, targetRegionID: String? = nil,
+         sovereigntyChange: NativeSovereigntyChange? = nil)
+    {
+        self.actionKind = actionKind
+        self.administrativeCost = max(0, administrativeCost)
+        self.detail = detail
+        self.id = id
+        self.rationale = rationale
+        self.title = title
+        self.urgency = urgency
+        self.primaryMechanic = primaryMechanic
+        self.secondaryMechanic = secondaryMechanic
+        self.matrixColumn = matrixColumn
+        self.matrixRow = matrixRow
+        self.matrixStateFingerprint = matrixStateFingerprint
+        self.targetCountryCode = targetCountryCode
+        self.targetRegionID = targetRegionID
+        self.sovereigntyChange = sovereigntyChange
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        actionKind = (try? c.decodeIfPresent(String.self, forKey: .actionKind)) ?? "policy"
+        administrativeCost = max(0, (try? c.decodeIfPresent(Int.self, forKey: .administrativeCost)) ?? 0)
+        detail = (try? c.decodeIfPresent(String.self, forKey: .detail)) ?? ""
+        id = (try? c.decodeIfPresent(String.self, forKey: .id)) ?? UUID().uuidString
+        rationale = (try? c.decodeIfPresent(String.self, forKey: .rationale)) ?? ""
+        title = (try? c.decodeIfPresent(String.self, forKey: .title)) ?? ""
+        urgency = (try? c.decodeIfPresent(String.self, forKey: .urgency)) ?? "soon"
+        primaryMechanic = (try? c.decodeIfPresent(String.self, forKey: .primaryMechanic)) ?? ""
+        secondaryMechanic = (try? c.decodeIfPresent(String.self, forKey: .secondaryMechanic)) ?? ""
+        matrixColumn = (try? c.decodeIfPresent(Int.self, forKey: .matrixColumn)) ?? -1
+        matrixRow = (try? c.decodeIfPresent(Int.self, forKey: .matrixRow)) ?? -1
+        matrixStateFingerprint = (try? c.decodeIfPresent(UInt64.self, forKey: .matrixStateFingerprint)) ?? 0
+        targetCountryCode = try? c.decodeIfPresent(String.self, forKey: .targetCountryCode)
+        targetRegionID = try? c.decodeIfPresent(String.self, forKey: .targetRegionID)
+        sovereigntyChange = try? c.decodeIfPresent(NativeSovereigntyChange.self, forKey: .sovereigntyChange)
+    }
 }
 
 struct NativeCampaignEvent: Codable, Hashable, Identifiable {

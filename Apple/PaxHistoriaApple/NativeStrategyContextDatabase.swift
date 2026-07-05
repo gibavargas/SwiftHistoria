@@ -44,6 +44,8 @@ struct NativeTurnProgress: Codable, Hashable {
     var providerName: String? = nil
     var modelName: String? = nil
     var modelIdentifier: String? = nil
+    var reasoningStatus: NativeReasoningStatus? = nil
+    var reasoningText: String? = nil
 
     var providerSummary: String? {
         guard let providerName else { return nil }
@@ -56,6 +58,22 @@ struct NativeTurnProgress: Codable, Hashable {
     var fraction: Double {
         guard totalLanes > 0 else { return 0 }
         return min(1.0, max(0.0, Double(completedLanes) / Double(totalLanes)))
+    }
+}
+
+enum NativeReasoningStatus: String, Codable, Hashable {
+    case encrypted
+    case live
+    case unavailable
+    case waiting
+
+    var label: String {
+        switch self {
+        case .encrypted: "ENCRYPTED"
+        case .live: "LIVE"
+        case .unavailable: "NOT EXPOSED"
+        case .waiting: "WAITING"
+        }
     }
 }
 
@@ -113,6 +131,9 @@ struct NativeEconomicLedger: Codable, Hashable {
     /// Dynamic resource reserves (P1-3). Keys: "oil", "minerals", "agriculture", "rare_earths".
     /// Values represent relative abundance (0-100 scale). Depleted by industrial budget each turn.
     var resourceReserves: [String: Double]
+    var governmentType: String
+    var publicApprovalPercent: Double
+    var nextElectionRound: Int
 
     enum CodingKeys: String, CodingKey {
         case budgetBalancePercentGDP
@@ -127,6 +148,9 @@ struct NativeEconomicLedger: Codable, Hashable {
         case securityIndex
         case rebelControlPercent
         case resourceReserves
+        case governmentType
+        case publicApprovalPercent
+        case nextElectionRound
     }
 
     init(
@@ -141,7 +165,10 @@ struct NativeEconomicLedger: Codable, Hashable {
         unemploymentPercent: Double,
         securityIndex: Double = 80.0,
         rebelControlPercent: Double = 0.0,
-        resourceReserves: [String: Double] = [:]
+        resourceReserves: [String: Double] = [:],
+        governmentType: String = "democracy",
+        publicApprovalPercent: Double = 50.0,
+        nextElectionRound: Int = 48
     ) {
         self.budgetBalancePercentGDP = budgetBalancePercentGDP
         self.entries = entries
@@ -155,6 +182,9 @@ struct NativeEconomicLedger: Codable, Hashable {
         self.securityIndex = securityIndex
         self.rebelControlPercent = rebelControlPercent
         self.resourceReserves = resourceReserves.isEmpty ? NativeEconomicLedger.defaultResourceReserves() : resourceReserves
+        self.governmentType = governmentType
+        self.publicApprovalPercent = publicApprovalPercent
+        self.nextElectionRound = nextElectionRound
     }
 
     init(from decoder: Decoder) throws {
@@ -171,6 +201,9 @@ struct NativeEconomicLedger: Codable, Hashable {
         securityIndex = (try? container.decodeIfPresent(Double.self, forKey: .securityIndex)) ?? 80.0
         rebelControlPercent = (try? container.decodeIfPresent(Double.self, forKey: .rebelControlPercent)) ?? 0.0
         resourceReserves = (try? container.decodeIfPresent([String: Double].self, forKey: .resourceReserves)) ?? NativeEconomicLedger.defaultResourceReserves()
+        governmentType = (try? container.decodeIfPresent(String.self, forKey: .governmentType)) ?? "democracy"
+        publicApprovalPercent = (try? container.decodeIfPresent(Double.self, forKey: .publicApprovalPercent)) ?? 50.0
+        nextElectionRound = (try? container.decodeIfPresent(Int.self, forKey: .nextElectionRound)) ?? 48
     }
 
     /// Default balanced resource reserves for a new country.
@@ -252,6 +285,7 @@ struct NativeStrategyContextPacket: Hashable {
     var recentActions: [NativeActionMemory]
     var semanticMemories: [NativeSemanticMemory] = []
     var aiCountryStates: [String: NativeAICountryState] = [:]
+    var economicLedgers: [String: NativeEconomicLedger] = [:]
 
     var promptBlock: String {
         let factLines = facts.prefix(6).map { "- \($0.id): \($0.title) -- \($0.detail)" }.joined(separator: "\n")
@@ -281,7 +315,8 @@ struct NativeStrategyContextPacket: Hashable {
                 .prefix(3)
                 .map { "\($0.key):\($0.value)" }
                 .joined(separator: ",")
-            return "- \(code): \(aiState.doctrine.rawValue), priority=\(aiState.budgetPriority.rawValue), relations=[\(topRelations.isEmpty ? "neutral" : topRelations)]"
+            let govInfo = economicLedgers[code].map { " (\($0.governmentType), approval=\(String(format: "%.1f%%", $0.publicApprovalPercent)))" } ?? ""
+            return "- \(code)\(govInfo): \(aiState.doctrine.rawValue), priority=\(aiState.budgetPriority.rawValue), relations=[\(topRelations.isEmpty ? "neutral" : topRelations)]"
         }.joined(separator: "\n")
         return """
         Local facts database:
@@ -301,6 +336,7 @@ struct NativeStrategyContextPacket: Hashable {
 
         Current economic ledger:
         GDP \(String(format: "$%.2fT", economicLedger.nominalGDPTrillions)); growth \(economicLedger.realGrowthPercent.signedPercent); inflation \(economicLedger.inflationPercent.percent); budget balance \(economicLedger.budgetBalancePercentGDP.signedPercent) of GDP; public debt \(economicLedger.publicDebtPercentGDP.percent) of GDP; trade balance \(economicLedger.tradeBalancePercentGDP.signedPercent) of GDP; unemployment \(economicLedger.unemploymentPercent.percent); fiscal space \(economicLedger.fiscalSpaceIndex)/100; public security \(String(format: "%.1f", economicLedger.securityIndex))/100; insurgency pressure \(String(format: "%.1f%%", economicLedger.rebelControlPercent)).
+        Government: \(economicLedger.governmentType) (Public Approval: \(String(format: "%.1f%%", economicLedger.publicApprovalPercent)), Next Election Round: \(economicLedger.nextElectionRound)).
 
         Key AI country postures (top 4 by relationship activity):
         \(aiLines.isEmpty ? "- No autonomous AI states configured." : aiLines)
@@ -317,8 +353,6 @@ struct NativeStrategyContextPacket: Hashable {
 /// model can influence the campaign only through validated events and approved
 /// consequence ranges.
 enum NativeStrategyContextDatabase {
-    private static let semanticMemoryLimit = 400
-
     static var defaultStrategicCountryCodes: [String] {
         let mappedCodes = GeopoliticalMapData.regions.map(\.countryCode).filter { $0 != "WATER" }
         return Array(Set(CountryCatalog.all.map(\.code) + mappedCodes + ["GLOBAL"])).sorted()
@@ -326,6 +360,80 @@ enum NativeStrategyContextDatabase {
 
     static func strategicCountryCodes(for state: NativeCampaignState) -> [String] {
         Array(Set(defaultStrategicCountryCodes + Array(state.dynamicCountries.keys) + Array(state.economicLedgers.keys) + [state.country.code])).sorted()
+    }
+
+    static func adjacentCountryCodes(for countryCode: String) -> [String] {
+        switch countryCode {
+        case "USA": ["CHN", "RUS", "GBR", "FRA"]
+        case "CHN": ["RUS", "IND", "JPN"]
+        case "BRA": ["USA", "ZAF"]
+        case "DEU": ["FRA", "GBR", "RUS"]
+        case "JPN": ["CHN", "RUS", "AUS"]
+        case "GBR": ["FRA", "DEU", "USA"]
+        case "FRA": ["DEU", "GBR", "ZAF"]
+        case "IND": ["CHN", "RUS", "ZAF"]
+        case "RUS": ["CHN", "DEU", "JPN", "USA"]
+        case "ZAF": ["BRA", "IND", "FRA"]
+        case "AUS": ["JPN", "IND", "USA"]
+        default: []
+        }
+    }
+
+    static func startingGovernmentType(for code: String) -> String {
+        switch code {
+        case "CHN": "autocracy"
+        case "RUS": "hybrid"
+        default: "democracy"
+        }
+    }
+
+    enum DemocraticSubtype: String {
+        case presidential
+        case parliamentary
+        case semiPresidential
+    }
+
+    static func democraticSubtype(for code: String) -> DemocraticSubtype {
+        switch code {
+        case "GBR", "DEU", "ZAF", "IND", "JPN", "AUS":
+            .parliamentary
+        case "FRA":
+            .semiPresidential
+        default:
+            .presidential
+        }
+    }
+
+    struct ElectionProfile {
+        let startingRound: Int
+        let cycleLength: Int
+    }
+
+    static func startingElectionProfile(for code: String) -> ElectionProfile {
+        switch code {
+        case "BRA":
+            ElectionProfile(startingRound: 10, cycleLength: 48) // October 2010 (4 years)
+        case "USA":
+            ElectionProfile(startingRound: 35, cycleLength: 48) // November 2012 (4 years)
+        case "GBR":
+            ElectionProfile(startingRound: 5, cycleLength: 60) // May 2010 (5 years)
+        case "DEU":
+            ElectionProfile(startingRound: 45, cycleLength: 48) // September 2013 (4 years)
+        case "FRA":
+            ElectionProfile(startingRound: 29, cycleLength: 60) // May 2012 (5 years)
+        case "ZAF":
+            ElectionProfile(startingRound: 53, cycleLength: 60) // May 2014 (5 years)
+        case "IND":
+            ElectionProfile(startingRound: 53, cycleLength: 60) // May 2014 (5 years)
+        case "JPN":
+            ElectionProfile(startingRound: 36, cycleLength: 48) // December 2012 (4 years)
+        case "AUS":
+            ElectionProfile(startingRound: 8, cycleLength: 36) // August 2010 (3 years)
+        case "RUS":
+            ElectionProfile(startingRound: 27, cycleLength: 72) // March 2012 (6 years)
+        default:
+            ElectionProfile(startingRound: 48, cycleLength: 48)
+        }
     }
 
     static func startingEconomicLedger(for country: PlayerCountry, scenario _: NativeScenario) -> NativeEconomicLedger {
@@ -337,6 +445,8 @@ enum NativeStrategyContextDatabase {
             0,
             28
         )
+        let govType = startingGovernmentType(for: country.code)
+        let electProfile = startingElectionProfile(for: country.code)
         return NativeEconomicLedger(
             budgetBalancePercentGDP: supplement.budgetBalance,
             entries: [],
@@ -348,7 +458,10 @@ enum NativeStrategyContextDatabase {
             tradeBalancePercentGDP: profile.tradeBalancePercent,
             unemploymentPercent: supplement.unemployment,
             securityIndex: openingSecurity,
-            rebelControlPercent: openingRebelPressure
+            rebelControlPercent: openingRebelPressure,
+            governmentType: govType,
+            publicApprovalPercent: 50.0,
+            nextElectionRound: electProfile.startingRound
         )
     }
 
@@ -404,7 +517,8 @@ enum NativeStrategyContextDatabase {
             facts: facts(for: state, action: action),
             recentActions: state.actionMemory.prefix(8).map(\.self),
             semanticMemories: semanticMemories(for: state, action: action),
-            aiCountryStates: state.aiCountryStates
+            aiCountryStates: state.aiCountryStates,
+            economicLedgers: state.economicLedgers
         )
     }
 
@@ -480,8 +594,9 @@ enum NativeStrategyContextDatabase {
             ), at: 0)
             existing.insert(event.id)
         }
-        // ponytail: O(n) local vector scan; replace this array with zvec if saves grow past a few hundred memories.
-        return Array(records.prefix(semanticMemoryLimit))
+        // The local query path ranks a bounded result set below, but storage keeps
+        // the full archive so long campaigns do not silently forget old events.
+        return records
     }
 
     private static func semanticMemories(for state: NativeCampaignState, action: NativePlannedAction?) -> [NativeSemanticMemory] {
@@ -675,6 +790,52 @@ enum NativeStrategyContextDatabase {
                     let dragMultiplier = negativeMultiplier
                     nextLedger.realGrowthPercent = clampDouble(nextLedger.realGrowthPercent - (nextLedger.rebelControlPercent * 0.005 * dragMultiplier), -12, 16)
                     nextLedger.publicDebtPercentGDP = clampDouble(nextLedger.publicDebtPercentGDP + (nextLedger.rebelControlPercent * 0.02 * dragMultiplier), 1, 260)
+                }
+
+                // **Neighbor Proximity Spillover**:
+                let neighbors = adjacentCountryCodes(for: code)
+                var neighborRebelSpillover = 0.0
+                for nCode in neighbors {
+                    if let nLedger = nextLedgers[nCode], nLedger.rebelControlPercent > 30.0 {
+                        neighborRebelSpillover += (nLedger.rebelControlPercent - 30.0) * 0.01
+                    }
+                }
+                nextLedger.rebelControlPercent = clampDouble(nextLedger.rebelControlPercent + neighborRebelSpillover * Double(months), 0, 100)
+
+                // **Market & Port Buildings Integration**:
+                let controlledRegionIDs = Set(GeopoliticalMapData.regions.filter { reg in
+                    let controller = state.regionOccupations[reg.id] ?? reg.countryCode
+                    return controller == code
+                }.map(\.id))
+
+                let countryBuildings = state.mapBuildings.filter { controlledRegionIDs.contains($0.regionID) }
+                let marketLevels = countryBuildings.filter { $0.type == .market }.reduce(0) { $0 + $1.level }
+                let portLevels = countryBuildings.filter { $0.type == .port }.reduce(0) { $0 + $1.level }
+
+                nextLedger.realGrowthPercent = clampDouble(nextLedger.realGrowthPercent + Double(marketLevels) * 0.05 * Double(months), -12, 16)
+                nextLedger.tradeBalancePercentGDP = clampDouble(nextLedger.tradeBalancePercentGDP + Double(portLevels) * 0.10 * Double(months), -20, 20)
+
+                // **Tech Diffusion & Catch-Up**:
+                let era = state.techEraTyped
+                let isAdvanced = era == .aiAge || era == .biotech || era == .cleanEnergy
+                if isAdvanced {
+                    if let playerRel = state.aiCountryStates[code]?.relationshipScores[state.country.code] {
+                        if playerRel > 30 {
+                            nextLedger.realGrowthPercent = clampDouble(nextLedger.realGrowthPercent + 0.15 * Double(months), -12, 16)
+                        } else if playerRel < -20 {
+                            nextLedger.realGrowthPercent = clampDouble(nextLedger.realGrowthPercent - 0.10 * Double(months), -12, 16)
+                        }
+                    }
+                }
+
+                // **Economic Interdependence**:
+                let otherStrategicCountries = strategicCountryCodes(for: state).filter { $0 != code && $0 != "GLOBAL" }
+                if !otherStrategicCountries.isEmpty {
+                    let avgOtherGrowth = otherStrategicCountries.reduce(0.0) { sum, otherCode in
+                        sum + (nextLedgers[otherCode]?.realGrowthPercent ?? 0.0)
+                    } / Double(otherStrategicCountries.count)
+                    let globalTradeDrift = avgOtherGrowth * 0.03 * Double(months)
+                    nextLedger.tradeBalancePercentGDP = clampDouble(nextLedger.tradeBalancePercentGDP + globalTradeDrift, -20.0, 20.0)
                 }
             }
 
@@ -1265,9 +1426,21 @@ enum NativeStrategyContextDatabase {
                 milRebelDelta = -1.0 * Double(months)
                 milDebtDelta = 0.5 * Double(months)
                 milGrowthDelta = -0.2 * Double(months)
+
+                let recruitmentFactor = (mil - 0.40) * 10.0 * Double(months)
+                state.militaryUnits["infantry", default: 0] += Int(recruitmentFactor * 1.5)
+                state.militaryUnits["armor", default: 0] += Int(recruitmentFactor * 0.8)
+                state.militaryUnits["air", default: 0] += Int(recruitmentFactor * 0.4)
+                state.militaryUnits["naval", default: 0] += Int(recruitmentFactor * 0.2)
             } else if mil < 0.20 {
                 milSecurityDelta = -2.0 * Double(months)
                 milRebelDelta = 1.5 * Double(months)
+
+                let attritionFactor = (0.20 - mil) * 5.0 * Double(months)
+                state.militaryUnits["infantry", default: 0] = max(5, state.militaryUnits["infantry", default: 0] - Int(attritionFactor * 1.5))
+                state.militaryUnits["armor", default: 0] = max(2, state.militaryUnits["armor", default: 0] - Int(attritionFactor * 0.8))
+                state.militaryUnits["air", default: 0] = max(1, state.militaryUnits["air", default: 0] - Int(attritionFactor * 0.4))
+                state.militaryUnits["naval", default: 0] = max(0, state.militaryUnits["naval", default: 0] - Int(attritionFactor * 0.2))
             }
 
             if ser > 0.40 {
@@ -1446,6 +1619,18 @@ enum NativeStrategyContextDatabase {
                     aiState.doctrine = tensionRng.nextDouble() < 0.5 ? .defensive : .expansionist
                     aiState.budgetPriority = .military
                     aiState.multiTurnAgenda = "High global friction triggers defense consolidation and emergency military preparedness."
+                    aiState.agendaProgress = 0
+                }
+            }
+
+            // React to player tech era advancement (anxiety/doctrine shift)
+            let playerEra = state.techEraTyped
+            let techRelations = aiState.relationshipScores[state.country.code] ?? 0
+            if (playerEra == .aiAge || playerEra == .cleanEnergy) && techRelations < 0 && aiState.doctrine != .defensive && aiState.doctrine != .expansionist {
+                var rng = SimpleRNG(seedString: "tech-shift-\(state.scenarioID)-\(state.round)-\(code)")
+                if rng.nextDouble() < 0.35 {
+                    aiState.doctrine = .defensive
+                    aiState.multiTurnAgenda = "Anxious about competitor technological leaps, consolidating defensive security postures."
                     aiState.agendaProgress = 0
                 }
             }
@@ -1946,13 +2131,366 @@ enum NativeStrategyContextDatabase {
             guard let region = GeopoliticalMapData.regionByID[regionID] else { continue }
             let defenderCode = region.countryCode
             // Find allies of the defender (relationship > 50 to defender)
-            for (allyCode, aiState) in state.aiCountryStates {
+            for allyCode in Array(state.aiCountryStates.keys) {
+                guard allyCode != state.country.code,
+                      var aiState = state.aiCountryStates[allyCode]
+                else { continue }
                 let allyToDefender = aiState.relationshipScores[defenderCode] ?? 0
                 guard allyToDefender > 50 else { continue }
                 // Penalize relationship with player
                 let currentScore = aiState.relationshipScores[state.country.code] ?? 0
-                state.aiCountryStates[allyCode]?.relationshipScores[state.country.code] = max(-100, currentScore - 3)
+                aiState.relationshipScores[state.country.code] = max(-100, currentScore - max(1, months * 2))
+                state.aiCountryStates[allyCode] = aiState
             }
+        }
+
+        // 2.5. Process ideological alignment relationship drift
+        for codeA in strategicCodes {
+            if codeA == state.country.code { continue }
+            guard var aiStateA = state.aiCountryStates[codeA],
+                  let ledgerA = state.economicLedgers[codeA] else { continue }
+
+            var updatedRels = aiStateA.relationshipScores
+            for (codeB, currentScore) in updatedRels {
+                let ledgerB = (codeB == state.country.code) ? state.economicLedger : state.economicLedgers[codeB]
+                guard let lB = ledgerB else { continue }
+
+                var drift = 0.0
+                if ledgerA.governmentType == lB.governmentType {
+                    drift = 0.05 * Double(months) // Slow positive drift
+                } else if (ledgerA.governmentType == "democracy" && lB.governmentType == "autocracy") ||
+                    (ledgerA.governmentType == "autocracy" && lB.governmentType == "democracy")
+                {
+                    drift = -0.1 * Double(months) // Slow negative drift
+                }
+
+                if drift != 0 {
+                    updatedRels[codeB] = max(-100, min(100, currentScore + Int(drift.rounded())))
+                }
+            }
+            aiStateA.relationshipScores = updatedRels
+            state.aiCountryStates[codeA] = aiStateA
+        }
+
+        // 2.7. Process Elections, Public Approval Drift, and Coups
+        for code in strategicCodes {
+            guard var ledger = state.economicLedgers[code] else { continue }
+
+            // 2.7.1. Approval Rating Drift
+            // Economy factors
+            let growthFactor = ledger.realGrowthPercent * 1.5
+            let inflationFactor = -(ledger.inflationPercent - 3.0) * 0.8
+            let unemploymentFactor = -(ledger.unemploymentPercent - 6.0) * 1.2
+            // Security factors
+            let securityFactor = (ledger.securityIndex - 70.0) * 0.3
+            let rebelFactor = -ledger.rebelControlPercent * 0.6
+
+            let totalApprovalDrift = (growthFactor + inflationFactor + unemploymentFactor + securityFactor + rebelFactor) * Double(months)
+
+            var approvalRng = SimpleRNG(seedString: "approval-\(code)-\(state.round)-\(state.scenarioID)")
+            let noise = (approvalRng.nextDouble() * 8.0) - 4.0 // Seeded noise -4.0 to +4.0
+
+            ledger.publicApprovalPercent = clampDouble(ledger.publicApprovalPercent + totalApprovalDrift + noise, 10.0, 90.0)
+
+            // 2.7.2. Handle Democracy Elections & Snap Elections & Democratic Collapses
+            if ledger.governmentType == "democracy" {
+                var triggerElection = false
+                var isSnapElection = false
+                let subtype = democraticSubtype(for: code)
+                let profile = startingElectionProfile(for: code)
+
+                // Normal election cycle
+                if state.round >= ledger.nextElectionRound {
+                    triggerElection = true
+                }
+                // Snap election for parliamentary systems under instability (low stability < 40 or low approval < 35)
+                else if subtype == .parliamentary {
+                    let currentStability = if code == state.country.code {
+                        Double(state.stability)
+                    } else {
+                        Double(state.economicLedgers[code]?.securityIndex ?? 50.0) // Security index as proxy for AI stability
+                    }
+                    if currentStability < 40.0 || ledger.publicApprovalPercent < 35.0 {
+                        var snapRng = SimpleRNG(seedString: "snap-election-\(code)-\(state.round)-\(state.scenarioID)")
+                        if snapRng.nextDouble() < 0.15 {
+                            triggerElection = true
+                            isSnapElection = true
+                        }
+                    }
+                }
+
+                if triggerElection {
+                    var electionRng = SimpleRNG(seedString: "election-\(code)-\(state.round)-\(state.scenarioID)")
+                    let winChance = ledger.publicApprovalPercent / 100.0
+                    let incumbentWins = electionRng.nextDouble() < winChance
+                    let nextElection = state.round + profile.cycleLength
+
+                    let electionTitle: String
+                    let electionDesc: String
+                    var stabilityDelta = 0
+
+                    let prefix = isSnapElection ? "Snap Elections: " : "Elections: "
+                    let reason = isSnapElection ? "following a vote of no confidence and parliament dissolution due to political instability" : "after completing the standard legislative term"
+
+                    if incumbentWins {
+                        electionTitle = "\(prefix)Incumbent Wins in \(code)"
+                        electionDesc = "Democracy in action: Voters in \(code) \(reason) re-elected the incumbent administration with \(String(format: "%.1f%%", ledger.publicApprovalPercent)) approval rating. The governing doctrine of \(code == state.country.code ? "the player" : state.aiCountryStates[code]?.doctrine.rawValue ?? "administration") remains in place."
+                    } else {
+                        electionTitle = "\(prefix)Opposition Wins in \(code)"
+                        electionDesc = "Democracy in action: Voters in \(code) \(reason) voted for change, defeating the incumbent administration after approval fell to \(String(format: "%.1f%%", ledger.publicApprovalPercent))%. A new government has been sworn into office."
+
+                        if code == state.country.code {
+                            stabilityDelta = -5
+                            ledger.publicApprovalPercent = 55.0 // Reset to honeymoon approval
+                        } else {
+                            if var aiState = state.aiCountryStates[code] {
+                                let doctrines: [NativeAIDoctrine] = [.mercantile, .expansionist, .isolationist, .defensive, .collaborative]
+                                let nextDoc = doctrines[Int(electionRng.nextDouble() * Double(doctrines.count)) % doctrines.count]
+                                let budgets: [NativeAIBudgetPriority] = [.growth, .stability, .military, .diplomacy]
+                                let nextBudget = budgets[Int(electionRng.nextDouble() * Double(budgets.count)) % budgets.count]
+
+                                aiState.doctrine = nextDoc
+                                aiState.budgetPriority = nextBudget
+                                aiState.multiTurnAgenda = "A newly elected administration shifts the national agenda toward \(nextDoc.displayName.lowercased()) and \(nextBudget.rawValue) priorities."
+                                aiState.agendaProgress = 0
+                                state.aiCountryStates[code] = aiState
+                            }
+                            ledger.publicApprovalPercent = 55.0 // Reset to honeymoon approval
+                        }
+                    }
+
+                    ledger.nextElectionRound = nextElection
+
+                    if code == state.country.code {
+                        let electionEvent = NativeCampaignEvent(
+                            date: state.gameDate,
+                            description: electionDesc,
+                            id: "election-resolution-\(code.lowercased())-\(state.round)",
+                            importance: .major,
+                            kind: .world,
+                            linkedActionIDs: [],
+                            notable: true,
+                            playerRelated: true,
+                            strategicEffects: stabilityDelta != 0 ? [
+                                NativeStrategicEffect(
+                                    date: state.gameDate,
+                                    eventId: "election-resolution-\(code.lowercased())-\(state.round)",
+                                    id: "election-stability-effect-\(code.lowercased())-\(state.round)",
+                                    magnitude: stabilityDelta,
+                                    summary: "Political transition causes temporary stability hit.",
+                                    target: state.country.code,
+                                    track: .internalStability
+                                )
+                            ] : [],
+                            title: electionTitle
+                        )
+                        state.timeline.insert(electionEvent, at: 0)
+                        state.stability = max(0, min(100, state.stability + stabilityDelta))
+                    }
+                }
+
+                // Democratic collapse check under severe instability
+                let currentStability = if code == state.country.code {
+                    Double(state.stability)
+                } else {
+                    Double(state.economicLedgers[code]?.securityIndex ?? 50.0)
+                }
+                if currentStability < 20.0 || ledger.publicApprovalPercent < 20.0 {
+                    var collapseRng = SimpleRNG(seedString: "collapse-\(code)-\(state.round)-\(state.scenarioID)")
+                    if collapseRng.nextDouble() < 0.10 { // 10% chance of collapse under crisis
+                        let nextGovType = collapseRng.nextDouble() < 0.5 ? "autocracy" : "hybrid"
+                        ledger.governmentType = nextGovType
+
+                        if code == state.country.code {
+                            let collapseTitle = "Democracy Collapses in \(code)"
+                            let collapseDesc = "Severe institutional instability and collapsing public trust have fractured the democratic system in \(code). The constitution has been suspended, transitioning the state into a \(nextGovType) regime."
+
+                            let collapseEvent = NativeCampaignEvent(
+                                date: state.gameDate,
+                                description: collapseDesc,
+                                id: "democracy-collapse-\(code.lowercased())-\(state.round)",
+                                importance: .severe,
+                                kind: .crisis,
+                                linkedActionIDs: [],
+                                notable: true,
+                                playerRelated: true,
+                                strategicEffects: [
+                                    NativeStrategicEffect(
+                                        date: state.gameDate,
+                                        eventId: "democracy-collapse-\(code.lowercased())-\(state.round)",
+                                        id: "democracy-collapse-effect-\(code.lowercased())-\(state.round)",
+                                        magnitude: -15,
+                                        summary: "Democratic collapse causes severe stability shock.",
+                                        target: state.country.code,
+                                        track: .internalStability
+                                    )
+                                ],
+                                title: collapseTitle
+                            )
+                            state.timeline.insert(collapseEvent, at: 0)
+                            state.stability = max(0, state.stability - 15)
+                        } else {
+                            if var aiState = state.aiCountryStates[code] {
+                                aiState.doctrine = collapseRng.nextDouble() < 0.5 ? .isolationist : .expansionist
+                                aiState.budgetPriority = .stability
+                                aiState.multiTurnAgenda = "Consolidate control after the fall of the democratic constitution."
+                                aiState.agendaProgress = 0
+                                state.aiCountryStates[code] = aiState
+                            }
+                        }
+                    }
+                }
+            } else if ledger.governmentType == "autocracy" {
+                // 2.7.3. Handle Autocracy Coups under low approval (<25%)
+                if ledger.publicApprovalPercent < 25.0 {
+                    var coupRng = SimpleRNG(seedString: "coup-\(code)-\(state.round)-\(state.scenarioID)")
+                    // 30% chance of coup per turn if approval is critically low
+                    if coupRng.nextDouble() < 0.3 {
+                        let nextGovType = coupRng.nextDouble() < 0.5 ? "democracy" : "hybrid"
+                        ledger.governmentType = nextGovType
+
+                        let coupTitle = "Coup d'État in \(code): Regime Overthrown"
+                        let coupDesc = "Faced with severe economic distress and collapsing regime support (\(String(format: "%.1f%%", ledger.publicApprovalPercent))%), military forces and civilian factions staged a coup in \(code), overthrowing the autocracy. The country has transitioned into a \(nextGovType) regime, with democratic elections scheduled in 12 months."
+                        var stabilityDelta = 0
+
+                        if code == state.country.code {
+                            stabilityDelta = -15
+                            ledger.publicApprovalPercent = 45.0 // Regime reset
+                        } else {
+                            // AI country shifts to defensive/isolationist and resets relationships with democracies
+                            if var aiState = state.aiCountryStates[code] {
+                                aiState.doctrine = coupRng.nextDouble() < 0.5 ? .defensive : .isolationist
+                                aiState.budgetPriority = .stability
+                                aiState.multiTurnAgenda = "A transition council secures key infrastructure during the political transition."
+                                aiState.agendaProgress = 0
+
+                                // Decay relations with remaining democracies
+                                for otherCode in strategicCodes where otherCode != code {
+                                    if state.economicLedgers[otherCode]?.governmentType == "democracy" {
+                                        aiState.relationshipScores[otherCode] = max(-100, (aiState.relationshipScores[otherCode] ?? 0) - 40)
+                                    }
+                                }
+                                state.aiCountryStates[code] = aiState
+                            }
+                            ledger.publicApprovalPercent = 45.0
+                        }
+
+                        ledger.nextElectionRound = state.round + 12 // Elections scheduled in 1 year
+
+                        if code == state.country.code {
+                            let coupEvent = NativeCampaignEvent(
+                                date: state.gameDate,
+                                description: coupDesc,
+                                id: "coup-\(code.lowercased())-\(state.round)",
+                                importance: .severe,
+                                kind: .crisis,
+                                linkedActionIDs: [],
+                                notable: true,
+                                playerRelated: true,
+                                strategicEffects: stabilityDelta != 0 ? [
+                                    NativeStrategicEffect(
+                                        date: state.gameDate,
+                                        eventId: "coup-\(code.lowercased())-\(state.round)",
+                                        id: "coup-stability-effect-\(code.lowercased())-\(state.round)",
+                                        magnitude: stabilityDelta,
+                                        summary: "A military coup fractures national stability.",
+                                        target: state.country.code,
+                                        track: .internalStability
+                                    )
+                                ] : [],
+                                title: coupTitle
+                            )
+                            state.timeline.insert(coupEvent, at: 0)
+                            state.stability = max(0, min(100, state.stability + stabilityDelta))
+                        }
+                    }
+                }
+            } else if ledger.governmentType == "hybrid" {
+                // 2.7.4. Handle Hybrid Regime Transitions (Democratic reforms or Autocratic consolidation)
+                let currentStability = if code == state.country.code {
+                    Double(state.stability)
+                } else {
+                    Double(state.economicLedgers[code]?.securityIndex ?? 50.0)
+                }
+
+                var transitionRng = SimpleRNG(seedString: "hybrid-transition-\(code)-\(state.round)-\(state.scenarioID)")
+
+                // Liberalization to Democracy (High stability > 70 and high approval > 60)
+                if currentStability > 70.0 && ledger.publicApprovalPercent > 60.0 {
+                    if transitionRng.nextDouble() < 0.10 {
+                        ledger.governmentType = "democracy"
+                        ledger.nextElectionRound = state.round + 24 // Elections in 2 years
+
+                        if code == state.country.code {
+                            let reformTitle = "Political Reform: Democracy Restored in \(code)"
+                            let reformDesc = "Following a period of stability and high public confidence, \(code) has enacted sweeping constitutional reforms, consolidating democratic institutions. Open elections are scheduled in 24 months."
+
+                            let reformEvent = NativeCampaignEvent(
+                                date: state.gameDate,
+                                description: reformDesc,
+                                id: "hybrid-reform-\(code.lowercased())-\(state.round)",
+                                importance: .major,
+                                kind: .world,
+                                linkedActionIDs: [],
+                                notable: true,
+                                playerRelated: true,
+                                strategicEffects: [
+                                    NativeStrategicEffect(
+                                        date: state.gameDate,
+                                        eventId: "hybrid-reform-\(code.lowercased())-\(state.round)",
+                                        id: "hybrid-reform-effect-\(code.lowercased())-\(state.round)",
+                                        magnitude: 8,
+                                        summary: "Democratic restoration bolsters national stability.",
+                                        target: state.country.code,
+                                        track: .internalStability
+                                    )
+                                ],
+                                title: reformTitle
+                            )
+                            state.timeline.insert(reformEvent, at: 0)
+                            state.stability = min(100, state.stability + 8)
+                        }
+                    }
+                }
+                // Consolidation to Autocracy (Low stability < 30 or low approval < 30)
+                else if currentStability < 30.0 || ledger.publicApprovalPercent < 30.0 {
+                    if transitionRng.nextDouble() < 0.10 {
+                        ledger.governmentType = "autocracy"
+
+                        if code == state.country.code {
+                            let consTitle = "Autocratic Consolidation in \(code)"
+                            let consDesc = "In response to severe instability and public discontent, the administration in \(code) has dissolved checks and balances, consolidating full autocratic control over state institutions."
+
+                            let consEvent = NativeCampaignEvent(
+                                date: state.gameDate,
+                                description: consDesc,
+                                id: "hybrid-consolidation-\(code.lowercased())-\(state.round)",
+                                importance: .severe,
+                                kind: .crisis,
+                                linkedActionIDs: [],
+                                notable: true,
+                                playerRelated: true,
+                                strategicEffects: [
+                                    NativeStrategicEffect(
+                                        date: state.gameDate,
+                                        eventId: "hybrid-consolidation-\(code.lowercased())-\(state.round)",
+                                        id: "hybrid-consolidation-effect-\(code.lowercased())-\(state.round)",
+                                        magnitude: -10,
+                                        summary: "Autocratic consolidation impacts stability.",
+                                        target: state.country.code,
+                                        track: .internalStability
+                                    )
+                                ],
+                                title: consTitle
+                            )
+                            state.timeline.insert(consEvent, at: 0)
+                            state.stability = max(0, state.stability - 10)
+                        }
+                    }
+                }
+            }
+
+            state.economicLedgers[code] = ledger
         }
 
         // Sync player's main ledger

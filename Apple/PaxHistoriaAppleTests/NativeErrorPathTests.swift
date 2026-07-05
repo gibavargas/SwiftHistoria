@@ -73,7 +73,7 @@ final class NativeErrorPathTests: XCTestCase {
 
     func testRateLimiterHasConservativeLimit() {
         XCTAssertEqual(NativeRateLimiter.effectiveLimit, 8,
-                       "Rate limiter should enforce 8 req/min (60% margin of 20)")
+                       "Rate limiter should enforce 8 req/min (60% headroom below 20)")
     }
 
     func testRateLimiterRespectsProviderLimit() {
@@ -81,21 +81,21 @@ final class NativeErrorPathTests: XCTestCase {
                           "Effective limit must be below provider hard limit")
     }
 
-    func testRateLimiterTracksAvailableSlotsAsRequestsAreConsumed() async {
+    func testRateLimiterTracksAvailableSlotsAsRequestsAreConsumed() async throws {
         let limiter = NativeRateLimiter()
 
         let initialSlots = await limiter.availableSlots()
         XCTAssertEqual(initialSlots, NativeRateLimiter.effectiveLimit)
 
         for _ in 0 ..< 3 {
-            await limiter.acquire()
+            try await limiter.acquire()
         }
 
         let midSlots = await limiter.availableSlots()
         XCTAssertEqual(midSlots, NativeRateLimiter.effectiveLimit - 3)
 
         for _ in 3 ..< NativeRateLimiter.effectiveLimit {
-            await limiter.acquire()
+            try await limiter.acquire()
         }
 
         let finalSlots = await limiter.availableSlots()

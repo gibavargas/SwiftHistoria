@@ -95,14 +95,14 @@ struct NativeGeopoliticalMap: View {
 
     private func annotationLabel(name: String, isPlayer: Bool) -> some View {
         Text(name)
-            .font(.system(size: 11, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
+            .font(.system(size: 11, weight: .bold, design: .serif))
+            .foregroundStyle(NativeWarRoomTheme.ink)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
             .background(
                 isPlayer
                     ? Color.glowingCyan.opacity(0.35)
-                    : Color.black.opacity(0.6),
+                    : NativeWarRoomTheme.archiveShadow.opacity(0.8),
                 in: Capsule()
             )
             .overlay {
@@ -156,12 +156,12 @@ struct NativeGeopoliticalMap: View {
                             VStack(spacing: 2) {
                                 let isPlayer = entry.code == playerCountryCode
                                 Circle()
-                                    .fill(isPlayer ? Color.glowingCyan : Color.white.opacity(0.7))
+                                    .fill(isPlayer ? Color.glowingCyan : NativeWarRoomTheme.graphite.opacity(0.72))
                                     .frame(width: annotationDotSize(isPlayer: isPlayer), height: annotationDotSize(isPlayer: isPlayer))
                                     .shadow(color: isPlayer ? Color.glowingCyan.opacity(0.6) : .clear, radius: 6)
                                     .overlay {
                                         Circle()
-                                            .stroke(.white.opacity(0.3), lineWidth: 1)
+                                            .stroke(NativeWarRoomTheme.parchment.opacity(0.72), lineWidth: 1)
                                     }
 
                                 annotationCaption(name: entry.name, isPlayer: isPlayer)
@@ -176,12 +176,16 @@ struct NativeGeopoliticalMap: View {
                     .annotationSubtitles(.hidden)
                 }
             }
-            .mapStyle(.standard(elevation: .flat))
+            .mapStyle(.standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .excludingAll))
+            .environment(\.colorScheme, .light)
+            .saturation(0.52)
+            .contrast(0.94)
+            .colorMultiply(NativeWarRoomTheme.parchment)
             .mapControls {
                 MapCompass()
                 MapScaleView()
             }
-            .background(Color.spaceBlack)
+            .background(NativeWarRoomTheme.blackboard)
             .onAppear {
                 let center = CountryCoordinate.center(for: playerCountryCode)
                 cameraPosition = .region(MKCoordinateRegion(
@@ -294,6 +298,7 @@ struct NativeGeopoliticalMap: View {
 
 #if DEBUG
     struct NativeWorldMapCanvas: View {
+        @EnvironmentObject private var store: NativeCampaignStore
         let state: NativeCampaignState
         let minHeight: CGFloat
 
@@ -303,7 +308,11 @@ struct NativeGeopoliticalMap: View {
         }
 
         var body: some View {
-            NativeWorldMap(state: state, minHeight: minHeight)
+            NativeWorldMap(
+                state: state,
+                store: store,
+                minHeight: minHeight
+            )
         }
     }
 #endif

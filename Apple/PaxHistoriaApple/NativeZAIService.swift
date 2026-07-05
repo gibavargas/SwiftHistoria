@@ -1,6 +1,17 @@
 import Foundation
 import OSLog
 
+func nativeProviderRequestWasCancelled(_ error: Error) -> Bool {
+    if error is CancellationError || Task.isCancelled {
+        return true
+    }
+    if let urlError = error as? URLError, urlError.code == .cancelled {
+        return true
+    }
+    let error = error as NSError
+    return error.domain == NSURLErrorDomain && error.code == NSURLErrorCancelled
+}
+
 enum NativeJSONExtraction {
     static func candidates(from rawText: String) -> [String] {
         let trimmed = rawText
@@ -77,20 +88,28 @@ struct NativeTokenUsage: Equatable {
     let total: Int
 }
 
+struct NativeReasoningStreamUpdate: Equatable {
+    var modelIdentifier: String?
+    var status: NativeReasoningStatus
+    var text: String
+}
+
+struct NativeReasoningDelta: Equatable {
+    var encrypted = false
+    var text = ""
+}
+
 /// Shared session-wide token usage counter. External AI providers report their
 /// `usage` payload here after each call; the campaign store republishes the
-/// running totals into SwiftUI and raises a budget warning past 100k tokens.
+/// running totals into SwiftUI for telemetry only. It never gates generation.
 @MainActor
 final class NativeTokenUsageTracker: ObservableObject {
     static let shared = NativeTokenUsageTracker()
-    static let budgetLimit = 100_000
 
     @Published private(set) var promptTokens = 0
     @Published private(set) var completionTokens = 0
     @Published private(set) var totalTokens = 0
-    @Published private(set) var budgetExceeded = false
 
-    private let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeTokenUsageTracker")
     private init() {}
 
     func record(_ usage: NativeTokenUsage) {
@@ -98,17 +117,12 @@ final class NativeTokenUsageTracker: ObservableObject {
         promptTokens += usage.prompt
         completionTokens += usage.completion
         totalTokens += usage.total
-        if totalTokens > Self.budgetLimit, !budgetExceeded {
-            budgetExceeded = true
-            logger.warning("TOKEN BUDGET WARNING: session total \(self.totalTokens) tokens exceeded \(Self.budgetLimit) limit")
-        }
     }
 
     func reset() {
         promptTokens = 0
         completionTokens = 0
         totalTokens = 0
-        budgetExceeded = false
     }
 }
 
@@ -122,12 +136,15 @@ class NativeZAIService: NativeAIService {
 
     var sessionPromptTokens: Int = 0
     var sessionCompletionTokens: Int = 0
+    /// The model lane name that fulfilled the last successful `executeProviderRequest`.
+    /// Callers can read this after a request to include the model in domain-level logs.
+    private(set) var lastUsedModelLane: String = ""
     var sessionTotalTokens: Int {
         sessionPromptTokens + sessionCompletionTokens
     }
 
     var tokenBudgetWarning: Bool {
-        sessionTotalTokens > 100_000
+        false
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -140,9 +157,22 @@ class NativeZAIService: NativeAIService {
         true
     }
 
+    /// External providers may omit `max_tokens` so SwiftHistoria does not add
+    /// its own completion cap. Z.AI retains the field for compatibility; the
+    /// NVIDIA primary route and OpenRouter fallback override this to false.
+    var includesMaxTokensField: Bool {
+        true
+    }
+
     /// Whether the provider supports SSE streaming responses.
     /// OpenRouter overrides to true; Z.AI keeps the non-streaming path.
     var supportsStreaming: Bool {
+        false
+    }
+
+    /// OpenRouter can request and stream reasoning independently of provider-specific
+    /// `thinking` fields. Other providers keep this disabled by default.
+    var supportsReasoningStreaming: Bool {
         false
     }
 
@@ -497,28 +527,28 @@ class NativeZAIService: NativeAIService {
         var repairNotes: [String] = []
         for attempt in 1 ... 3 {
             do {
-                logger.info("Z.AI event draft attempt=\(attempt)")
+                logger.info("\(self.providerDisplayName, privacy: .public) event draft attempt=\(attempt)")
                 let draft: ZAIEventDraft = try await generateStructuredJSON(
                     prompt: eventPrompt(prompt, state: state, repairNotes: repairNotes),
                     schema: ZAIEventDraft.schemaInstructions,
                     maximumResponseTokens: 260,
-                    temperature: attempt == 1 ? 0.0 : 0.18
+                    temperature: attempt == 1 ? 0.85 : (attempt == 2 ? 0.65 : 0.4)
                 )
                 if draft.hasConcreteContent {
                     return draft
                 }
-                logger.error("Z.AI event draft used non-concrete content attempt=\(attempt) \(draft.validationDiagnostics)")
+                logger.error("\(self.providerDisplayName, privacy: .public) event draft used non-concrete content attempt=\(attempt) \(draft.validationDiagnostics)")
                 repairNotes.append("Previous event used placeholder or draft text. Produce a concrete title, description, target, and effect summary.")
             } catch {
                 if attempt == 3 {
-                    logger.error("Z.AI event draft failed after retries")
+                    logger.error("\(self.providerDisplayName, privacy: .public) event draft failed after retries")
                     throw NativeFoundationModelError.generationFailed(error.localizedDescription)
                 }
-                logger.error("Z.AI event draft attempt failed attempt=\(attempt)")
+                logger.error("\(self.providerDisplayName, privacy: .public) event draft attempt failed attempt=\(attempt)")
                 repairNotes.append("Previous event generation failed. Try a simpler civic-planning event with one concrete agency and one measurable game effect.")
             }
         }
-        throw NativeFoundationModelError.generationFailed("Z.AI Models returned placeholder event content after three attempts.")
+        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned placeholder event content after three attempts.")
     }
 
     private func generateTurnSummary(
@@ -531,7 +561,7 @@ class NativeZAIService: NativeAIService {
             prompt: prompt,
             schema: ZAITurnSummary.schemaInstructions,
             maximumResponseTokens: 140,
-            temperature: 0.0
+            temperature: 0.7
         )
     }
 
@@ -585,25 +615,25 @@ class NativeZAIService: NativeAIService {
 
         for attempt in 1 ... 2 {
             do {
-                logger.info("Z.AI suggestion attempt focus=\(index + 1) attempt=\(attempt)")
+                logger.info("\(self.providerDisplayName, privacy: .public) suggestion attempt focus=\(index + 1) attempt=\(attempt)")
                 let suggestion: ZAISuggestedAction = try await generateStructuredJSON(
                     prompt: suggestionPrompt(basePrompt, repairNotes: repairNotes),
                     schema: ZAISuggestedAction.schemaInstructions,
                     maximumResponseTokens: 1024,
-                    temperature: attempt == 1 ? 0.0 : 0.18
+                    temperature: attempt == 1 ? 0.7 : 0.4
                 )
 
                 if suggestion.hasConcreteContent {
                     return suggestion.toNativeSuggestion(state: state, index: index)
                 }
-                logger.error("Z.AI suggestion was not concrete focus=\(index + 1)")
+                logger.error("\(self.providerDisplayName, privacy: .public) suggestion was not concrete focus=\(index + 1)")
                 repairNotes.append("Previous proposal was too vague, used placeholder text, or contradicted current metrics. Produce a concrete neutral proposal.")
             } catch {
                 if attempt == 2 {
-                    logger.error("Z.AI suggestion failed focus=\(index + 1) error=\(error.localizedDescription, privacy: .public)")
+                    logger.error("\(self.providerDisplayName, privacy: .public) suggestion failed focus=\(index + 1) error=\(error.localizedDescription, privacy: .public)")
                     return nil
                 }
-                logger.error("Z.AI suggestion attempt failed focus=\(index + 1) attempt=\(attempt) error=\(error.localizedDescription, privacy: .public)")
+                logger.error("\(self.providerDisplayName, privacy: .public) suggestion attempt failed focus=\(index + 1) attempt=\(attempt) error=\(error.localizedDescription, privacy: .public)")
                 repairNotes.append("Previous proposal generation failed. Try a shorter neutral civic-planning proposal.")
             }
         }
@@ -621,28 +651,28 @@ class NativeZAIService: NativeAIService {
         var repairNotes: [String] = []
         for attempt in 1 ... 2 {
             do {
-                logger.info("Z.AI text generation attempt=\(attempt)")
+                logger.info("\(self.providerDisplayName, privacy: .public) text generation attempt=\(attempt)")
                 let text = try await executeProviderRequest(
                     prompt: textPrompt(prompt, repairNotes: repairNotes),
                     maxTokens: maxTokens,
-                    temperature: attempt == 1 ? 0.05 : 0.20,
+                    temperature: attempt == 1 ? 0.6 : 0.35,
                     thinkingEnabled: false
                 )
                 let sanitized = sanitizeFoundationModelText(text)
                 if hasConcreteFoundationText(sanitized, minimumWords: 6) {
                     return sanitized
                 }
-                logger.error("Z.AI text generation returned non-concrete content attempt=\(attempt)")
+                logger.error("\(self.providerDisplayName, privacy: .public) text generation returned non-concrete content attempt=\(attempt)")
                 repairNotes.append(repairNote)
             } catch {
                 if attempt == 2 {
-                    logger.error("Z.AI text generation failed after repair")
+                    logger.error("\(self.providerDisplayName, privacy: .public) text generation failed after repair")
                     throw NativeFoundationModelError.generationFailed(error.localizedDescription)
                 }
                 repairNotes.append(repairNote)
             }
         }
-        throw NativeFoundationModelError.generationFailed("Z.AI returned empty or placeholder text after repair.")
+        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned empty or placeholder text after repair.")
     }
 
     private func generateStructuredJSON<T: Decodable>(
@@ -674,9 +704,15 @@ class NativeZAIService: NativeAIService {
             }
         }
 
-        logger.error("Z.AI JSON decoding failed for response: \(rawResponse)")
-        throw NativeFoundationModelError.generationFailed("Z.AI returned invalid strict JSON.")
+        logger.error("\(self.providerDisplayName, privacy: .public) JSON decoding failed for response: \(rawResponse)")
+        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned invalid strict JSON.")
     }
+
+    /// Provider-specific payload hook for OpenAI-compatible extensions.
+    func configureProviderPayload(
+        _: inout [String: Any],
+        thinkingEnabled _: Bool
+    ) {}
 
     func executeProviderRequest(
         prompt: String,
@@ -684,7 +720,8 @@ class NativeZAIService: NativeAIService {
         temperature: Double,
         responseFormat: String? = nil,
         thinkingEnabled: Bool = true,
-        onStreamProgress: (@MainActor (String) -> Void)? = nil
+        onStreamProgress: (@MainActor (String) -> Void)? = nil,
+        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil
     ) async throws -> String {
         let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !key.isEmpty else {
@@ -712,7 +749,7 @@ class NativeZAIService: NativeAIService {
             // Rate limiting + retry with exponential backoff for OpenRouter/Z.AI
             let maxRetries = 2
             for attempt in 0 ... maxRetries {
-                await NativeRateLimiter.shared.acquire()
+                try await NativeRateLimiter.shared.acquire()
 
                 var request = URLRequest(url: apiEndpoint)
                 request.httpMethod = "POST"
@@ -722,31 +759,40 @@ class NativeZAIService: NativeAIService {
                 // OpenRouter ranking headers (harmless for Z.AI, beneficial for OR)
                 request.setValue("https://github.com/gibavargas/swifthistoria", forHTTPHeaderField: "HTTP-Referer")
                 request.setValue("SwiftHistoria", forHTTPHeaderField: "X-Title")
-                // Enforce 60s turn limit: never exceed 60s per request
-                let computedTimeout = min(thinkingEnabled ? 90.0 : 45.0, 60.0)
+                // Enforce turn limit: up to 90s for all remote requests
+                let computedTimeout = 90.0
                 request.timeoutInterval = computedTimeout
 
                 var payload: [String: Any] = [
                     "model": lane.name,
                     "messages": [systemMsg, userMsg],
                     "stream": false,
-                    "temperature": temperature,
-                    "max_tokens": maxTokens
+                    "temperature": temperature
                 ]
+                if includesMaxTokensField {
+                    payload["max_tokens"] = maxTokens
+                }
                 if includesThinkingField {
                     payload["thinking"] = [
                         "type": thinkingEnabled ? "enabled" : "disabled"
                     ]
                 }
+                if supportsReasoningStreaming, thinkingEnabled {
+                    payload["reasoning"] = [
+                        "effort": "low",
+                        "exclude": false
+                    ]
+                }
                 if let responseFormat {
                     payload["response_format"] = ["type": responseFormat]
                 }
+                configureProviderPayload(&payload, thinkingEnabled: thinkingEnabled)
 
                 do {
                     // Streaming path (e.g. OpenRouter text responses). Accumulates
                     // SSE delta chunks and emits progress; falls back to the
                     // non-streaming request below if SSE parsing fails.
-                    if supportsStreaming, responseFormat == nil {
+                    if supportsStreaming, responseFormat == nil || onReasoningProgress != nil {
                         var streamPayload = payload
                         streamPayload["stream"] = true
                         streamPayload["stream_options"] = ["include_usage": true]
@@ -756,13 +802,15 @@ class NativeZAIService: NativeAIService {
                             let (content, usage) = try await performStreamingRequest(
                                 request: streamRequest,
                                 lane: lane,
-                                onProgress: onStreamProgress
+                                onProgress: onStreamProgress,
+                                onReasoningProgress: onReasoningProgress
                             )
                             if let usage {
                                 sessionPromptTokens += usage.prompt
                                 sessionCompletionTokens += usage.completion
-                                logger.info("\(self.providerDisplayName, privacy: .public) streamed tokens: prompt=\(usage.prompt, privacy: .public) completion=\(usage.completion, privacy: .public)")
+                                logger.info("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] streamed tokens: prompt=\(usage.prompt, privacy: .public) completion=\(usage.completion, privacy: .public)")
                             }
+                            lastUsedModelLane = lane.displayName
                             lane.limiter.exit()
                             releaseLane = false
                             return content
@@ -771,7 +819,10 @@ class NativeZAIService: NativeAIService {
                             releaseLane = false
                             throw CancellationError()
                         } catch {
-                            logger.warning("\(self.providerDisplayName, privacy: .public) streaming failed; falling back to non-streaming: \(error.localizedDescription, privacy: .public)")
+                            if nativeProviderRequestWasCancelled(error) {
+                                throw CancellationError()
+                            }
+                            logger.warning("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] streaming failed; falling back to non-streaming: \(error.localizedDescription, privacy: .public)")
                             // fall through to the non-streaming request below
                         }
                     }
@@ -790,7 +841,7 @@ class NativeZAIService: NativeAIService {
                         // OpenRouter typically resets every 60s; use a generous backoff
                         let backoff = retryAfter > 0 ? min(retryAfter, 60.0) : max(10.0, 5.0 * pow(2.0, Double(attempt + 1)))
                         if attempt < maxRetries {
-                            logger.warning("\(self.providerDisplayName, privacy: .public) 429 rate limited; backing off \(backoff)s before retry \(attempt + 1)/\(maxRetries). Retry-After header: '\(retryAfterHeader, privacy: .public)'")
+                            logger.warning("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] 429 rate limited; backing off \(backoff)s before retry \(attempt + 1)/\(maxRetries). Retry-After header: '\(retryAfterHeader, privacy: .public)'")
                             try await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
                             continue
                         }
@@ -801,7 +852,7 @@ class NativeZAIService: NativeAIService {
                         let errorText = String(data: data, encoding: .utf8) ?? "HTTP \(httpResponse.statusCode)"
                         // Retry on 5xx server errors
                         if (500 ... 599).contains(httpResponse.statusCode), attempt < maxRetries {
-                            logger.warning("\(self.providerDisplayName, privacy: .public) HTTP \(httpResponse.statusCode); retrying \(attempt + 1)/\(maxRetries)")
+                            logger.warning("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] HTTP \(httpResponse.statusCode); retrying \(attempt + 1)/\(maxRetries)")
                             try await Task.sleep(nanoseconds: UInt64(1.5 * pow(2.0, Double(attempt)) * 1_000_000_000))
                             continue
                         }
@@ -814,8 +865,9 @@ class NativeZAIService: NativeAIService {
                         if let usage = Self.parseTokenUsage(from: data) {
                             sessionPromptTokens += usage.prompt
                             sessionCompletionTokens += usage.completion
-                            logger.info("\(self.providerDisplayName, privacy: .public) tokens: prompt=\(usage.prompt, privacy: .public) completion=\(usage.completion, privacy: .public) session_total=\(self.sessionPromptTokens + self.sessionCompletionTokens, privacy: .public)")
+                            logger.info("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] tokens: prompt=\(usage.prompt, privacy: .public) completion=\(usage.completion, privacy: .public) session_total=\(self.sessionPromptTokens + self.sessionCompletionTokens, privacy: .public)")
                         }
+                        lastUsedModelLane = lane.displayName
                         lane.limiter.exit()
                         releaseLane = false
                         return content
@@ -823,13 +875,15 @@ class NativeZAIService: NativeAIService {
                         if thinkingEnabled {
                             lane.limiter.exit()
                             releaseLane = false
-                            logger.error("\(self.providerDisplayName, privacy: .public) visible content failed with thinking; retrying without thinking model=\(lane.name, privacy: .public) error=\(error.localizedDescription, privacy: .public)")
+                            logger.error("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] visible content failed with thinking; retrying without thinking error=\(error.localizedDescription, privacy: .public)")
                             return try await executeProviderRequest(
                                 prompt: prompt,
                                 maxTokens: maxTokens,
                                 temperature: temperature,
                                 responseFormat: responseFormat,
-                                thinkingEnabled: false
+                                thinkingEnabled: false,
+                                onStreamProgress: onStreamProgress,
+                                onReasoningProgress: onReasoningProgress
                             )
                         }
                         throw error
@@ -837,12 +891,18 @@ class NativeZAIService: NativeAIService {
                 } catch is CancellationError {
                     lane.limiter.exit()
                     releaseLane = false
-                    logger.info("\(self.providerDisplayName, privacy: .public) request cancelled (Turn cancellation)")
+                    logger.info("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] request cancelled (Turn cancellation)")
                     throw CancellationError()
                 } catch {
+                    if nativeProviderRequestWasCancelled(error) {
+                        lane.limiter.exit()
+                        releaseLane = false
+                        logger.info("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] request cancelled")
+                        throw CancellationError()
+                    }
                     if attempt < maxRetries {
                         let backoff = 1.5 * pow(2.0, Double(attempt))
-                        logger.warning("\(self.providerDisplayName, privacy: .public) attempt \(attempt + 1) failed: \(error.localizedDescription, privacy: .public); backing off \(backoff)s")
+                        logger.warning("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] attempt \(attempt + 1) failed: \(error.localizedDescription, privacy: .public); backing off \(backoff)s")
                         do {
                             try await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
                         } catch is CancellationError {
@@ -854,7 +914,7 @@ class NativeZAIService: NativeAIService {
                     }
                     if releaseLane { lane.limiter.exit() }
                     lastError = error
-                    logger.error("\(self.providerDisplayName, privacy: .public) request failed model=\(lane.name, privacy: .public) limit=\(lane.maxConcurrent) error=\(error.localizedDescription, privacy: .public)")
+                    logger.error("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] request failed limit=\(lane.maxConcurrent) error=\(error.localizedDescription, privacy: .public)")
                     break // move to next lane
                 }
             }
@@ -863,14 +923,14 @@ class NativeZAIService: NativeAIService {
         throw lastError ?? NativeFoundationModelError.generationFailed("\(providerDisplayName) request failed for all configured models.")
     }
 
-    /// Streams an SSE chat-completion response, accumulating `choices[0].delta.content`
-    /// chunks and (when present) the final `usage` object. Throws on non-200 status
-    /// or when no visible content is produced, so the caller can fall back to the
-    /// non-streaming path.
+    /// Streams an SSE chat-completion response, accumulating visible content and
+    /// provider-exposed reasoning details. Reasoning UI updates are throttled to
+    /// keep SwiftUI layout and rendering stable while tokens arrive quickly.
     private func performStreamingRequest(
         request: URLRequest,
         lane: ZAIModelLane,
-        onProgress: (@MainActor (String) -> Void)?
+        onProgress: (@MainActor (String) -> Void)?,
+        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)?
     ) async throws -> (content: String, usage: (prompt: Int, completion: Int, total: Int)?) {
         let (bytes, response) = try await URLSession.shared.bytes(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -881,6 +941,10 @@ class NativeZAIService: NativeAIService {
         }
 
         var accumulated = ""
+        var accumulatedReasoning = ""
+        var reasoningIsEncrypted = false
+        var selectedModel: String?
+        var lastReasoningEmission = Date.distantPast
         var usage: (prompt: Int, completion: Int, total: Int)?
         var sawChunk = false
 
@@ -893,13 +957,32 @@ class NativeZAIService: NativeAIService {
                   let object = try? JSONSerialization.jsonObject(with: chunkData) as? [String: Any]
             else { continue }
             sawChunk = true
+            if let model = object["model"] as? String, !model.isEmpty {
+                selectedModel = model
+            }
             if let choices = object["choices"] as? [[String: Any]],
                let firstChoice = choices.first,
-               let delta = firstChoice["delta"] as? [String: Any],
-               let deltaContent = delta["content"] as? String
+               let delta = firstChoice["delta"] as? [String: Any]
             {
-                accumulated += deltaContent
-                if let onProgress { onProgress(accumulated) }
+                if let deltaContent = delta["content"] as? String {
+                    accumulated += deltaContent
+                    if let onProgress { onProgress(accumulated) }
+                }
+
+                let reasoningDelta = Self.reasoningDelta(from: delta)
+                reasoningIsEncrypted = reasoningIsEncrypted || reasoningDelta.encrypted
+                if !reasoningDelta.text.isEmpty {
+                    accumulatedReasoning += reasoningDelta.text
+                    let now = Date()
+                    if now.timeIntervalSince(lastReasoningEmission) >= 0.15, let onReasoningProgress {
+                        onReasoningProgress(NativeReasoningStreamUpdate(
+                            modelIdentifier: selectedModel,
+                            status: .live,
+                            text: Self.reasoningPreview(from: accumulatedReasoning)
+                        ))
+                        lastReasoningEmission = now
+                    }
+                }
             }
             if let usageObject = object["usage"] as? [String: Any] {
                 let prompt = (usageObject["prompt_tokens"] as? Int) ?? 0
@@ -909,14 +992,78 @@ class NativeZAIService: NativeAIService {
             }
         }
 
+        if let onReasoningProgress {
+            let finalReasoning = Self.reasoningPreview(from: accumulatedReasoning)
+            if !finalReasoning.isEmpty {
+                onReasoningProgress(NativeReasoningStreamUpdate(
+                    modelIdentifier: selectedModel,
+                    status: .live,
+                    text: finalReasoning
+                ))
+            } else if reasoningIsEncrypted {
+                onReasoningProgress(NativeReasoningStreamUpdate(
+                    modelIdentifier: selectedModel,
+                    status: .encrypted,
+                    text: "The selected model returned encrypted reasoning that cannot be displayed."
+                ))
+            } else {
+                onReasoningProgress(NativeReasoningStreamUpdate(
+                    modelIdentifier: selectedModel,
+                    status: .unavailable,
+                    text: "The selected free model did not expose live reasoning for this request."
+                ))
+            }
+        }
+
         let cleaned = Self.strippingZAIThinkingTags(from: accumulated)
         if cleaned.isEmpty {
             if sawChunk {
-                logger.warning("\(self.providerDisplayName, privacy: .public) streaming produced no visible delta content model=\(lane.name, privacy: .public)")
+                logger.warning("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] streaming produced no visible delta content")
             }
             throw NativeFoundationModelError.generationFailed("\(providerDisplayName) streaming produced no visible content model=\(lane.name).")
         }
         return (cleaned, usage)
+    }
+
+    nonisolated static func reasoningDelta(from delta: [String: Any]) -> NativeReasoningDelta {
+        var result = NativeReasoningDelta()
+
+        if let details = delta["reasoning_details"] as? [[String: Any]], !details.isEmpty {
+            for detail in details {
+                let type = (detail["type"] as? String)?.lowercased() ?? ""
+                if type.contains("encrypted") || detail["data"] != nil {
+                    result.encrypted = true
+                    continue
+                }
+                if let text = detail["text"] as? String {
+                    result.text += text
+                } else if let summary = detail["summary"] as? String {
+                    result.text += summary
+                }
+            }
+            return result
+        }
+
+        if let reasoning = delta["reasoning"] as? String {
+            result.text = reasoning
+        } else if let reasoning = delta["reasoning_content"] as? String {
+            result.text = reasoning
+        }
+        return result
+    }
+
+    nonisolated static func reasoningPreview(from text: String, characterLimit: Int = 900) -> String {
+        let cleaned = text
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard cleaned.count > characterLimit else { return cleaned }
+
+        let start = cleaned.index(cleaned.endIndex, offsetBy: -characterLimit)
+        let suffix = String(cleaned[start...])
+        if let firstSpace = suffix.firstIndex(of: " ") {
+            return "…" + suffix[suffix.index(after: firstSpace)...]
+        }
+        return "…" + suffix
     }
 
     nonisolated static func parseTokenUsage(from data: Data) -> (prompt: Int, completion: Int, total: Int)? {
@@ -982,6 +1129,13 @@ class NativeZAIService: NativeAIService {
         let content = firstChoice.message.content?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let reasoning = firstChoice.message.reasoningContent?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
+        if providerDisplayName == "Z.AI",
+           let reason = firstChoice.finishReason,
+           ["length", "sensitive", "model_context_window_exceeded", "network_error"].contains(reason)
+        {
+            throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned no visible content (finish_reason=\(reason), choices=\(decoded.choices.count), content_chars=\(content.count), reasoning_chars=\(reasoning.count)).")
+        }
+
         if !content.isEmpty {
             return strippingZAIThinkingTags(from: content)
         }
@@ -1007,7 +1161,7 @@ class NativeZAIService: NativeAIService {
 
     // MARK: - Prompt & Text Helpers
 
-    private var nativeSystemPrompt: String {
+    var nativeSystemPrompt: String {
         NativePromptHarness.sharedSystemPrompt
     }
 
@@ -1172,10 +1326,11 @@ class ConcurrencyLimiter {
     private var suspendedTasks: [Waiter] = []
 
     init(maxConcurrent: Int) {
-        self.maxConcurrent = maxConcurrent
+        self.maxConcurrent = max(1, maxConcurrent)
     }
 
     func enter() async throws {
+        try Task.checkCancellation()
         let waiterID = UUID()
         if activeCount < maxConcurrent {
             activeCount += 1
@@ -1192,7 +1347,13 @@ class ConcurrencyLimiter {
             }
         }
 
-        guard entered, !Task.isCancelled else {
+        guard entered else {
+            throw CancellationError()
+        }
+        if Task.isCancelled {
+            // A permit may have been handed to this waiter immediately before
+            // cancellation. Return it so the lane cannot deadlock permanently.
+            exit()
             throw CancellationError()
         }
     }
@@ -1320,6 +1481,22 @@ private struct ZAISuggestedAction: Decodable {
     var detail: String
     var rationale: String
     var urgency: String
+    var primaryMechanic: String
+    var secondaryMechanic: String
+
+    private enum CodingKeys: String, CodingKey {
+        case title, detail, rationale, urgency, primaryMechanic, secondaryMechanic
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        title = (try? c.decodeIfPresent(String.self, forKey: .title)) ?? ""
+        detail = (try? c.decodeIfPresent(String.self, forKey: .detail)) ?? ""
+        rationale = (try? c.decodeIfPresent(String.self, forKey: .rationale)) ?? ""
+        urgency = (try? c.decodeIfPresent(String.self, forKey: .urgency)) ?? ""
+        primaryMechanic = (try? c.decodeIfPresent(String.self, forKey: .primaryMechanic)) ?? ""
+        secondaryMechanic = (try? c.decodeIfPresent(String.self, forKey: .secondaryMechanic)) ?? ""
+    }
 
     var hasConcreteContent: Bool {
         hasConcreteFoundationText(title, minimumWords: 2) &&
@@ -1333,15 +1510,19 @@ private struct ZAISuggestedAction: Decodable {
             id: "SUGGESTION_\(state.round)_\(index + 1)",
             rationale: sanitizeFoundationModelText(rationale),
             title: sanitizeFoundationModelText(title),
-            urgency: normalizedFoundationUrgency(urgency)
+            urgency: normalizedFoundationUrgency(urgency),
+            primaryMechanic: sanitizeFoundationModelText(primaryMechanic),
+            secondaryMechanic: sanitizeFoundationModelText(secondaryMechanic)
         )
     }
 
     static let schemaInstructions = """
     {
       "title": "Short imperative title for the civic proposal.",
-      "detail": "Accept-ready board-game order with bounded instrument, generic agency or sector, timing, primary mechanic, secondary mechanic, capacity fit, and intended game effect.",
-      "rationale": "Why this proposal fits the current campaign state and objectives, explicitly naming the primary affected mechanic and one connected secondary mechanic.",
+      "detail": "Accept-ready board-game order with bounded instrument, generic agency or sector, timing, capacity fit, and intended game effect.",
+      "primaryMechanic": "One of: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, world-tension.",
+      "secondaryMechanic": "One of: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, world-tension.",
+      "rationale": "Why this proposal fits the current campaign state and objectives.",
       "urgency": "immediate, soon, or opportunistic"
     }
     """

@@ -8,13 +8,13 @@ enum NativeTypography {
         .system(size: max(size, 11), weight: .bold, design: .monospaced)
     }
 
-    /// Section titles, buttons, primary labels. Title case, rounded design.
+    /// Section titles, buttons, primary labels. Editorial serif hierarchy.
     static func sectionTitle(_ style: Font.TextStyle = .headline) -> Font {
-        .system(style, design: .rounded).weight(.semibold)
+        .system(style, design: .serif).weight(.semibold)
     }
 
     /// Body copy.
     static func body(_ style: Font.TextStyle = .body) -> Font {
-        .system(style, design: .default)
+        .system(style, design: .serif)
     }
 }

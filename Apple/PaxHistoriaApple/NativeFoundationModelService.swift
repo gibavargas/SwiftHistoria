@@ -36,11 +36,23 @@ enum NativePromptHarness {
 }
 
 enum NativeAIProviderPreference: String, CaseIterable {
+    case nvidia
     case appleFoundation
     case openRouter
     case zai
 
     static let storageKey = "NATIVE_AI_PROVIDER_PREFERENCE"
+    static let nvidiaPrimaryMigrationKey = "NATIVE_AI_PROVIDER_NVIDIA_PRIMARY_MIGRATION_V1"
+
+    static func migrateLegacyDefaultIfNeeded(defaults: UserDefaults = .standard) {
+        guard !defaults.bool(forKey: nvidiaPrimaryMigrationKey) else { return }
+
+        let savedValue = defaults.string(forKey: storageKey)
+        if savedValue == nil || savedValue == openRouter.rawValue {
+            defaults.set(nvidia.rawValue, forKey: storageKey)
+        }
+        defaults.set(true, forKey: nvidiaPrimaryMigrationKey)
+    }
 
     var id: String {
         rawValue
@@ -48,6 +60,7 @@ enum NativeAIProviderPreference: String, CaseIterable {
 
     var title: String {
         switch self {
+        case .nvidia: "NVIDIA NIM"
         case .appleFoundation: "Apple Foundation"
         case .openRouter: "OpenRouter"
         case .zai: "Z.AI"
@@ -56,10 +69,12 @@ enum NativeAIProviderPreference: String, CaseIterable {
 
     var subtitle: String {
         switch self {
+        case .nvidia:
+            "Primary: MiniMax-M3 / Kimi-K2.6 / DeepSeek-V4-Flash on NVIDIA NIM. Falls back visibly to OpenRouter Free when needed."
         case .appleFoundation:
             "Use Apple's on-device System Language Model. No external API key required."
         case .openRouter:
-            "Use OpenRouter's unified Free Models Router. Requires an OpenRouter API key."
+            "Use OpenRouter's unified Free Models Router directly. This is also the NVIDIA route's fallback."
         case .zai:
             "Use Z.AI GLM models first, then fall back to Apple if unavailable."
         }
@@ -67,6 +82,7 @@ enum NativeAIProviderPreference: String, CaseIterable {
 
     var providerName: String {
         switch self {
+        case .nvidia: "NVIDIA NIM → OpenRouter"
         case .appleFoundation: "Apple Foundation Models"
         case .openRouter: "OpenRouter"
         case .zai: "Z.AI"
@@ -77,7 +93,7 @@ enum NativeAIProviderPreference: String, CaseIterable {
         if let raw = defaults.string(forKey: storageKey), let value = NativeAIProviderPreference(rawValue: raw) {
             return value
         }
-        return .openRouter
+        return .nvidia
     }
 }
 
@@ -944,6 +960,39 @@ final class NativeFoundationModelService: NativeAIService {
                 ? sanitizeFoundationModelText(effectSummary)
                 : fallbackDraftEffectSummary(track: safeTrack, playerRelated: playerRelated)
 
+            var finalEffects = [
+                NativeStrategicEffect(
+                    date: eventDate,
+                    eventId: eventID,
+                    id: "\(eventID)-effect",
+                    magnitude: Swift.max(-5, Swift.min(5, effectMagnitude)),
+                    summary: safeEffectSummary,
+                    target: sanitizeFoundationModelText(target),
+                    track: safeTrack
+                )
+            ]
+
+            // Safety net: enforce mechanic track constraint from the linked action
+            if let actionID = linkedActionID,
+               let linkedAction = state.plannedActions.first(where: { $0.id == actionID }),
+               !linkedAction.mechanicTracks.isEmpty,
+               !finalEffects.isEmpty
+            {
+                let eventTrack = finalEffects[0].track
+                if !linkedAction.mechanicTracks.contains(eventTrack) {
+                    let overrideTrack = linkedAction.mechanicTracks[0]
+                    finalEffects[0] = NativeStrategicEffect(
+                        date: finalEffects[0].date,
+                        eventId: finalEffects[0].eventId,
+                        id: finalEffects[0].id,
+                        magnitude: finalEffects[0].magnitude,
+                        summary: finalEffects[0].summary,
+                        target: finalEffects[0].target,
+                        track: overrideTrack
+                    )
+                }
+            }
+
             return NativeCampaignEvent(
                 date: eventDate,
                 description: safeDescription,
@@ -953,17 +1002,7 @@ final class NativeFoundationModelService: NativeAIService {
                 linkedActionIDs: linkedActionID.map { [$0] } ?? [],
                 notable: notable,
                 playerRelated: playerRelated,
-                strategicEffects: [
-                    NativeStrategicEffect(
-                        date: eventDate,
-                        eventId: eventID,
-                        id: "\(eventID)-effect",
-                        magnitude: Swift.max(-5, Swift.min(5, effectMagnitude)),
-                        summary: safeEffectSummary,
-                        target: sanitizeFoundationModelText(target),
-                        track: safeTrack
-                    )
-                ],
+                strategicEffects: finalEffects,
                 title: sanitizeFoundationModelText(title),
                 hexLeverCode: hexLeverCode,
                 sovereigntyChange: appleSovereigntyChange(
@@ -1087,21 +1126,22 @@ final class NativeFoundationModelService: NativeAIService {
         var detail: String
         var rationale: String
         var urgency: String
+        var primaryMechanic: String
+        var secondaryMechanic: String
 
         static let schemaInstructions = """
         {
           "title": "Short imperative title for the civic proposal.",
-          "detail": "Accept-ready board-game order with bounded instrument, generic agency or sector, timing, primary mechanic, secondary mechanic, capacity fit, and intended game effect.",
-          "rationale": "Why this civic proposal fits the current campaign state and objectives, explicitly naming the primary affected mechanic and one connected secondary mechanic.",
+          "detail": "Accept-ready board-game order with bounded instrument, generic agency or sector, timing, capacity fit, and intended game effect.",
+          "primaryMechanic": "One of: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, world-tension.",
+          "secondaryMechanic": "One of: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, world-tension.",
+          "rationale": "Why this civic proposal fits the current campaign state and objectives.",
           "urgency": "immediate, soon, or opportunistic"
         }
         """
 
         private enum CodingKeys: String, CodingKey {
-            case title
-            case detail
-            case rationale
-            case urgency
+            case title, detail, rationale, urgency, primaryMechanic, secondaryMechanic
         }
 
         init(from decoder: Decoder) throws {
@@ -1110,6 +1150,8 @@ final class NativeFoundationModelService: NativeAIService {
             detail = try container.decodeIfPresent(String.self, forKey: .detail) ?? ""
             rationale = try container.decodeIfPresent(String.self, forKey: .rationale) ?? ""
             urgency = try container.decodeIfPresent(String.self, forKey: .urgency) ?? ""
+            primaryMechanic = try container.decodeIfPresent(String.self, forKey: .primaryMechanic) ?? ""
+            secondaryMechanic = try container.decodeIfPresent(String.self, forKey: .secondaryMechanic) ?? ""
         }
 
         var hasConcreteContent: Bool {
@@ -1124,7 +1166,9 @@ final class NativeFoundationModelService: NativeAIService {
                 id: "suggestion-\(state.country.code.lowercased())-\(state.round)-\(index)",
                 rationale: sanitizeFoundationModelText(rationale),
                 title: sanitizeFoundationModelText(title),
-                urgency: normalizedFoundationUrgency(urgency)
+                urgency: normalizedFoundationUrgency(urgency),
+                primaryMechanic: sanitizeFoundationModelText(primaryMechanic),
+                secondaryMechanic: sanitizeFoundationModelText(secondaryMechanic)
             )
         }
     }

@@ -37,6 +37,18 @@ SwiftHistoria is being developed as a Swift-native Apple app in [`Apple/`](Apple
 
 For architectural orientation, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). For future AI coding agents, see [`docs/LLM_MAINTENANCE_GUIDE.md`](docs/LLM_MAINTENANCE_GUIDE.md).
 
+## AI Routing
+
+The default route is NVIDIA NIM (balancing [`minimaxai/minimax-m3`](https://build.nvidia.com/minimaxai/minimax-m3), [`moonshotai/kimi-k2.6`](https://build.nvidia.com/moonshotai/kimi-k2.6), and [`deepseek-ai/deepseek-v4-flash`](https://build.nvidia.com/deepseek-ai/deepseek-v4-flash) via round-robin) through its OpenAI-compatible inference endpoint:
+
+```text
+https://integrate.api.nvidia.com/v1/chat/completions
+```
+
+OpenRouter's `openrouter/free` route is the automatic fallback. The fallback is visible in progress and provider labels; it is not silently relabeled as NVIDIA. Configure `NVIDIA_API_KEY` and `OPENROUTER_API_KEY` in the native app's Settings or campaign setup screen. Never commit API keys.
+
+SwiftHistoria does not send `max_tokens` on the NVIDIA primary route or the OpenRouter fallback and does not enforce a session token budget. Provider-side context, output, rate, and trial-service limits still apply.
+
 ---
 
 ## ✨ Features

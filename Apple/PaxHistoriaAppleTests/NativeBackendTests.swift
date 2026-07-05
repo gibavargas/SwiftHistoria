@@ -88,6 +88,58 @@ final class NativeBackendTests: XCTestCase {
         ))
     }
 
+    func testForeignInternalStabilityEffectsDoNotMutatePlayerStability() {
+        var state = makeState()
+        state.stability = 70
+        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: 1)
+        let foreignEvent = NativeCampaignEvent(
+            date: targetDate,
+            description: "A foreign cabinet completes a domestic administrative reform with measurable local effects.",
+            id: "foreign-stability",
+            importance: .major,
+            kind: .world,
+            linkedActionIDs: [],
+            notable: true,
+            playerRelated: false,
+            strategicEffects: [
+                NativeStrategicEffect(
+                    date: targetDate,
+                    eventId: "foreign-stability",
+                    id: "foreign-stability-effect",
+                    magnitude: 3,
+                    summary: "The foreign reform improves local institutional stability without changing Brazil.",
+                    target: "USA",
+                    track: .internalStability
+                )
+            ],
+            title: "Foreign Reform Completed"
+        )
+        let baseline = NativeGameEngine.apply(
+            NativeGeneratedTurn(
+                events: [],
+                stabilityDelta: 0,
+                summary: "Foreign institutions continue normal operations while Brazil remains unchanged.",
+                worldTensionDelta: 0
+            ),
+            to: state,
+            months: 1
+        )
+        let applied = NativeGameEngine.apply(
+            NativeGeneratedTurn(
+                events: [foreignEvent],
+                stabilityDelta: 0,
+                summary: "Foreign institutions complete a reform while Brazil remains unchanged.",
+                worldTensionDelta: 0
+            ),
+            to: state,
+            months: 1
+        )
+
+        XCTAssertEqual(applied.stability, baseline.stability)
+        XCTAssertTrue(applied.timeline.contains { $0.id == foreignEvent.id })
+        XCTAssertTrue(applied.economicLedgers["USA"]?.entries.contains { $0.eventID == foreignEvent.id } == true)
+    }
+
     func testResolvedActionMemoryDoesNotRewriteOldResolvedActions() throws {
         var state = makeState()
         let action = NativePlannedAction(
@@ -245,6 +297,79 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(applied.timeline.contains { $0.id == "linked" })
         XCTAssertTrue(applied.worldEffects.contains { $0.eventId == "independent" })
         XCTAssertTrue(applied.worldEffects.contains { $0.eventId == "linked" })
+    }
+
+    func testStateApplicationPreservesLongCampaignTimeline() {
+        var state = makeState()
+        let historicalEvents = (0 ..< 305).map { index in
+            makeEvent(
+                id: "historical-event-\(index)",
+                date: state.gameDate,
+                playerRelated: index.isMultiple(of: 2)
+            )
+        }
+        state.timeline = historicalEvents
+        let historicalMemories = (0 ..< 405).map { index in
+            NativeSemanticMemory(
+                date: state.gameDate,
+                embedding: [Float(index)],
+                id: "historical-memory-\(index)",
+                importance: 1,
+                sourceID: "historical-memory-source-\(index)",
+                text: "Archived strategic memory \(index)",
+                track: .internalStability
+            )
+        }
+        state.semanticMemory = historicalMemories
+
+        let advanced = NativeGameEngine.apply(
+            NativeGeneratedTurn(
+                events: [],
+                stabilityDelta: 0,
+                summary: "The administration completes another month without erasing its historical archive.",
+                worldTensionDelta: 0
+            ),
+            to: state,
+            months: 1
+        )
+
+        let preservedIDs = Set(advanced.timeline.map(\.id))
+        let preservedMemoryIDs = Set(advanced.semanticMemory.map(\.id))
+        XCTAssertTrue(historicalEvents.allSatisfy { preservedIDs.contains($0.id) })
+        XCTAssertTrue(historicalMemories.allSatisfy { preservedMemoryIDs.contains($0.id) })
+        XCTAssertGreaterThanOrEqual(advanced.timeline.count, historicalEvents.count)
+        XCTAssertGreaterThanOrEqual(advanced.semanticMemory.count, historicalMemories.count)
+    }
+
+    func testDiplomaticReplyPreservesFullThreadArchive() async throws {
+        let store = try makeStore(aiService: FakeNativeAIService())
+        var state = makeState()
+        let partner = PlayerCountry(code: "ARG", name: "Argentina")
+        let history = (0 ..< 30).map { index in
+            NativeDiplomaticMessage(
+                date: state.gameDate,
+                id: "archived-diplomatic-message-\(index)",
+                speaker: index.isMultiple(of: 2) ? state.country.name : partner.name,
+                text: "Archived diplomatic exchange \(index)."
+            )
+        }
+        state.diplomaticThreads = [NativeDiplomaticThread(
+            id: "thread-arg",
+            lastUpdated: state.gameDate,
+            messages: history,
+            participant: partner,
+            summary: "A long-running bilateral channel."
+        )]
+        store.state = state
+        store.selectedDiplomaticPartnerCode = partner.code
+        store.draftDiplomaticMessage = "Continue the existing technical channel without discarding its archive."
+
+        await store.sendDiplomaticMessage()
+
+        let updatedMessages = try XCTUnwrap(store.state?.diplomaticThreads.first?.messages)
+        let updatedIDs = Set(updatedMessages.map(\.id))
+        XCTAssertEqual(updatedMessages.count, history.count + 2)
+        XCTAssertTrue(history.allSatisfy { updatedIDs.contains($0.id) })
     }
 
     func testInvasionActionsResolveDeterministically() throws {
@@ -630,6 +755,27 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertNil(store.turnProgress)
     }
 
+    func testSuccessfulAdvanceRefreshesSuggestionsBeforeReturning() async throws {
+        let service = FakeNativeAIService()
+        var suggestionRequestCount = 0
+        service.turnHandler = { state, months in
+            makeValidTurn(for: state, months: months)
+        }
+        service.suggestionHandler = { state in
+            suggestionRequestCount += 1
+            return makeLegalDecisionMatrix(for: state, cost: 10)
+        }
+        let store = try makeStore(aiService: service)
+        store.state = makeState()
+
+        await store.performAdvance(months: 1)
+
+        XCTAssertEqual(suggestionRequestCount, 1)
+        XCTAssertEqual(store.state?.suggestedActions.count, NativeDecisionMatrixContract.cellCount)
+        XCTAssertNil(store.pendingSuggestionRefreshForce)
+        XCTAssertFalse(store.isAdvancing)
+    }
+
     func testSuggestedActionsTimeoutClearsLoadingState() async throws {
         let service = FakeNativeAIService()
         service.suggestionHandler = { _ in
@@ -647,6 +793,31 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertFalse(store.isLoadingSuggestions)
         XCTAssertTrue(store.state?.suggestedActions.isEmpty ?? false)
         XCTAssertTrue(store.lastSuggestionError?.contains("too long") == true)
+    }
+
+    func testDuplicateAutomaticSuggestionRefreshDoesNotCreateAnInfiniteRetryLoop() async throws {
+        let gate = AsyncGate()
+        let service = FakeNativeAIService()
+        var requestCount = 0
+        service.suggestionHandler = { _ in
+            requestCount += 1
+            await gate.wait()
+            return []
+        }
+        let store = try makeStore(aiService: service)
+        store.state = makeState()
+
+        let firstRefresh = Task { await store.refreshSuggestedActions(force: false) }
+        await gate.waitUntilEntered()
+        await store.refreshSuggestedActions(force: false)
+
+        XCTAssertNil(store.pendingSuggestionRefreshForce)
+        await gate.resume()
+        await firstRefresh.value
+        await Task.yield()
+
+        XCTAssertEqual(requestCount, 1)
+        XCTAssertFalse(store.isLoadingSuggestions)
     }
 
     func testStaleAIResponseIsIgnored() async throws {
@@ -750,7 +921,10 @@ final class NativeBackendTests: XCTestCase {
 
     func testAIProviderPreferencePersistsInDefaults() {
         let defaults = makeDefaults()
-        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .openRouter)
+        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .nvidia)
+
+        defaults.set(NativeAIProviderPreference.nvidia.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .nvidia)
 
         defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
         XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .openRouter)
@@ -759,11 +933,61 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .zai)
     }
 
+    func testNVIDIAPrimaryMigrationMovesTheLegacyOpenRouterDefaultOnlyOnce() {
+        let defaults = makeDefaults()
+        defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
+
+        NativeAIProviderPreference.migrateLegacyDefaultIfNeeded(defaults: defaults)
+
+        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .nvidia)
+        XCTAssertTrue(defaults.bool(forKey: NativeAIProviderPreference.nvidiaPrimaryMigrationKey))
+
+        defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        NativeAIProviderPreference.migrateLegacyDefaultIfNeeded(defaults: defaults)
+        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .openRouter)
+    }
+
     func testAIProviderServicesReadInjectedDefaults() async throws {
         let defaults = makeDefaults()
+        defaults.set("nvapi-test-key", forKey: "NVIDIA_API_KEY")
         defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
         defaults.set("zai-test-key", forKey: "ZAI_API_KEY")
         defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        defaults.set(true, forKey: NativeAIProviderPreference.nvidiaPrimaryMigrationKey)
+
+        let nvidia = NativeNVIDIAService(defaults: defaults)
+        XCTAssertEqual(nvidia.apiKey, "nvapi-test-key")
+        XCTAssertEqual(nvidia.providerDisplayName, "NVIDIA NIM")
+        XCTAssertEqual(nvidia.apiEndpoint.absoluteString, "https://integrate.api.nvidia.com/v1/chat/completions")
+        XCTAssertEqual(nvidia.modelLanes.map(\.name), ["minimaxai/minimax-m3", "moonshotai/kimi-k2.6", "deepseek-ai/deepseek-v4-flash"])
+        XCTAssertEqual(nvidia.modelLanes.first?.displayName, "MiniMax-M3")
+        XCTAssertFalse(nvidia.includesThinkingField)
+        XCTAssertTrue(nvidia.includesMaxTokensField)
+
+        var nvidiaPayload: [String: Any] = [
+            "model": "minimaxai/minimax-m3",
+            "temperature": 0.1,
+            "response_format": ["type": "json_object"]
+        ]
+        nvidia.configureProviderPayload(&nvidiaPayload, thinkingEnabled: true)
+        // Temperature from the caller (0.1) is respected
+        XCTAssertEqual(nvidiaPayload["temperature"] as? Double, 0.1)
+        XCTAssertEqual(nvidiaPayload["top_p"] as? Double, 0.90)
+        // MiniMax-M3 supports response_format, so it stays in the payload
+        XCTAssertNotNil(nvidiaPayload["response_format"])
+        // No Qwen-specific chat_template_kwargs
+        XCTAssertNil(nvidiaPayload["chat_template_kwargs"])
+
+        var deepseekPayload: [String: Any] = [
+            "model": "deepseek-ai/deepseek-v4-flash",
+            "response_format": ["type": "json_object"]
+        ]
+        nvidia.configureProviderPayload(&deepseekPayload, thinkingEnabled: true)
+        XCTAssertEqual(deepseekPayload["temperature"] as? Double, 1.0)
+        XCTAssertEqual(deepseekPayload["top_p"] as? Double, 0.95)
+        let chatTemplateKwargs = try XCTUnwrap(deepseekPayload["chat_template_kwargs"] as? [String: Any])
+        XCTAssertEqual(chatTemplateKwargs["thinking"] as? Bool, true)
+        XCTAssertEqual(chatTemplateKwargs["reasoning_effort"] as? String, "high")
 
         let openRouter = NativeOpenRouterService(defaults: defaults)
         XCTAssertEqual(openRouter.apiKey, "or-test-key")
@@ -771,6 +995,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(openRouter.modelLanes.map(\.name), ["openrouter/free"])
         XCTAssertEqual(openRouter.modelLanes.first?.displayName, "Free Models Router")
         XCTAssertEqual(openRouter.modelLanes.first?.maxConcurrent, 3)
+        XCTAssertFalse(openRouter.includesMaxTokensField)
         let firstOpenRouterLane = try XCTUnwrap(openRouter.modelLanes.first)
         let secondOpenRouterLane = try XCTUnwrap(openRouter.modelLanes.first)
         XCTAssertTrue(firstOpenRouterLane === secondOpenRouterLane)
@@ -793,21 +1018,20 @@ final class NativeBackendTests: XCTestCase {
 
         let suggestionsProvider = CapturingOpenRouterGameService(defaults: defaults)
         let suggestions = try await suggestionsProvider.generateSuggestedActions(for: makeState())
-        XCTAssertEqual(suggestions.count, 4)
+        XCTAssertEqual(suggestions.count, 25)
         XCTAssertEqual(suggestionsProvider.modelLanes.map(\.name), ["openrouter/free"])
         XCTAssertEqual(suggestionsProvider.capturedRequests.count, 1)
         let firstPrompt = try XCTUnwrap(suggestionsProvider.capturedRequests.first?.prompt)
-        XCTAssertTrue(firstPrompt.contains("Create exactly four concrete civic proposals"))
-        XCTAssertTrue(firstPrompt.contains("accept-ready"))
-        XCTAssertTrue(firstPrompt.contains("Respect current administrative capacity"))
-        XCTAssertTrue(firstPrompt.contains("Campaign objectives"))
-        XCTAssertTrue(firstPrompt.contains("Domestic legitimacy"))
-        XCTAssertTrue(firstPrompt.contains("Current selected ledger"))
-        XCTAssertTrue(firstPrompt.contains("Strategy database"))
-        XCTAssertTrue(firstPrompt.contains("Required JSON schema"))
+        XCTAssertTrue(firstPrompt.contains("Produce exactly 25 actions in a 5 x 5 matrix"))
+        XCTAssertTrue(firstPrompt.contains("worldSeed="))
+        XCTAssertTrue(firstPrompt.contains("HARD ELIGIBILITY RULES"))
+        XCTAssertTrue(firstPrompt.contains("ALL COUNTRY STATES"))
+        XCTAssertTrue(firstPrompt.contains("PLAYER POWER AND VICTORY"))
+        XCTAssertTrue(firstPrompt.contains("EXACT POLITICAL DIRECTIVES CURRENTLY AVAILABLE"))
+        XCTAssertTrue(firstPrompt.contains("matrixRow"))
         XCTAssertTrue(firstPrompt.contains("\"suggestions\""))
         XCTAssertTrue(firstPrompt.contains("openrouter/free") == false)
-        XCTAssertEqual(suggestionsProvider.capturedRequests.first?.maxTokens, 2600)
+        XCTAssertEqual(suggestionsProvider.capturedRequests.first?.maxTokens, 8000)
 
         let zai = NativeZAIService(defaults: defaults)
         XCTAssertEqual(zai.apiKey, "zai-test-key")
@@ -815,6 +1039,98 @@ final class NativeBackendTests: XCTestCase {
 
         let store = try makeStore(defaults: defaults)
         XCTAssertEqual(store.selectedAIProviderPreference, .openRouter)
+    }
+
+    func testProviderCancellationRecognizesCancelledURLError() {
+        XCTAssertTrue(nativeProviderRequestWasCancelled(URLError(.cancelled)))
+        XCTAssertFalse(nativeProviderRequestWasCancelled(URLError(.timedOut)))
+    }
+
+    func testNVIDIANIMGeneratesTheCompleteDecisionMatrixContract() async throws {
+        let state = makeState()
+        let service = CapturingNVIDIAMatrixService(defaults: makeDefaults())
+        let envelope = ["suggestions": makeLegalDecisionMatrix(for: state, cost: 10)]
+        let responseData = try JSONEncoder().encode(envelope)
+        service.response = try XCTUnwrap(String(data: responseData, encoding: .utf8))
+
+        let suggestions = try await service.generateSuggestedActions(for: state)
+
+        XCTAssertEqual(suggestions.count, NativeDecisionMatrixContract.cellCount)
+        XCTAssertEqual(Set(suggestions.map { "\($0.matrixRow):\($0.matrixColumn)" }).count, 25)
+        // Single-call architecture: exactly 1 API call for the entire 25-cell matrix
+        XCTAssertEqual(service.capturedRequests.count, 1)
+        XCTAssertTrue(service.capturedRequests.allSatisfy { $0.responseFormat == "json_object" })
+        XCTAssertFalse(service.capturedRequests.allSatisfy(\.thinkingEnabled))
+    }
+
+    func testDynamicAIServiceUsesNVIDIANIMAsPrimaryAcrossAISurfaces() async throws {
+        let defaults = makeDefaults()
+        defaults.set("nvapi-test-key", forKey: "NVIDIA_API_KEY")
+        defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
+        defaults.set(NativeAIProviderPreference.nvidia.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        let nvidia = StubNVIDIAGameService(defaults: defaults)
+        let openRouter = CapturingOpenRouterGameService(defaults: defaults)
+        let service = DynamicAIService(
+            defaults: defaults,
+            nvidiaService: nvidia,
+            openRouterService: openRouter
+        )
+        let state = makeState()
+
+        let readiness = await service.checkReadiness()
+        XCTAssertTrue(readiness.ok)
+        _ = try await service.generateTurn(for: state, months: 1) { _ in }
+        _ = try await service.generateSuggestedActions(for: state)
+        _ = try await service.generateAdvisorBrief(for: state, question: "What now?")
+        _ = try await service.generateDiplomaticReply(
+            for: state,
+            thread: makeDiplomaticThread(for: state),
+            message: "Offer a bounded corridor."
+        )
+
+        // With hedged suggestions, NVIDIA and OpenRouter race in parallel.
+        // NVIDIA should have been called for all surfaces; OpenRouter may also
+        // have been called for suggestions (hedged) but the winner is NVIDIA.
+        XCTAssertEqual(nvidia.calledSurfaces, ["readiness", "turn", "suggestions", "advisor", "diplomacy"])
+        // The hedged race means OpenRouter may have received a suggestions request
+        // even though NVIDIA won. This is expected and correct behavior.
+    }
+
+    func testDynamicAIServiceFallsBackFromNVIDIAToOpenRouterAcrossAISurfaces() async throws {
+        let defaults = makeDefaults()
+        defaults.set("nvapi-test-key", forKey: "NVIDIA_API_KEY")
+        defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
+        defaults.set(NativeAIProviderPreference.nvidia.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        let nvidia = StubNVIDIAGameService(defaults: defaults, shouldFail: true)
+        let openRouter = CapturingOpenRouterGameService(defaults: defaults)
+        let service = DynamicAIService(
+            defaults: defaults,
+            nvidiaService: nvidia,
+            openRouterService: openRouter
+        )
+        let state = makeState()
+
+        let readiness = await service.checkReadiness()
+        XCTAssertTrue(readiness.ok)
+        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+
+        let turn = try await service.generateTurn(for: state, months: 1) { _ in }
+        // Hedged requests do not guarantee a progress callback before the
+        // winning result returns. Assert the fallback result itself instead.
+        XCTAssertTrue(turn.summary.contains("OpenRouter Free"))
+        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+
+        let suggestions = try await service.generateSuggestedActions(for: state)
+        let advisor = try await service.generateAdvisorBrief(for: state, question: "What now?")
+        let diplomacy = try await service.generateDiplomaticReply(
+            for: state,
+            thread: makeDiplomaticThread(for: state),
+            message: "Offer a bounded corridor."
+        )
+        XCTAssertEqual(suggestions.count, 25)
+        XCTAssertTrue(advisor.contains("OpenRouter advisor"))
+        XCTAssertTrue(diplomacy.contains("OpenRouter diplomacy"))
+        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
     }
 
     func testDynamicAIServiceRoutesEveryGameAISurfaceThroughOpenRouterFree() async throws {
@@ -840,12 +1156,14 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(generatedTurn.events.contains { $0.playerRelated })
         XCTAssertFalse(progressEvents.isEmpty)
         XCTAssertTrue(progressEvents.allSatisfy { $0.providerName == "OpenRouter" })
-        XCTAssertTrue(progressEvents.allSatisfy { $0.modelIdentifier == "openrouter/free" })
+        XCTAssertTrue(progressEvents.contains { $0.modelIdentifier == "openrouter/free" })
+        XCTAssertTrue(progressEvents.contains { $0.modelIdentifier == "test/reasoning-free" })
         XCTAssertTrue(progressEvents.contains { $0.providerSummary == "Calling OpenRouter · Free Models Router" })
+        XCTAssertTrue(progressEvents.contains { $0.reasoningStatus == .live && $0.reasoningText?.contains("campaign state") == true })
 
         let suggestions = try await service.generateSuggestedActions(for: state)
         XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
-        XCTAssertEqual(suggestions.count, 4)
+        XCTAssertEqual(suggestions.count, 25)
 
         let advisor = try await service.generateAdvisorBrief(
             for: state,
@@ -880,7 +1198,8 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("Required JSON schema") })
         XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("\"events\"") })
         XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("Campaign objectives") })
-        XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("Create exactly four concrete civic proposals") && $0.prompt.contains("\"suggestions\"") })
+        XCTAssertTrue(openRouter.capturedRequests.contains { $0.thinkingEnabled && $0.hasReasoningProgress })
+        XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("Produce exactly 25 actions in a 5 x 5 matrix") && $0.prompt.contains("\"suggestions\"") })
         XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("SwiftHistoria strategic advisor") && $0.prompt.contains("Campaign objectives") })
         XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("diplomacy chat inside SwiftHistoria") && $0.prompt.contains("Recent campaign context") })
     }
@@ -889,40 +1208,20 @@ final class NativeBackendTests: XCTestCase {
         let defaults = makeDefaults()
         defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
         let openRouter = CapturingOpenRouterGameService(defaults: defaults)
-        openRouter.suggestionResponse = """
-        {
-          "actions": [
-            {
-              "name": "Stage Export Credit Review",
-              "summary": "Create a bounded treasury export-credit review next period for firms already near customs clearance.",
-              "expectedOutcome": "Primary mechanic: trade balance; secondary mechanic: market confidence; capacity fit: within current administrative capacity.",
-              "rationale": "This targets the external-balance objective without adding a broad subsidy program.",
-              "priority": "soon"
-            },
-            {
-              "action": "Open Corridor Security Audit",
-              "description": "Assign a civilian audit team to logistics corridors where service disruption would raise local anxiety.",
-              "effectTrack": "public security and insurgency pressure",
-              "risk": "May expose procurement delays before mitigation funding is ready.",
-              "why": "This protects territorial integrity while keeping the order narrow.",
-              "timing": "immediate"
-            },
-            {
-              "proposal": "Publish Grid Reserve Schedule",
-              "detail": "Publish a regulator-led grid reserve schedule for peak months with measurable maintenance windows.",
-              "primaryMechanic": "economic resilience and domestic legitimacy",
-              "justification": "This supports domestic legitimacy by reducing visible service volatility.",
-              "urgency": "opportunistic"
+        let actions = (0 ..< 5).flatMap { row in
+            (0 ..< 5).map { column in
+                """
+                {"name":"Stage Policy Review \(row)-\(column)","summary":"Create a bounded treasury and service review for the current campaign period.","expectedOutcome":"The review uses existing institutions and remains within current administrative capacity.","why":"This legal proposal responds to stored objectives, budget pressure, and current institutional authority.","priority":"soon","row":\(row),"column":\(column),"cost":10,"action_kind":"policy"}
+                """
             }
-          ]
         }
-        """
+        openRouter.suggestionResponse = "{\"actions\":[\(actions.joined(separator: ","))]}"
 
         let suggestions = try await openRouter.generateSuggestedActions(for: makeState())
 
-        XCTAssertEqual(suggestions.count, 3)
-        XCTAssertTrue(suggestions.allSatisfy { openRouter.isValidNativeSuggestion($0) })
-        XCTAssertEqual(suggestions.map(\.urgency), ["soon", "immediate", "opportunistic"])
+        XCTAssertEqual(suggestions.count, 25)
+        XCTAssertEqual(Set(suggestions.map { "\($0.matrixRow):\($0.matrixColumn)" }).count, 25)
+        XCTAssertTrue(suggestions.allSatisfy { $0.actionKind == "policy" && $0.administrativeCost == 10 })
     }
 
     func testOpenRouterLengthFinishReasonKeepsVisibleContentForRepairParsing() throws {
@@ -1074,6 +1373,58 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(relaunched.selectedScenarioID, "resilience-decade")
     }
 
+    func testDebouncedPersistenceStaysWithTheSlotThatScheduledIt() async throws {
+        let defaults = makeDefaults()
+        let persistenceDirectory = try makePersistenceDirectory()
+        let store = NativeCampaignStore(
+            defaults: defaults,
+            aiService: FakeNativeAIService(),
+            persistenceDirectory: persistenceDirectory
+        )
+        store.state = makeState()
+
+        store.persistState()
+        store.switchSlot(2)
+        try await Task.sleep(nanoseconds: 600_000_000)
+
+        let slot1 = NativeCampaignStore.loadCampaignState(
+            from: defaults,
+            decoder: JSONDecoder(),
+            persistenceDirectory: persistenceDirectory
+        )
+        let slot2 = NativeCampaignStore.loadCampaignState(
+            from: defaults,
+            decoder: JSONDecoder(),
+            persistenceDirectory: persistenceDirectory,
+            slotKey: { NativeCampaignStore.slotKey($0, slot: 2) },
+            slotFileName: { NativeCampaignStore.slotFileName($0, slot: 2) }
+        )
+
+        XCTAssertEqual(slot1.state?.country.code, testCountry.code)
+        XCTAssertNil(slot2.state)
+    }
+
+    func testCountryOnlyRecoveryWritesInitialStateToActiveSlot() throws {
+        let defaults = makeDefaults()
+        let persistenceDirectory = try makePersistenceDirectory()
+        defaults.set(2, forKey: NativeCampaignStore.activeSlotKey)
+        try defaults.set(
+            JSONEncoder().encode(PlayerCountry(code: "ARG", name: "Argentina")),
+            forKey: NativeCampaignStore.slotKey(NativeCampaignStore.selectedCountryKey, slot: 2)
+        )
+
+        let store = NativeCampaignStore(
+            defaults: defaults,
+            aiService: FakeNativeAIService(),
+            persistenceDirectory: persistenceDirectory
+        )
+
+        XCTAssertEqual(store.saveSlot, 2)
+        XCTAssertEqual(store.state?.country.code, "ARG")
+        XCTAssertNil(store.slotSummary(1))
+        XCTAssertEqual(store.slotSummary(2)?.countryName, "Argentina")
+    }
+
     func testLiveOpenRouterFreeSuggestedActionsWhenEnabled() async throws {
         let environment = ProcessInfo.processInfo.environment
         guard environment["PAX_HISTORIA_RUN_LIVE_OPENROUTER"] == "1" else {
@@ -1089,17 +1440,33 @@ final class NativeBackendTests: XCTestCase {
 
         let suggestions = try await service.generateSuggestedActions(for: makeState())
 
-        XCTAssertGreaterThanOrEqual(suggestions.count, 3)
-        XCTAssertLessThanOrEqual(suggestions.count, 4)
+        XCTAssertEqual(suggestions.count, 25)
+        XCTAssertEqual(Set(suggestions.map { "\($0.matrixRow):\($0.matrixColumn)" }).count, 25)
         for suggestion in suggestions {
-            XCTAssertTrue(service.isValidNativeSuggestion(suggestion))
-            let detailNamesGameSystem = suggestion.detail.localizedCaseInsensitiveContains("mechanic") ||
-                suggestion.detail.localizedCaseInsensitiveContains("capacity")
-            let rationaleNamesGameSystem = suggestion.rationale.localizedCaseInsensitiveContains("mechanic") ||
-                suggestion.rationale.localizedCaseInsensitiveContains("objective")
-            XCTAssertTrue(detailNamesGameSystem)
-            XCTAssertTrue(rationaleNamesGameSystem)
+            XCTAssertNil(NativeDecisionMatrixContract.eligibilityFailure(for: suggestion, state: makeState()))
         }
+    }
+
+    func testLiveNVIDIANIMWhenEnabled() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        guard environment["PAX_HISTORIA_RUN_LIVE_NVIDIA"] == "1" else {
+            throw XCTSkip("Set PAX_HISTORIA_RUN_LIVE_NVIDIA=1 to exercise NVIDIA NIM inference.")
+        }
+        guard let key = environment["NVIDIA_API_KEY"]?.trimmingCharacters(in: .whitespacesAndNewlines), !key.isEmpty else {
+            throw XCTSkip("NVIDIA_API_KEY is required for the live NVIDIA NIM path.")
+        }
+
+        let defaults = makeDefaults()
+        defaults.set(key, forKey: "NVIDIA_API_KEY")
+        let service = NativeNVIDIAService(defaults: defaults)
+        let response = try await service.executeProviderRequest(
+            prompt: "Return one short sentence confirming that the SwiftHistoria NVIDIA route is online.",
+            maxTokens: 16,
+            temperature: 1.0,
+            thinkingEnabled: true
+        )
+
+        XCTAssertFalse(response.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
 
     func testCampaignObjectivesExposeScenarioWinProgress() {
@@ -1448,7 +1815,6 @@ final class NativeBackendTests: XCTestCase {
         )
 
         let previousUSLedger = state.economicLedgers["USA"]
-        let previousBRALedger = state.economicLedgers["BRA"]
 
         let nextLedgers = NativeStrategyContextDatabase.updatedEconomicLedgers(
             from: state.economicLedgers,
@@ -1502,7 +1868,7 @@ final class NativeBackendTests: XCTestCase {
     }
 
     func testStochasticEconomicDriftAndCrisisTrigger() throws {
-        var state = makeState()
+        let state = makeState()
         let previousLedgers = state.economicLedgers
 
         // Advance turn once. Background drift should update metrics.
@@ -1574,11 +1940,104 @@ final class NativeBackendTests: XCTestCase {
         let state = makeState()
         store.choose(state.country)
 
+        let worldSeed = try XCTUnwrap(store.state?.worldSeed)
+        let timeline = try XCTUnwrap(store.state?.timeline)
+        store.draftAction = "Pending order"
+        store.draftAdvisorQuestion = "Pending question"
+        store.draftDiplomaticMessage = "Pending message"
+
         let newCountry = PlayerCountry(code: "CHN", name: "China")
-        store.switchCountry(to: newCountry)
+        XCTAssertTrue(store.switchCountry(to: newCountry))
 
         XCTAssertEqual(store.selectedCountry?.code, "CHN")
         XCTAssertEqual(store.state?.country.code, "CHN")
+        XCTAssertEqual(store.state?.worldSeed, worldSeed)
+        XCTAssertEqual(store.state?.timeline, timeline)
+        XCTAssertEqual(store.state?.economicLedger, store.state?.economicLedgers["CHN"])
+        XCTAssertEqual(store.draftAction, "")
+        XCTAssertEqual(store.draftAdvisorQuestion, "")
+        XCTAssertEqual(store.draftDiplomaticMessage, "")
+        XCTAssertTrue(store.lastRecoveryNotice?.contains("shared campaign world was preserved") == true)
+        XCTAssertFalse(store.switchCountry(to: newCountry))
+
+        store.setGameMode(.ironman)
+        XCTAssertFalse(store.switchCountry(to: PlayerCountry(code: "USA", name: "United States")))
+        XCTAssertEqual(store.state?.country.code, "CHN")
+    }
+
+    func testResearchBudgetControlClampsAndRejectsNonfiniteValues() throws {
+        let store = try makeStore()
+        store.choose(testCountry)
+
+        store.updateResearchBudget(0.75)
+        XCTAssertEqual(store.state?.budgetResearchSlider ?? -1, 0.75, accuracy: 0.0001)
+
+        store.updateResearchBudget(2.0)
+        XCTAssertEqual(store.state?.budgetResearchSlider ?? -1, 1.0, accuracy: 0.0001)
+
+        store.updateResearchBudget(-1.0)
+        XCTAssertEqual(store.state?.budgetResearchSlider ?? -1, 0.0, accuracy: 0.0001)
+
+        store.updateResearchBudget(.nan)
+        XCTAssertEqual(store.state?.budgetResearchSlider ?? -1, 0.0, accuracy: 0.0001)
+    }
+
+    func testDynamicCountryCreationPopulatesEveryPromisedSurface() throws {
+        let store = try makeStore()
+        store.choose(testCountry)
+
+        XCTAssertTrue(store.addDynamicCountry(code: "atl", name: "Atlantic Federation"))
+        let state = try XCTUnwrap(store.state)
+
+        XCTAssertEqual(state.dynamicCountries["ATL"], "Atlantic Federation")
+        XCTAssertNotNil(state.economicLedgers["ATL"])
+        XCTAssertNotNil(state.aiCountryStates["ATL"])
+        XCTAssertTrue(NativeWorldEconomicsPanel.displayedCountryCodes(for: state).contains("ATL"))
+        XCTAssertTrue(store.allVisibleCountries().contains { $0.code == "ATL" && $0.name == "Atlantic Federation" })
+        XCTAssertFalse(store.addDynamicCountry(code: "ATL", name: "Duplicate Federation"))
+    }
+
+    func testCrisisDetectorRanksAndExplainsEveryActivePlayerCrisis() {
+        var state = makeState()
+        state.stability = 10
+        state.worldTension = 95
+        state.nuclearFalloutRegions = ["BRA_Acre"]
+        state.regionConflicts = [
+            "ARG": NativeRegionConflictState(
+                controllerCode: "BRA",
+                intensity: 3,
+                mode: .conventionalOccupation,
+                originalCountryCode: "ARG",
+                regionID: "ARG",
+                summary: "Brazilian forces hold the area.",
+                updatedAt: state.gameDate
+            ),
+            "BRA": NativeRegionConflictState(
+                controllerCode: "CHN",
+                intensity: 5,
+                mode: .conventionalOccupation,
+                originalCountryCode: "BRA",
+                regionID: "BRA",
+                summary: "Foreign forces hold player territory.",
+                updatedAt: state.gameDate
+            ),
+            "BRA_Acre": NativeRegionConflictState(
+                controllerCode: "REB",
+                intensity: 4,
+                mode: .guerrillaControl,
+                originalCountryCode: "BRA",
+                regionID: "BRA_Acre",
+                summary: "Insurgents hold the area.",
+                updatedAt: state.gameDate
+            )
+        ]
+
+        let crises = NativeCrisisDetector.activeCrises(for: state)
+        let kinds = Set(crises.map(\.kind))
+
+        XCTAssertEqual(crises.first?.severity, .critical)
+        XCTAssertTrue(kinds.isSuperset(of: [.invasionIncoming, .invasionOutgoing, .rebellion, .nuclearFallout, .stability, .worldWar]))
+        XCTAssertTrue(crises.allSatisfy { !$0.title.isEmpty && !$0.detail.isEmpty && !$0.date.isEmpty })
     }
 
     func testGameModePersistence() throws {
@@ -2056,6 +2515,7 @@ final class NativeBackendTests: XCTestCase {
             ledger.securityIndex = 60.0
             ledger.realGrowthPercent = 4.0
             ledger.inflationPercent = 5.0
+            ledger.governmentType = "autocracy"
             state.economicLedgers[state.country.code] = ledger
             state.economicLedger = ledger
         }
@@ -2406,13 +2866,398 @@ final class NativeBackendTests: XCTestCase {
         }
         XCTAssertTrue(hasFrictionLedgerEntry, "Expected economic ledger entries generated by 512-dice events.")
     }
+
+    // MARK: – Action Failure Mechanics
+
+    func testNonRegionalActionCanSucceed() throws {
+        var state = makeState()
+        // test-sanction-6 has roll < 65 → SUCCESS
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Impose targeted trade sanctions on a rival economy.",
+            id: "test-sanction-6",
+            status: .planned,
+            title: "Impose trade sanctions"
+        )
+        state.plannedActions = [action]
+
+        // The generated turn must link the action ID so the engine marks it .resolved
+        let generated = NativeGeneratedTurn(
+            events: [
+                makeEvent(id: "independent-world", playerRelated: false),
+                NativeCampaignEvent(
+                    date: "",
+                    description: "Sanctions effort is resolved by the administrative apparatus.",
+                    id: "sanction-resolved",
+                    importance: .major,
+                    kind: .action,
+                    linkedActionIDs: [action.id],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [],
+                    title: "Trade Sanctions Resolved"
+                )
+            ],
+            stabilityDelta: 0,
+            summary: "Regional agencies review delivery milestones and publish a concrete service timetable.",
+            worldTensionDelta: 0
+        )
+
+        let applied = NativeGameEngine.apply(generated, to: state, months: 1)
+
+        let resolvedAction = try XCTUnwrap(applied.plannedActions.first { $0.id == "test-sanction-6" })
+        XCTAssertEqual(resolvedAction.status, .resolved)
+        XCTAssertEqual(resolvedAction.outcome, .success)
+
+        // Success events should appear in the timeline
+        let successEvents = applied.timeline.filter { $0.id.hasPrefix("action-outcome-test-sanction-6") }
+        XCTAssertFalse(successEvents.isEmpty, "Expected at least one action-outcome event for the sanction action.")
+        XCTAssertTrue(successEvents.contains { $0.kind == .action }, "Success should produce an .action event.")
+    }
+
+    func testNonRegionalActionCanFail() throws {
+        var state = makeState()
+        // test-sanction-2 has roll > 80 → FAILURE (effective threshold = 65, partial ceiling = 80)
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Impose targeted trade sanctions on a rival economy.",
+            id: "test-sanction-2",
+            status: .planned,
+            title: "Impose trade sanctions"
+        )
+        state.plannedActions = [action]
+
+        let generated = NativeGeneratedTurn(
+            events: [
+                makeEvent(id: "independent-world", playerRelated: false),
+                NativeCampaignEvent(
+                    date: "",
+                    description: "Sanctions effort is resolved by the administrative apparatus.",
+                    id: "sanction-resolved",
+                    importance: .major,
+                    kind: .action,
+                    linkedActionIDs: [action.id],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [],
+                    title: "Trade Sanctions Resolved"
+                )
+            ],
+            stabilityDelta: 0,
+            summary: "Regional agencies review delivery milestones and publish a concrete service timetable.",
+            worldTensionDelta: 0
+        )
+
+        let applied = NativeGameEngine.apply(generated, to: state, months: 1)
+
+        let resolvedAction = try XCTUnwrap(applied.plannedActions.first { $0.id == "test-sanction-2" })
+        XCTAssertEqual(resolvedAction.status, .resolved)
+        XCTAssertEqual(resolvedAction.outcome, .failure)
+
+        // Failure events should appear in the timeline with .crisis kind
+        let failureEvents = applied.timeline.filter { $0.id.hasPrefix("action-outcome-test-sanction-2") }
+        XCTAssertFalse(failureEvents.isEmpty, "Expected at least one action-outcome event for the failed sanction.")
+        XCTAssertTrue(failureEvents.contains { $0.kind == .crisis }, "Failure should produce a .crisis event.")
+
+        // A negative stability effect should be applied
+        let stabilityEffect = failureEvents.flatMap(\.strategicEffects).first { $0.track == .internalStability }
+        XCTAssertNotNil(stabilityEffect, "Expected a stability strategic effect from the failure.")
+        XCTAssertLessThan(try XCTUnwrap(stabilityEffect?.magnitude), 0, "Failure should have negative stability magnitude.")
+    }
+
+    // MARK: – Political Reform Tests
+
+    func testPoliticalReformLiberalizeSuccess() throws {
+        var state = makeState()
+        // Set BRA to hybrid so liberalize is available
+        state.economicLedgers[state.country.code]?.governmentType = "hybrid"
+        state.stability = 50
+        state.economicLedgers[state.country.code]?.publicApprovalPercent = 50.0
+
+        // test-lib-4 has roll=0.6 < 50 → SUCCESS
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Liberalize the political system toward democratic governance.",
+            id: "test-lib-4",
+            status: .planned,
+            title: "Liberalize toward democracy"
+        )
+        state.plannedActions = [action]
+
+        let generated = NativeGeneratedTurn(
+            events: [
+                makeEvent(id: "independent-world", playerRelated: false),
+                NativeCampaignEvent(
+                    date: "",
+                    description: "The liberalization reform package moves through the legislature.",
+                    id: "reform-resolved",
+                    importance: .major,
+                    kind: .action,
+                    linkedActionIDs: [action.id],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [],
+                    title: "Liberalization Resolved"
+                )
+            ],
+            stabilityDelta: 0,
+            summary: "Regional agencies review delivery milestones and publish a concrete service timetable.",
+            worldTensionDelta: 0
+        )
+
+        let applied = NativeGameEngine.apply(generated, to: state, months: 1)
+
+        let resolvedAction = try XCTUnwrap(applied.plannedActions.first { $0.id == "test-lib-4" })
+        XCTAssertEqual(resolvedAction.outcome, .success)
+
+        let govType = applied.economicLedgers[state.country.code]?.governmentType
+        XCTAssertEqual(govType, "democracy", "Liberalization success should transition government to democracy.")
+
+        // Timeline should contain the liberalization event
+        let reformEvents = applied.timeline.filter { $0.id.hasPrefix("pol-liberalize-") }
+        XCTAssertFalse(reformEvents.isEmpty, "Expected a liberalization timeline event.")
+    }
+
+    func testPoliticalReformLiberalizeFailure() throws {
+        var state = makeState()
+        state.economicLedgers[state.country.code]?.governmentType = "hybrid"
+        state.stability = 50
+        state.economicLedgers[state.country.code]?.publicApprovalPercent = 50.0
+
+        // test-lib-3: actual roll=70.4 > 50 → FAILURE
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Liberalize the political system toward democratic governance.",
+            id: "test-lib-3",
+            status: .planned,
+            title: "Liberalize toward democracy"
+        )
+        state.plannedActions = [action]
+
+        let generated = NativeGeneratedTurn(
+            events: [
+                makeEvent(id: "independent-world", playerRelated: false),
+                NativeCampaignEvent(
+                    date: "",
+                    description: "The liberalization reform package moves through the legislature.",
+                    id: "reform-resolved",
+                    importance: .major,
+                    kind: .action,
+                    linkedActionIDs: [action.id],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [],
+                    title: "Liberalization Resolved"
+                )
+            ],
+            stabilityDelta: 0,
+            summary: "Regional agencies review delivery milestones and publish a concrete service timetable.",
+            worldTensionDelta: 0
+        )
+
+        let applied = NativeGameEngine.apply(generated, to: state, months: 1)
+
+        let resolvedAction = try XCTUnwrap(applied.plannedActions.first { $0.id == "test-lib-3" })
+        XCTAssertEqual(resolvedAction.outcome, .failure)
+
+        let govType = applied.economicLedgers[state.country.code]?.governmentType
+        XCTAssertEqual(govType, "hybrid", "Failed liberalization should NOT change government type.")
+
+        // Should produce a crisis event
+        let reformEvents = applied.timeline.filter { $0.id.hasPrefix("pol-liberalize-") }
+        XCTAssertFalse(reformEvents.isEmpty)
+        XCTAssertTrue(reformEvents.contains { $0.kind == .crisis }, "Failed liberalization should produce a .crisis event.")
+    }
+
+    func testPoliticalReformConsolidateSuccess() throws {
+        var state = makeState()
+        // BRA starts as democracy; consolidate is available and transitions to hybrid
+        state.stability = 50
+        state.economicLedgers[state.country.code]?.publicApprovalPercent = 50.0
+
+        // test-con-2: actual roll=30.1 ≤ 55 → SUCCESS
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Consolidate executive power and reduce legislative oversight.",
+            id: "test-con-2",
+            status: .planned,
+            title: "Consolidate executive power"
+        )
+        state.plannedActions = [action]
+
+        let generated = NativeGeneratedTurn(
+            events: [
+                makeEvent(id: "independent-world", playerRelated: false),
+                NativeCampaignEvent(
+                    date: "",
+                    description: "The consolidation package moves through the legislature.",
+                    id: "reform-resolved",
+                    importance: .major,
+                    kind: .action,
+                    linkedActionIDs: [action.id],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [],
+                    title: "Consolidation Resolved"
+                )
+            ],
+            stabilityDelta: 0,
+            summary: "Regional agencies review delivery milestones and publish a concrete service timetable.",
+            worldTensionDelta: 0
+        )
+
+        let applied = NativeGameEngine.apply(generated, to: state, months: 1)
+
+        let resolvedAction = try XCTUnwrap(applied.plannedActions.first { $0.id == "test-con-2" })
+        XCTAssertEqual(resolvedAction.outcome, .success)
+
+        let govType = applied.economicLedgers[state.country.code]?.governmentType
+        XCTAssertEqual(govType, "hybrid", "Consolidation success should transition democracy → hybrid.")
+    }
+
+    func testSnapElectionTriggered() throws {
+        var state = makeState()
+        // BRA is a democracy; snap election is available
+        let originalElectionRound = state.economicLedgers[state.country.code]?.nextElectionRound ?? 0
+
+        // test-snap-2: actual roll=69.4 ≤ 80 → SUCCESS
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Call snap elections to renew democratic mandate.",
+            id: "test-snap-2",
+            status: .planned,
+            title: "Call snap elections"
+        )
+        state.plannedActions = [action]
+
+        let generated = NativeGeneratedTurn(
+            events: [
+                makeEvent(id: "independent-world", playerRelated: false),
+                NativeCampaignEvent(
+                    date: "",
+                    description: "The snap election decree is issued.",
+                    id: "snap-resolved",
+                    importance: .major,
+                    kind: .action,
+                    linkedActionIDs: [action.id],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [],
+                    title: "Snap Election Resolved"
+                )
+            ],
+            stabilityDelta: 0,
+            summary: "Regional agencies review delivery milestones and publish a concrete service timetable.",
+            worldTensionDelta: 0
+        )
+
+        let applied = NativeGameEngine.apply(generated, to: state, months: 1)
+
+        let resolvedAction = try XCTUnwrap(applied.plannedActions.first { $0.id == "test-snap-2" })
+        XCTAssertEqual(resolvedAction.outcome, .success)
+
+        let newElectionRound = applied.economicLedgers[state.country.code]?.nextElectionRound
+        XCTAssertEqual(newElectionRound, state.round + 12, "Snap election should set nextElectionRound to round + 12.")
+        XCTAssertNotEqual(newElectionRound, originalElectionRound, "Election round should have changed.")
+    }
 }
 
 @MainActor
 private struct CapturedProviderRequest {
+    var hasReasoningProgress: Bool
     var prompt: String
     var maxTokens: Int
     var responseFormat: String?
+    var thinkingEnabled: Bool
+}
+
+@MainActor
+private final class StubNVIDIAGameService: NativeNVIDIAService {
+    private let shouldFail: Bool
+    var calledSurfaces: [String] = []
+
+    init(defaults: UserDefaults, shouldFail: Bool = false) {
+        self.shouldFail = shouldFail
+        super.init(defaults: defaults)
+    }
+
+    private func failIfNeeded() throws {
+        if shouldFail {
+            throw NativeFoundationModelError.generationFailed("NVIDIA fixture failure")
+        }
+    }
+
+    override func checkReadiness() async -> NativeAIReadiness {
+        calledSurfaces.append("readiness")
+        return shouldFail
+            ? .unavailable("NVIDIA fixture failure")
+            : .available(tokenBudget: "NVIDIA fixture ready; no app-level token cap")
+    }
+
+    override func generateTurn(for _: NativeCampaignState, months _: Int) async throws -> NativeGeneratedTurn {
+        calledSurfaces.append("turn")
+        try failIfNeeded()
+        return NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "NVIDIA turn", worldTensionDelta: 0)
+    }
+
+    override func generateTurn(
+        for state: NativeCampaignState,
+        months: Int,
+        progress _: @escaping @MainActor (NativeTurnProgress) -> Void
+    ) async throws -> NativeGeneratedTurn {
+        try await generateTurn(for: state, months: months)
+    }
+
+    override func generateSuggestedActions(for _: NativeCampaignState) async throws -> [NativeSuggestedAction] {
+        calledSurfaces.append("suggestions")
+        try failIfNeeded()
+        return []
+    }
+
+    override func generateAdvisorBrief(for _: NativeCampaignState, question _: String) async throws -> String {
+        calledSurfaces.append("advisor")
+        try failIfNeeded()
+        return "NVIDIA advisor"
+    }
+
+    override func generateDiplomaticReply(
+        for _: NativeCampaignState,
+        thread _: NativeDiplomaticThread,
+        message _: String
+    ) async throws -> String {
+        calledSurfaces.append("diplomacy")
+        try failIfNeeded()
+        return "NVIDIA diplomacy"
+    }
+}
+
+@MainActor
+private final class CapturingNVIDIAMatrixService: NativeNVIDIAService {
+    var capturedRequests: [CapturedProviderRequest] = []
+    var response = ""
+
+    override var apiKey: String {
+        "test-nvidia-key"
+    }
+
+    override func executeProviderRequest(
+        prompt: String,
+        maxTokens: Int,
+        temperature _: Double,
+        responseFormat: String? = nil,
+        thinkingEnabled: Bool = true,
+        onStreamProgress _: (@MainActor (String) -> Void)? = nil,
+        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil
+    ) async throws -> String {
+        capturedRequests.append(CapturedProviderRequest(
+            hasReasoningProgress: onReasoningProgress != nil,
+            prompt: prompt,
+            maxTokens: maxTokens,
+            responseFormat: responseFormat,
+            thinkingEnabled: thinkingEnabled
+        ))
+        return response
+    }
 }
 
 @MainActor
@@ -2430,10 +3275,24 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         maxTokens: Int,
         temperature _: Double,
         responseFormat: String? = nil,
-        thinkingEnabled _: Bool = true,
-        onStreamProgress _: (@MainActor (String) -> Void)? = nil
+        thinkingEnabled: Bool = true,
+        onStreamProgress _: (@MainActor (String) -> Void)? = nil,
+        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil
     ) async throws -> String {
-        capturedRequests.append(CapturedProviderRequest(prompt: prompt, maxTokens: maxTokens, responseFormat: responseFormat))
+        capturedRequests.append(CapturedProviderRequest(
+            hasReasoningProgress: onReasoningProgress != nil,
+            prompt: prompt,
+            maxTokens: maxTokens,
+            responseFormat: responseFormat,
+            thinkingEnabled: thinkingEnabled
+        ))
+        if thinkingEnabled, let onReasoningProgress {
+            onReasoningProgress(NativeReasoningStreamUpdate(
+                modelIdentifier: "test/reasoning-free",
+                status: .live,
+                text: "Reviewing campaign state and legal consequences."
+            ))
+        }
         if prompt.contains("Return exactly this JSON") {
             return "{\"ok\":true}"
         }
@@ -2537,36 +3396,14 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
     }
 
     private var suggestionBatchJSON: String {
-        """
-        {
-          "suggestions": [
-            {
-              "title": "Fund Logistics Desk",
-              "detail": "Create a bounded regional logistics desk next period through a transport agency; primary mechanic: trade balance; secondary mechanic: market confidence; capacity fit: within current administrative capacity; intended effect: reduce corridor pressure.",
-              "rationale": "This fits the current campaign objectives by improving trade balance while protecting market confidence under the selected ledger constraints.",
-              "urgency": "soon"
-            },
-            {
-              "title": "Audit Security Corridors",
-              "detail": "Assign a civilian security audit team next period to contested service corridors; primary mechanic: public security; secondary mechanic: insurgency pressure; capacity fit: within current administrative capacity; intended effect: expose stabilization gaps.",
-              "rationale": "This fits the current campaign objectives by improving territorial integrity while reducing insurgency pressure in the current map context.",
-              "urgency": "immediate"
-            },
-            {
-              "title": "Open Trade Balance Desk",
-              "detail": "Open a treasury trade desk next period for export bottleneck review; primary mechanic: trade balance; secondary mechanic: fiscal space; capacity fit: within current administrative capacity; intended effect: identify cheap external-balance gains.",
-              "rationale": "This fits the current campaign objectives by targeting external balance while protecting fiscal space in the selected ledger.",
-              "urgency": "soon"
-            },
-            {
-              "title": "Publish Energy Resilience Plan",
-              "detail": "Publish a bounded grid resilience plan through the energy regulator next period; primary mechanic: economic resilience; secondary mechanic: unemployment; capacity fit: within current administrative capacity; intended effect: reduce service volatility.",
-              "rationale": "This fits the current campaign objectives by supporting domestic legitimacy while limiting employment and resilience pressure.",
-              "urgency": "opportunistic"
+        let cells = (0 ..< 5).flatMap { row in
+            (0 ..< 5).map { column in
+                """
+                {"matrixRow":\(row),"matrixColumn":\(column),"title":"Fund Matrix Program \(row)-\(column)","detail":"Create a bounded regional service program through existing institutions during the next campaign period.","rationale":"This proposal fits stored objectives, current authority, fiscal limits, and administrative capacity.","urgency":"soon","primaryMechanic":"internal-stability","secondaryMechanic":"market-confidence","actionKind":"policy","administrativeCost":10,"targetCountryCode":null,"targetRegionID":null,"sovereigntyChange":null}
+                """
             }
-          ]
         }
-        """
+        return "{\"suggestions\":[\(cells.joined(separator: ","))]}"
     }
 
     private func eventJSON(index: Int) -> String {
@@ -2586,6 +3423,457 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         }
         """
     }
+
+    func testPoliticalLedgerTolerantDecoding() throws {
+        let jsonStr = """
+        {
+            "budgetBalancePercentGDP": -2.5,
+            "entries": [],
+            "fiscalSpaceIndex": 55,
+            "inflationPercent": 2.0,
+            "nominalGDPTrillions": 1.2,
+            "publicDebtPercentGDP": 60.0,
+            "realGrowthPercent": 3.0,
+            "tradeBalancePercentGDP": -1.0,
+            "unemploymentPercent": 5.8,
+            "securityIndex": 75.0,
+            "rebelControlPercent": 2.0,
+            "resourceReserves": {}
+        }
+        """
+        let json = Data(jsonStr.utf8)
+
+        let decoder = JSONDecoder()
+        let ledger = try decoder.decode(NativeEconomicLedger.self, from: json)
+        XCTAssertEqual(ledger.governmentType, "democracy")
+        XCTAssertEqual(ledger.publicApprovalPercent, 50.0)
+        XCTAssertEqual(ledger.nextElectionRound, 48)
+    }
+
+    func testApprovalDriftAndElectionResolution() throws {
+        var state = makeState()
+        // Set up player country as a democracy
+        var playerLedger = state.economicLedger
+        playerLedger.governmentType = "democracy"
+        playerLedger.publicApprovalPercent = 45.0 // low approval, high risk of losing
+        playerLedger.nextElectionRound = 2
+        state.economicLedgers[state.country.code] = playerLedger
+        state.round = 2
+
+        // Advance turn by 1 month to trigger simulateAIDrift
+        let turn = NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "No external news.", worldTensionDelta: 0)
+        let applied = NativeGameEngine.apply(turn, to: state, months: 1)
+
+        // Verify nextElectionRound was updated (incremented by 48)
+        let nextLedger = try XCTUnwrap(applied.economicLedgers[state.country.code])
+        XCTAssertEqual(nextLedger.nextElectionRound, 50)
+
+        // Verify an election event is logged in the timeline
+        let electionEvents = applied.timeline.filter { $0.id.hasPrefix("election-resolution-") }
+        XCTAssertEqual(electionEvents.count, 1)
+    }
+
+    func testAutocracyCoupTrigger() {
+        var state = makeState()
+        // Setup CHN as an autocracy with extremely low approval
+        var chnLedger = NativeStrategyContextDatabase.startingEconomicLedger(forCode: "CHN", scenario: NativeScenarioCatalog.defaultScenario)
+        chnLedger.governmentType = "autocracy"
+        chnLedger.publicApprovalPercent = 15.0 // Critically low
+        state.economicLedgers["CHN"] = chnLedger
+
+        // Let's run simulation loop several times using simulateAIDrift directly to verify coup triggers
+        var testState = state
+        for _ in 1 ... 10 {
+            NativeStrategyContextDatabase.simulateAIDrift(state: &testState, months: 1)
+        }
+
+        // Coup event should have fired and decried autocracy downfall
+        let coupEvents = testState.timeline.filter { $0.id.hasPrefix("coup-") }
+        XCTAssertTrue(coupEvents.count > 0)
+    }
+
+    func testIdeologicalRelationshipDrift() {
+        var state = makeState()
+
+        // Player (BRA) is democracy. Set up CHN as autocracy and GBR as democracy
+        var braLedger = state.economicLedger
+        braLedger.governmentType = "democracy"
+        state.economicLedger = braLedger
+        state.economicLedgers["BRA"] = braLedger
+
+        var gbrLedger = NativeStrategyContextDatabase.startingEconomicLedger(forCode: "GBR", scenario: NativeScenarioCatalog.defaultScenario)
+        gbrLedger.governmentType = "democracy"
+        state.economicLedgers["GBR"] = gbrLedger
+
+        var chnLedger = NativeStrategyContextDatabase.startingEconomicLedger(forCode: "CHN", scenario: NativeScenarioCatalog.defaultScenario)
+        chnLedger.governmentType = "autocracy"
+        state.economicLedgers["CHN"] = chnLedger
+
+        // Initialize relationship scores
+        let chnState = NativeAICountryState(countryCode: "CHN", doctrine: .isolationist, budgetPriority: .stability, relationshipScores: ["BRA": 0], multiTurnAgenda: "", agendaProgress: 0)
+        let gbrState = NativeAICountryState(countryCode: "GBR", doctrine: .collaborative, budgetPriority: .diplomacy, relationshipScores: ["BRA": 0], multiTurnAgenda: "", agendaProgress: 0)
+        state.aiCountryStates["CHN"] = chnState
+        state.aiCountryStates["GBR"] = gbrState
+
+        // Run AI drift simulation for 12 months
+        var testState = state
+        NativeStrategyContextDatabase.simulateAIDrift(state: &testState, months: 12)
+
+        // Democracy GBR and Democracy BRA should drift positively
+        let gbrToBraRel = testState.aiCountryStates["GBR"]?.relationshipScores["BRA"] ?? 0
+        XCTAssertTrue(gbrToBraRel > 0, "Democracies should drift positively: \(gbrToBraRel)")
+
+        // Autocracy CHN and Democracy BRA should drift negatively
+        let chnToBraRel = testState.aiCountryStates["CHN"]?.relationshipScores["BRA"] ?? 0
+        XCTAssertTrue(chnToBraRel < 0, "Democracy and Autocracy should drift negatively: \(chnToBraRel)")
+    }
+
+    func testDefenderAlliesPenalizePlayerOccupation() throws {
+        var state = makeState()
+        let occupiedRegion = try XCTUnwrap(
+            GeopoliticalMapData.regions.first { $0.countryCode == "ARG" }
+        )
+        state.regionOccupations[occupiedRegion.id] = state.country.code
+        state.aiCountryStates["USA"] = NativeAICountryState(
+            countryCode: "USA",
+            doctrine: .collaborative,
+            budgetPriority: .diplomacy,
+            relationshipScores: ["ARG": 70, state.country.code: 10],
+            multiTurnAgenda: "Protect aligned regional partners.",
+            agendaProgress: 0
+        )
+
+        NativeStrategyContextDatabase.simulateAIDrift(state: &state, months: 1)
+
+        XCTAssertLessThanOrEqual(state.aiCountryStates["USA"]?.relationshipScores[state.country.code] ?? 100, 7)
+    }
+
+    func testRefinedGameMechanicsAndAIInterference() {
+        var state = makeState()
+
+        // 1. Verify Administrative Capacity drain from active conflicts and hostile AI agendas
+        state.regionConflicts["ARG"] = NativeRegionConflictState(
+            controllerCode: "ARG",
+            intensity: 3,
+            mode: .conventionalOccupation,
+            originalCountryCode: "ARG",
+            regionID: "ARG",
+            summary: "Conflict Test",
+            updatedAt: state.gameDate
+        )
+        state.aiCountryStates["ARG"] = NativeAICountryState(
+            countryCode: "ARG",
+            doctrine: .expansionist,
+            budgetPriority: .military,
+            relationshipScores: [state.country.code: -50],
+            multiTurnAgenda: "Hostile planning",
+            agendaProgress: 90
+        )
+
+        let turnGen = NativeGeneratedTurn(events: [], stabilityDelta: 0, summary: "Leap", worldTensionDelta: 0)
+        let advancedState = NativeGameEngine.apply(turnGen, to: state, months: 1)
+
+        // Hostile AI = 1 (ARG, relation -50 < -40), Conflict = 1 (ARG)
+        // Base refill is 100, stability penalty = (100 - state.stability) * 0.4
+        // With state.stability = 100, stability penalty = 0.
+        // servicesBonus = 0 (budgetServicesSlider default).
+        // rebelPenalty = 0 (player rebelControlPercent default).
+        // aiACDrain = 1 * 5 = 5.
+        // conflictACDrain = 1 * 3 = 3.
+        // Expected refillAmount = 100 - 5 - 3 = 92.
+        XCTAssertEqual(advancedState.administrativeCapacity, 92)
+
+        // 2. Verify AI Invasions trigger correctly on agendaProgress >= 100 and expansionist doctrine
+        var invasionState = makeState()
+        invasionState.aiCountryStates["ARG"] = NativeAICountryState(
+            countryCode: "ARG",
+            doctrine: .expansionist,
+            budgetPriority: .military,
+            relationshipScores: [invasionState.country.code: -50],
+            multiTurnAgenda: "Invasion plan",
+            agendaProgress: 100
+        )
+
+        // Ensure BRA has regions
+        let braRegions = GeopoliticalMapData.regions.filter { $0.countryCode == "BRA" }
+        XCTAssertFalse(braRegions.isEmpty)
+
+        // Let's run a turn, which should trigger the invasion
+        let postInvasionState = NativeGameEngine.apply(turnGen, to: invasionState, months: 1)
+
+        // The agendaProgress of ARG should be reset to 0
+        XCTAssertEqual(postInvasionState.aiCountryStates["ARG"]?.agendaProgress, 0)
+
+        // There should be a timeline event about invasion success or fail
+        let hasInvasionEvent = postInvasionState.timeline.contains { event in
+            event.id.contains("ai-invasion-success") || event.id.contains("ai-invasion-fail")
+        }
+        XCTAssertTrue(hasInvasionEvent)
+
+        // 3. Verify Market, Port, and Fortress buildings modify GDP, trade, and combat rolls
+        var buildingsState = makeState()
+        XCTAssertGreaterThanOrEqual(braRegions.count, 2)
+        let firstRegionID = braRegions[0].id
+        let secondRegionID = braRegions[1].id
+
+        buildingsState.mapBuildings = [
+            NativeBuildingSnapshot(ownerCountryCode: "BRA", regionID: firstRegionID, type: .market),
+            NativeBuildingSnapshot(ownerCountryCode: "BRA", regionID: secondRegionID, type: .port)
+        ]
+
+        buildingsState.regionOccupations[firstRegionID] = "BRA"
+        buildingsState.regionOccupations[secondRegionID] = "BRA"
+
+        let db = NativeStrategyContextDatabase.self
+        var testLedgers = buildingsState.economicLedgers
+        testLedgers = db.updatedEconomicLedgers(from: testLedgers, state: buildingsState, events: [], months: 1, targetDate: "2026-07-23")
+
+        // Market level 1 should boost growth, Port level 1 should boost trade balance
+        var baselineState = makeState()
+        baselineState.regionOccupations[firstRegionID] = "BRA"
+        baselineState.regionOccupations[secondRegionID] = "BRA"
+        let baselineLedgers = db.updatedEconomicLedgers(from: baselineState.economicLedgers, state: baselineState, events: [], months: 1, targetDate: "2026-07-23")
+
+        if let updatedLedger = testLedgers["BRA"], let baselineLedger = baselineLedgers["BRA"] {
+            XCTAssertGreaterThan(updatedLedger.realGrowthPercent, baselineLedger.realGrowthPercent)
+            XCTAssertGreaterThan(updatedLedger.tradeBalancePercentGDP, baselineLedger.tradeBalancePercentGDP)
+        }
+
+        // 4. Verify slider-based recruitment/attrition
+        var recruitState = makeState()
+        recruitState.budgetMilitarySlider = 0.50 // recruitment threshold is > 0.40
+        var testStateRecruit = recruitState
+        db.simulateAIDrift(state: &testStateRecruit, months: 1)
+
+        XCTAssertGreaterThan(testStateRecruit.militaryUnits["infantry", default: 0], recruitState.militaryUnits["infantry", default: 0])
+
+        var attritState = makeState()
+        attritState.budgetMilitarySlider = 0.10 // attrition threshold is < 0.20
+        var testStateAttrit = attritState
+        db.simulateAIDrift(state: &testStateAttrit, months: 1)
+
+        XCTAssertLessThan(testStateAttrit.militaryUnits["infantry", default: 0], attritState.militaryUnits["infantry", default: 0])
+    }
+
+    func testPlayerDecisionMatrixRequiresEveryEligibleCoordinate() throws {
+        var state = NativeGameEngine.initialState(for: testCountry, worldSeed: 424_242)
+        state.administrativeCapacity = 40
+        let matrix = makeLegalDecisionMatrix(for: state, cost: 10)
+
+        let validated = try NativeDecisionMatrixContract.validatedPlayerMatrix(matrix, state: state)
+
+        XCTAssertEqual(validated.count, 25)
+        XCTAssertEqual(Set(validated.map { "\($0.matrixRow):\($0.matrixColumn)" }).count, 25)
+        XCTAssertTrue(validated.allSatisfy { $0.administrativeCost <= state.administrativeCapacity })
+
+        var changedWorld = state
+        changedWorld.budgetMilitarySlider = 0.8
+        XCTAssertEqual(
+            NativeDecisionMatrixContract.eligibilityFailure(for: validated[0], state: changedWorld),
+            "world state changed after this matrix was generated"
+        )
+
+        var impossible = matrix
+        impossible[0].actionKind = "political"
+        impossible[0].detail = "Liberalize the political system toward democratic governance."
+        XCTAssertThrowsError(try NativeDecisionMatrixContract.validatedPlayerMatrix(impossible, state: state))
+
+        var unaffordable = matrix
+        unaffordable[1].administrativeCost = 41
+        XCTAssertThrowsError(try NativeDecisionMatrixContract.validatedPlayerMatrix(unaffordable, state: state))
+    }
+
+    func testOpenRouterMatrixPromptCarriesSeedsWorldPowerAndSovereigntyState() {
+        var state = NativeGameEngine.initialState(for: testCountry, worldSeed: 0xA11C_E123)
+        state.dynamicCountries["NBR"] = "New Brazil"
+        let prompt = NativeDecisionMatrixPrompt.make(for: state)
+
+        XCTAssertTrue(prompt.contains("worldSeed=2703024419"))
+        XCTAssertTrue(prompt.contains("turnSeed="))
+        XCTAssertTrue(prompt.contains("ALL COUNTRY STATES"))
+        XCTAssertTrue(prompt.contains("militaryUnits="))
+        XCTAssertTrue(prompt.contains("DYNAMIC COUNTRIES AND SOVEREIGNTY"))
+        XCTAssertTrue(prompt.contains("NBR=New Brazil"))
+        XCTAssertTrue(prompt.contains("EXACT POLITICAL DIRECTIVES CURRENTLY AVAILABLE"))
+        XCTAssertTrue(prompt.contains("Secession/new-country requires stored rebel/conflict pressure"))
+        XCTAssertTrue(prompt.contains("victoryStatus="))
+    }
+
+    func testSelectingMatrixCellPaysRecordedCostKeepsBoardAndRejectsDuplicate() throws {
+        let store = try makeStore()
+        var state = NativeGameEngine.initialState(for: testCountry, worldSeed: 99)
+        state.administrativeCapacity = 50
+        state.suggestedActions = makeLegalDecisionMatrix(for: state, cost: 12)
+        store.state = state
+        let suggestion = try XCTUnwrap(state.suggestedActions.first)
+
+        store.addSuggestedAction(suggestion)
+
+        XCTAssertEqual(store.state?.administrativeCapacity, 38)
+        XCTAssertEqual(store.state?.plannedActions.first?.administrativeCost, 12)
+        XCTAssertEqual(store.state?.plannedActions.first?.decisionKind, "policy")
+        XCTAssertEqual(store.state?.suggestedActions.count, 25)
+
+        store.addSuggestedAction(suggestion)
+        XCTAssertEqual(store.state?.plannedActions.count, 1)
+        XCTAssertTrue(store.lastError?.contains("already in the order queue") == true)
+    }
+
+    func testCampaignSeedAndCountryPolicyStreamsSurvivePersistence() throws {
+        var state = NativeGameEngine.initialState(for: testCountry, worldSeed: 123_456_789)
+        state.aiCountryStates["USA"]?.decisionStep = 7
+        let data = try JSONEncoder().encode(state)
+        let decoded = try JSONDecoder().decode(NativeCampaignState.self, from: data)
+
+        XCTAssertEqual(decoded.worldSeed, 123_456_789)
+        XCTAssertEqual(decoded.aiCountryStates["USA"]?.decisionSeed, state.aiCountryStates["USA"]?.decisionSeed)
+        XCTAssertEqual(decoded.aiCountryStates["USA"]?.decisionProfileID, state.aiCountryStates["USA"]?.decisionProfileID)
+        XCTAssertEqual(decoded.aiCountryStates["USA"]?.decisionStep, 7)
+    }
+
+    func testSuccessfulStructuredPlayerSecessionCreatesIndependentSeededActor() throws {
+        let baseState = NativeGameEngine.initialState(for: testCountry, worldSeed: 8080)
+        let region = try XCTUnwrap(GeopoliticalMapData.regions(forCountryCode: testCountry.code).first)
+        let change = NativeSovereigntyChange(
+            kind: .secession,
+            name: "New Brazil",
+            regionIDs: [region.id],
+            sourceCodes: [testCountry.code],
+            targetCode: "NBR"
+        )
+        var successful: NativeCampaignState?
+
+        for index in 0 ..< 20 where successful == nil {
+            var state = baseState
+            let action = NativePlannedAction(
+                administrativeCost: 20,
+                createdAt: state.gameDate,
+                decisionKind: "sovereignty",
+                detail: "Convene a constitutional convention for the stored secession settlement.",
+                id: "structured-secession-\(index)",
+                status: .planned,
+                title: "Convene secession settlement",
+                targetCountryCode: "NBR",
+                targetRegionID: region.id,
+                sovereigntyChange: change
+            )
+            state.plannedActions = [action]
+            let linked = makeEvent(
+                id: "secession-linked-\(index)",
+                playerRelated: true,
+                linkedActionIDs: [action.id]
+            )
+            let applied = NativeGameEngine.apply(
+                NativeGeneratedTurn(
+                    events: [linked],
+                    stabilityDelta: 0,
+                    summary: "The constitutional process reaches a formal and measurable sovereignty decision.",
+                    worldTensionDelta: 0
+                ),
+                to: state,
+                months: 1
+            )
+            if applied.plannedActions.first?.outcome != .failure {
+                successful = applied
+            }
+        }
+
+        let applied = try XCTUnwrap(successful)
+        XCTAssertEqual(applied.dynamicCountries["NBR"], "New Brazil")
+        XCTAssertEqual(applied.regionOccupations[region.id], "NBR")
+        XCTAssertNotNil(applied.aiCountryStates["NBR"])
+        XCTAssertNotEqual(applied.aiCountryStates["NBR"]?.decisionSeed, 0)
+        XCTAssertTrue(applied.timeline.contains { $0.sovereigntyChange?.targetCode == "NBR" })
+    }
+
+    func testComplexElectionsAndRegimeTransitions() {
+        let db = NativeStrategyContextDatabase.self
+
+        // 1. Verify 2010 calendar starting election round initialization
+        let braLedger = db.startingEconomicLedger(forCode: "BRA", scenario: NativeScenarioCatalog.defaultScenario)
+        let usaLedger = db.startingEconomicLedger(forCode: "USA", scenario: NativeScenarioCatalog.defaultScenario)
+        let gbrLedger = db.startingEconomicLedger(forCode: "GBR", scenario: NativeScenarioCatalog.defaultScenario)
+
+        XCTAssertEqual(braLedger.nextElectionRound, 10) // October 2010
+        XCTAssertEqual(usaLedger.nextElectionRound, 35) // November 2012
+        XCTAssertEqual(gbrLedger.nextElectionRound, 5) // May 2010
+
+        // 2. Verify coup transitions autocracy to democracy/hybrid and schedules first election
+        var coupState = makeState()
+        var autocracyLedger = db.startingEconomicLedger(forCode: "CHN", scenario: NativeScenarioCatalog.defaultScenario)
+        autocracyLedger.governmentType = "autocracy"
+        autocracyLedger.publicApprovalPercent = 10.0 // Critically low approval (<25%)
+        coupState.economicLedgers["CHN"] = autocracyLedger
+
+        var postCoupState = coupState
+        for _ in 1 ... 20 {
+            db.simulateAIDrift(state: &postCoupState, months: 1)
+            let type = postCoupState.economicLedgers["CHN"]?.governmentType ?? "autocracy"
+            if type == "democracy" || type == "hybrid" {
+                break
+            }
+        }
+
+        let finalCoupType = postCoupState.economicLedgers["CHN"]?.governmentType ?? "autocracy"
+        XCTAssertTrue(finalCoupType == "democracy" || finalCoupType == "hybrid")
+        XCTAssertEqual(postCoupState.economicLedgers["CHN"]?.nextElectionRound, postCoupState.round + 12)
+
+        // 3. Verify democratic collapse under severe instability
+        var collapseState = makeState()
+        var unstableDemocracy = db.startingEconomicLedger(forCode: "BRA", scenario: NativeScenarioCatalog.defaultScenario)
+        unstableDemocracy.governmentType = "democracy"
+        unstableDemocracy.publicApprovalPercent = 10.0 // Critically low approval
+        collapseState.stability = 10 // Critically low stability
+        collapseState.economicLedgers["BRA"] = unstableDemocracy
+
+        var postCollapseState = collapseState
+        for _ in 1 ... 30 {
+            db.simulateAIDrift(state: &postCollapseState, months: 1)
+            let type = postCollapseState.economicLedgers["BRA"]?.governmentType ?? "democracy"
+            if type == "autocracy" || type == "hybrid" {
+                break
+            }
+        }
+
+        let finalCollapseType = postCollapseState.economicLedgers["BRA"]?.governmentType ?? "democracy"
+        XCTAssertTrue(finalCollapseType == "autocracy" || finalCollapseType == "hybrid")
+
+        // 4. Verify hybrid regime transitions
+        // Hybrid -> Democracy under high stability/approval
+        var libState = makeState()
+        var hybridLedger = db.startingEconomicLedger(forCode: "RUS", scenario: NativeScenarioCatalog.defaultScenario)
+        hybridLedger.governmentType = "hybrid"
+        hybridLedger.publicApprovalPercent = 80.0
+        libState.stability = 85
+        libState.economicLedgers["RUS"] = hybridLedger
+
+        var postLibState = libState
+        for _ in 1 ... 30 {
+            db.simulateAIDrift(state: &postLibState, months: 1)
+            if postLibState.economicLedgers["RUS"]?.governmentType == "democracy" {
+                break
+            }
+        }
+        XCTAssertEqual(postLibState.economicLedgers["RUS"]?.governmentType, "democracy")
+        XCTAssertEqual(postLibState.economicLedgers["RUS"]?.nextElectionRound, postLibState.round + 24)
+
+        // Hybrid -> Autocracy under low stability/approval
+        var consState = makeState()
+        var fragileHybrid = db.startingEconomicLedger(forCode: "RUS", scenario: NativeScenarioCatalog.defaultScenario)
+        fragileHybrid.governmentType = "hybrid"
+        fragileHybrid.publicApprovalPercent = 15.0
+        consState.stability = 15
+        consState.economicLedgers["RUS"] = fragileHybrid
+
+        var postConsState = consState
+        for _ in 1 ... 30 {
+            db.simulateAIDrift(state: &postConsState, months: 1)
+            if postConsState.economicLedgers["RUS"]?.governmentType == "autocracy" {
+                break
+            }
+        }
+        XCTAssertEqual(postConsState.economicLedgers["RUS"]?.governmentType, "autocracy")
+    }
 }
 
 @MainActor
@@ -2600,7 +3888,8 @@ private final class FailingOpenRouterGameService: NativeOpenRouterService {
         temperature _: Double,
         responseFormat _: String? = nil,
         thinkingEnabled _: Bool = true,
-        onStreamProgress _: (@MainActor (String) -> Void)? = nil
+        onStreamProgress _: (@MainActor (String) -> Void)? = nil,
+        onReasoningProgress _: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil
     ) async throws -> String {
         throw NativeFoundationModelError.generationFailed("OpenRouter fixture failure")
     }
@@ -2644,24 +3933,31 @@ private final class FakeNativeAIService: NativeAIService {
 
 private actor AsyncGate {
     private var entered = false
-    private var continuation: CheckedContinuation<Void, Never>?
+    private var enterContinuations: [CheckedContinuation<Void, Never>] = []
+    private var waitContinuation: CheckedContinuation<Void, Never>?
 
     func wait() async {
         entered = true
+        for cont in enterContinuations {
+            cont.resume()
+        }
+        enterContinuations.removeAll()
+
         await withCheckedContinuation { continuation in
-            self.continuation = continuation
+            self.waitContinuation = continuation
         }
     }
 
     func waitUntilEntered() async {
-        while !entered {
-            await Task.yield()
+        if entered { return }
+        await withCheckedContinuation { continuation in
+            enterContinuations.append(continuation)
         }
     }
 
     func resume() {
-        continuation?.resume()
-        continuation = nil
+        waitContinuation?.resume()
+        waitContinuation = nil
     }
 }
 
@@ -2679,8 +3975,48 @@ private func makeStore(
     )
 }
 
+private func makeDiplomaticThread(for state: NativeCampaignState) -> NativeDiplomaticThread {
+    NativeDiplomaticThread(
+        id: "thread-arg",
+        lastUpdated: state.gameDate,
+        messages: [
+            NativeDiplomaticMessage(
+                date: state.gameDate,
+                id: "msg-1",
+                speaker: "Argentina",
+                text: "We need corridor guarantees."
+            )
+        ],
+        participant: PlayerCountry(code: "ARG", name: "Argentina"),
+        summary: "Argentina wants bounded logistics coordination."
+    )
+}
+
 private func makeState() -> NativeCampaignState {
     NativeGameEngine.initialState(for: testCountry)
+}
+
+private func makeLegalDecisionMatrix(
+    for state: NativeCampaignState,
+    cost: Int
+) -> [NativeSuggestedAction] {
+    NativeDecisionMatrixRow.allCases.flatMap { row in
+        NativeDecisionMatrixColumn.allCases.map { column in
+            NativeSuggestedAction(
+                detail: "Create a bounded public service program through existing institutions during the next campaign period.",
+                id: "test-matrix-\(row.rawValue)-\(column.rawValue)",
+                rationale: "This legal proposal fits stored objectives, fiscal limits, and current administrative authority.",
+                title: "Matrix program \(row.rawValue) \(column.rawValue)",
+                urgency: "soon",
+                primaryMechanic: "internal-stability",
+                secondaryMechanic: "market-confidence",
+                actionKind: "policy",
+                administrativeCost: min(cost, state.administrativeCapacity),
+                matrixRow: row.rawValue,
+                matrixColumn: column.rawValue
+            )
+        }
+    }
 }
 
 private func makeDefaults() -> UserDefaults {

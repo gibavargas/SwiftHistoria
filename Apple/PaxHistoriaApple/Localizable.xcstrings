@@ -109,11 +109,27 @@
     "%@ // STATUS" : {
 
     },
+    "%@ active" : {
+
+    },
     "%@ API Key" : {
+
+    },
+    "%@ Capacity" : {
 
     },
     "%@ countries available" : {
 
+    },
+    "%@ of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@"
+          }
+        }
+      }
     },
     "%@ ORDERS" : {
 
@@ -124,6 +140,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@/%2$@"
+          }
+        }
+      }
+    },
+    "%@/%@ → %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@/%2$@ → %3$@"
           }
         }
       }
@@ -167,7 +193,10 @@
     "+%@" : {
 
     },
-    "⚠ BUDGET WARNING" : {
+    "+%@ more" : {
+
+    },
+    "25 legal choices · Provider: %@" : {
 
     },
     "2010 COMMITMENTS" : {
@@ -282,6 +311,9 @@
         }
       }
     },
+    "ACTIVE PROPOSALS" : {
+
+    },
     "ACTIVE SIMULATION CHANNEL" : {
       "localizations" : {
         "en" : {
@@ -304,6 +336,12 @@
         }
       }
     },
+    "Add a new sovereign state to the world. It will appear in diplomacy, world economics, and AI decisions." : {
+
+    },
+    "ADD COUNTRY" : {
+
+    },
     "Add order" : {
       "localizations" : {
         "es" : {
@@ -319,6 +357,9 @@
           }
         }
       }
+    },
+    "Add Order" : {
+
     },
     "Advance" : {
       "localizations" : {
@@ -455,6 +496,9 @@
         }
       }
     },
+    "AI ACTIVITY" : {
+
+    },
     "AI Provider" : {
       "localizations" : {
         "en" : {
@@ -484,6 +528,7 @@
       }
     },
     "AI PROVIDER" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -521,7 +566,7 @@
         }
       }
     },
-    "Analyzing campaign tracks..." : {
+    "AI ROUTING" : {
 
     },
     "ANALYZING CAMPAIGN TRACKS..." : {
@@ -606,6 +651,9 @@
         }
       }
     },
+    "Assume control of %@?" : {
+
+    },
     "AUTO-SAVE ONLY (IRON MAN)" : {
       "localizations" : {
         "es" : {
@@ -621,6 +669,9 @@
           }
         }
       }
+    },
+    "Automatic fallback for the NVIDIA route and direct route when selected. Uses openrouter/free without an app-imposed completion-token cap." : {
+
     },
     "AVAILABILITY:" : {
       "localizations" : {
@@ -638,6 +689,9 @@
         }
       }
     },
+    "Available: %@/100" : {
+
+    },
     "Budget balance" : {
       "localizations" : {
         "es" : {
@@ -653,6 +707,9 @@
           }
         }
       }
+    },
+    "Building 25 state-valid decisions from the complete world snapshot..." : {
+
     },
     "CALCULATING GEOPOLITICAL SHIFTS..." : {
       "localizations" : {
@@ -757,6 +814,7 @@
       }
     },
     "Choose AI Provider" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -865,6 +923,9 @@
         }
       }
     },
+    "CLASSIFIED — EYES ONLY" : {
+
+    },
     "Clear search" : {
       "localizations" : {
         "es" : {
@@ -897,6 +958,9 @@
         }
       }
     },
+    "CODE (3-6 letters)" : {
+
+    },
     "Collaborative" : {
       "localizations" : {
         "es" : {
@@ -912,6 +976,12 @@
           }
         }
       }
+    },
+    "Command Center" : {
+
+    },
+    "Configure AI Routing" : {
+
     },
     "Conflict" : {
 
@@ -1031,6 +1101,9 @@
     "Cost %@" : {
 
     },
+    "Cost exceeds available administrative capacity." : {
+
+    },
     "Cost: %@ Capacity" : {
 
     },
@@ -1066,6 +1139,9 @@
         }
       }
     },
+    "Create New Country" : {
+
+    },
     "Crisis Action" : {
       "localizations" : {
         "es" : {
@@ -1091,6 +1167,9 @@
           }
         }
       }
+    },
+    "CUSTOM NATIONS (%@)" : {
+
     },
     "Defensive" : {
       "localizations" : {
@@ -1251,6 +1330,9 @@
           }
         }
       }
+    },
+    "Directive cost exceeds available capacity." : {
+
     },
     "Directives" : {
       "extractionState" : "stale",
@@ -1488,6 +1570,9 @@
         }
       }
     },
+    "Estimated Cost:" : {
+
+    },
     "Events" : {
       "localizations" : {
         "es" : {
@@ -1633,6 +1718,7 @@
       }
     },
     "Free tier: 20 requests/minute. Get a key at openrouter.ai/keys." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1653,6 +1739,9 @@
           }
         }
       }
+    },
+    "FULL NAME" : {
+
     },
     "GDP %@ · Growth %@%@" : {
       "localizations" : {
@@ -1838,6 +1927,9 @@
       }
     },
     "INTEL REPORT // CLASS-%@" : {
+
+    },
+    "Intelligence" : {
 
     },
     "INTELLIGENCE GAP — DATA REDACTED" : {
@@ -2029,6 +2121,9 @@
         }
       }
     },
+    "MAXIMUM ERA" : {
+
+    },
     "Mercantile" : {
       "localizations" : {
         "es" : {
@@ -2170,6 +2265,7 @@
       }
     },
     "No advisory suggestions available." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2184,6 +2280,9 @@
           }
         }
       }
+    },
+    "NO APP CAP" : {
+
     },
     "No campaign loaded" : {
       "localizations" : {
@@ -2232,6 +2331,9 @@
           }
         }
       }
+    },
+    "No decision matrix available." : {
+
     },
     "No events yet" : {
       "localizations" : {
@@ -2377,6 +2479,15 @@
         }
       }
     },
+    "NVIDIA NIM // PRIMARY" : {
+
+    },
+    "NVIDIA NIM is primary by default; OpenRouter Free takes over visibly if the NVIDIA route is unavailable." : {
+
+    },
+    "NVIDIA NIM is the default primary route, with OpenRouter Free as its visible fallback. You can change this later in Settings." : {
+
+    },
     "Ocean" : {
       "localizations" : {
         "es" : {
@@ -2425,7 +2536,7 @@
         }
       }
     },
-    "OPENROUTER (FREE) CONFIGURATION" : {
+    "OPENROUTER FREE // FALLBACK" : {
 
     },
     "OpenRouter is selected, but no API key is saved. Turn resolution will fall back to Z.AI if configured, otherwise Apple Foundation Models." : {
@@ -2550,6 +2661,7 @@
       }
     },
     "Plan concrete instruments, accept suggestions from the selected AI provider, and advance only when the queue is ready." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2632,6 +2744,9 @@
         }
       }
     },
+    "Primary inference route: minimaxai/minimax-m3, moonshotai/kimi-k2.6, and deepseek-ai/deepseek-v4-flash at NVIDIA NIM. Requests are balanced to prevent 429 rate limits." : {
+
+    },
     "Projections of fiscal space, GDP growth, inflation, public debt, and trade balances across all major game polities. Selected policies dynamically trigger domestic and external adjustments." : {
       "localizations" : {
         "es" : {
@@ -2648,7 +2763,11 @@
         }
       }
     },
+    "PROPOSAL FROM %@" : {
+
+    },
     "Proposals from other nations" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2665,6 +2784,7 @@
       }
     },
     "Provider: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2722,7 +2842,13 @@
         }
       }
     },
+    "Queued decisions" : {
+
+    },
     "Quick actions" : {
+
+    },
+    "R%@" : {
 
     },
     "RECENT FISCAL ENTRIES" : {
@@ -3061,10 +3187,7 @@
         }
       }
     },
-    "Select how SwiftHistoria generates turns. You can change this later in Settings." : {
-
-    },
-    "Select how turns, suggestions, advisor answers, and diplomacy replies are generated." : {
+    "Select one or more cells from the matrix above." : {
 
     },
     "Send" : {
@@ -3207,6 +3330,9 @@
         }
       }
     },
+    "STANDING FORCES" : {
+
+    },
     "Strait" : {
       "localizations" : {
         "es" : {
@@ -3240,6 +3366,7 @@
       }
     },
     "Suggested actions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3338,6 +3465,9 @@
         }
       }
     },
+    "Switch country" : {
+
+    },
     "SYSTEM" : {
       "localizations" : {
         "es" : {
@@ -3370,6 +3500,9 @@
         }
       }
     },
+    "Technology era" : {
+
+    },
     "Tension" : {
 
     },
@@ -3398,6 +3531,9 @@
           }
         }
       }
+    },
+    "The campaign world stays intact. Current drafts clear, the active economic ledger changes to %@, and AI suggestions refresh for the new government." : {
+
     },
     "TIMELINE" : {
       "localizations" : {
@@ -3430,6 +3566,9 @@
           }
         }
       }
+    },
+    "Transfer Player Control" : {
+
     },
     "Try a country name or ISO code." : {
       "localizations" : {
@@ -3532,6 +3671,7 @@
       }
     },
     "Used when AI Provider is set to OpenRouter. Routes through OpenRouter's unified Free Models Router (openrouter/free)." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3578,6 +3718,9 @@
           }
         }
       }
+    },
+    "Write a policy, strategic investment, or diplomatic directive. Describe the action clearly in natural language." : {
+
     },
     "Z.AI" : {
       "localizations" : {

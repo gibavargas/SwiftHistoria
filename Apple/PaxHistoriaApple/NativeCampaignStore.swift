@@ -60,6 +60,7 @@ final class NativeCampaignStore: ObservableObject {
     /// the stale result is dropped and not applied to the state, preventing ghost mutations.
     var stateVersion = 0
     var pendingSuggestionRefreshForce: Bool?
+    var persistDebounceTask: Task<Void, Never>?
 
     static let maximumCampaignImportBytes = 5_000_000
     static let selectedCountryKey = "pax-historia.native.selected-country.v1"
@@ -148,7 +149,7 @@ final class NativeCampaignStore: ObservableObject {
         selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: state)
     }
 
-    static var suggestionRefreshTimeoutNanoseconds: UInt64 = 30_000_000_000
+    static var suggestionRefreshTimeoutNanoseconds: UInt64 = 150_000_000_000
     private static let maximumAdministrativeCapacity = 120
 
     static var uiTestResetRequested: Bool {
@@ -163,12 +164,37 @@ final class NativeCampaignStore: ObservableObject {
 
     private static func currentAIProviderRoute(defaults: UserDefaults) -> (provider: String, model: String, identifier: String, detail: String) {
         let preference = NativeAIProviderPreference.current(defaults: defaults)
+        let nvidiaKey = defaults.string(forKey: "NVIDIA_API_KEY") ?? ""
+        let hasNVIDIAKey = !nvidiaKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let openRouterKey = defaults.string(forKey: "OPENROUTER_API_KEY") ?? ""
         let hasOpenRouterKey = !openRouterKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let zaiKey = defaults.string(forKey: "ZAI_API_KEY") ?? ""
         let hasZAIKey = !zaiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
         switch preference {
+        case .nvidia:
+            if hasNVIDIAKey {
+                return (
+                    "NVIDIA NIM",
+                    "MiniMax / Kimi / DeepSeek",
+                    NativeNVIDIAService.modelIdentifier,
+                    "Calling MiniMax-M3 / Kimi-K2.6 / DeepSeek-V4-Flash through NVIDIA NIM first; OpenRouter Free is the visible fallback. SwiftHistoria applies no completion-token cap."
+                )
+            }
+            if hasOpenRouterKey {
+                return (
+                    "OpenRouter",
+                    "Free Models Router",
+                    "openrouter/free",
+                    "No NVIDIA API key is saved. Starting on the configured OpenRouter Free fallback without an app-level completion-token cap."
+                )
+            }
+            return (
+                "NVIDIA NIM",
+                "MiniMax / Kimi / DeepSeek",
+                NativeNVIDIAService.modelIdentifier,
+                "NVIDIA NIM is primary, but neither its NVIDIA key nor the OpenRouter fallback key is saved."
+            )
         case .appleFoundation:
             return (
                 "Apple Foundation Models",
@@ -234,6 +260,7 @@ final class NativeCampaignStore: ObservableObject {
         aiService: (any NativeAIService)? = nil,
         persistenceDirectory: URL? = nil
     ) {
+        NativeAIProviderPreference.migrateLegacyDefaultIfNeeded(defaults: defaults)
         let decoder = JSONDecoder()
         self.defaults = defaults
         encoder = JSONEncoder()
@@ -278,18 +305,19 @@ final class NativeCampaignStore: ObservableObject {
         }
 
         selectedScenarioID = Self.normalizedScenarioID(defaults.string(forKey: Self.slotKey(Self.selectedScenarioKey, slot: activeSlot)) ?? loadedState?.scenarioID)
+        // Set the slot before any recovery write. Otherwise a country-only save
+        // restored from slot 2 or 3 would create its initial campaign in slot 1.
+        saveSlot = activeSlot
 
         if let selectedCountry, state == nil {
             state = NativeGameEngine.initialState(for: selectedCountry, scenario: selectedScenario, language: selectedLanguage)
-            persistState()
+            persistStateImmediately()
         } else if selectedCountry == nil, let state {
             selectedCountry = state.country
             selectedLanguage = state.language
             selectedScenarioID = Self.normalizedScenarioID(state.scenarioID)
         }
         selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: state)
-        // Set saveSlot after all stored properties are initialized
-        saveSlot = activeSlot
         logger.info("Native campaign store initialized hasState=\(self.state != nil, privacy: .public)")
     }
 
@@ -347,7 +375,7 @@ final class NativeCampaignStore: ObservableObject {
         if let selectedCountry {
             state = NativeGameEngine.initialState(for: selectedCountry, scenario: scenario, language: selectedLanguage)
             selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: state)
-            persistState()
+            persistStateImmediately()
             Task { await refreshSuggestedActions(force: true) }
         }
     }
@@ -370,7 +398,7 @@ final class NativeCampaignStore: ObservableObject {
         if let data = try? encoder.encode(country) {
             defaults.set(data, forKey: slotKey(Self.selectedCountryKey))
         }
-        persistState()
+        persistStateImmediately()
         Task { await refreshSuggestedActions(force: true) }
     }
 
@@ -397,10 +425,18 @@ final class NativeCampaignStore: ObservableObject {
         logger.info("Native campaign selection reset")
     }
 
-    func switchCountry(to newCountry: PlayerCountry) {
-        guard var currentState = state else { return }
+    @discardableResult
+    func switchCountry(to newCountry: PlayerCountry) -> Bool {
+        guard var currentState = state else { return false }
+        guard currentState.gameMode != .ironman else { return false }
+        guard newCountry.code != currentState.country.code else { return false }
+
+        let allowedCodes = Set(CountryCatalog.all.map(\.code)).union(currentState.dynamicCountries.keys)
+        guard allowedCodes.contains(newCountry.code) else { return false }
+
         invalidateInFlightWork()
 
+        let previousCountry = currentState.country
         selectedCountry = newCountry
         currentState.country = newCountry
 
@@ -419,6 +455,12 @@ final class NativeCampaignStore: ObservableObject {
         draftAction = ""
         draftAdvisorQuestion = ""
         draftDiplomaticMessage = ""
+        lastAdvisorError = nil
+        lastDiplomacyError = nil
+        lastError = nil
+        lastSuggestionError = nil
+        lastTurnReport = nil
+        lastRecoveryNotice = "Control transferred from \(previousCountry.name) to \(newCountry.name). The shared campaign world was preserved."
 
         state = currentState
 
@@ -430,10 +472,11 @@ final class NativeCampaignStore: ObservableObject {
         logger.info("Switched country to \(newCountry.code)")
 
         Task { await refreshSuggestedActions(force: true) }
+        return true
     }
 
     func manualSaveCampaign() {
-        persistState()
+        persistStateImmediately()
         lastRecoveryNotice = "Campaign manually saved successfully."
         logger.info("Campaign manually saved")
     }
@@ -465,8 +508,62 @@ final class NativeCampaignStore: ObservableObject {
         invalidateInFlightWork()
         currentState.gameMode = mode
         state = currentState
-        persistState()
+        persistStateImmediately()
         logger.info("Game mode changed to \(mode.rawValue)")
+    }
+
+    /// Adds a new player-created country to the campaign's `dynamicCountries` map.
+    /// This country will appear in diplomacy, economic ledgers, and AI state.
+    /// Returns `true` if the country was created, `false` if validation failed.
+    @discardableResult
+    func addDynamicCountry(code: String, name: String) -> Bool {
+        guard var currentState = state else { return false }
+        let cleanCode = code.uppercased().filter { $0 >= "A" && $0 <= "Z" }
+        let cleanName = sanitizeFoundationModelText(name)
+        guard cleanCode.count >= 3, cleanCode.count <= 6, !cleanName.isEmpty,
+              cleanName.split(separator: " ").count >= 2 || cleanName.count >= 4
+        else { return false }
+
+        // Don't duplicate existing codes
+        let existingCodes = Set(NativeStrategyContextDatabase.strategicCountryCodes(for: currentState))
+        guard !existingCodes.contains(cleanCode) else { return false }
+
+        currentState.dynamicCountries[cleanCode] = cleanName
+
+        // Create a starter ledger and AI state so the new country is immediately interactive
+        let scenario = NativeScenarioCatalog.scenario(for: currentState.scenarioID)
+        if currentState.economicLedgers[cleanCode] == nil {
+            currentState.economicLedgers[cleanCode] = NativeStrategyContextDatabase.startingEconomicLedger(
+                forCode: cleanCode,
+                scenario: scenario
+            )
+        }
+        if currentState.aiCountryStates[cleanCode] == nil {
+            currentState.aiCountryStates[cleanCode] = NativeAICountryState(
+                countryCode: cleanCode,
+                doctrine: .isolationist,
+                budgetPriority: .stability,
+                relationshipScores: [currentState.country.code: 0],
+                multiTurnAgenda: "Newly recognized state establishing its position.",
+                agendaProgress: 0
+            )
+        }
+
+        state = currentState
+        persistStateImmediately()
+        logger.info("Dynamic country added: \(cleanCode) = \(cleanName)")
+        return true
+    }
+
+    /// Lists all countries visible in this campaign (standard + dynamic), sorted by name.
+    func allVisibleCountries() -> [PlayerCountry] {
+        guard let state else { return CountryCatalog.all }
+        var countries = CountryCatalog.all
+        for (code, name) in state.dynamicCountries {
+            guard !countries.contains(where: { $0.code == code }) else { continue }
+            countries.append(PlayerCountry(code: code, name: name))
+        }
+        return countries.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     var campaignExportFilename: String {
@@ -521,7 +618,7 @@ final class NativeCampaignStore: ObservableObject {
         }
         defaults.set(selectedScenarioID, forKey: slotKey(Self.selectedScenarioKey))
         defaults.set(selectedLanguage.rawValue, forKey: slotKey(Self.selectedLanguageKey))
-        persistState()
+        persistStateImmediately()
         logger.info("Native campaign imported bytes=\(data.count, privacy: .public) scenario=\(self.selectedScenarioID, privacy: .public)")
     }
 
@@ -556,7 +653,11 @@ final class NativeCampaignStore: ObservableObject {
 
     func addSuggestedAction(_ suggestion: NativeSuggestedAction) {
         guard var state else { return }
-        let cost = NativeGameEngine.estimateDirectiveCost(for: suggestion.detail)
+        if let eligibilityFailure = NativeDecisionMatrixContract.eligibilityFailure(for: suggestion, state: state) {
+            lastError = "This matrix decision is no longer available: \(eligibilityFailure). Refresh the board."
+            return
+        }
+        let cost = NativeDecisionMatrixContract.effectiveCost(of: suggestion)
         if state.administrativeCapacity < cost {
             lastError = "Insufficient administrative capacity. This suggestion requires \(cost) capacity."
             return
@@ -565,14 +666,33 @@ final class NativeCampaignStore: ObservableObject {
         guard !detail.isEmpty else { return }
         let title = sanitizeFoundationModelText(suggestion.title)
         guard !title.isEmpty, !containsFoundationPlaceholderText(title) else { return }
+        guard !state.plannedActions.contains(where: {
+            $0.status == .planned && $0.title == title && $0.detail == detail
+        }) else {
+            lastError = "This matrix decision is already in the order queue."
+            return
+        }
+
+        // Parse mechanic tracks from suggestion's explicit fields, falling back to detail text
+        let mechanicTracks = Self.extractMechanicTracks(
+            primary: suggestion.primaryMechanic,
+            secondary: suggestion.secondaryMechanic,
+            detail: detail
+        )
 
         let action = NativePlannedAction(
+            administrativeCost: cost,
             createdAt: state.gameDate,
+            decisionKind: suggestion.actionKind,
             detail: detail,
             id: "action-\(state.round)-\(state.plannedActions.count + 1)",
             resolvedAt: nil,
             status: .planned,
-            title: title
+            title: title,
+            mechanicTracks: mechanicTracks,
+            targetCountryCode: suggestion.targetCountryCode,
+            targetRegionID: suggestion.targetRegionID,
+            sovereigntyChange: suggestion.sovereigntyChange
         )
         invalidateInFlightWork()
         state.administrativeCapacity -= cost
@@ -583,7 +703,6 @@ final class NativeCampaignStore: ObservableObject {
             source: "ai-suggestion",
             state: state
         )
-        state.suggestedActions.removeAll { $0.id == suggestion.id }
         state.lastSummary = Self.acceptedSuggestionSummary(for: action, language: state.language)
         self.state = state
         persistState()
@@ -596,7 +715,9 @@ final class NativeCampaignStore: ObservableObject {
         if let idx = state.plannedActions.firstIndex(where: { $0.id == id }) {
             let action = state.plannedActions[idx]
             if action.status == .planned {
-                let cost = NativeGameEngine.estimateDirectiveCost(for: action.detail)
+                let cost = action.administrativeCost > 0
+                    ? action.administrativeCost
+                    : NativeGameEngine.estimateDirectiveCost(for: action.detail)
                 state.administrativeCapacity = min(Self.maximumAdministrativeCapacity, state.administrativeCapacity + cost)
             }
             state.plannedActions.remove(at: idx)
@@ -616,7 +737,9 @@ final class NativeCampaignStore: ObservableObject {
         for index in offsets.sorted(by: >) where state.plannedActions.indices.contains(index) {
             let action = state.plannedActions[index]
             if action.status == .planned {
-                let cost = NativeGameEngine.estimateDirectiveCost(for: action.detail)
+                let cost = action.administrativeCost > 0
+                    ? action.administrativeCost
+                    : NativeGameEngine.estimateDirectiveCost(for: action.detail)
                 state.administrativeCapacity = min(Self.maximumAdministrativeCapacity, state.administrativeCapacity + cost)
             }
             state.plannedActions.remove(at: index)
@@ -732,7 +855,6 @@ final class NativeCampaignStore: ObservableObject {
                     text: reply
                 )
             )
-            nextThread.messages = Array(nextThread.messages.suffix(30))
             nextThread.lastUpdated = nextState.gameDate
             nextThread.summary = sanitizeFoundationModelText(reply).prefixText(140)
             nextState.upsertDiplomaticThread(nextThread)
@@ -797,6 +919,7 @@ final class NativeCampaignStore: ObservableObject {
         let requestVersion = stateVersion
         let laneCount = NativeStrategyContextDatabase.estimatedLaneCount(for: currentState)
         let providerRoute = Self.currentAIProviderRoute(defaults: defaults)
+        let expectsLiveReasoning = providerRoute.provider == "OpenRouter"
         turnProgress = NativeTurnProgress(
             completedLanes: 0,
             detail: providerRoute.detail,
@@ -804,7 +927,9 @@ final class NativeCampaignStore: ObservableObject {
             totalLanes: laneCount,
             providerName: providerRoute.provider,
             modelName: providerRoute.model,
-            modelIdentifier: providerRoute.identifier
+            modelIdentifier: providerRoute.identifier,
+            reasoningStatus: expectsLiveReasoning ? .waiting : nil,
+            reasoningText: expectsLiveReasoning ? "Waiting for the selected free model to expose reasoning." : nil
         )
         var shouldRefreshSuggestions = false
 
@@ -814,25 +939,32 @@ final class NativeCampaignStore: ObservableObject {
                 turnProgress = progress
             }
             guard isCurrentStateVersion(requestVersion) else { return }
-            let activeRoute = turnProgress.map { ($0.providerName, $0.modelName, $0.modelIdentifier) }
+            let activeProgress = turnProgress
             turnProgress = NativeTurnProgress(
                 completedLanes: max(0, laneCount - 1),
                 detail: "Checking dates, linked actions, and visible consequences.",
                 phase: "Validating turn",
                 totalLanes: laneCount,
-                providerName: activeRoute?.0,
-                modelName: activeRoute?.1,
-                modelIdentifier: activeRoute?.2
+                providerName: activeProgress?.providerName,
+                modelName: activeProgress?.modelName,
+                modelIdentifier: activeProgress?.modelIdentifier,
+                reasoningStatus: activeProgress?.reasoningStatus,
+                reasoningText: activeProgress?.reasoningText
             )
-            let validated = try NativeGameEngine.validated(generated, state: currentState, months: months)
+            var validated = try NativeGameEngine.validated(generated, state: currentState, months: months)
+            let priorAIStates = currentState.aiCountryStates
+            let simulation = await NativeWorldSimulator.simulate(state: currentState, months: months)
+            validated.events.append(contentsOf: simulation.events)
             turnProgress = NativeTurnProgress(
                 completedLanes: laneCount,
                 detail: "Updating budgets, fiscal space, action memory, and campaign effects.",
                 phase: "Applying economics",
                 totalLanes: laneCount,
-                providerName: activeRoute?.0,
-                modelName: activeRoute?.1,
-                modelIdentifier: activeRoute?.2
+                providerName: activeProgress?.providerName,
+                modelName: activeProgress?.modelName,
+                modelIdentifier: activeProgress?.modelIdentifier,
+                reasoningStatus: activeProgress?.reasoningStatus,
+                reasoningText: activeProgress?.reasoningText
             )
             currentState = NativeGameEngine.apply(
                 validated,
@@ -840,11 +972,28 @@ final class NativeCampaignStore: ObservableObject {
                 months: months
             )
 
+            // Preserve drift/economic mutations from `apply`, then overlay the
+            // replay-safe decision stream and relationship deltas chosen in parallel.
+            for (code, update) in simulation.updatedStates {
+                guard var merged = currentState.aiCountryStates[code] else { continue }
+                merged.decisionProfileID = update.decisionProfileID
+                merged.decisionSeed = update.decisionSeed
+                merged.decisionStep = update.decisionStep
+                merged.lastAIActionSummary = update.lastAIActionSummary
+                merged.turnsSinceAIAction = 0
+                merged.agendaProgress = max(merged.agendaProgress, update.agendaProgress)
+                let previousRelationships = priorAIStates[code]?.relationshipScores ?? [:]
+                for (target, value) in update.relationshipScores where previousRelationships[target] != value {
+                    merged.relationshipScores[target] = value
+                }
+                currentState.aiCountryStates[code] = merged
+            }
+
             invalidateInFlightWork()
             state = currentState
             lastTurnReport = validated
             lastError = nil
-            persistState()
+            persistStateImmediately()
             shouldRefreshSuggestions = true
             logger.info("Native campaign advanced round=\(currentState.round, privacy: .public) months=\(months, privacy: .public)")
         } catch {
@@ -853,10 +1002,15 @@ final class NativeCampaignStore: ObservableObject {
             invalidateInFlightWork()
             state = currentState
             lastError = error.localizedDescription
-            persistState()
+            persistStateImmediately()
             logger.error("Native campaign advance failed round=\(currentState.round, privacy: .public) months=\(months, privacy: .public)")
         }
         if shouldRefreshSuggestions {
+            // Turn mutation is complete. Release the advancement gate before
+            // refreshing so this request is not mistaken for a refresh queued
+            // during generation and then left pending indefinitely.
+            isAdvancing = false
+            turnProgress = nil
             await refreshSuggestedActions(force: true)
         }
     }
@@ -874,7 +1028,9 @@ final class NativeCampaignStore: ObservableObject {
             return
         }
         guard !isLoadingSuggestions else {
-            pendingSuggestionRefreshForce = (pendingSuggestionRefreshForce ?? false) || force
+            if force {
+                pendingSuggestionRefreshForce = true
+            }
             return
         }
         guard force || currentState.suggestedActions.isEmpty else { return }
@@ -884,9 +1040,10 @@ final class NativeCampaignStore: ObservableObject {
         let requestVersion = stateVersion
         defer {
             isLoadingSuggestions = false
-            if let pendingForce = pendingSuggestionRefreshForce {
-                pendingSuggestionRefreshForce = nil
-                Task { await refreshSuggestedActions(force: pendingForce) }
+            let shouldRunPendingRefresh = pendingSuggestionRefreshForce == true
+            pendingSuggestionRefreshForce = nil
+            if shouldRunPendingRefresh {
+                Task { await refreshSuggestedActions(force: true) }
             }
         }
 
@@ -894,7 +1051,11 @@ final class NativeCampaignStore: ObservableObject {
             let suggestions = try await suggestionsWithTimeout(for: currentState)
             guard isCurrentStateVersion(requestVersion) else { return }
             currentState.suggestedActions = suggestions
-            currentState.aiReadiness = .available(tokenBudget: "sliced-guided-generation context=4096, suggestions=4x180")
+            let reportedProvider = lastAIProviderUsed
+            let provider = reportedProvider == "Unknown" || reportedProvider == "None"
+                ? selectedAIProviderPreference.providerName
+                : reportedProvider
+            currentState.aiReadiness = .available(tokenBudget: "\(provider) world-state matrix, 25 eligible cells")
             state = currentState
             lastSuggestionError = nil
             persistState()
@@ -1251,6 +1412,18 @@ final class NativeCampaignStore: ObservableObject {
         if state.aiCountryStates.isEmpty {
             state.aiCountryStates = NativeStrategyContextDatabase.initialAICountryStates(for: state.scenarioID)
         }
+        if state.worldSeed == 0 {
+            state.worldSeed = NativeWorldSimulator.resolvedWorldSeed(for: state)
+        }
+        for code in state.aiCountryStates.keys {
+            let seed = state.aiCountryStates[code]?.decisionSeed == 0
+                ? NativeWorldSimulator.countrySeed(worldSeed: state.worldSeed, countryCode: code)
+                : state.aiCountryStates[code]?.decisionSeed ?? 0
+            state.aiCountryStates[code]?.decisionSeed = seed
+            if !(0 ..< NativeWorldSimulator.profileCount).contains(state.aiCountryStates[code]?.decisionProfileID ?? -1) {
+                state.aiCountryStates[code]?.decisionProfileID = Int(seed & 0x0FFF)
+            }
+        }
         return state
     }
 
@@ -1346,6 +1519,27 @@ final class NativeCampaignStore: ObservableObject {
         }
     }
 
+    private static func extractMechanicTracks(primary: String, secondary: String, detail: String) -> [NativeStrategicTrack] {
+        let combined = "\(primary) \(secondary) \(detail)".lowercased()
+        var tracks: [NativeStrategicTrack] = []
+        let mapping: [(keywords: [String], track: NativeStrategicTrack)] = [
+            (["budget", "fiscal", "debt", "tax", "fiscal-space", "fiscal space"], .economicResilience),
+            (["market", "confidence", "trade-balance", "trade balance", "export", "import"], .marketConfidence),
+            (["stability", "public", "unrest", "protest", "internal"], .internalStability),
+            (["security", "military", "defense", "insurgency", "rebel"], .securityAnxiety),
+            (["diplomacy", "treaty", "relation", "alliance", "diplomatic"], .diplomaticLeverage),
+            (["infrastructure", "grid", "energy", "port", "rail", "transport"], .economicResilience),
+            (["climate", "environment", "carbon", "resilience"], .economicResilience),
+            (["tension", "conflict", "war", "friction"], .worldTension)
+        ]
+        for (keywords, track) in mapping {
+            if keywords.first(where: { combined.contains($0) }) != nil, !tracks.contains(track) {
+                tracks.append(track)
+            }
+        }
+        return tracks
+    }
+
     private static func defaultDiplomaticPartnerCode(for state: NativeCampaignState?) -> String {
         guard let state else { return "" }
         return CountryCatalog.all.first { $0.code != state.country.code }?.code ?? ""
@@ -1371,6 +1565,14 @@ final class NativeCampaignStore: ObservableObject {
         state.budgetMilitarySlider = normalized.military
         state.budgetServicesSlider = normalized.services
         state.budgetDiplomacySlider = normalized.diplomacy
+        self.state = state
+        persistState()
+    }
+
+    func updateResearchBudget(_ value: Double) {
+        guard var state, value.isFinite else { return }
+        invalidateInFlightWork()
+        state.budgetResearchSlider = min(1.0, max(0.0, value))
         self.state = state
         persistState()
     }

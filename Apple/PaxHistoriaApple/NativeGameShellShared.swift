@@ -159,66 +159,130 @@ func native2010SignalColor(_ level: Native2010SignalLevel) -> Color {
     }
 }
 
+func nativeCapacityColor(for capacity: Int) -> Color {
+    if capacity >= 70 {
+        Color.neonTeal
+    } else if capacity >= 30 {
+        Color.alertGold
+    } else {
+        Color.softRed
+    }
+}
+
 struct NativeCompactStatusBar: View {
     let state: NativeCampaignState
     let latestEvent: NativeCampaignEvent?
-    @State private var pulse = false
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Country + round badge
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(Color.glowingCyan)
-                    .frame(width: 8, height: 8)
-                Text(state.country.code)
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundStyle(Color.glowingCyan)
-                Text("·")
-                    .foregroundStyle(.secondary)
-                Text("Round \(state.round)")
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(spacing: 10) {
+                NativeCountryStandard(countryCode: state.country.code, size: 36)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(CountryNameResolver.name(forCode: state.country.code, in: state).uppercased())
+                        .font(NativeWarRoomTheme.displayFont(.headline, weight: .bold))
+                        .tracking(0.8)
+                        .foregroundStyle(NativeWarRoomTheme.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                    Text("\(state.gameDate.uppercased())  ·  ROUND \(state.round)")
+                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                Image(systemName: state.aiReadiness.ok ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash")
+                    .font(.caption)
+                    .foregroundStyle(state.aiReadiness.ok ? NativeWarRoomTheme.fieldGreen : NativeWarRoomTheme.threatRed)
+                    .accessibilityLabel(state.aiReadiness.ok ? "AI ready" : "AI unavailable")
             }
 
-            Divider().frame(height: 16)
+            Rectangle()
+                .fill(NativeWarRoomTheme.brass.opacity(0.22))
+                .frame(height: 1)
 
-            // Capacity
-            HStack(spacing: 4) {
-                Image(systemName: "bolt.horizontal")
-                    .font(.caption2)
-                    .foregroundStyle(state.administrativeCapacity >= 30 ? Color.neonTeal : Color.softRed)
-                Text("\(state.administrativeCapacity)")
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundStyle(state.administrativeCapacity >= 30 ? Color.neonTeal : Color.softRed)
+            HStack(spacing: 0) {
+                NativeAtlasMetric(label: "STABILITY", value: "\(state.stability)%", tint: NativeWarRoomTheme.statusColor(for: state.stability))
+                NativeAtlasMetric(label: "TENSION", value: "\(state.worldTension)%", tint: NativeWarRoomTheme.statusColor(for: state.worldTension, highIsGood: false))
+                NativeAtlasMetric(label: "CAPACITY", value: "\(state.administrativeCapacity)", tint: nativeCapacityColor(for: state.administrativeCapacity))
             }
 
-            Spacer()
-
-            // Latest event (truncated)
-            if let event = latestEvent {
-                Circle()
-                    .fill(event.importance == .severe ? Color.softRed : Color.alertGold)
-                    .frame(width: 6, height: 6)
-                    .opacity(pulse ? 0.4 : 1.0)
-                    .scaleEffect(pulse ? 1.3 : 1.0)
-                    .onAppear {
-                        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                            pulse = true
-                        }
+            #if os(macOS)
+                if let event = latestEvent {
+                    HStack(spacing: 7) {
+                        Rectangle()
+                            .fill(event.importance == .severe ? NativeWarRoomTheme.threatRed : NativeWarRoomTheme.alertAmber)
+                            .frame(width: 3, height: 13)
+                        Text("LATEST")
+                            .font(NativeWarRoomTheme.labelFont(.caption2))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                        Text(event.title)
+                            .font(NativeWarRoomTheme.bodyFont(.caption, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.ink)
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
                     }
-                Text(event.title)
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-            }
+                }
+            #endif
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .glassmorphicCard(borderColor: Color.white.opacity(0.1), cornerRadius: 10)
+        .padding(.horizontal, 13)
+        .padding(.vertical, 11)
+        .glassmorphicCard(borderColor: NativeWarRoomTheme.brass.opacity(0.32), cornerRadius: 8)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("native-compact-status-bar")
+    }
+}
+
+struct NativeCountryStandard: View {
+    let countryCode: String
+    var size: CGFloat = 34
+
+    var body: some View {
+        Group {
+            if let flag = CountryCatalog.flagEmoji(forAlpha3: countryCode) {
+                Text(flag)
+                    .font(.system(size: size * 0.62))
+            } else {
+                Text(String(countryCode.prefix(3)).uppercased())
+                    .font(.system(size: size * 0.27, weight: .black, design: .monospaced))
+                    .foregroundStyle(NativeWarRoomTheme.brass)
+            }
+        }
+        .frame(width: size * 1.3, height: size)
+        .background(NativeWarRoomTheme.archiveShadow.opacity(0.94))
+        .overlay {
+            Rectangle()
+                .stroke(NativeWarRoomTheme.brass.opacity(0.42), lineWidth: 1)
+        }
+        .accessibilityLabel("Country standard for \(countryCode)")
+    }
+}
+
+private struct NativeAtlasMetric: View {
+    let label: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(value)
+                .font(NativeWarRoomTheme.labelFont(.caption, weight: .bold))
+                .foregroundStyle(tint)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(alignment: .trailing) {
+            Rectangle()
+                .fill(NativeWarRoomTheme.brass.opacity(0.14))
+                .frame(width: 1, height: 28)
+                .padding(.trailing, 8)
+        }
     }
 }
 
@@ -326,6 +390,40 @@ struct NativeTurnProgressPanel: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
+
+            if let reasoningStatus = progress.reasoningStatus {
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(spacing: 6) {
+                        Image(systemName: reasoningStatus == .live ? "waveform.path.ecg" : "brain.head.profile")
+                            .font(.caption2.weight(.bold))
+                        Text("AI ACTIVITY")
+                            .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        Spacer()
+                        Text(reasoningStatus.label)
+                            .font(.system(.caption2, design: .monospaced).weight(.bold))
+                    }
+                    .foregroundStyle(reasoningStatus == .live ? Color.neonTeal : Color.iceBlue)
+
+                    Text(progress.reasoningText ?? "Waiting for reasoning activity.")
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+                .padding(.horizontal, 9)
+                .padding(.vertical, 7)
+                .frame(height: 66, alignment: .topLeading)
+                .background(Color.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(Color.iceBlue.opacity(0.16), lineWidth: 1)
+                }
+                .transaction { transaction in
+                    transaction.animation = nil
+                }
+                .accessibilityIdentifier("native-turn-reasoning")
+            }
+
             ProgressView(value: progress.fraction)
                 .tint(Color.glowingCyan)
                 .accessibilityIdentifier("native-turn-progress-bar")

@@ -4,18 +4,20 @@ import SwiftUI
 struct NativeOverviewScreen: View {
     @ObservedObject var store: NativeCampaignStore
     let onShowEvents: () -> Void
-    @State private var showInspector = true
+    let onShowOrders: () -> Void
+
+    /// Cache the year regex to avoid recompiling on every body recomputation
+    private static let yearRegex = try? NSRegularExpression(pattern: "\\b(19|20)\\d{2}\\b")
 
     private func year(in value: String, fallback: Int) -> Int {
-        let pattern = "\\b(19|20)\\d{2}\\b"
-        if let regex = try? NSRegularExpression(pattern: pattern),
-           let match = regex.firstMatch(in: value, range: NSRange(value.startIndex..., in: value)),
-           let range = Range(match.range, in: value),
-           let year = Int(value[range])
-        {
-            return year
+        guard let regex = Self.yearRegex,
+              let match = regex.firstMatch(in: value, range: NSRange(value.startIndex..., in: value)),
+              let range = Range(match.range, in: value),
+              let year = Int(value[range])
+        else {
+            return fallback
         }
-        return fallback
+        return year
     }
 
     var body: some View {
@@ -23,68 +25,22 @@ struct NativeOverviewScreen: View {
             if let state = store.state {
                 #if os(macOS)
                     GeometryReader { geometry in
-                        let width = geometry.size.width
-                        let sideWidth = max(280, min(340, width * 0.24))
-                        let isWide = width >= 1280
-                        let isMedium = width >= 940 && width < 1280
-
-                        HStack(alignment: .top, spacing: 0) {
-                            if isWide {
-                                commandDesk(state: state)
-                                    .frame(width: sideWidth)
-
-                                Divider()
-                                    .background(NativeWarRoomTheme.brass.opacity(0.18))
-                            }
-
-                            mapDesk(
-                                state: state,
-                                currentYear: year(in: state.gameDate, fallback: 2028),
-                                startYear: year(in: state.startDate, fallback: 2024)
-                            )
-                            .frame(maxWidth: .infinity)
-
-                            if isWide || (isMedium && showInspector) {
-                                Divider()
-                                    .background(NativeWarRoomTheme.brass.opacity(0.18))
-
-                                intelligenceDesk(state: state)
-                                    .frame(width: isWide ? sideWidth : min(360, width * 0.34))
-                            }
-                        }
-                        .overlay(alignment: .topTrailing) {
-                            if isMedium {
-                                Button {
-                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
-                                        showInspector.toggle()
-                                    }
-                                } label: {
-                                    Label(showInspector ? "Hide dossier" : "Show dossier", systemImage: showInspector ? "sidebar.right" : "sidebar.right")
-                                        .font(NativeWarRoomTheme.labelFont(.caption))
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 7)
-                                }
-                                .buttonStyle(.plain)
-                                .background(NativeWarRoomTheme.archiveShadow.opacity(0.82), in: Capsule())
-                                .overlay {
-                                    Capsule().stroke(NativeWarRoomTheme.brass.opacity(0.24), lineWidth: 1)
-                                }
-                                .padding(14)
-                                .accessibilityIdentifier("native-mac-inspector-toggle")
-                            }
-                        }
-                        .background(NativeWarRoomTheme.blackboard.opacity(0.97))
+                        atlasMapRoom(state: state, size: geometry.size)
                     }
                     .frame(minWidth: 700, minHeight: 560)
                 #else
                     NativeDetailScroll(accessibilityIdentifier: "native-overview-screen") {
                         NativeHeroHeader(state: state)
+                        NativeCrisisBanner(state: state)
                         if let progress = store.turnProgress {
                             NativeTurnProgressPanel(progress: progress)
                         }
-                        NativeGeopoliticalMap(state: state, store: store)
-                            .frame(minHeight: 360)
-                            .id(state.country.code)
+                        NativeWorldMap(
+                            state: state,
+                            store: store,
+                            minHeight: 360
+                        )
+                        .frame(minHeight: 360)
                         NativeMetricsGrid(state: state)
                         NativeCampaignObjectivesPanel(state: state)
                         if let turn = store.lastTurnReport {
@@ -98,14 +54,115 @@ struct NativeOverviewScreen: View {
             }
         }
         .task(id: store.state?.round ?? 0) {
-            await store.refreshSuggestedActionsIfNeeded()
+            // Only refresh if we don't have suggestions yet, not every round change.
+            // The player can manually refresh via the toolbar or ⌘R.
+            if store.state?.suggestedActions.isEmpty == true {
+                await store.refreshSuggestedActionsIfNeeded()
+            }
         }
     }
 
     #if os(macOS)
+        private func atlasMapRoom(state: NativeCampaignState, size: CGSize) -> some View {
+            VStack(spacing: 0) {
+                NativeWorldMap(
+                    state: state,
+                    store: store,
+                    minHeight: max(420, size.height - 104)
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(12)
+
+                atlasOrdersDeck(state: state)
+            }
+            .background(NativeWarRoomTheme.blackboard)
+            .accessibilityIdentifier("native-atlas-map-room")
+        }
+
+        private func atlasOrdersDeck(state: NativeCampaignState) -> some View {
+            let pending = state.plannedActions.filter { $0.status == .planned }
+
+            return HStack(spacing: 12) {
+                Button(action: onShowOrders) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(pending.count == 1 ? "1 ORDER READY" : "\(pending.count) ORDERS READY")
+                            .font(NativeWarRoomTheme.displayFont(.headline, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.ink)
+                        Text(pending.isEmpty ? "Build your next move in the decision matrix." : "Review the queue before advancing the calendar.")
+                            .font(NativeWarRoomTheme.bodyFont(.caption))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                            .lineLimit(1)
+                    }
+                    .frame(minWidth: 210, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("native-atlas-open-orders")
+
+                Rectangle()
+                    .fill(NativeWarRoomTheme.brass.opacity(0.18))
+                    .frame(width: 1, height: 44)
+
+                ForEach(Array(pending.prefix(2))) { action in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(action.title)
+                            .font(NativeWarRoomTheme.bodyFont(.caption, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.ink)
+                            .lineLimit(1)
+                        Text("COST \(action.administrativeCost)")
+                            .font(NativeWarRoomTheme.labelFont(.caption2))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 9)
+                    .frame(minWidth: 150, maxWidth: 220, alignment: .leading)
+                    .background(NativeWarRoomTheme.olivePanel.opacity(0.7), in: RoundedRectangle(cornerRadius: 5))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(NativeWarRoomTheme.brass.opacity(0.18), lineWidth: 1)
+                    }
+                }
+
+                if pending.count > 2 {
+                    Text("+\(pending.count - 2)")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
+                }
+
+                Spacer(minLength: 8)
+
+                Button(action: onShowEvents) {
+                    Label("Timeline", systemImage: "clock")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                .accessibilityIdentifier("native-atlas-open-events")
+
+                NativeFloatingAdvanceButton(store: store)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                LinearGradient(
+                    colors: [NativeWarRoomTheme.graphite, NativeWarRoomTheme.archiveShadow],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(NativeWarRoomTheme.brass.opacity(0.24))
+                    .frame(height: 1)
+            }
+        }
+
         private func commandDesk(state: NativeCampaignState) -> some View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+                    NativeCrisisBanner(state: state)
+                        .padding(.bottom, 4)
+
                     HStack {
                         Text("Actions")
                             .font(NativeWarRoomTheme.labelFont(.headline))
@@ -198,9 +255,13 @@ struct NativeOverviewScreen: View {
 
         private func mapDesk(state: NativeCampaignState, currentYear: Int, startYear: Int) -> some View {
             VStack(spacing: 0) {
+                NativeCrisisBanner(state: state)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 10)
+
                 NativeCompactStatusBar(state: state, latestEvent: state.timeline.first)
                     .padding(.horizontal, 16)
-                    .padding(.top, 14)
+                    .padding(.top, 10)
 
                 if let progress = store.turnProgress {
                     NativeTurnProgressPanel(progress: progress)
@@ -209,15 +270,17 @@ struct NativeOverviewScreen: View {
                 }
 
                 NativeCampaignObjectivesPanel(state: state)
+                    .frame(minHeight: 160)
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
 
-                NativeGeopoliticalMap(state: state, store: store)
-                    .frame(minHeight: 320)
-                    .padding(16)
-                    .id(state.country.code)
-
-                Spacer()
+                NativeWorldMap(
+                    state: state,
+                    store: store,
+                    minHeight: 320
+                )
+                .frame(minHeight: 320)
+                .padding(16)
 
                 NativeTimelineFooter(
                     store: store,
@@ -233,107 +296,145 @@ struct NativeOverviewScreen: View {
         }
 
         private func intelligenceDesk(state: NativeCampaignState) -> some View {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    HStack {
-                        Text("CONSEQUENCES")
-                            .font(NativeWarRoomTheme.labelFont(.headline))
-                            .foregroundStyle(NativeWarRoomTheme.threatRed)
-                        Spacer()
-                        Image(systemName: "chart.bar.xaxis")
-                            .font(.subheadline)
-                            .foregroundStyle(NativeWarRoomTheme.threatRed)
-                    }
-                    .padding(.bottom, 2)
+            IntelligenceDeskView(state: state)
+        }
+    #endif
+}
 
-                    let alignments = Native2010WorldModel.alignments(for: state)
-                    let riskSignals = Native2010WorldModel.riskSignals(for: state)
-                    let commitments = Native2010WorldModel.commitments(for: state)
-                    let opinion = Native2010WorldModel.publicOpinion(for: state)
-                    let pressures = Native2010WorldModel.economicPressures(for: state)
+/// Extracted as a standalone view so the intelligence desk sub-tree is
+/// re-evaluated independently from the parent overview panel.
+/// The `equatableKey` parameter lets SwiftUI skip re-computation of the 5
+/// expensive model traversals (alignments, riskSignals, commitments, opinion,
+/// economicPressures) when only unrelated @Published properties change.
+struct IntelligenceDeskView: View {
+    let state: NativeCampaignState
+    let equatableKey: String
 
-                    VStack(alignment: .leading, spacing: 10) {
-                        Label("2010 DIPLOMATIC ALIGNMENT", systemImage: "bubble.left.and.bubble.right")
-                            .font(NativeWarRoomTheme.labelFont(.caption))
-                            .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+    init(state: NativeCampaignState) {
+        self.state = state
+        // Derive a stable key from round + AI country state hashes.
+        // Only changes when turn advances or AI states mutate.
+        var parts = [state.round.description]
+        for code in state.aiCountryStates.keys.sorted() {
+            if let ai = state.aiCountryStates[code] {
+                parts.append("\(ai.hashValue)")
+            }
+        }
+        self.equatableKey = parts.joined()
+    }
 
-                        VStack(spacing: 6) {
-                            ForEach(alignments) { item in
-                                let color = native2010RelationColor(item.relation)
-                                HStack {
-                                    Circle()
-                                        .fill(color)
-                                        .frame(width: 6, height: 6)
-                                    Text(item.name)
-                                        .font(.caption)
-                                        .foregroundStyle(NativeWarRoomTheme.ink)
-                                    Spacer()
-                                    Text(item.stance)
-                                        .font(NativeWarRoomTheme.labelFont(.caption2))
-                                        .foregroundStyle(color)
-                                    Text("\(item.score)")
-                                        .font(.system(size: 11, design: .monospaced).weight(.bold))
-                                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
-                                }
-                                .padding(8)
-                                .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.1), cornerRadius: 6)
+    var body: some View {
+        _IntelligenceDeskBody(state: state)
+            .id(equatableKey)
+    }
+}
+
+/// Inner body extracted so that `.id(equatableKey)` forces a full rebuild
+/// only when the key changes, letting SwiftUI skip it otherwise.
+private struct _IntelligenceDeskBody: View {
+    let state: NativeCampaignState
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack {
+                    Text("CONSEQUENCES")
+                        .font(NativeWarRoomTheme.labelFont(.headline))
+                        .foregroundStyle(NativeWarRoomTheme.threatRed)
+                    Spacer()
+                    Image(systemName: "chart.bar.xaxis")
+                        .font(.subheadline)
+                        .foregroundStyle(NativeWarRoomTheme.threatRed)
+                }
+                .padding(.bottom, 2)
+
+                let alignments = Native2010WorldModel.alignments(for: state)
+                let riskSignals = Native2010WorldModel.riskSignals(for: state)
+                let commitments = Native2010WorldModel.commitments(for: state)
+                let opinion = Native2010WorldModel.publicOpinion(for: state)
+                let pressures = Native2010WorldModel.economicPressures(for: state)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("2010 DIPLOMATIC ALIGNMENT", systemImage: "bubble.left.and.bubble.right")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                        .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+
+                    VStack(spacing: 6) {
+                        ForEach(alignments) { item in
+                            let color = native2010RelationColor(item.relation)
+                            HStack {
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 6, height: 6)
+                                Text(item.name)
+                                    .font(.caption)
+                                    .foregroundStyle(NativeWarRoomTheme.ink)
+                                Spacer()
+                                Text(item.stance)
+                                    .font(NativeWarRoomTheme.labelFont(.caption2))
+                                    .foregroundStyle(color)
+                                Text("\(item.score)")
+                                    .font(.system(size: 11, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
                             }
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Label("2010 TENSION SIGNALS", systemImage: "flame")
-                            .font(NativeWarRoomTheme.labelFont(.caption))
-                            .foregroundStyle(NativeWarRoomTheme.threatRed)
-
-                        VStack(spacing: 6) {
-                            ForEach(riskSignals) { signal in
-                                BattleRow(name: signal.name, intensity: signal.intensity, color: native2010SignalColor(signal.level))
-                            }
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Label("2010 COMMITMENTS", systemImage: "shield.fill")
-                            .font(NativeWarRoomTheme.labelFont(.caption))
-                            .foregroundStyle(NativeWarRoomTheme.mapPaper)
-
-                        VStack(spacing: 6) {
-                            ForEach(commitments) { commitment in
-                                TroopRow(
-                                    name: commitment.name,
-                                    count: commitment.countLabel,
-                                    status: commitment.status,
-                                    color: native2010SignalColor(commitment.level)
-                                )
-                            }
-                        }
-                    }
-
-                    NativePublicOpinionSparkline(opinion: opinion, events: state.timeline)
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Label("ECONOMIC LEDGER", systemImage: "chart.line.uptrend.xyaxis")
-                            .font(NativeWarRoomTheme.labelFont(.caption))
-                            .foregroundStyle(NativeWarRoomTheme.alertAmber)
-
-                        VStack(spacing: 6) {
-                            ForEach(pressures) { pressure in
-                                EconomicRow(
-                                    name: pressure.name,
-                                    value: pressure.value,
-                                    direction: pressure.direction,
-                                    color: native2010SignalColor(pressure.level)
-                                )
-                            }
+                            .padding(8)
+                            .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.1), cornerRadius: 6)
                         }
                     }
                 }
-                .padding(16)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("2010 TENSION SIGNALS", systemImage: "flame")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                        .foregroundStyle(NativeWarRoomTheme.threatRed)
+
+                    VStack(spacing: 6) {
+                        ForEach(riskSignals) { signal in
+                            BattleRow(name: signal.name, intensity: signal.intensity, color: native2010SignalColor(signal.level))
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("2010 COMMITMENTS", systemImage: "shield.fill")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                        .foregroundStyle(NativeWarRoomTheme.mapPaper)
+
+                    VStack(spacing: 6) {
+                        ForEach(commitments) { commitment in
+                            TroopRow(
+                                name: commitment.name,
+                                count: commitment.countLabel,
+                                status: commitment.status,
+                                color: native2010SignalColor(commitment.level)
+                            )
+                        }
+                    }
+                }
+
+                NativePublicOpinionSparkline(opinion: opinion, events: state.timeline)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("ECONOMIC LEDGER", systemImage: "chart.line.uptrend.xyaxis")
+                        .font(NativeWarRoomTheme.labelFont(.caption))
+                        .foregroundStyle(NativeWarRoomTheme.alertAmber)
+
+                    VStack(spacing: 6) {
+                        ForEach(pressures) { pressure in
+                            EconomicRow(
+                                name: pressure.name,
+                                value: pressure.value,
+                                direction: pressure.direction,
+                                color: native2010SignalColor(pressure.level)
+                            )
+                        }
+                    }
+                }
             }
-            .background(NativeWarRoomTheme.archiveShadow.opacity(0.95))
+            .padding(16)
         }
-    #endif
+        .background(NativeWarRoomTheme.archiveShadow.opacity(0.95))
+    }
 }
 
 struct NativePublicOpinionSparkline: View {
@@ -429,7 +530,7 @@ struct NativeHeroHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("SWIFT HISTORIA COMMAND CENTER")
+            Text("PAX HISTORIA · THE LIVING ATLAS")
                 .font(.system(.caption, design: .monospaced).weight(.bold))
                 .foregroundStyle(Color.glowingCyan)
                 .textCase(.uppercase)
@@ -451,12 +552,17 @@ struct NativeSectionHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(title.uppercased(), systemImage: systemImage)
-                .font(.system(.title2, design: .monospaced).weight(.bold))
-                .foregroundStyle(Color.iceBlue)
+            HStack(spacing: 10) {
+                Image(systemName: systemImage)
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(NativeWarRoomTheme.brass)
+                Text(title)
+                    .font(NativeWarRoomTheme.displayFont(.title2, weight: .bold))
+                    .foregroundStyle(NativeWarRoomTheme.ink)
+            }
             Text(subtitle)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(NativeWarRoomTheme.bodyFont(.subheadline))
+                .foregroundStyle(NativeWarRoomTheme.mutedInk)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
@@ -468,6 +574,10 @@ struct NativeMetricsGrid: View {
 
     var body: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 12)], spacing: 12) {
+            MetricCard(title: "Government", value: state.economicLedger.governmentType.capitalized, systemImage: "building.columns")
+                .help(governmentReformHint)
+            let approvalLabel = state.economicLedger.governmentType == "democracy" ? "Public Approval" : "Regime Support"
+            MetricCard(title: approvalLabel, value: String(format: "%.1f%%", state.economicLedger.publicApprovalPercent), systemImage: "hand.thumbsup")
             MetricCard(title: "Planned Actions", value: "\(state.plannedActions.filter { $0.status == .planned }.count)", systemImage: "checklist")
             MetricCard(title: "Budget Balance", value: nativeFormatSignedPercent(state.economicLedger.budgetBalancePercentGDP), systemImage: "banknote")
             MetricCard(title: "Public Debt", value: nativeFormatPercent(state.economicLedger.publicDebtPercentGDP), systemImage: "creditcard")
@@ -478,6 +588,16 @@ struct NativeMetricsGrid: View {
             MetricCard(title: "AI Status", value: nativeFormatAvailability(state.aiReadiness.availability), systemImage: "brain")
         }
         .accessibilityIdentifier("native-metrics-grid")
+    }
+
+    private var governmentReformHint: String {
+        let gov = state.economicLedger.governmentType
+        let available = NativeQuickActionCatalog.politicalReformActions(state: state)
+        let names = available.map(\.title).joined(separator: ", ")
+        if available.isEmpty {
+            return "No political reforms available for \(gov.capitalized)."
+        }
+        return "\(gov.capitalized) — available reforms: \(names)"
     }
 }
 
@@ -496,11 +616,24 @@ struct NativeCampaignObjectivesPanel: View {
                     .foregroundStyle(state.victoryStatus == .ongoing ? Color.alertGold : Color.neonTeal)
             }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
-                ForEach(NativeGameEngine.campaignObjectives(for: state)) { objective in
-                    NativeObjectiveRow(objective: objective)
+            #if os(macOS)
+                HStack(alignment: .top, spacing: 10) {
+                    ForEach(NativeGameEngine.campaignObjectives(for: state)) { objective in
+                        NativeObjectiveRow(objective: objective)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 116, alignment: .topLeading)
+                    }
                 }
-            }
+            #else
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
+                    ForEach(NativeGameEngine.campaignObjectives(for: state)) { objective in
+                        NativeObjectiveRow(objective: objective)
+                    }
+                }
+            #endif
+        }
+        .transaction { transaction in
+            transaction.animation = nil
         }
     }
 }
@@ -532,7 +665,7 @@ struct NativeObjectiveRow: View {
             Text(objective.detail)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+                .lineLimit(2)
         }
         .padding(10)
         .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 8))
@@ -627,11 +760,11 @@ struct NativeSuggestedActionsPanel: View {
         NativePanel(accessibilityIdentifier: "native-suggested-actions-panel") {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Label("Suggested actions", systemImage: "sparkles")
+                    Label("Decision matrix", systemImage: "square.grid.3x3.square")
                         .font(NativeTypography.sectionTitle())
                         .foregroundStyle(Color.glowingCyan)
-                        .help("AI-generated recommendations based on your current situation.")
-                    Text("Provider: \(suggestionProviderName)")
+                        .help("A complete 5 by 5 board of actions that are legal in the current campaign state.")
+                    Text("25 legal choices · Provider: \(suggestionProviderName)")
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Color.alertGold)
                         .accessibilityIdentifier("native-suggestions-provider-label")
@@ -657,7 +790,13 @@ struct NativeSuggestedActionsPanel: View {
             }
 
             let suggestions = store.state?.suggestedActions ?? []
-            if !suggestions.isEmpty {
+            let matrixSuggestions = suggestions.filter {
+                (0 ..< 5).contains($0.matrixRow) && (0 ..< 5).contains($0.matrixColumn)
+            }
+            if matrixSuggestions.count == NativeDecisionMatrixContract.cellCount {
+                NativeDecisionMatrixBoard(store: store, suggestions: matrixSuggestions)
+            } else if !suggestions.isEmpty {
+                SuggestionWarning(message: "This saved board predates the 5 x 5 matrix contract. Refresh it to regenerate 25 state-valid decisions.")
                 ForEach(suggestions) { suggestion in
                     SuggestedActionRow(suggestion: suggestion) {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
@@ -666,11 +805,11 @@ struct NativeSuggestedActionsPanel: View {
                     }
                 }
             } else if store.isLoadingSuggestions {
-                Text("Analyzing campaign tracks...")
+                Text("Building 25 state-valid decisions from the complete world snapshot...")
                     .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             } else {
-                Text("No advisory suggestions available.")
+                Text("No decision matrix available.")
                     .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
@@ -679,9 +818,138 @@ struct NativeSuggestedActionsPanel: View {
 
     private var suggestionProviderName: String {
         let provider = store.lastAIProviderUsed
+        if store.selectedAIProviderPreference == .nvidia, provider == "OpenRouter" {
+            return "NVIDIA primary → OpenRouter fallback"
+        }
         return provider == "None" || provider == "Unknown"
             ? store.selectedAIProviderPreference.providerName
             : provider
+    }
+}
+
+private struct NativeDecisionMatrixBoard: View {
+    @ObservedObject var store: NativeCampaignStore
+    let suggestions: [NativeSuggestedAction]
+
+    private let labelWidth: CGFloat = 104
+    private let cellWidth: CGFloat = 176
+    private let spacing: CGFloat = 8
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: true) {
+            LazyVGrid(columns: gridColumns, alignment: .leading, spacing: spacing) {
+                Color.clear
+                    .frame(width: labelWidth, height: 28)
+                ForEach(NativeDecisionMatrixColumn.allCases) { column in
+                    Text(column.title.uppercased())
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.alertGold)
+                        .frame(width: cellWidth, alignment: .leading)
+                }
+
+                ForEach(NativeDecisionMatrixRow.allCases) { row in
+                    Label(row.title, systemImage: row.systemImage)
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.iceBlue)
+                        .frame(width: labelWidth, alignment: .leading)
+
+                    ForEach(NativeDecisionMatrixColumn.allCases) { column in
+                        if let suggestion = suggestion(row: row, column: column) {
+                            NativeDecisionMatrixCell(
+                                suggestion: suggestion,
+                                isQueued: isQueued(suggestion)
+                            ) {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                    store.addSuggestedAction(suggestion)
+                                }
+                            }
+                            .frame(width: cellWidth)
+                            .frame(minHeight: 154)
+                        } else {
+                            ContentUnavailableView("Missing", systemImage: "exclamationmark.triangle")
+                                .frame(width: cellWidth)
+                                .frame(minHeight: 154)
+                        }
+                    }
+                }
+            }
+            .frame(width: labelWidth + cellWidth * 5 + spacing * 5)
+            .padding(.vertical, 4)
+        }
+        .accessibilityIdentifier("native-decision-matrix")
+    }
+
+    private var gridColumns: [GridItem] {
+        [GridItem(.fixed(labelWidth), spacing: spacing)] + Array(
+            repeating: GridItem(.fixed(cellWidth), spacing: spacing),
+            count: 5
+        )
+    }
+
+    private func suggestion(
+        row: NativeDecisionMatrixRow,
+        column: NativeDecisionMatrixColumn
+    ) -> NativeSuggestedAction? {
+        suggestions.first { $0.matrixRow == row.rawValue && $0.matrixColumn == column.rawValue }
+    }
+
+    private func isQueued(_ suggestion: NativeSuggestedAction) -> Bool {
+        store.state?.plannedActions.contains {
+            $0.status == .planned && $0.title == suggestion.title && $0.detail == suggestion.detail
+        } ?? false
+    }
+}
+
+private struct NativeDecisionMatrixCell: View {
+    let suggestion: NativeSuggestedAction
+    let isQueued: Bool
+    let onSelect: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(alignment: .top) {
+                    Text(suggestion.title)
+                        .font(.system(size: 12, weight: .semibold, design: .serif))
+                        .foregroundStyle(.primary)
+                        .lineLimit(3)
+                    Spacer(minLength: 4)
+                    if isQueued {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(Color.neonTeal)
+                    }
+                }
+
+                Text(suggestion.detail)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(4)
+
+                Spacer(minLength: 0)
+
+                HStack {
+                    Label("\(suggestion.administrativeCost)", systemImage: "bolt.fill")
+                    Spacer()
+                    Text(suggestion.actionKind.uppercased())
+                }
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundStyle(isQueued ? Color.neonTeal : Color.glowingCyan)
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Color.iceBlue.opacity(isQueued ? 0.12 : 0.055), in: RoundedRectangle(cornerRadius: 10))
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(isQueued ? Color.neonTeal.opacity(0.7) : Color.iceBlue.opacity(0.18), lineWidth: 1)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isQueued)
+        .help("\(suggestion.rationale) Cost: \(suggestion.administrativeCost).")
+        .accessibilityLabel("\(suggestion.title), costs \(suggestion.administrativeCost) capacity")
+        .accessibilityHint(isQueued ? "Already queued" : "Adds this legal decision to the next turn")
+        .accessibilityIdentifier("native-decision-cell-\(suggestion.matrixRow)-\(suggestion.matrixColumn)")
     }
 }
 

@@ -82,16 +82,17 @@ extension NativeFoundationModelService {
 
         return """
         Mechanics checklist:
-        - Tie every event, suggestion, advisor answer, or diplomatic reply to at least one stored mechanic: planned actions/action memory, economic ledger, public security, insurgency pressure, map conflict, diplomacy/global friction, timeline/world effects, scenario canon, language, or AI readiness.
-        - Economy mechanics include GDP, growth, inflation, budget balance, public debt, trade balance, unemployment, and fiscal space.
+        - Tie every event, suggestion, advisor answer, or diplomatic reply to at least one stored mechanic: planned actions/action memory, economic ledger, public security, insurgency pressure, map conflict, diplomacy/global friction, timeline/world effects, scenario canon, language, political system (democracy/autocracy/hybrid), elections, or AI readiness.
+        - Economy & Politics mechanics include GDP, growth, inflation, budget, debt, unemployment, fiscal space, government type (democracy/autocracy/hybrid), and public approval percent.
         - Security mechanics include public security, insurgency pressure, stabilization, contested borders, conventional occupation, guerrilla control, nuclear fallout, and de-escalation as abstract board-game states.
         - Map mechanics are stored in regionOccupations, nuclearFalloutRegions, and regionConflicts; prose should explain the strategic state, while events can use hexLeverCode for bounded map nudges.
         - Occupation, contested borders, guerrilla control, and stabilization are control changes, not new countries. Use sovereignty fields only when a polity formally secedes, is newly recognized, merges, or dissolves.
-        - Suggestions must name the primary mechanic they intend to improve and a secondary mechanic that may trade off or benefit.
+        - Suggestions must include primaryMechanic and secondaryMechanic as separate fields, not embedded in detail text.
         - Advisor and diplomacy replies must read the same mechanics instead of inventing new hidden systems.
 
         Current selected ledger:
         GDP \(String(format: "$%.2fT", ledger.nominalGDPTrillions)); growth \(promptSignedPercent(ledger.realGrowthPercent)); inflation \(promptPercent(ledger.inflationPercent)); budget \(promptSignedPercent(ledger.budgetBalancePercentGDP)) of GDP; debt \(promptPercent(ledger.publicDebtPercentGDP)) of GDP; trade \(promptSignedPercent(ledger.tradeBalancePercentGDP)) of GDP; unemployment \(promptPercent(ledger.unemploymentPercent)); fiscal space \(ledger.fiscalSpaceIndex)/100; public security \(String(format: "%.1f", ledger.securityIndex))/100; insurgency pressure \(String(format: "%.1f%%", ledger.rebelControlPercent)).
+        Government Type: \(ledger.governmentType); Public Approval Rating: \(String(format: "%.1f%%", ledger.publicApprovalPercent)); Next Election Round: \(ledger.nextElectionRound) (Current Round: \(state.round)).
 
         Current map conflict state:
         \(conflictLines.isEmpty ? "- No active region conflict records." : conflictLines)
@@ -304,6 +305,7 @@ extension NativeFoundationModelService {
         The event must be directly related to the selected region and this action id: \(action.id).
         Planned proposal: \(safeTitle)
         Proposal brief: \(safeProposalBrief(for: action))
+        \(mechanicConstraint(for: action))
         The period starts on \(state.gameDate) and ends on \(targetDate).
         \(repairLine(repairInstruction))
 
@@ -473,6 +475,7 @@ extension NativeFoundationModelService {
         The detail must include instrument, target agency or sector, timing, and expected game effect.
         The detail must name a bounded policy instrument, not a vague national goal.
         The rationale must explicitly name the primary affected mechanic, one connected secondary mechanic, and why this fits the current campaign objectives.
+        Output "primaryMechanic" and "secondaryMechanic" as separate JSON fields using these exact values: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, or world-tension. Do not embed these in the detail text.
         Prefer neutral terms like volatility, pressure, capacity gap, or opportunity when interpreting numeric effects.
 
         \(suggestionExamples(for: state.language))
@@ -497,6 +500,7 @@ extension NativeFoundationModelService {
         Each detail must include instrument, target agency or sector, timing, expected game effect, primary affected mechanic, and secondary mechanic.
         Each detail must name a bounded policy instrument, not a vague national goal.
         Each rationale must explain why the proposal fits the current campaign objectives and ledger/map/diplomacy context.
+        Each proposal must include "primaryMechanic" and "secondaryMechanic" as separate JSON fields using exact values: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, or world-tension.
         Prefer neutral terms like volatility, pressure, capacity gap, or opportunity when interpreting numeric effects.
 
         \(suggestionExamples(for: state.language))
@@ -510,23 +514,23 @@ extension NativeFoundationModelService {
         case .portuguese:
             """
             [Example 1]
-            {"title":"Estabelecer Reservas Logísticas","detail":"Expandir buffers de armazenamento em pontos de trânsito regionais durante o próximo período; mecânica primária: trade balance; mecânica secundária: market confidence.","rationale":"O fortalecimento das margens de trânsito responde ao saldo comercial atual e reduz volatilidade na confiança do mercado.","urgency":"soon"}
+            {"title":"Estabelecer Reservas Logísticas","detail":"Expandir buffers de armazenamento em pontos de trânsito regionais durante o próximo período.","primaryMechanic":"market-confidence","secondaryMechanic":"diplomatic-leverage","rationale":"O fortalecimento das margens de trânsito responde ao saldo comercial atual e reduz volatilidade na confiança do mercado.","urgency":"soon"}
             [Example 2]
-            {"title":"Lançar Auditoria de Eficiência Energética","detail":"Contratar uma agência independente para auditar subestações regionais e publicar recomendações até o final do próximo período; mecânica primária: economic resilience; mecânica secundária: fiscal space.","rationale":"A transparência da rede melhora resiliência econômica sem ocultar o custo fiscal de adaptação.","urgency":"immediate"}
+            {"title":"Lançar Auditoria de Eficiência Energética","detail":"Contratar uma agência independente para auditar subestações regionais e publicar recomendações até o final do próximo período.","primaryMechanic":"economic-resilience","secondaryMechanic":"internal-stability","rationale":"A transparência da rede melhora resiliência econômica sem ocultar o custo fiscal de adaptação.","urgency":"immediate"}
             """
         case .spanish:
             """
             [Example 1]
-            {"title":"Establecer Reservas Logísticas","detail":"Expandir buffers de almacenamiento en puntos de tránsito regionales durante el próximo período; mecánica primaria: trade balance; mecánica secundaria: market confidence.","rationale":"El fortalecimiento de los márgenes de tránsito responde al saldo comercial actual y reduce volatilidad en la confianza del mercado.","urgency":"soon"}
+            {"title":"Establecer Reservas Logísticas","detail":"Expandir buffers de almacenamiento en puntos de tránsito regionales durante el próximo período.","primaryMechanic":"market-confidence","secondaryMechanic":"diplomatic-leverage","rationale":"El fortalecimiento de los márgenes de tránsito responde al saldo comercial actual y reduce volatilidad en la confianza del mercado.","urgency":"soon"}
             [Example 2]
-            {"title":"Lanzar Auditoría de Eficiencia Energética","detail":"Contratar una agencia independiente para auditar subestaciones regionales y publicar recomendaciones antes del final del próximo período; mecánica primaria: economic resilience; mecánica secundaria: fiscal space.","rationale":"La transparencia de la red mejora la resiliencia económica sin ocultar el costo fiscal de adaptación.","urgency":"immediate"}
+            {"title":"Lanzar Auditoría de Eficiencia Energética","detail":"Contratar una agencia independiente para auditar subestaciones regionales y publicar recomendaciones antes del final del próximo período.","primaryMechanic":"economic-resilience","secondaryMechanic":"internal-stability","rationale":"La transparencia de la red mejora la resiliencia económica sin ocultar el costo fiscal de adaptación.","urgency":"immediate"}
             """
         case .english:
             """
             [Example 1]
-            {"title":"Establish Logistics Reserves","detail":"Expand storage buffers at regional transit points over the next period; primary mechanic: trade balance; secondary mechanic: market confidence.","rationale":"Strengthening transit margins fits the current trade balance and reduces market-confidence volatility.","urgency":"soon"}
+            {"title":"Establish Logistics Reserves","detail":"Expand storage buffers at regional transit points over the next period.","primaryMechanic":"market-confidence","secondaryMechanic":"diplomatic-leverage","rationale":"Strengthening transit margins fits the current trade balance and reduces market-confidence volatility.","urgency":"soon"}
             [Example 2]
-            {"title":"Launch Energy Efficiency Audit","detail":"Commission an independent agency to audit regional substations and publish recommendations by end of next period; primary mechanic: economic resilience; secondary mechanic: fiscal space.","rationale":"Grid transparency improves economic resilience while making the fiscal-space tradeoff visible.","urgency":"immediate"}
+            {"title":"Launch Energy Efficiency Audit","detail":"Commission an independent agency to audit regional substations and publish recommendations by end of next period.","primaryMechanic":"economic-resilience","secondaryMechanic":"internal-stability","rationale":"Grid transparency improves economic resilience while making the fiscal-space tradeoff visible.","urgency":"immediate"}
             """
         }
     }
@@ -652,5 +656,14 @@ extension NativeFoundationModelService {
         }
 
         return "title=\"\(safeTitle)\"; id=\(action.id); sector=\(sector); instrument=\(instrument); timing=next game period"
+    }
+
+    private func mechanicConstraint(for action: NativePlannedAction) -> String {
+        guard !action.mechanicTracks.isEmpty else { return "" }
+        let trackNames = action.mechanicTracks.map(\.rawValue).joined(separator: ", ")
+        return """
+        MECHANIC CONSTRAINT — This action was planned with intended effect track(s): \(trackNames).
+        The consequence event's effectTrack MUST match one of these tracks. Do not substitute a different track.
+        """
     }
 }

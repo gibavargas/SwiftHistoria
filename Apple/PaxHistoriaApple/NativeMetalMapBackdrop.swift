@@ -174,15 +174,15 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
             float2 center = u.viewportSize * 0.5;
             float2 local = center + (pixel - center - u.offset) / max(u.zoomScale, 0.001);
 
-            float3 ocean = float3(0.047, 0.082, 0.125);
-            float3 deep = float3(0.025, 0.038, 0.060);
+            float3 ocean = float3(0.075, 0.082, 0.063);
+            float3 deep = float3(0.034, 0.038, 0.029);
             float vignette = smoothstep(0.95, 0.2, distance(in.uv, float2(0.5)));
             float3 color = mix(deep, ocean, vignette);
 
             float gridX = lineMask(local.x, u.viewportSize.x / 12.0, 0.75 / u.zoomScale);
             float gridY = lineMask(local.y, u.viewportSize.y / 8.0, 0.75 / u.zoomScale);
             float grid = max(gridX, gridY) * 0.055;
-            color += float3(0.57, 0.78, 0.93) * grid;
+            color += float3(0.78, 0.69, 0.48) * grid;
 
             float2 waveCenters[6] = {
                 float2(300.0, 300.0),
@@ -203,14 +203,14 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
                 float inWidth = 1.0 - smoothstep(10.0 / u.zoomScale, 18.0 / u.zoomScale, abs(delta.x));
                 waveOpacity = max(waveOpacity, inBand * inWidth);
             }
-            color += float3(0.57, 0.78, 0.93) * waveOpacity * 0.10;
+            color += float3(0.78, 0.69, 0.48) * waveOpacity * 0.10;
 
             if (u.isAdvancing > 0.5) {
                 float sweepX = (sin(u.time * 0.05) + 1.0) * 0.5 * u.viewportSize.x;
                 float sweep = 1.0 - smoothstep(0.0, 2.0 / u.zoomScale, abs(pixel.x - sweepX));
                 float trail = smoothstep(52.0 / u.zoomScale, 0.0, sweepX - pixel.x) *
                     step(0.0, sweepX - pixel.x);
-                color += float3(0.31, 0.92, 1.0) * (sweep * 0.55 + trail * 0.12);
+                color += float3(0.77, 0.64, 0.37) * (sweep * 0.55 + trail * 0.12);
 
                 float pulsePhase = fract(abs(u.time) / 10.0);
                 float pulseRadius = (5.0 + pulsePhase * 25.0) / u.zoomScale;
@@ -224,7 +224,7 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
                 for (uint i = 0; i < 3; i++) {
                     float radius = distance(pixel, pulseCenters[i]);
                     float ring = 1.0 - smoothstep(0.0, 1.75 / u.zoomScale, abs(radius - pulseRadius));
-                    color += float3(0.31, 0.92, 1.0) * ring * pulseOpacity;
+                    color += float3(0.77, 0.64, 0.37) * ring * pulseOpacity;
                 }
             }
 

@@ -20,10 +20,44 @@ enum NativeGameEngine {
     static func initialState(
         for country: PlayerCountry,
         scenario: NativeScenario = NativeScenarioCatalog.defaultScenario,
-        language: NativeGameLanguage = .english
+        language: NativeGameLanguage = .english,
+        worldSeed explicitWorldSeed: UInt64? = nil
     ) -> NativeCampaignState {
         let openingStability = Native2010WorldModel.stability(for: country, scenario: scenario)
         let openingWorldTension = Native2010WorldModel.worldTension(for: country, scenario: scenario)
+        let worldSeed = explicitWorldSeed ?? NativeWorldSimulator.makeCampaignSeed()
+        var aiCountryStates = NativeStrategyContextDatabase.initialAICountryStates(for: scenario.id)
+        for code in aiCountryStates.keys {
+            let seed = NativeWorldSimulator.countrySeed(worldSeed: worldSeed, countryCode: code)
+            aiCountryStates[code]?.decisionSeed = seed
+            aiCountryStates[code]?.decisionProfileID = Int(seed & 0x0FFF)
+        }
+
+        var initialArmies: [NativeArmySnapshot] = []
+        let strategicCodes = NativeStrategyContextDatabase.defaultStrategicCountryCodes.filter { $0 != "GLOBAL" }
+        for code in strategicCodes {
+            if let homeRegion = GeopoliticalMapData.regions(forCountryCode: code).first(where: { $0.countryCode != "WATER" }) ?? GeopoliticalMapData.regionByID[code] {
+                let profile = Native2010WorldModel.profile(for: PlayerCountry(code: code, name: code))
+                let gdp = profile.nominalGDPTrillions
+                let spend = profile.militarySpendingPercent
+                let corruption = profile.corruptionIndex
+
+                let milSpendCoeff = spend / 2.0
+                let corruptionCoeff = 1.0 - (Double(corruption) / 100.0) * 0.6
+                let mpi = gdp * milSpendCoeff * corruptionCoeff
+
+                let strength = min(100, max(12, Int((mpi * 8.0).rounded()) + 20))
+                let type: NativeArmyKind = (code == "USA" || code == "RUS" || code == "CHN") ? .armor : .infantry
+
+                initialArmies.append(NativeArmySnapshot(
+                    countryCode: code,
+                    currentRegionID: homeRegion.id,
+                    id: "army-\(code)-\(homeRegion.id)",
+                    strength: strength,
+                    type: type
+                ))
+            }
+        }
 
         return NativeCampaignState(
             actionMemory: [],
@@ -31,8 +65,9 @@ enum NativeGameEngine {
             country: country,
             economicLedger: NativeEconomicLedger.starting(for: country, scenario: scenario),
             economicLedgers: nil,
-            aiCountryStates: NativeStrategyContextDatabase.initialAICountryStates(for: scenario.id),
+            aiCountryStates: aiCountryStates,
             gameDate: scenario.gameDate,
+            worldSeed: worldSeed,
             lastSummary: openingSummary(for: country, scenario: scenario, language: language),
             language: language,
             plannedActions: [],
@@ -68,7 +103,8 @@ enum NativeGameEngine {
                 )
             ],
             worldTension: openingWorldTension,
-            worldEffects: []
+            worldEffects: [],
+            mapArmies: initialArmies.sorted { $0.id < $1.id }
         )
     }
 
@@ -351,7 +387,11 @@ enum NativeGameEngine {
                 scenarioID: state.scenarioID,
                 gameDate: targetDate,
                 round: state.round,
-                playerCountryCode: state.country.code
+                playerCountryCode: state.country.code,
+                stability: state.stability,
+                securityIndex: state.economicLedger.securityIndex,
+                worldTension: state.worldTension,
+                techEra: NativeTechEra.from(state.techEra)
             )
             generatedEvents.append(contentsOf: pollutionEvents)
         }
@@ -375,6 +415,7 @@ enum NativeGameEngine {
         var nextRegionOccupations = state.regionOccupations
         var nextNuclearRegions = state.nuclearFalloutRegions
         var nextRegionConflicts = state.regionConflicts
+        var nextMilitaryUnits = state.militaryUnits
 
         var additionalEvents: [NativeCampaignEvent] = []
         for idx in 0 ..< resolvedActions.count {
@@ -450,10 +491,11 @@ enum NativeGameEngine {
                                 return 1
                             }
                         }()
+                        let fortressLevel = state.mapBuildings.first(where: { $0.regionID == region.id && $0.type == .fortress })?.level ?? 0
                         let defenderModifier: Int = if defenderCode == state.country.code {
-                            state.budgetMilitarySlider > 0.8 ? 1 : 0
+                            (state.budgetMilitarySlider > 0.8 ? 1 : 0) + fortressLevel
                         } else {
-                            state.aiCountryStates[defenderCode]?.budgetPriority == .military ? 1 : 0
+                            (state.aiCountryStates[defenderCode]?.budgetPriority == .military ? 1 : 0) + fortressLevel
                         }
 
                         let terrainModifier = switch region.terrain {
@@ -514,6 +556,10 @@ enum NativeGameEngine {
                                 updatedAt: targetDate
                             )
 
+                            // Combat losses:
+                            nextMilitaryUnits["infantry", default: 0] = max(5, nextMilitaryUnits["infantry", default: 0] - 2)
+                            nextMilitaryUnits["armor", default: 0] = max(2, nextMilitaryUnits["armor", default: 0] - 1)
+
                             let successEvent = NativeCampaignEvent(
                                 date: targetDate,
                                 description: "Conquest of \(region.name) Successful. Our forces advanced through the \(region.terrain.displayName.lowercased()) terrain of \(region.name) and secured tactical control. \(battleLog)",
@@ -548,6 +594,11 @@ enum NativeGameEngine {
                                 updatedAt: targetDate
                             )
 
+                            // Combat losses:
+                            nextMilitaryUnits["infantry", default: 0] = max(5, nextMilitaryUnits["infantry", default: 0] - 5)
+                            nextMilitaryUnits["armor", default: 0] = max(2, nextMilitaryUnits["armor", default: 0] - 2)
+                            nextMilitaryUnits["air", default: 0] = max(1, nextMilitaryUnits["air", default: 0] - 1)
+
                             let failEvent = NativeCampaignEvent(
                                 date: targetDate,
                                 description: "Invasion of \(region.name) Repelled. Defensive forces utilized the local \(region.terrain.displayName.lowercased()) terrain to stall and repel our advance. \(battleLog)",
@@ -577,8 +628,292 @@ enum NativeGameEngine {
             }
         }
 
+        var nextAICountryStates = state.aiCountryStates
+        if nextAICountryStates.isEmpty {
+            nextAICountryStates = NativeStrategyContextDatabase.initialAICountryStates(for: state.scenarioID)
+        }
+
+        let strategicCodes = NativeStrategyContextDatabase.defaultStrategicCountryCodes.filter { $0 != "GLOBAL" }
+        var aiInvasionEvents: [NativeCampaignEvent] = []
+
+        for code in strategicCodes {
+            if code == state.country.code { continue }
+            guard var aiState = nextAICountryStates[code] else { continue }
+
+            if aiState.agendaProgress >= 100, aiState.doctrine == .expansionist {
+                let candidates = strategicCodes.filter { $0 != code }
+                let sortedCandidates = candidates.map { otherCode -> (code: String, score: Double) in
+                    let relationship = aiState.relationshipScores[otherCode] ?? 0
+                    var score = -Double(relationship)
+
+                    // Geopolitical Proximity (Adjacency border check)
+                    let isNeighbor = NativeStrategyContextDatabase.adjacentCountryCodes(for: code).contains(otherCode)
+                    if isNeighbor {
+                        score += 40.0
+
+                        // Ideology bloc polarization (Democracy vs Autocracy mismatch) under proximity
+                        let ownGov = state.economicLedgers[code]?.governmentType
+                        let otherGov = state.economicLedgers[otherCode]?.governmentType
+                        if ownGov != nil, otherGov != nil, ownGov != otherGov {
+                            score += 30.0
+                        }
+                    }
+
+                    // Military Power balance
+                    let ownPower: Double = {
+                        if code == state.country.code {
+                            return Double(state.militaryUnits.values.reduce(0, +))
+                        } else {
+                            let armyStr = Double(state.mapArmies.filter { $0.countryCode == code }.reduce(0) { $0 + $1.strength })
+                            return armyStr > 0 ? armyStr : ((state.economicLedgers[code]?.nominalGDPTrillions ?? 0.5) * 50.0)
+                        }
+                    }()
+                    let otherPower: Double = {
+                        if otherCode == state.country.code {
+                            return Double(state.militaryUnits.values.reduce(0, +))
+                        } else {
+                            let armyStr = Double(state.mapArmies.filter { $0.countryCode == otherCode }.reduce(0) { $0 + $1.strength })
+                            return armyStr > 0 ? armyStr : ((state.economicLedgers[otherCode]?.nominalGDPTrillions ?? 0.5) * 50.0)
+                        }
+                    }()
+
+                    if ownPower > 0 {
+                        let ratio = otherPower / ownPower
+                        if ratio >= 0.5, ratio <= 2.0 {
+                            score += 20.0 // Peer rivalry
+                        } else if ratio < 0.5 {
+                            score += 10.0 // Predatory target selection
+                        }
+                    }
+
+                    return (otherCode, score)
+                }.sorted(by: { lhs, rhs in
+                    if lhs.score != rhs.score { return lhs.score > rhs.score }
+                    return lhs.code < rhs.code
+                })
+
+                if let rivalCode = sortedCandidates.first?.code,
+                   aiState.relationshipScores[rivalCode] ?? 0 < -40
+                {
+                    let rivalRegions = GeopoliticalMapData.regions.filter { reg in
+                        (nextRegionOccupations[reg.id] == rivalCode || (nextRegionOccupations[reg.id] == nil && reg.countryCode == rivalCode)) && reg.countryCode != "WATER"
+                    }
+
+                    if let targetRegion = rivalRegions.first {
+                        let attackerDiceCount = aiState.budgetPriority == .military ? 3 : 2
+                        let defenderDiceCount: Int = {
+                            if rivalCode == state.country.code {
+                                return state.budgetMilitarySlider > 0.4 ? 2 : 1
+                            } else {
+                                if nextAICountryStates[rivalCode]?.budgetPriority == .military { return 2 }
+                                return 1
+                            }
+                        }()
+
+                        let attackerModifier = aiState.budgetPriority == .military ? 1 : 0
+
+                        let defenderFortressLevel = state.mapBuildings.first(where: { $0.regionID == targetRegion.id && $0.type == .fortress })?.level ?? 0
+                        let defenderModifier: Int = if rivalCode == state.country.code {
+                            (state.budgetMilitarySlider > 0.8 ? 1 : 0) + defenderFortressLevel
+                        } else {
+                            (nextAICountryStates[rivalCode]?.budgetPriority == .military ? 1 : 0) + defenderFortressLevel
+                        }
+
+                        let terrainModifier = switch targetRegion.terrain {
+                        case .mountain, .strait, .ocean, .sea: 2
+                        case .swamp, .forest, .city, .cerrado: 1
+                        default: 0
+                        }
+
+                        let seed = "ai-invasion-\(code)-\(rivalCode)-\(targetRegion.id)-\(state.gameDate)"
+                        let attackerRawRolls = rollDice(seed: seed + "-atk", count: attackerDiceCount)
+                        let defenderRawRolls = rollDice(seed: seed + "-def", count: defenderDiceCount)
+
+                        let attackerSorted = attackerRawRolls.map { $0 + attackerModifier }.sorted(by: >)
+                        let defenderSorted = defenderRawRolls.map { $0 + defenderModifier + terrainModifier }.sorted(by: >)
+
+                        let matchCount = min(attackerSorted.count, defenderSorted.count)
+                        var attackerWins = 0
+                        var defenderWins = 0
+                        for i in 0 ..< matchCount {
+                            if attackerSorted[i] > defenderSorted[i] {
+                                attackerWins += 1
+                            } else {
+                                defenderWins += 1
+                            }
+                        }
+
+                        let isSuccess = attackerWins > defenderWins
+                        let battleLog = "AI Invasion: \(code) rolled \(attackerRawRolls) vs defender \(rivalCode) \(defenderRawRolls) in \(targetRegion.name). [Fortress: \(defenderFortressLevel), Terrain: \(terrainModifier)]"
+
+                        if isSuccess {
+                            nextRegionOccupations[targetRegion.id] = code
+                            nextRegionConflicts[targetRegion.id] = NativeRegionConflictState(
+                                controllerCode: code,
+                                intensity: 3,
+                                mode: .conventionalOccupation,
+                                originalCountryCode: targetRegion.countryCode,
+                                regionID: targetRegion.id,
+                                summary: "Occupied by hostile forces. \(battleLog)",
+                                updatedAt: targetDate
+                            )
+
+                            let invasionEvent = NativeCampaignEvent(
+                                date: targetDate,
+                                description: "Hostile Forces Breach Border: \(code) forces launched a surprise assault and secured control over the region of \(targetRegion.name). \(battleLog)",
+                                id: "ai-invasion-success-\(targetRegion.id)-\(targetDate)",
+                                importance: .severe,
+                                kind: .crisis,
+                                linkedActionIDs: [],
+                                notable: true,
+                                playerRelated: rivalCode == state.country.code || code == state.country.code,
+                                strategicEffects: rivalCode == state.country.code ? [
+                                    NativeStrategicEffect(
+                                        date: targetDate,
+                                        eventId: "ai-invasion-success-\(targetRegion.id)-\(targetDate)",
+                                        id: "ai-invasion-effect-\(targetRegion.id)-\(targetDate)",
+                                        magnitude: -10,
+                                        summary: "Losing sovereign territory collapses government stability.",
+                                        target: state.country.code,
+                                        track: .internalStability
+                                    )
+                                ] : [],
+                                title: "Crisis: \(targetRegion.name) Occupied by \(code)"
+                            )
+                            aiInvasionEvents.append(invasionEvent)
+
+                            if rivalCode == state.country.code {
+                                nextMilitaryUnits["infantry", default: 0] = max(5, nextMilitaryUnits["infantry", default: 0] - 8)
+                                nextMilitaryUnits["armor", default: 0] = max(2, nextMilitaryUnits["armor", default: 0] - 4)
+                                nextMilitaryUnits["air", default: 0] = max(1, nextMilitaryUnits["air", default: 0] - 2)
+                            }
+                        } else {
+                            nextRegionConflicts[targetRegion.id] = NativeRegionConflictState(
+                                controllerCode: nextRegionOccupations[targetRegion.id] ?? targetRegion.countryCode,
+                                intensity: 4,
+                                mode: .contestedBorder,
+                                originalCountryCode: targetRegion.countryCode,
+                                regionID: targetRegion.id,
+                                summary: "Border assault repelled. \(battleLog)",
+                                updatedAt: targetDate
+                            )
+
+                            let repelledEvent = NativeCampaignEvent(
+                                date: targetDate,
+                                description: "Border Assault Repelled: Defender forces in \(targetRegion.name) successfully held off an aggressive border assault from \(code). \(battleLog)",
+                                id: "ai-invasion-fail-\(targetRegion.id)-\(targetDate)",
+                                importance: .major,
+                                kind: .world,
+                                linkedActionIDs: [],
+                                notable: true,
+                                playerRelated: rivalCode == state.country.code || code == state.country.code,
+                                strategicEffects: rivalCode == state.country.code ? [
+                                    NativeStrategicEffect(
+                                        date: targetDate,
+                                        eventId: "ai-invasion-fail-\(targetRegion.id)-\(targetDate)",
+                                        id: "ai-invasion-fail-effect-\(targetRegion.id)-\(targetDate)",
+                                        magnitude: 2,
+                                        summary: "Repelling foreign aggression bolsters national stability.",
+                                        target: state.country.code,
+                                        track: .internalStability
+                                    )
+                                ] : [],
+                                title: "Invasion of \(targetRegion.name) Repelled"
+                            )
+                            aiInvasionEvents.append(repelledEvent)
+
+                            if rivalCode == state.country.code {
+                                nextMilitaryUnits["infantry", default: 0] = max(5, nextMilitaryUnits["infantry", default: 0] - 3)
+                                nextMilitaryUnits["armor", default: 0] = max(2, nextMilitaryUnits["armor", default: 0] - 1)
+                            }
+                        }
+                    }
+                }
+
+                aiState.agendaProgress = 0
+                nextAICountryStates[code] = aiState
+            }
+        }
+
+        // **Political Reform Mechanic**: Player-driven constitutional changes resolved here
+        // so that ledger gov-type mutations happen before economic ledger computation.
+        // Ledger mutations from reform resolution are buffered and applied after mutableLedgers init.
+        var reformLedgerMutations: [String: NativeEconomicLedger] = [:]
+        var reformLedgers = state.economicLedgers
+        let politicalReformEvents = resolvePoliticalReformOrders(
+            actions: &resolvedActions,
+            state: state,
+            targetDate: targetDate,
+            round: state.round,
+            economicLedgers: &reformLedgers
+        )
+        if let mutatedPlayerLedger = reformLedgers[state.country.code],
+           mutatedPlayerLedger != state.economicLedgers[state.country.code]
+        {
+            reformLedgerMutations[state.country.code] = mutatedPlayerLedger
+        }
+        additionalEvents.append(contentsOf: politicalReformEvents)
+
+        // **Action Outcome Mechanic**: Deterministic dice resolution for non-regional player actions.
+        // Temporary ledger snapshot for outcome mutation; merged into mutableLedgers below.
+        var outcomeLedgers = state.economicLedgers
+        let actionOutcomeEvents = resolveNonRegionalActionOutcomes(
+            actions: &resolvedActions,
+            state: state,
+            targetDate: targetDate,
+            round: state.round,
+            finalLedgers: &outcomeLedgers
+        )
+        additionalEvents.append(contentsOf: actionOutcomeEvents)
+
+        // Structured matrix sovereignty intent is authoritative. It is applied
+        // only after deterministic action resolution and only when the action did
+        // not fail, so prose from a provider cannot create an impossible polity.
+        for action in resolvedActions where action.sovereigntyChange != nil {
+            let linkedIndexes = generatedEvents.indices.filter {
+                generatedEvents[$0].linkedActionIDs.contains(action.id)
+            }
+            if action.outcome == .failure {
+                for index in linkedIndexes {
+                    generatedEvents[index].sovereigntyChange = nil
+                }
+                continue
+            }
+            if let index = linkedIndexes.first {
+                generatedEvents[index].sovereigntyChange = action.sovereigntyChange
+            } else if let sovereigntyChange = action.sovereigntyChange {
+                let eventID = "sovereignty-\(action.id)-\(targetDate)"
+                additionalEvents.append(NativeCampaignEvent(
+                    date: targetDate,
+                    description: "The queued sovereignty decision was implemented through the stored territorial and diplomatic process.",
+                    id: eventID,
+                    importance: .major,
+                    kind: .world,
+                    linkedActionIDs: [action.id],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [NativeStrategicEffect(
+                        date: targetDate,
+                        eventId: eventID,
+                        id: "\(eventID)-effect",
+                        magnitude: sovereigntyChange.kind == .merge ? -1 : 1,
+                        summary: "Formal sovereignty changes alter international tension.",
+                        target: sovereigntyChange.targetCode,
+                        track: .worldTension
+                    )],
+                    title: action.title,
+                    sovereigntyChange: sovereigntyChange
+                ))
+            }
+        }
+
+        additionalEvents.append(contentsOf: aiInvasionEvents)
+
         generatedEvents.insert(contentsOf: additionalEvents, at: 0)
         let allEffects = generatedEvents.flatMap(\.strategicEffects)
+        let playerEffects = allEffects.filter {
+            resolvedCountryCode(from: $0.target, fallback: state.country.code) == state.country.code
+        }
         let economicLedgers = NativeStrategyContextDatabase.updatedEconomicLedgers(
             from: state.economicLedgers,
             state: state,
@@ -588,6 +923,23 @@ enum NativeGameEngine {
         )
 
         var mutableLedgers = economicLedgers
+
+        // Apply government-type mutations from political reform resolution
+        for (code, ledger) in reformLedgerMutations {
+            if var ml = mutableLedgers[code] {
+                ml.governmentType = ledger.governmentType
+                ml.nextElectionRound = ledger.nextElectionRound
+                ml.publicApprovalPercent = ledger.publicApprovalPercent
+                mutableLedgers[code] = ml
+            }
+        }
+        // Apply economic penalties from failed non-regional actions
+        if let outcomeMutation = outcomeLedgers[state.country.code],
+           var ml = mutableLedgers[state.country.code]
+        {
+            ml.realGrowthPercent = Swift.min(ml.realGrowthPercent, outcomeMutation.realGrowthPercent)
+            mutableLedgers[state.country.code] = ml
+        }
 
         processTacticalNudges(
             events: generatedEvents,
@@ -606,10 +958,7 @@ enum NativeGameEngine {
             targetDate: targetDate
         )
 
-        var nextAICountryStates = state.aiCountryStates
-        if nextAICountryStates.isEmpty {
-            nextAICountryStates = NativeStrategyContextDatabase.initialAICountryStates(for: state.scenarioID)
-        }
+        // nextAICountryStates is already initialized and updated above.
 
         for event in generatedEvents {
             guard let hex = event.hexLeverCode,
@@ -688,7 +1037,7 @@ enum NativeGameEngine {
         let securityStabilityHit = playerLedgerForStability.securityIndex < 40.0 ? Int((40.0 - playerLedgerForStability.securityIndex) * 0.15) : 0
         let feedbackStabilityChange = growthStabilityBoost + securityStabilityBoost - inflationStabilityHit - growthStabilityHit - securityStabilityHit
 
-        var targetStability = clamp(state.stability + adjStabilityDelta - falloutStabilityHit + feedbackStabilityChange + allEffects.filter { $0.track == .internalStability }.map(\.magnitude).reduce(0, +))
+        var targetStability = clamp(state.stability + adjStabilityDelta - falloutStabilityHit + feedbackStabilityChange + playerEffects.filter { $0.track == .internalStability }.map(\.magnitude).reduce(0, +))
         var nextVictoryStatus = state.victoryStatus
         var finalLedgers = mutableLedgers
 
@@ -797,12 +1146,7 @@ enum NativeGameEngine {
         } else if state.budgetServicesSlider < 0.20 {
             servicesBonus = -15
         }
-        let refillAmount = baseRefill - stabilityPenalty - rebelPenalty + servicesBonus
-        let nextCapacity = max(20, min(120, refillAmount))
 
-        // **Tension Mechanic**: Dynamic world tension escalation.
-        // The international system becomes more volatile based on global conflicts,
-        // arms races, and aggressive territorial expansions (imperial friction).
         let tensionConflictModes: Set<NativeRegionConflictMode> = [
             .contestedBorder,
             .conventionalOccupation,
@@ -810,6 +1154,22 @@ enum NativeGameEngine {
             .nuclearFallout
         ]
         let activeConflictsCount = nextRegionConflicts.values.filter { tensionConflictModes.contains($0.mode) }.count
+
+        // Hostile AI agendas drain capacity:
+        let hostileAICountriesCount = nextAICountryStates.values.filter {
+            let relationship = $0.relationshipScores[state.country.code] ?? 0
+            return relationship < -40
+        }.count
+
+        let aiACDrain = hostileAICountriesCount * 5
+        let conflictACDrain = activeConflictsCount * 3
+
+        let refillAmount = baseRefill - stabilityPenalty - rebelPenalty + servicesBonus - aiACDrain - conflictACDrain
+        let nextCapacity = max(10, min(120, refillAmount))
+
+        // **Tension Mechanic**: Dynamic world tension escalation.
+        // The international system becomes more volatile based on global conflicts,
+        // arms races, and aggressive territorial expansions (imperial friction).
         let armsRaceEscalation = state.budgetMilitarySlider > 0.40 ? 2 : 0
         let globalFalloutCount = nextNuclearRegions.count
         let globalOccupiedCount = nextRegionOccupations.filter { key, val in
@@ -877,6 +1237,7 @@ enum NativeGameEngine {
             aiCountryStates: nextAICountryStates,
             gameDate: targetDate,
             gameMode: state.gameMode,
+            worldSeed: state.worldSeed,
             lastSummary: sanitizeFoundationModelText(generated.summary),
             language: state.language,
             plannedActions: resolvedActions,
@@ -906,7 +1267,7 @@ enum NativeGameEngine {
             techEra: state.techEra,
             researchPoints: state.researchPoints,
             budgetResearchSlider: state.budgetResearchSlider,
-            militaryUnits: state.militaryUnits
+            militaryUnits: nextMilitaryUnits
         )
 
         if finalState.victoryStatus == .ongoing {
@@ -948,6 +1309,7 @@ enum NativeGameEngine {
             state: finalState,
             events: Array(finalState.timeline.prefix(generatedEvents.count + 2))
         )
+
         return finalState
     }
 
@@ -1046,13 +1408,19 @@ enum NativeGameEngine {
         guard aiCountryStates[code] == nil else { return }
         var relationships = aiCountryStates[sourceCodes.first ?? ""]?.relationshipScores ?? [:]
         relationships[state.country.code] = min(relationships[state.country.code] ?? 0, -10)
+        let decisionSeed = NativeWorldSimulator.countrySeed(
+            worldSeed: NativeWorldSimulator.resolvedWorldSeed(for: state),
+            countryCode: code
+        )
         aiCountryStates[code] = NativeAICountryState(
             countryCode: code,
             doctrine: .defensive,
             budgetPriority: .stability,
             relationshipScores: relationships,
             multiTurnAgenda: "Secure recognition, basic state capacity, and defensible borders.",
-            agendaProgress: 10
+            agendaProgress: 10,
+            decisionProfileID: Int(decisionSeed & 0x0FFF),
+            decisionSeed: decisionSeed
         )
     }
 
@@ -1461,7 +1829,9 @@ enum NativeGameEngine {
     }
 
     static func afterActionReport(for turn: NativeGeneratedTurn, state: NativeCampaignState) -> NativeAfterActionReport {
-        let effects = turn.events.flatMap(\.strategicEffects)
+        let effects = turn.events.flatMap(\.strategicEffects).filter {
+            resolvedCountryCode(from: $0.target, fallback: state.country.code) == state.country.code
+        }
         let stabilityEffects = effects.filter { $0.track == .internalStability }.map(\.magnitude).reduce(0, +)
         let tensionEffects = effects.filter { $0.track == .worldTension || $0.track == .securityAnxiety }.map(\.magnitude).reduce(0, +)
         let economyEffects = effects.filter { $0.track == .economicResilience || $0.track == .marketConfidence }.map(\.magnitude).reduce(0, +)

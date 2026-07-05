@@ -18,7 +18,9 @@ If a task says "Swift native", "Mac native", "iOS", "Apple", "Foundation Models"
 2. `Apple/PaxHistoriaApple/NativeCampaignStore.swift`
 3. `Apple/PaxHistoriaApple/NativeGameEngine.swift`
 4. `Apple/PaxHistoriaApple/NativeFoundationModelService.swift`
-5. `Apple/PaxHistoriaApple/NativeStrategyContextDatabase.swift`
+5. `Apple/PaxHistoriaApple/DynamicAIService.swift`
+6. `Apple/PaxHistoriaApple/NativeNVIDIAService.swift`
+7. `Apple/PaxHistoriaApple/NativeStrategyContextDatabase.swift`
 
 These files define the state, generation, persistence, and native-boundary contracts.
 
@@ -55,6 +57,10 @@ Owns deterministic state creation, generated-turn validation, turn application, 
 `NativeFoundationModelService`
 
 Owns Apple Foundation Models prompts, structured JSON decoding, prompt clamping, generation retries, and text-generation tasks for advisor/diplomacy.
+
+`DynamicAIService`, `NativeNVIDIAService`, and `NativeOpenRouterService`
+
+Own external-provider dispatch. Keep NVIDIA NIM as the default primary and OpenRouter Free as its visible fallback across every AI surface. Do not add `max_tokens` or a local session budget to those two routes. Never put API keys in source, fixtures, logs, or documentation.
 
 `NativeStrategyContextDatabase`
 

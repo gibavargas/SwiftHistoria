@@ -100,6 +100,7 @@ struct VictoryDefeatOverlay: View {
                 .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .padding(.horizontal, 32)
+                .accessibilityIdentifier("native-victory-exit")
             }
             .padding(30)
             .glassmorphicCard(borderColor: status == .won ? Color.neonTeal.opacity(0.3) : Color.softRed.opacity(0.3), cornerRadius: 20)

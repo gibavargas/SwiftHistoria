@@ -35,6 +35,31 @@ extension NativeCampaignStore {
             return
         }
 
+        // Cancel any pending debounced write — only the latest state matters.
+        persistDebounceTask?.cancel()
+        let activeSlot = saveSlot
+        persistDebounceTask = Task { @MainActor [weak self] in
+            // 500 ms debounce: coalesces rapid mutations (e.g. delete 3 actions)
+            // into a single JSON encode + disk write.
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            guard !Task.isCancelled, let self else { return }
+            self.writeStateToDisk(state, slot: activeSlot)
+        }
+    }
+
+    /// Immediate persistence for critical mutations (turn advance, new game).
+    /// Bypasses the debounce so the save is guaranteed before returning.
+    func persistStateImmediately() {
+        guard let state else {
+            persistState()
+            return
+        }
+        persistDebounceTask?.cancel()
+        persistDebounceTask = nil
+        writeStateToDisk(state, slot: saveSlot)
+    }
+
+    private func writeStateToDisk(_ state: NativeCampaignState, slot activeSlot: Int) {
         // Persistence is deliberately redundant: primary versioned envelope,
         // last-good envelope backup, and a direct legacy state blob. The read
         // path tries them in that order so corrupt primary data can be recovered
@@ -54,7 +79,6 @@ extension NativeCampaignStore {
             return
         }
 
-        let activeSlot = saveSlot
         let backupData: Data = if let previousPrimary = Self.primaryPersistenceData(
             from: defaults,
             persistenceDirectory: persistenceDirectory,
@@ -72,22 +96,22 @@ extension NativeCampaignStore {
         do {
             try Self.writePersistenceData(
                 backupData,
-                fileName: slotFileName(Self.campaignStateBackupFileName),
+                fileName: Self.slotFileName(Self.campaignStateBackupFileName, slot: activeSlot),
                 directory: persistenceDirectory
             )
             try Self.writePersistenceData(
                 envelopeData,
-                fileName: slotFileName(Self.campaignStateEnvelopeFileName),
+                fileName: Self.slotFileName(Self.campaignStateEnvelopeFileName, slot: activeSlot),
                 directory: persistenceDirectory
             )
             try Self.writePersistenceData(
                 legacyData,
-                fileName: slotFileName(Self.campaignStateLegacyFileName),
+                fileName: Self.slotFileName(Self.campaignStateLegacyFileName, slot: activeSlot),
                 directory: persistenceDirectory
             )
-            Self.storeDefaultsFallback(backupData, forKey: slotKey(Self.campaignStateBackupKey), defaults: defaults)
-            Self.storeDefaultsFallback(envelopeData, forKey: slotKey(Self.campaignStateEnvelopeKey), defaults: defaults)
-            Self.storeDefaultsFallback(legacyData, forKey: slotKey(Self.campaignStateKey), defaults: defaults)
+            Self.storeDefaultsFallback(backupData, forKey: Self.slotKey(Self.campaignStateBackupKey, slot: activeSlot), defaults: defaults)
+            Self.storeDefaultsFallback(envelopeData, forKey: Self.slotKey(Self.campaignStateEnvelopeKey, slot: activeSlot), defaults: defaults)
+            Self.storeDefaultsFallback(legacyData, forKey: Self.slotKey(Self.campaignStateKey, slot: activeSlot), defaults: defaults)
             Self.writeTursoPersistenceData(
                 envelopeData: envelopeData,
                 backupData: backupData,

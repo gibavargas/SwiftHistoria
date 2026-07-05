@@ -23,8 +23,9 @@ actor NativeRateLimiter {
     private let windowDuration: TimeInterval = 60.0
 
     /// Wait until a request slot is available, then record it.
-    func acquire() async {
+    func acquire() async throws {
         while true {
+            try Task.checkCancellation()
             let now = Date()
             timestamps = timestamps.filter { now.timeIntervalSince($0) < windowDuration }
             if timestamps.count < Self.effectiveLimit {
@@ -34,7 +35,7 @@ actor NativeRateLimiter {
             // Wait until the oldest timestamp exits the window
             if let oldest = timestamps.first {
                 let waitTime = windowDuration - now.timeIntervalSince(oldest) + 0.5
-                try? await Task.sleep(nanoseconds: UInt64(waitTime * 1_000_000_000))
+                try await Task.sleep(nanoseconds: UInt64(waitTime * 1_000_000_000))
             }
         }
     }

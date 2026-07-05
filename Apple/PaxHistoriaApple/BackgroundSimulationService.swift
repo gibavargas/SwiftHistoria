@@ -2,8 +2,9 @@ import CoreGraphics
 import Foundation
 import OSLog
 
-/// Serviço responsável por rodar a simulação não-verbal de background para os países IA.
-/// Usa o Neural Engine para inferência rápida das políticas de IA (onde mover exércitos, etc).
+/// Companion tactical projection used by the map layer.
+/// Strategic CPU decisions and the optional Core ML/Neural Engine policy live in
+/// `NativeWorldSimulator`; this service remains a deterministic fallback.
 final class BackgroundSimulationService: Sendable {
     static let shared = BackgroundSimulationService()
 
@@ -150,13 +151,22 @@ private extension BackgroundSimulationService {
 
     func startingArmy(for code: String, regionID: String, state: NativeCampaignState) -> NativeArmySnapshot {
         let ledger = state.economicLedgers[code]
-        let strength = Int(((ledger?.nominalGDPTrillions ?? 0.5) * 8.0).rounded()) + 20
+        let gdp = ledger?.nominalGDPTrillions ?? 0.5
+        let profile = Native2010WorldModel.profile(for: PlayerCountry(code: code, name: code))
+        let spend = profile.militarySpendingPercent
+        let corruption = profile.corruptionIndex
+
+        let milSpendCoeff = spend / 2.0
+        let corruptionCoeff = 1.0 - (Double(corruption) / 100.0) * 0.6
+        let mpi = gdp * milSpendCoeff * corruptionCoeff
+
+        let strength = min(100, max(12, Int((mpi * 8.0).rounded()) + 20))
         let type: NativeArmyKind = state.aiCountryStates[code]?.budgetPriority == .military ? .armor : .infantry
         return NativeArmySnapshot(
             countryCode: code,
             currentRegionID: regionID,
             id: "army-\(code)-\(regionID)",
-            strength: min(100, max(12, strength)),
+            strength: strength,
             type: type
         )
     }
@@ -171,7 +181,7 @@ private extension BackgroundSimulationService {
         guard let playerRegion = GeopoliticalMapData.regions(forCountryCode: playerCode).first else {
             return regions.first
         }
-        return regions.max { left, right in
+        return regions.min { left, right in
             distanceSquared(left.center, playerRegion.center) < distanceSquared(right.center, playerRegion.center)
         }
     }

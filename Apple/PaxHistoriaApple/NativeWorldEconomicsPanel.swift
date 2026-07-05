@@ -5,9 +5,20 @@ struct NativeWorldEconomicsPanel: View {
     @ObservedObject var store: NativeCampaignStore
     let state: NativeCampaignState
 
+    static let featuredCountryCodes = ["GLOBAL", "USA", "CHN", "BRA", "DEU", "JPN", "GBR", "FRA", "IND", "RUS", "ZAF", "AUS"]
+
+    static func displayedCountryCodes(for state: NativeCampaignState) -> [String] {
+        featuredCountryCodes + state.dynamicCountries.keys
+            .filter { !featuredCountryCodes.contains($0) }
+            .sorted()
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             PlayerBudgetPanel(store: store, state: state)
+                .padding(.bottom, 6)
+
+            NativeResearchAndForcesPanel(store: store, state: state)
                 .padding(.bottom, 6)
 
             HStack {
@@ -26,12 +37,14 @@ struct NativeWorldEconomicsPanel: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            let countryCodes = ["GLOBAL", "USA", "CHN", "BRA", "DEU", "JPN", "GBR", "FRA", "IND", "RUS", "ZAF", "AUS"]
+            let countryCodes = Self.displayedCountryCodes(for: state)
             VStack(spacing: 12) {
                 ForEach(countryCodes, id: \.self) { code in
                     let visibility = NativeGameEngine.intelVisibility(forCountryCode: code, in: state)
                     let ledger = state.economicLedgers[code] ?? NativeEconomicLedger.starting(for: PlayerCountry(code: code, name: code), scenario: NativeScenarioCatalog.scenario(for: state.scenarioID))
-                    let resolvedName = (code == "RUS" && state.scenarioID == "soviet-triumph") ? "Soviet Union" : (CountryCatalog.all.first(where: { $0.code == code })?.name ?? (code == "GLOBAL" ? "Global System" : code))
+                    let resolvedName = (code == "RUS" && state.scenarioID == "soviet-triumph")
+                        ? "Soviet Union"
+                        : CountryNameResolver.name(forCode: code, in: state)
 
                     if visibility == .hidden, code != "GLOBAL", code != state.country.code {
                         // Fog of war: rival data is masked
@@ -95,27 +108,29 @@ struct ExpansionEconomicCard: View {
 
     private var themeColor: Color {
         if isPlayer { return Color.glowingCyan }
-        if isGlobal { return Color(hex: "#b862ff") }
+        if isGlobal { return NativeWarRoomTheme.signalCyan }
         return Color.iceBlue
     }
 
     private var tagBackground: Color {
         if isPlayer { return Color.glowingCyan.opacity(0.15) }
-        if isGlobal { return Color(hex: "#b862ff").opacity(0.15) }
+        if isGlobal { return NativeWarRoomTheme.signalCyan.opacity(0.15) }
         return Color.white.opacity(0.06)
     }
 
     private var tagStroke: Color {
         if isPlayer { return Color.glowingCyan.opacity(0.4) }
-        if isGlobal { return Color(hex: "#b862ff").opacity(0.4) }
+        if isGlobal { return NativeWarRoomTheme.signalCyan.opacity(0.4) }
         return Color.white.opacity(0.1)
     }
 
     var body: some View {
         VStack(spacing: 0) {
             Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    isExpanded.toggle()
+                if visibilityLabel != "CLASSIFIED" {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        isExpanded.toggle()
+                    }
                 }
             } label: {
                 HStack(spacing: 12) {
@@ -146,8 +161,8 @@ struct ExpansionEconomicCard: View {
                                     .font(.system(size: 11, weight: .bold, design: .monospaced))
                                     .padding(.horizontal, 4)
                                     .padding(.vertical, 1)
-                                    .background(Color(hex: "#b862ff").opacity(0.2), in: RoundedRectangle(cornerRadius: 3))
-                                    .foregroundStyle(Color(hex: "#b862ff"))
+                                    .background(NativeWarRoomTheme.signalCyan.opacity(0.2), in: RoundedRectangle(cornerRadius: 3))
+                                    .foregroundStyle(NativeWarRoomTheme.signalCyan)
                             }
                             if let label = visibilityLabel {
                                 Text(label)
@@ -172,19 +187,41 @@ struct ExpansionEconomicCard: View {
 
                     Spacer()
 
-                    HStack(spacing: 8) {
-                        MiniMetricIndicator(title: "BUDGET", value: String(format: "%+.1f%%", ledger.budgetBalancePercentGDP), isPositive: ledger.budgetBalancePercentGDP >= -3)
-                        MiniMetricIndicator(title: "DEBT", value: String(format: "%.0f%%", ledger.publicDebtPercentGDP), isPositive: ledger.publicDebtPercentGDP <= 90)
-                    }
+                    if visibilityLabel != "CLASSIFIED" {
+                        HStack(spacing: 8) {
+                            MiniMetricIndicator(title: "BUDGET", value: String(format: "%+.1f%%", ledger.budgetBalancePercentGDP), isPositive: ledger.budgetBalancePercentGDP >= -3)
+                            MiniMetricIndicator(title: "DEBT", value: String(format: "%.0f%%", ledger.publicDebtPercentGDP), isPositive: ledger.publicDebtPercentGDP <= 90)
+                        }
 
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .padding(12)
-                .background(isPlayer ? Color.deepSlate.opacity(0.6) : Color.spaceBlack.opacity(0.4))
+                .background(
+                    Group {
+                        if visibilityLabel == "CLASSIFIED" {
+                            ClassifiedPatternBackground()
+                        } else if isPlayer {
+                            Color.deepSlate.opacity(0.6)
+                        } else {
+                            Color.spaceBlack.opacity(0.4)
+                        }
+                    }
+                )
             }
             .buttonStyle(.plain)
+            .overlay {
+                if visibilityLabel == "CLASSIFIED" {
+                    HStack {
+                        Spacer()
+                        ClassifiedStampOverlay()
+                            .padding(.trailing, 40)
+                    }
+                    .allowsHitTesting(false)
+                }
+            }
 
             if isExpanded {
                 Divider().background(Color.white.opacity(0.08))
@@ -196,6 +233,9 @@ struct ExpansionEconomicCard: View {
                         DetailMetricRow(title: "Trade Balance", value: String(format: "%+.1f%%", ledger.tradeBalancePercentGDP), systemImage: "arrow.left.and.right.righttriangle.left.righttriangle.right", tintColor: themeColor)
                         DetailMetricRow(title: "Fiscal Space Index", value: "\(ledger.fiscalSpaceIndex)/100", systemImage: "gauge.with.needle", tintColor: themeColor)
                         if !isGlobal {
+                            DetailMetricRow(title: "Government", value: ledger.governmentType.capitalized, systemImage: "building.columns.fill", tintColor: themeColor)
+                            let approvalLabel = ledger.governmentType == "democracy" ? "Public Approval" : "Regime Support"
+                            DetailMetricRow(title: approvalLabel, value: String(format: "%.1f%%", ledger.publicApprovalPercent), systemImage: "hand.thumbsup.fill", tintColor: ledger.publicApprovalPercent >= 50.0 ? Color.neonTeal : Color.softRed)
                             DetailMetricRow(title: "Public Security", value: String(format: "%.1f/100", ledger.securityIndex), systemImage: "shield.fill", tintColor: ledger.securityIndex >= 70.0 ? Color.neonTeal : (ledger.securityIndex >= 45.0 ? Color.alertGold : Color.softRed))
                             DetailMetricRow(title: "Insurgency Pressure", value: String(format: "%.1f%%", ledger.rebelControlPercent), systemImage: "flag.fill", tintColor: ledger.rebelControlPercent == 0.0 ? Color.neonTeal : (ledger.rebelControlPercent < 25.0 ? Color.alertGold : Color.softRed))
                         }
@@ -233,7 +273,7 @@ struct ExpansionEconomicCard: View {
                 .background(Color.deepSlate.opacity(0.2))
             }
         }
-        .glassmorphicCard(borderColor: isPlayer ? Color.glowingCyan.opacity(0.3) : (isGlobal ? Color(hex: "#b862ff").opacity(0.3) : Color.white.opacity(0.08)), cornerRadius: 10)
+        .glassmorphicCard(borderColor: isPlayer ? Color.glowingCyan.opacity(0.3) : (isGlobal ? NativeWarRoomTheme.signalCyan.opacity(0.3) : Color.white.opacity(0.08)), cornerRadius: 10)
         .accessibilityIdentifier("expansion-economic-card-\(code.lowercased())")
     }
 }
@@ -434,5 +474,194 @@ struct PlayerBudgetPanel: View {
         }
 
         store.updateBudgetSliders(military: m, services: s, diplomacy: d)
+    }
+}
+
+struct NativeResearchAndForcesPanel: View {
+    @ObservedObject var store: NativeCampaignStore
+    let state: NativeCampaignState
+
+    private var era: NativeTechEra {
+        state.techEraTyped
+    }
+
+    private var researchProgress: Double {
+        guard era.next != nil else { return 1 }
+        return min(1, Double(state.researchPoints) / Double(max(1, era.researchThreshold)))
+    }
+
+    private var totalUnits: Int {
+        state.militaryUnits.values.reduce(0, +)
+    }
+
+    private var forceTrend: (title: String, color: Color) {
+        if state.budgetMilitarySlider > 0.40 {
+            return ("Recruiting", .neonTeal)
+        }
+        if state.budgetMilitarySlider < 0.20 {
+            return ("Attriting", .softRed)
+        }
+        return ("Holding", .alertGold)
+    }
+
+    private var attackSupport: Int {
+        state.militaryUnits["armor", default: 0] / 10 + state.militaryUnits["air", default: 0] / 10
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Label("RESEARCH & FORCE READINESS", systemImage: "atom")
+                    .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.glowingCyan)
+                    .tracking(1.2)
+                Spacer()
+                Text(era.displayName.uppercased())
+                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.neonTeal)
+            }
+
+            VStack(alignment: .leading, spacing: 7) {
+                HStack {
+                    Text("Technology era")
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                    Spacer()
+                    if let nextEra = era.next {
+                        Text("\(state.researchPoints)/\(era.researchThreshold) → \(nextEra.displayName)")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.glowingCyan)
+                    } else {
+                        Text("MAXIMUM ERA")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.neonTeal)
+                    }
+                }
+
+                ProgressView(value: researchProgress)
+                    .tint(Color.neonTeal)
+                    .accessibilityLabel("Research progress")
+                    .accessibilityValue(era.next == nil ? "Maximum era reached" : "\(state.researchPoints) of \(era.researchThreshold) points")
+                    .accessibilityIdentifier("native-research-progress")
+
+                HStack {
+                    Label("Independent research allocation", systemImage: "flask.fill")
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Text("\(Int((state.budgetResearchSlider * 100).rounded()))%")
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.glowingCyan)
+                }
+
+                Slider(
+                    value: Binding(
+                        get: { state.budgetResearchSlider },
+                        set: { store.updateResearchBudget($0) }
+                    ),
+                    in: 0 ... 1,
+                    step: 0.05
+                )
+                .tint(Color.glowingCyan)
+                .disabled(era.next == nil)
+                .accessibilityLabel("Research allocation")
+                .accessibilityValue("\(Int((state.budgetResearchSlider * 100).rounded())) percent")
+                .accessibilityHint("Research is tracked separately from the domestic budget allocation.")
+                .accessibilityIdentifier("native-research-budget-slider")
+
+                Text(era.next == nil
+                    ? "The technology ladder is complete; the allocation is locked."
+                    : "Research is independent from the 100% domestic allocation. Higher investment earns era progress faster.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Divider().background(Color.white.opacity(0.08))
+
+            HStack {
+                Text("STANDING FORCES")
+                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.iceBlue)
+                Spacer()
+                Text(forceTrend.title.uppercased())
+                    .font(.system(.caption2, design: .monospaced).weight(.bold))
+                    .foregroundStyle(forceTrend.color)
+            }
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                NativeForceCountTile(title: "Infantry", systemImage: "figure.walk", count: state.militaryUnits["infantry", default: 0])
+                NativeForceCountTile(title: "Armor", systemImage: "shield.lefthalf.filled", count: state.militaryUnits["armor", default: 0])
+                NativeForceCountTile(title: "Air", systemImage: "airplane", count: state.militaryUnits["air", default: 0])
+                NativeForceCountTile(title: "Naval", systemImage: "ferry.fill", count: state.militaryUnits["naval", default: 0])
+            }
+
+            HStack(spacing: 12) {
+                Label("\(totalUnits) total", systemImage: "person.3.sequence.fill")
+                Label(String(format: "-%0.2f pp growth/month", Double(totalUnits) * 0.01), systemImage: "chart.line.downtrend.xyaxis")
+                Label("+\(attackSupport) attack support", systemImage: "scope")
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .glassmorphicCard(borderColor: Color.neonTeal.opacity(0.28), cornerRadius: 10)
+        .accessibilityIdentifier("native-research-force-panel")
+    }
+}
+
+private struct NativeForceCountTile: View {
+    let title: String
+    let systemImage: String
+    let count: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .foregroundStyle(Color.alertGold)
+                .frame(width: 20)
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.white)
+            Spacer()
+            Text("\(count)")
+                .font(.system(.caption, design: .monospaced).weight(.bold))
+                .foregroundStyle(Color.glowingCyan)
+        }
+        .padding(8)
+        .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 6))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(count) units")
+        .accessibilityIdentifier("native-force-\(title.lowercased())")
+    }
+}
+
+struct ClassifiedPatternBackground: View {
+    var body: some View {
+        Canvas { context, size in
+            let spacing: CGFloat = 20
+            let strokeWidth: CGFloat = 2
+            var path = Path()
+
+            for x in stride(from: -size.height, to: size.width, by: spacing) {
+                path.move(to: CGPoint(x: x, y: 0))
+                path.addLine(to: CGPoint(x: x + size.height, y: size.height))
+            }
+            context.stroke(path, with: .color(Color.softRed.opacity(0.06)), lineWidth: strokeWidth)
+        }
+        .background(Color.spaceBlack.opacity(0.6))
+    }
+}
+
+struct ClassifiedStampOverlay: View {
+    var body: some View {
+        Text("CLASSIFIED — EYES ONLY")
+            .font(.system(size: 8, weight: .black, design: .monospaced))
+            .foregroundStyle(Color.softRed.opacity(0.18))
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .border(Color.softRed.opacity(0.18), width: 1)
+            .rotationEffect(.degrees(-10))
     }
 }

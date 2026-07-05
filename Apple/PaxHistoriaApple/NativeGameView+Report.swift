@@ -42,14 +42,28 @@ struct ActionRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 14) {
-            Image(systemName: action.status == .resolved ? "checkmark.circle.fill" : "circle")
+            Image(systemName: outcomeSymbol)
                 .font(.title3)
-                .foregroundStyle(action.status == .resolved ? Color.neonTeal : Color.iceBlue.opacity(0.4))
+                .foregroundStyle(outcomeColor)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(action.title)
-                    .font(.body.weight(.bold))
-                    .foregroundStyle(.primary)
+                HStack(spacing: 6) {
+                    Text(action.title)
+                        .font(.body.weight(.bold))
+                        .foregroundStyle(.primary)
+                    if let outcome = action.outcome {
+                        Text(outcomeBadge(outcome))
+                            .font(.system(.caption2, design: .monospaced).weight(.bold))
+                            .foregroundStyle(outcomeBadgeColor(outcome))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(outcomeBadgeColor(outcome).opacity(0.12), in: Capsule())
+                            .overlay {
+                                Capsule()
+                                    .stroke(outcomeBadgeColor(outcome).opacity(0.24), lineWidth: 1)
+                            }
+                    }
+                }
                 Text(action.detail)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -70,8 +84,56 @@ struct ActionRow: View {
             .accessibilityIdentifier("native-delete-order-\(action.id)")
         }
         .padding(12)
-        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 10)
+        .glassmorphicCard(borderColor: outcomeBorderColor, cornerRadius: 10)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("native-order-row-\(action.id)")
+    }
+
+    // MARK: – Outcome presentation helpers
+
+    private var outcomeSymbol: String {
+        guard action.status == .resolved else { return "circle" }
+        switch action.outcome {
+        case .success: return "checkmark.circle.fill"
+        case .partial: return "exclamationmark.circle.fill"
+        case .failure: return "xmark.circle.fill"
+        case nil: return "checkmark.circle.fill"
+        }
+    }
+
+    private var outcomeColor: Color {
+        guard action.status == .resolved else { return Color.iceBlue.opacity(0.4) }
+        switch action.outcome {
+        case .success: return Color.neonTeal
+        case .partial: return Color.alertGold
+        case .failure: return Color.softRed
+        case nil: return Color.neonTeal
+        }
+    }
+
+    private var outcomeBorderColor: Color {
+        guard action.status == .resolved else { return Color.white.opacity(0.08) }
+        switch action.outcome {
+        case .failure: return Color.softRed.opacity(0.18)
+        case .partial: return Color.alertGold.opacity(0.18)
+        case .success, nil: return Color.white.opacity(0.08)
+        }
+    }
+
+    private func outcomeBadge(_ outcome: NativeActionOutcome) -> String {
+        switch outcome {
+        case .success: "✅ SUCCESS"
+        case .partial: "⚠️ PARTIAL"
+        case .failure: "❌ FAILED"
+        }
+    }
+
+    private func outcomeBadgeColor(_ outcome: NativeActionOutcome) -> Color {
+        switch outcome {
+        case .success: Color.neonTeal
+        case .partial: Color.alertGold
+        case .failure: Color.softRed
+        }
     }
 }
 
@@ -153,7 +215,10 @@ struct EventCard: View {
                                 Text(effect.track.displayName.uppercased())
                                     .font(.system(.caption2, design: .monospaced).weight(.semibold))
                                     .foregroundStyle(.secondary)
-                                Text(effect.summary)
+                                let displayTarget = CountryNameResolver.name(forCode: effect.target)
+                                Text(effect.target.uppercased() == "GLOBAL" || displayTarget == effect.target
+                                    ? effect.summary
+                                    : "\(displayTarget): \(effect.summary)")
                                     .font(.caption)
                                     .foregroundStyle(.primary)
                                     .fixedSize(horizontal: false, vertical: true)

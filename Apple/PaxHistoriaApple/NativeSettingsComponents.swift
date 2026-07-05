@@ -2,7 +2,8 @@ import SwiftUI
 
 struct NativeSettingsPanel: View {
     @ObservedObject var store: NativeCampaignStore
-    @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderPreferenceRaw: String = NativeAIProviderPreference.openRouter.rawValue
+    @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderPreferenceRaw: String = NativeAIProviderPreference.nvidia.rawValue
+    @AppStorage("NVIDIA_API_KEY") private var nvidiaApiKey: String = ""
     @AppStorage("OPENROUTER_API_KEY") private var openRouterApiKey: String = ""
     @AppStorage("ZAI_API_KEY") private var zaiApiKey: String = ""
     @AppStorage("ZAI_USE_CODING_ENDPOINT") private var zaiUseCodingEndpoint: Bool = false
@@ -10,7 +11,7 @@ struct NativeSettingsPanel: View {
     @AppStorage(NativeCampaignStore.tursoAuthTokenKey) private var tursoAuthToken: String = ""
 
     private var selectedAIProviderPreference: NativeAIProviderPreference {
-        NativeAIProviderPreference(rawValue: aiProviderPreferenceRaw) ?? .openRouter
+        NativeAIProviderPreference(rawValue: aiProviderPreferenceRaw) ?? .nvidia
     }
 
     var body: some View {
@@ -65,16 +66,16 @@ struct NativeSettingsPanel: View {
                 NativeAIStatusPanel(readiness: state.aiReadiness, sessionTotalTokens: store.sessionTokenUsage.total)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("AI PROVIDER")
+                    Text("AI ROUTING")
                         .font(.system(.caption, design: .monospaced).weight(.bold))
                         .foregroundStyle(Color.alertGold)
 
-                    Picker("AI Provider", selection: $aiProviderPreferenceRaw) {
+                    Picker("AI Route", selection: $aiProviderPreferenceRaw) {
                         ForEach(NativeAIProviderPreference.allCases, id: \.rawValue) { provider in
                             Text(provider.title).tag(provider.rawValue)
                         }
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
                     .accessibilityIdentifier("native-ai-provider-picker")
                     .onChange(of: aiProviderPreferenceRaw) { _, _ in
                         Task {
@@ -87,6 +88,23 @@ struct NativeSettingsPanel: View {
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+
+                    if selectedAIProviderPreference == .nvidia,
+                       nvidiaApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                       openRouterApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    {
+                        Label("Add an NVIDIA API key for the primary NVIDIA NIM route or an OpenRouter API key for its fallback.", systemImage: "exclamationmark.triangle")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.alertGold)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else if selectedAIProviderPreference == .nvidia,
+                              nvidiaApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    {
+                        Label("No NVIDIA API key is saved. OpenRouter Free is currently the active fallback.", systemImage: "arrow.triangle.branch")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.alertGold)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
                     if selectedAIProviderPreference == .openRouter, openRouterApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         Label("OpenRouter is selected, but no API key is saved. Turn resolution, suggestions, advisor, and diplomacy requests will stay on OpenRouter and show a visible provider error until a key is saved.", systemImage: "exclamationmark.triangle")
@@ -105,7 +123,23 @@ struct NativeSettingsPanel: View {
                 .padding(.vertical, 8)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("OPENROUTER (FREE) CONFIGURATION")
+                    Text("NVIDIA NIM // PRIMARY")
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.glowingCyan)
+
+                    SecureField("NVIDIA API Key (nvapi-...)", text: $nvidiaApiKey)
+                        .textFieldStyle(.roundedBorder)
+                        .accessibilityIdentifier("native-nvidia-api-key")
+
+                    Text("Primary inference route: minimaxai/minimax-m3, moonshotai/kimi-k2.6, and deepseek-ai/deepseek-v4-flash at NVIDIA NIM. Requests are balanced to prevent 429 rate limits.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.vertical, 8)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("OPENROUTER FREE // FALLBACK")
                         .font(.system(.caption, design: .monospaced).weight(.bold))
                         .foregroundStyle(Color.neonTeal)
 
@@ -113,7 +147,7 @@ struct NativeSettingsPanel: View {
                         .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("native-openrouter-api-key")
 
-                    Text("Used when AI Provider is set to OpenRouter. Routes through OpenRouter's unified Free Models Router (openrouter/free).")
+                    Text("Automatic fallback for the NVIDIA route and direct route when selected. Uses openrouter/free without an app-imposed completion-token cap.")
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -203,6 +237,9 @@ struct NativeSettingsPanel: View {
                     .accessibilityIdentifier("native-save-campaign")
                 }
 
+                NativeCountrySwitchPanel(store: store, state: state)
+                NativeNewCountryPanel(store: store)
+
                 Button {
                     store.exitToMainMenu()
                 } label: {
@@ -281,6 +318,69 @@ struct NativeSaveSlotPicker: View {
     }
 }
 
+struct NativeCountrySwitchPanel: View {
+    @ObservedObject var store: NativeCampaignStore
+    let state: NativeCampaignState
+    @State private var pendingCountry: PlayerCountry?
+
+    private var isLocked: Bool {
+        state.gameMode == .ironman
+    }
+
+    var body: some View {
+        DisclosureGroup {
+            VStack(alignment: .leading, spacing: 10) {
+                Picker(
+                    "Controlled country",
+                    selection: Binding(
+                        get: { state.country.code },
+                        set: { code in
+                            guard code != state.country.code else { return }
+                            pendingCountry = store.allVisibleCountries().first { $0.code == code }
+                        }
+                    )
+                ) {
+                    ForEach(store.allVisibleCountries()) { country in
+                        Text("\(country.name) · \(country.code)").tag(country.code)
+                    }
+                }
+                .pickerStyle(.menu)
+                .disabled(isLocked)
+                .accessibilityIdentifier("native-country-switch-picker")
+
+                Text(isLocked
+                    ? "Iron Man locks the controlled country for the life of this save."
+                    : "Transfer control without resetting the shared timeline, conflicts, diplomacy, or economic history. Drafts clear and the decision matrix refreshes for the new country.")
+                    .font(.caption2)
+                    .foregroundStyle(isLocked ? Color.alertGold : .secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.top, 6)
+        } label: {
+            Label {
+                Text("Transfer Player Control")
+                    .font(.system(.subheadline, design: .monospaced).weight(.bold))
+            } icon: {
+                Image(systemName: isLocked ? "lock.shield.fill" : "arrow.triangle.2.circlepath.circle.fill")
+                    .foregroundStyle(isLocked ? Color.alertGold : Color.glowingCyan)
+            }
+            .foregroundStyle(isLocked ? Color.alertGold : Color.glowingCyan)
+        }
+        .padding(.vertical, 8)
+        .accessibilityIdentifier("native-country-switch-panel")
+        .alert(item: $pendingCountry) { country in
+            Alert(
+                title: Text("Assume control of \(country.name)?"),
+                message: Text("The campaign world stays intact. Current drafts clear, the active economic ledger changes to \(country.name), and AI suggestions refresh for the new government."),
+                primaryButton: .default(Text("Switch country")) {
+                    store.switchCountry(to: country)
+                },
+                secondaryButton: .cancel()
+            )
+        }
+    }
+}
+
 struct NativeLanguagePicker: View {
     @ObservedObject var store: NativeCampaignStore
     let state: NativeCampaignState
@@ -354,11 +454,11 @@ struct NativeAIStatusPanel: View {
     let readiness: NativeAIReadiness
     var sessionTotalTokens: Int = 0
     @State private var pulsing = false
-    @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderPreferenceRaw: String = NativeAIProviderPreference.openRouter.rawValue
+    @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderPreferenceRaw: String = NativeAIProviderPreference.nvidia.rawValue
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var selectedProviderName: String {
-        (NativeAIProviderPreference(rawValue: aiProviderPreferenceRaw) ?? .openRouter).providerName
+        (NativeAIProviderPreference(rawValue: aiProviderPreferenceRaw) ?? .nvidia).providerName
     }
 
     var body: some View {
@@ -406,12 +506,10 @@ struct NativeAIStatusPanel: View {
                         .foregroundStyle(.secondary)
                     Text(String(format: "%.1fk", Double(sessionTotalTokens) / 1000.0))
                         .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(sessionTotalTokens > 100_000 ? Color.softRed : Color.neonTeal)
-                    if sessionTotalTokens > 100_000 {
-                        Text("⚠ BUDGET WARNING")
-                            .font(.system(size: 9, weight: .bold, design: .monospaced))
-                            .foregroundStyle(Color.softRed)
-                    }
+                        .foregroundStyle(Color.neonTeal)
+                    Text("NO APP CAP")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.iceBlue)
                 }
             }
             .padding(10)
@@ -450,7 +548,7 @@ struct NativePanel<Content: View>: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 14)
+        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.16), cornerRadius: 8)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
@@ -501,4 +599,161 @@ func nativeFormatPercent(_ value: Double) -> String {
 
 func nativeFormatSignedPercent(_ value: Double) -> String {
     String(format: "%+.1f%%", value)
+}
+
+/// Panel for creating new countries mid-campaign.
+/// Adds entries to `dynamicCountries` with a starter economic ledger and AI state
+/// so the new nation is immediately interactive in diplomacy and world economics.
+struct NativeNewCountryPanel: View {
+    @ObservedObject var store: NativeCampaignStore
+    @State private var isExpanded = false
+    @State private var countryCode = ""
+    @State private var countryName = ""
+    @State private var feedback: String?
+
+    private var isValid: Bool {
+        let cleanCode = countryCode.uppercased().filter { $0 >= "A" && $0 <= "Z" }
+        let cleanName = countryName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleanCode.count >= 3 && cleanCode.count <= 6 && cleanName.count >= 4
+    }
+
+    var body: some View {
+        DisclosureGroup(
+            isExpanded: $isExpanded,
+            content: {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Add a new sovereign state to the world. It will appear in diplomacy, world economics, and AI decisions.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("CODE (3-6 letters)")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundStyle(Color.alertGold)
+                            TextField("e.g. ATL", text: $countryCode)
+                                .textFieldStyle(.roundedBorder)
+                                .autocorrectionDisabled()
+                                .newCountryCodeFormatting(text: $countryCode)
+                                .accessibilityIdentifier("native-new-country-code")
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("FULL NAME")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundStyle(Color.alertGold)
+                            TextField("e.g. Atlantic Federation", text: $countryName)
+                                .textFieldStyle(.roundedBorder)
+                                .accessibilityIdentifier("native-new-country-name")
+                        }
+                    }
+
+                    if let feedback {
+                        Text(feedback)
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .foregroundStyle(feedback.hasPrefix("✅") ? Color.neonTeal : Color.softRed)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Button {
+                        let success = store.addDynamicCountry(code: countryCode, name: countryName)
+                        if success {
+                            feedback = "✅ \(countryName) (\(countryCode.uppercased())) added to the world."
+                            countryCode = ""
+                            countryName = ""
+                        } else {
+                            let cleanCode = countryCode.uppercased().filter { $0 >= "A" && $0 <= "Z" }
+                            if cleanCode.count < 3 {
+                                feedback = "Code must be 3-6 letters."
+                            } else if let state = store.state {
+                                let existing = Set(NativeStrategyContextDatabase.strategicCountryCodes(for: state))
+                                feedback = existing.contains(cleanCode)
+                                    ? "Code \(cleanCode) already exists."
+                                    : "Name must be at least 4 characters."
+                            } else {
+                                feedback = "No campaign loaded."
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("ADD COUNTRY")
+                                .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 36)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(Color.neonTeal)
+                    .disabled(!isValid)
+                    .accessibilityIdentifier("native-add-country-button")
+
+                    // Show existing dynamic countries
+                    if let state = store.state, !state.dynamicCountries.isEmpty {
+                        Divider().background(Color.white.opacity(0.08))
+                        Text("CUSTOM NATIONS (\(state.dynamicCountries.count))")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundStyle(Color.iceBlue)
+                        ForEach(state.dynamicCountries.sorted(by: { $0.key < $1.key }), id: \.key) { code, name in
+                            HStack {
+                                Text(code)
+                                    .font(.system(.caption, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(Color.alertGold)
+                                Text(name)
+                                    .font(.caption)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                            }
+                        }
+                    }
+                }
+                .padding(.top, 4)
+            },
+            label: {
+                Label {
+                    Text("Create New Country")
+                        .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                } icon: {
+                    Image(systemName: "flag.badge.plus")
+                        .foregroundStyle(Color.neonTeal)
+                }
+                .foregroundStyle(Color.neonTeal)
+            }
+        )
+        .padding(.vertical, 8)
+        .accessibilityIdentifier("native-new-country-panel")
+    }
+}
+
+/// Cross-platform modifier for the country code field.
+/// Applies iOS autocapitalization where available, plus uppercase A-Z filtering
+/// and 6-character clamping via onChange (works on both macOS and iOS).
+private struct NewCountryCodeFormatting: ViewModifier {
+    @Binding var text: String
+
+    func body(content: Content) -> some View {
+        #if os(iOS)
+            content
+                .textInputAutocapitalization(.characters)
+                .onChange(of: text) { _, newValue in
+                    applyFilter(newValue)
+                }
+        #else
+            content
+                .onChange(of: text) { _, newValue in
+                    applyFilter(newValue)
+                }
+        #endif
+    }
+
+    private func applyFilter(_ newValue: String) {
+        let filtered = newValue.uppercased().filter { $0 >= "A" && $0 <= "Z" }
+        text = String(filtered.prefix(6))
+    }
+}
+
+private extension View {
+    func newCountryCodeFormatting(text: Binding<String>) -> some View {
+        modifier(NewCountryCodeFormatting(text: text))
+    }
 }

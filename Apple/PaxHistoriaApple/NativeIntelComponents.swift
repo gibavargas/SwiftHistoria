@@ -54,11 +54,26 @@ struct NativeIntelSectionSelector: View {
                         selectedSection = section
                     } label: {
                         Label(section.title, systemImage: section.systemImage)
-                            .font(.callout.weight(.semibold))
+                            .font(NativeWarRoomTheme.labelFont(.caption, weight: .semibold))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 8)
-                            .background(section == selectedSection ? Color.accentColor.opacity(0.22) : Color.white.opacity(0.07), in: Capsule())
-                            .contentShape(Capsule())
+                            .background(
+                                section == selectedSection
+                                    ? NativeWarRoomTheme.brass.opacity(0.2)
+                                    : NativeWarRoomTheme.olivePanel.opacity(0.52),
+                                in: RoundedRectangle(cornerRadius: 5)
+                            )
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(
+                                        section == selectedSection
+                                            ? NativeWarRoomTheme.brass.opacity(0.55)
+                                            : NativeWarRoomTheme.brass.opacity(0.12),
+                                        lineWidth: 1
+                                    )
+                            }
+                            .foregroundStyle(section == selectedSection ? NativeWarRoomTheme.ink : NativeWarRoomTheme.mutedInk)
+                            .contentShape(RoundedRectangle(cornerRadius: 5))
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(section == selectedSection ? [.isSelected] : [])
@@ -84,25 +99,47 @@ struct NativeIntelSectionSelector: View {
             Group {
                 switch destination {
                 case .overview:
-                    NativeOverviewScreen(store: store) {
-                        onSelectDestination(.events)
-                    }
+                    NativeOverviewScreen(
+                        store: store,
+                        onShowEvents: { onSelectDestination(.events) },
+                        onShowOrders: { onSelectDestination(.orders) }
+                    )
                 case .orders:
                     NativeOrdersScreen(store: store)
                 case .advisor:
                     NativeDetailScroll(accessibilityIdentifier: "native-advisor-screen") {
+                        NativeSectionHeader(
+                            title: "Strategic Advisor",
+                            subtitle: "Interrogate the live campaign state before committing national capacity.",
+                            systemImage: "brain.head.profile"
+                        )
                         NativeAdvisorPanel(store: store)
                     }
                 case .diplomacy:
                     NativeDetailScroll(accessibilityIdentifier: "native-diplomacy-screen") {
+                        NativeSectionHeader(
+                            title: "Diplomatic Desk",
+                            subtitle: "Open channels, review replies, and shape relationships without leaving the campaign record.",
+                            systemImage: "bubble.left.and.bubble.right"
+                        )
                         NativeDiplomacyPanel(store: store)
                     }
                 case .events:
                     NativeDetailScroll(accessibilityIdentifier: "native-events-screen") {
+                        NativeSectionHeader(
+                            title: "Campaign Chronicle",
+                            subtitle: "Read the turn-by-turn record of decisions, crises, and independent world events.",
+                            systemImage: "clock"
+                        )
                         NativeEventsPanel(state: store.state)
                     }
                 case .worldEconomics:
                     NativeDetailScroll(accessibilityIdentifier: "native-world-economics-screen") {
+                        NativeSectionHeader(
+                            title: "World Ledger",
+                            subtitle: "Compare fiscal position, growth, security, and strategic capacity across the simulation.",
+                            systemImage: "chart.bar.xaxis"
+                        )
                         if let state = store.state {
                             NativeWorldEconomicsPanel(store: store, state: state)
                         } else {
@@ -111,6 +148,11 @@ struct NativeIntelSectionSelector: View {
                     }
                 case .library:
                     NativeDetailScroll(accessibilityIdentifier: "native-library-screen") {
+                        NativeSectionHeader(
+                            title: "Campaign Archive",
+                            subtitle: "Move complete campaign dossiers between devices or preserve a historical checkpoint.",
+                            systemImage: "folder"
+                        )
                         NativeLibraryPanel(
                             message: libraryMessage,
                             onExportCampaign: onExportCampaign,
@@ -119,6 +161,11 @@ struct NativeIntelSectionSelector: View {
                     }
                 case .settings:
                     NativeDetailScroll(accessibilityIdentifier: "native-settings-screen") {
+                        NativeSectionHeader(
+                            title: "Campaign Configuration",
+                            subtitle: "Control simulation rules, save slots, model routing, and campaign lifecycle.",
+                            systemImage: "slider.horizontal.3"
+                        )
                         NativeSettingsPanel(store: store)
                     }
                 }
@@ -140,7 +187,7 @@ struct NativeDetailScroll<Content: View>: View {
             .frame(maxWidth: 1080, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .center)
         }
-        .background(.black.opacity(0.94))
+        .background(NativeWarRoomTheme.blackboard)
         .scrollDismissesKeyboard(.interactively)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
@@ -148,36 +195,62 @@ struct NativeDetailScroll<Content: View>: View {
 
 struct NativeOrdersEditorPanel: View {
     @ObservedObject var store: NativeCampaignStore
+    @State private var isShowingFullEditor = false
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-orders-editor") {
-            Text("New order")
-                .font(NativeTypography.sectionTitle())
-                .foregroundStyle(Color.iceBlue)
-                .help("Write a policy or action here, or use Quick Actions above.")
+            HStack {
+                Text("New order")
+                    .font(NativeTypography.sectionTitle())
+                    .foregroundStyle(Color.iceBlue)
+                    .help("Write a policy or action here, or use Quick Actions above.")
+                Spacer()
+                Button {
+                    isShowingFullEditor = true
+                } label: {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .font(.body)
+                        .foregroundStyle(Color.iceBlue)
+                        .padding(4)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Expand editor to full screen")
+            }
 
             if let state = store.state {
                 let preview = NativeGameEngine.previewDirective(store.draftAction, in: state)
+                let exceedsCapacity = preview.cost > state.administrativeCapacity
                 HStack {
                     Text("Capacity")
                         .font(.system(.caption, design: .monospaced).weight(.bold))
                         .foregroundStyle(Color.glowingCyan)
 
                     ProgressView(value: Double(state.administrativeCapacity), total: 100)
-                        .tint(state.administrativeCapacity >= 30 ? Color.neonTeal : Color.softRed)
+                        .tint(nativeCapacityColor(for: state.administrativeCapacity))
                         .frame(width: 80)
 
                     Text("\(state.administrativeCapacity)/100")
                         .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(state.administrativeCapacity >= 30 ? Color.neonTeal : Color.softRed)
+                        .foregroundStyle(nativeCapacityColor(for: state.administrativeCapacity))
 
                     Spacer()
 
                     Text("Cost: \(preview.cost > 0 ? "\(preview.cost)" : "30") Capacity")
                         .font(.system(.caption2, design: .monospaced).weight(.bold))
-                        .foregroundStyle(preview.cost > state.administrativeCapacity ? Color.softRed : Color.iceBlue.opacity(0.8))
+                        .foregroundStyle(exceedsCapacity ? Color.softRed : Color.iceBlue.opacity(0.8))
                 }
                 .padding(.vertical, 4)
+
+                if exceedsCapacity {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(Color.softRed)
+                            .font(.caption2)
+                        Text("Directive cost exceeds available capacity.")
+                            .font(.system(.caption2, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.softRed)
+                    }
+                }
 
                 if !store.draftAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     NativeDirectivePreviewPanel(preview: preview)
@@ -202,9 +275,25 @@ struct NativeOrdersEditorPanel: View {
             }
             .fixedSize(horizontal: false, vertical: true)
 
+            let cost = NativeGameEngine.estimateDirectiveCost(for: store.draftAction)
+            let capacity = store.state?.administrativeCapacity ?? 100
+            let exceeds = cost > capacity
+            let isTyping = !store.draftAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            let editorBorderColor: Color = exceeds ? Color.softRed : (isTyping ? Color.glowingCyan : Color.white.opacity(0.08))
+
             TextEditor(text: $store.draftAction)
                 .font(.body)
-                .standardTextEditorStyle(minHeight: 96)
+                .frame(minHeight: 96)
+                .padding(8)
+                .scrollContentBackground(.hidden)
+                .background(Color.deepSlate.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(editorBorderColor, lineWidth: exceeds ? 2 : 1)
+                        .shadow(color: exceeds ? Color.softRed.opacity(0.4) : Color.clear, radius: exceeds ? 4 : 0)
+                }
+                .nativeKeyboardDismissButton()
                 .accessibilityLabel("Draft order")
                 .accessibilityHint("Describe a concrete policy, investment, or diplomatic action.")
                 .accessibilityIdentifier("native-action-editor")
@@ -231,26 +320,13 @@ struct NativeOrdersEditorPanel: View {
             }())
             .keyboardShortcut("n", modifiers: [.command])
             .accessibilityIdentifier("native-add-order")
+            .sheet(isPresented: $isShowingFullEditor) {
+                FullScreenOrderEditor(store: store, isPresented: $isShowingFullEditor)
+            }
 
             if let actionError = store.lastError, !actionError.isEmpty {
                 SuggestionWarning(message: actionError)
                     .padding(.top, 4)
-            }
-
-            if let state = store.state, !state.plannedActions.isEmpty {
-                LazyVStack(spacing: 10) {
-                    ForEach(state.plannedActions) { action in
-                        ActionRow(action: action) {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                store.deleteAction(id: action.id)
-                            }
-                        }
-                    }
-                }
-            } else {
-                Text("No orders queued.")
-                    .font(.system(.callout, design: .monospaced))
-                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -290,6 +366,7 @@ struct NativeAdvisorPanel: View {
             TextEditor(text: $store.draftAdvisorQuestion)
                 .font(.system(.body, design: .monospaced))
                 .standardTextEditorStyle(minHeight: 88)
+                .nativeKeyboardDismissButton()
                 .accessibilityLabel("Advisor question")
                 .accessibilityIdentifier("native-advisor-question")
 
@@ -355,7 +432,9 @@ struct NativeDiplomacyPanel: View {
 
                     Picker("Counterparty", selection: $store.selectedDiplomaticPartnerCode) {
                         ForEach(partners) { country in
-                            Text(country.name).tag(country.code)
+                            let offerCount = state.activeOffers.filter { $0.status == .pending && $0.proposerCode == country.code }.count
+                            let badge = offerCount > 0 ? " (\(offerCount) proposed)" : ""
+                            Text("\(country.name)\(badge)").tag(country.code)
                         }
                     }
                     .pickerStyle(.menu)
@@ -368,6 +447,7 @@ struct NativeDiplomacyPanel: View {
                 TextEditor(text: $store.draftDiplomaticMessage)
                     .font(.body)
                     .standardTextEditorStyle(minHeight: 88)
+                    .nativeKeyboardDismissButton()
                     .accessibilityLabel("Diplomatic message")
                     .accessibilityIdentifier("native-diplomacy-message")
 
@@ -402,79 +482,24 @@ struct NativeDiplomacyPanel: View {
                     SuggestionWarning(message: diplomacyError)
                 }
 
-                if !state.activeOffers.isEmpty {
-                    let pendingOffers = state.activeOffers.filter { $0.status == .pending }
-                    if !pendingOffers.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Proposals from other nations")
-                                .font(.system(.subheadline, design: .monospaced).weight(.bold))
-                                .foregroundStyle(Color.neonTeal)
-                                .tracking(1.2)
-                                .padding(.top, 8)
+                let partnerOffers = state.activeOffers.filter { $0.status == .pending && $0.proposerCode == store.selectedDiplomaticPartnerCode }
 
-                            ForEach(pendingOffers) { offer in
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text(offer.proposerCode)
-                                            .font(.system(.caption, design: .monospaced).weight(.bold))
-                                            .foregroundStyle(Color.neonTeal)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color.neonTeal.opacity(0.12), in: Capsule())
+                if !partnerOffers.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("ACTIVE PROPOSALS")
+                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.neonTeal)
+                            .tracking(1.2)
+                            .padding(.top, 8)
 
-                                        Text(offer.type.displayName.uppercased())
-                                            .font(.system(.caption2, design: .monospaced).weight(.bold))
-                                            .foregroundStyle(.white)
-
-                                        Spacer()
-                                    }
-
-                                    Text(offer.description)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .fixedSize(horizontal: false, vertical: true)
-
-                                    HStack(spacing: 8) {
-                                        Button {
-                                            store.acceptDiplomaticOffer(id: offer.id)
-                                        } label: {
-                                            Text("Accept")
-                                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 4)
-                                                .background(Color.neonTeal.opacity(0.2), in: Capsule())
-                                                .foregroundStyle(Color.neonTeal)
-                                        }
-                                        .buttonStyle(.plain)
-
-                                        Button {
-                                            store.counterDiplomaticOffer(id: offer.id)
-                                        } label: {
-                                            Text("Counter")
-                                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 4)
-                                                .background(Color.alertGold.opacity(0.2), in: Capsule())
-                                                .foregroundStyle(Color.alertGold)
-                                        }
-                                        .buttonStyle(.plain)
-
-                                        Button {
-                                            store.rejectDiplomaticOffer(id: offer.id)
-                                        } label: {
-                                            Text("Reject")
-                                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 4)
-                                                .background(Color.softRed.opacity(0.2), in: Capsule())
-                                                .foregroundStyle(Color.softRed)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                                .padding(10)
-                                .glassmorphicCard(borderColor: Color.white.opacity(0.08), cornerRadius: 8)
-                            }
+                        ForEach(partnerOffers) { offer in
+                            DiplomacyOfferRow(
+                                offer: offer,
+                                partnerName: CountryNameResolver.name(forCode: offer.proposerCode, in: state),
+                                onAccept: { store.acceptDiplomaticOffer(id: offer.id) },
+                                onCounter: { store.counterDiplomaticOffer(id: offer.id) },
+                                onReject: { store.rejectDiplomaticOffer(id: offer.id) }
+                            )
                         }
                     }
                 }
@@ -497,6 +522,79 @@ struct NativeDiplomacyPanel: View {
                 }
             }
         }
+    }
+}
+
+struct DiplomacyOfferRow: View {
+    let offer: NativeDiplomaticOffer
+    let partnerName: String
+    let onAccept: () -> Void
+    let onCounter: () -> Void
+    let onReject: () -> Void
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
+                    Image(systemName: "signature")
+                        .font(.caption)
+                        .foregroundStyle(Color.neonTeal)
+                    Text("PROPOSAL FROM \(partnerName.uppercased())")
+                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.neonTeal)
+                    Spacer()
+                }
+
+                Text(offer.type.displayName.uppercased())
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white)
+
+                Text(offer.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 8) {
+                    Button(action: onAccept) {
+                        Text("Accept")
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.neonTeal.opacity(0.2), in: Capsule())
+                            .foregroundStyle(Color.neonTeal)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: onCounter) {
+                        Text("Counter")
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.alertGold.opacity(0.2), in: Capsule())
+                            .foregroundStyle(Color.alertGold)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: onReject) {
+                        Text("Reject")
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.softRed.opacity(0.2), in: Capsule())
+                            .foregroundStyle(Color.softRed)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(12)
+            .background(Color.neonTeal.opacity(0.12))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.neonTeal.opacity(0.35), lineWidth: 1.5)
+            }
+        }
+        .accessibilityIdentifier("native-diplomacy-offer-\(offer.id)")
     }
 }
 
@@ -527,9 +625,10 @@ struct NativeDiplomaticNetworkPanel: View {
                     let tint: Color = relation >= 25 ? Color.neonTeal : (relation <= -25 ? Color.softRed : Color.alertGold)
                     VStack(alignment: .leading, spacing: 7) {
                         HStack {
-                            Text(actor.countryCode)
-                                .font(.system(.caption, design: .monospaced).weight(.black))
+                            Text(CountryNameResolver.name(forCode: actor.countryCode, in: state))
+                                .font(.system(.caption, design: .default).weight(.black))
                                 .foregroundStyle(tint)
+                                .lineLimit(1)
                             Spacer()
                             Text("\(relation)")
                                 .font(.system(.caption, design: .monospaced).weight(.bold))
@@ -575,10 +674,11 @@ struct NativeTreatyStackPanel: View {
 
                 ForEach(acceptedOffers) { offer in
                     HStack(alignment: .top, spacing: 8) {
-                        Text(offer.proposerCode)
-                            .font(.system(.caption, design: .monospaced).weight(.black))
+                        Text(CountryNameResolver.name(forCode: offer.proposerCode, in: state))
+                            .font(.system(.caption, design: .default).weight(.black))
                             .foregroundStyle(Color.neonTeal)
-                            .frame(width: 44, alignment: .leading)
+                            .frame(width: 100, alignment: .leading)
+                            .lineLimit(2)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(offer.type.displayName)
                                 .font(.caption.weight(.bold))
@@ -604,23 +704,200 @@ struct NativeTreatyStackPanel: View {
 
 struct NativeEventsPanel: View {
     let state: NativeCampaignState?
+    @State private var collapsedMinorEvents = true
+    @State private var selectedFilter: NativeEventFilter = .all
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-events-panel") {
-            Label("Events", systemImage: "clock")
-                .font(NativeTypography.sectionTitle())
-                .foregroundStyle(Color.iceBlue)
-                .help("A timeline of everything that has happened in your campaign.")
+            HStack {
+                Label("Events", systemImage: "clock")
+                    .font(NativeTypography.sectionTitle())
+                    .foregroundStyle(Color.iceBlue)
+                    .help("A timeline of everything that has happened in your campaign.")
+                Spacer()
+                if let state, !state.timeline.isEmpty {
+                    Text("\(filteredEvents.count) of \(state.timeline.count)")
+                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             if let state, !state.timeline.isEmpty {
-                LazyVStack(spacing: 12) {
-                    ForEach(state.timeline) { event in
-                        EventCard(event: event)
+                // Filter pills
+                NativeEventFilterBar(selectedFilter: $selectedFilter, state: state)
+
+                // Compute filtered events once, then partition by severity
+                let filtered = state.timeline.filter { selectedFilter.matches($0) }
+                let severe = filtered.filter { $0.importance == .severe }.prefix(10).map(\.self)
+                let major = filtered.filter { $0.importance == .major }.prefix(15).map(\.self)
+                let minor = filtered.filter { $0.importance == .minor }.prefix(30).map(\.self)
+
+                // Critical events always visible
+                if !severe.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("CRITICAL SITUATIONS", systemImage: "exclamationmark.triangle.fill")
+                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.softRed)
+                            .tracking(1.0)
+
+                        ForEach(severe) { event in
+                            EventCard(event: event)
+                        }
                     }
+                }
+
+                // Major events always visible
+                if !major.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if !severe.isEmpty {
+                            Divider().background(Color.white.opacity(0.08))
+                        }
+                        Label("Major Developments", systemImage: "chart.line.downtrend.xyaxis")
+                            .font(.system(.callout, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.alertGold)
+
+                        ForEach(major) { event in
+                            EventCard(event: event)
+                        }
+                    }
+                }
+
+                // Minor events collapsible
+                if !minor.isEmpty {
+                    DisclosureGroup(
+                        isExpanded: Binding(
+                            get: { !collapsedMinorEvents },
+                            set: { collapsedMinorEvents = !$0 }
+                        )
+                    ) {
+                        LazyVStack(spacing: 12) {
+                            ForEach(minor) { event in
+                                EventCard(event: event)
+                            }
+                        }
+                    } label: {
+                        Label("Routine updates (\(minor.count))", systemImage: "doc.text")
+                            .font(.system(.callout, design: .monospaced).weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, minor.isEmpty ? 0 : 8)
                 }
             } else {
                 Text("No events yet.")
                     .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var filteredEvents: [NativeCampaignEvent] {
+        guard let state else { return [] }
+        return state.timeline.filter { event in
+            selectedFilter.matches(event)
+        }
+    }
+}
+
+enum NativeEventFilter: String, CaseIterable, Hashable, Identifiable {
+    case all
+    case crisis
+    case diplomacy
+    case economy
+    case world
+    case player
+
+    var id: String {
+        rawValue
+    }
+
+    var title: String {
+        switch self {
+        case .all: "All"
+        case .crisis: "Crises"
+        case .diplomacy: "Diplomacy"
+        case .economy: "Economy"
+        case .world: "Global"
+        case .player: "Nation"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .all: "list.bullet"
+        case .crisis: "exclamationmark.triangle.fill"
+        case .diplomacy: "bubble.left.and.bubble.right"
+        case .economy: "chart.bar.xaxis"
+        case .world: "globe.americas"
+        case .player: "building.columns"
+        }
+    }
+
+    func matches(_ event: NativeCampaignEvent) -> Bool {
+        switch self {
+        case .all: true
+        case .crisis: event.kind == .crisis || event.importance == .severe
+        case .diplomacy: event.kind == .diplomacy
+        case .economy: event.kind == .economy
+        case .world: event.kind == .world
+        case .player: event.kind == .action || event.playerRelated
+        }
+    }
+
+    func count(in events: [NativeCampaignEvent]) -> Int {
+        events.filter { matches($0) }.count
+    }
+}
+
+struct NativeEventFilterBar: View {
+    @Binding var selectedFilter: NativeEventFilter
+    let state: NativeCampaignState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(NativeEventFilter.allCases) { filter in
+                    let count = filter.count(in: state.timeline)
+                    Button {
+                        select(filter)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: filter.systemImage)
+                                .font(.system(size: 10))
+                            Text(filter.title)
+                                .font(.system(size: 11, weight: .bold))
+                            Text("\(count)")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                        .background(
+                            selectedFilter == filter
+                                ? Color.iceBlue.opacity(0.22)
+                                : Color.white.opacity(0.06),
+                            in: Capsule()
+                        )
+                        .foregroundStyle(selectedFilter == filter ? Color.iceBlue : .secondary)
+                        .overlay {
+                            Capsule()
+                                .stroke(selectedFilter == filter ? Color.iceBlue.opacity(0.4) : .clear, lineWidth: 1)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("native-event-filter-\(filter.rawValue)")
+                }
+            }
+            .padding(.bottom, 4)
+        }
+    }
+
+    private func select(_ filter: NativeEventFilter) {
+        if reduceMotion {
+            selectedFilter = filter
+        } else {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                selectedFilter = filter
             }
         }
     }
@@ -670,6 +947,129 @@ struct NativeLibraryPanel: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("native-library-message")
             }
+        }
+    }
+}
+
+private struct NativeKeyboardDismissButton: ViewModifier {
+    @FocusState private var isFocused: Bool
+
+    func body(content: Content) -> some View {
+        #if os(iOS)
+            content
+                .focused($isFocused)
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Done") {
+                            isFocused = false
+                        }
+                        .accessibilityIdentifier("native-keyboard-done")
+                    }
+                }
+        #else
+            content
+        #endif
+    }
+}
+
+private extension View {
+    func nativeKeyboardDismissButton() -> some View {
+        modifier(NativeKeyboardDismissButton())
+    }
+}
+
+struct FullScreenOrderEditor: View {
+    @ObservedObject var store: NativeCampaignStore
+    @Binding var isPresented: Bool
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Write a policy, strategic investment, or diplomatic directive. Describe the action clearly in natural language.")
+                    .font(NativeWarRoomTheme.bodyFont(.subheadline))
+                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+
+                let cost = NativeGameEngine.estimateDirectiveCost(for: store.draftAction)
+                let capacity = store.state?.administrativeCapacity ?? 100
+                let exceeds = cost > capacity
+                let isTyping = !store.draftAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                let editorBorderColor: Color = exceeds ? Color.softRed : (isTyping ? Color.glowingCyan : Color.white.opacity(0.12))
+
+                TextEditor(text: $store.draftAction)
+                    .font(NativeWarRoomTheme.bodyFont())
+                    .padding(12)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.deepSlate.opacity(0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(editorBorderColor, lineWidth: exceeds ? 2 : 1)
+                            .shadow(color: exceeds ? Color.softRed.opacity(0.4) : Color.clear, radius: exceeds ? 6 : 0)
+                    }
+                    .padding(.horizontal, 16)
+                    .frame(maxHeight: .infinity)
+
+                if let state = store.state {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("Estimated Cost:")
+                                .font(NativeWarRoomTheme.labelFont(.caption))
+                                .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                            Text("\(cost) Capacity")
+                                .font(NativeWarRoomTheme.labelFont(.caption))
+                                .foregroundStyle(exceeds ? Color.softRed : Color.neonTeal)
+                            Spacer()
+                            Text("Available: \(state.administrativeCapacity)/100")
+                                .font(NativeWarRoomTheme.labelFont(.caption))
+                                .foregroundStyle(nativeCapacityColor(for: state.administrativeCapacity))
+                        }
+
+                        if exceeds {
+                            HStack(spacing: 6) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundStyle(Color.softRed)
+                                    .font(.caption2)
+                                Text("Cost exceeds available administrative capacity.")
+                                    .font(NativeWarRoomTheme.labelFont(.caption2))
+                                    .foregroundStyle(Color.softRed)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+                }
+
+                Button {
+                    store.addDraftAction()
+                    isPresented = false
+                } label: {
+                    Text("Add Order")
+                        .font(NativeWarRoomTheme.labelFont(.subheadline))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.iceBlue)
+                .foregroundStyle(.black)
+                .disabled(store.draftAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || exceeds)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 20)
+            }
+            .navigationTitle("Draft Order")
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            isPresented = false
+                        }
+                        .foregroundStyle(Color.glowingCyan)
+                    }
+                }
+                .background(NativeWarRoomTheme.blackboard)
         }
     }
 }

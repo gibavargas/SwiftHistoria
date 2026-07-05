@@ -22,7 +22,6 @@ struct MapRegion: Identifiable, Hashable {
 
 struct LandmassOutline: Identifiable, Hashable {
     let id: String
-    let paths: [[CGPoint]]
     let path: Path // Pre-built SwiftUI Path in 1000x600 space
 
     // ponytail: manual identity equality to bypass non-hashable SwiftUI Path
@@ -157,7 +156,7 @@ enum GeopoliticalMapData {
                 guard !paths.isEmpty else { return nil }
                 let id = feature.properties.id ?? "lm_\(UUID().uuidString.prefix(6))"
                 let path = createPath(from: paths)
-                return LandmassOutline(id: id, paths: paths, path: path)
+                return LandmassOutline(id: id, path: path)
             }
         }
 

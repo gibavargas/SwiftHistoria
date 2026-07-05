@@ -10,6 +10,8 @@ struct PlayerCountry: Codable, Hashable, Identifiable {
 }
 
 enum CountryCatalog {
+    private static let alpha2ByAlpha3 = Dictionary(uniqueKeysWithValues: CountryCodePair.all.map { ($0.alpha3, $0.alpha2) })
+
     static let all: [PlayerCountry] = CountryCodePair.all
         .filter { Native2010WorldModel.isSelectableCountryCode($0.alpha3) }
         .map { pair in
@@ -21,6 +23,13 @@ enum CountryCatalog {
         .sorted { left, right in
             left.name.localizedCaseInsensitiveCompare(right.name) == .orderedAscending
         }
+
+    static func flagEmoji(forAlpha3 code: String) -> String? {
+        guard let alpha2 = alpha2ByAlpha3[code.uppercased()] else { return nil }
+        return alpha2.unicodeScalars.compactMap { scalar in
+            UnicodeScalar(127_397 + Int(scalar.value)).map(String.init)
+        }.joined()
+    }
 
     private static let displayLocale = Locale(identifier: "en_US")
 

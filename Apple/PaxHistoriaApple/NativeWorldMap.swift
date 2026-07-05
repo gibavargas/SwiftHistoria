@@ -74,34 +74,33 @@ struct LegendItem: View {
 }
 
 struct NativeWorldMap: View {
-    @EnvironmentObject var store: NativeCampaignStore
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let state: NativeCampaignState
+    let store: NativeCampaignStore
     let minHeight: CGFloat
     private let sectorsByCode: [String: Native2010MapSector]
 
     @State private var selectedRegionID: String? = nil
     @State private var selectedLayer: NativeWarRoomMapLayer = .relations
-    @State private var animationPhase: CGFloat = 0.0
     @State private var zoomScale: CGFloat = 1.0
     @State private var lastZoomScale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
 
-    private static let drawInterval: TimeInterval = 0.1
-    private let timer = Timer.publish(every: Self.drawInterval, on: .main, in: .common).autoconnect()
-
-    init(state: NativeCampaignState, minHeight: CGFloat = 300) {
+    init(
+        state: NativeCampaignState,
+        store: NativeCampaignStore,
+        minHeight: CGFloat = 300
+    ) {
         self.state = state
+        self.store = store
         self.minHeight = minHeight
         sectorsByCode = Dictionary(uniqueKeysWithValues: Native2010WorldModel.mapSectors(for: state).map { ($0.code, $0) })
     }
 
-    private var needsMapAnimation: Bool {
-        state.regionConflicts.values.contains { conflict in
-            conflict.mode == .contestedBorder || conflict.mode == .conventionalOccupation
-        }
-    }
+    /// Keep semantic geometry stable. Conflict borders and routes are intentionally
+    /// static so the full Canvas is redrawn only when campaign or viewport state
+    /// changes, eliminating idle animation invalidations and presentation flicker.
+    private let animationPhase: CGFloat = 0
 
     private func clampOffset(_ offset: CGSize, size: CGSize, zoom: CGFloat) -> CGSize {
         guard zoom > 1.0 else { return .zero }
@@ -146,7 +145,7 @@ struct NativeWorldMap: View {
 
         context.stroke(
             gridPath,
-            with: .color(Color.iceBlue.opacity(0.06)),
+            with: .color(NativeWarRoomTheme.graphite.opacity(0.10)),
             style: StrokeStyle(lineWidth: 1.0 / zoomScale, dash: [4, 4].map { $0 / zoomScale })
         )
     }
@@ -179,7 +178,7 @@ struct NativeWorldMap: View {
 
             context.stroke(
                 wavePath,
-                with: .color(Color.iceBlue.opacity(0.12)),
+                with: .color(NativeWarRoomTheme.graphite.opacity(0.17)),
                 style: StrokeStyle(lineWidth: 1.2 / zoomScale, lineCap: .round)
             )
         }
@@ -276,7 +275,7 @@ struct NativeWorldMap: View {
             return
         }
 
-        context.stroke(iconPath, with: .color(Color.iceBlue.opacity(0.65)), lineWidth: 1.2 / zoomScale)
+        context.stroke(iconPath, with: .color(NativeWarRoomTheme.graphite.opacity(0.58)), lineWidth: 1.2 / zoomScale)
     }
 
     private func sectorRelation(code: String, playerCode: String, sectorsByCode: [String: Native2010MapSector]) -> SectorRelation {
@@ -398,6 +397,39 @@ struct NativeWorldMap: View {
         context.stroke(linePath, with: .color(Color.neonTeal.opacity(0.45)), lineWidth: 1.5 / zoomScale)
     }
 
+    private func drawDotGrid(context: GraphicsContext, path: Path, color: Color) {
+        var context = context
+        context.clip(to: path)
+        let bounds = path.boundingRect
+        let spacing: CGFloat = 16 / zoomScale
+        let dotSize: CGFloat = 2.0 / zoomScale
+
+        for y in stride(from: bounds.minY, to: bounds.maxY, by: spacing) {
+            for x in stride(from: bounds.minX, to: bounds.maxX, by: spacing) {
+                let dotRect = CGRect(x: x - dotSize / 2, y: y - dotSize / 2, width: dotSize, height: dotSize)
+                let dotPath = Path(ellipseIn: dotRect)
+                context.fill(dotPath, with: .color(color))
+            }
+        }
+    }
+
+    private func drawRivalHashedLines(context: GraphicsContext, path: Path, color: Color) {
+        var context = context
+        context.fill(path, with: .color(Color.softRed.opacity(0.10)))
+        context.clip(to: path)
+        let bounds = path.boundingRect
+        let spacing: CGFloat = 14 / zoomScale
+        let strokeWidth: CGFloat = 1.5 / zoomScale
+        var stripePath = Path()
+
+        for x in stride(from: bounds.minX - bounds.height, to: bounds.maxX, by: spacing) {
+            stripePath.move(to: CGPoint(x: x, y: bounds.minY))
+            stripePath.addLine(to: CGPoint(x: x + bounds.height, y: bounds.maxY))
+        }
+
+        context.stroke(stripePath, with: .color(color), lineWidth: strokeWidth)
+    }
+
     private func conflictColor(_ conflict: NativeRegionConflictState) -> Color {
         switch conflict.mode {
         case .contestedBorder:
@@ -510,7 +542,7 @@ struct NativeWorldMap: View {
         // Stability-based desaturation
         if state.stability < 40 {
             let fraction = Double(40 - state.stability) / 40.0
-            stanceColor = Color.lerp(from: stanceColor, to: Color(hex: "#1b2535"), fraction: fraction)
+            stanceColor = Color.lerp(from: stanceColor, to: Color(hex: "#343126"), fraction: fraction)
         }
 
         // World Tension Red-shift
@@ -520,7 +552,7 @@ struct NativeWorldMap: View {
         }
 
         if reg.countryCode == "WATER" {
-            let waterBaseColor = Color(hex: "#0c1520")
+            let waterBaseColor = Color(hex: "#b3b49a")
             if isOccupied {
                 let originalColor = waterBaseColor
                 drawDiagonalStripes(context: context, path: path, size: size, occupierColor: stanceColor, originalColor: originalColor)
@@ -528,7 +560,9 @@ struct NativeWorldMap: View {
                 context.fill(path, with: .color(waterBaseColor))
             }
 
-            let strokeColor = reg.id == selectedRegionID ? Color.glowingCyan : Color.iceBlue.opacity(0.25)
+            let strokeColor = reg.id == selectedRegionID
+                ? NativeWarRoomTheme.oxidizedBrass
+                : NativeWarRoomTheme.graphite.opacity(0.22)
             context.stroke(path, with: .color(strokeColor), lineWidth: (reg.id == selectedRegionID ? 2.0 : 1.0) / zoomScale)
 
             if let conflict, isContested {
@@ -559,7 +593,21 @@ struct NativeWorldMap: View {
             let originalColor = relationColor(originalRelation)
             drawDiagonalStripes(context: context, path: path, size: size, occupierColor: stanceColor, originalColor: originalColor)
         } else {
-            context.fill(path, with: .color(stanceColor.opacity(fillOpacity)))
+            if selectedLayer == .relations {
+                switch relation {
+                case .ally:
+                    context.fill(path, with: .color(Color.neonTeal.opacity(0.32)))
+                    drawDotGrid(context: context, path: path, color: NativeWarRoomTheme.graphite.opacity(0.22))
+                case .rival:
+                    drawRivalHashedLines(context: context, path: path, color: Color.softRed.opacity(0.42))
+                case .neutral:
+                    context.fill(path, with: .color(Color(hex: "#b9a97d").opacity(0.36)))
+                case .player:
+                    context.fill(path, with: .color(Color.glowingCyan.opacity(0.52)))
+                }
+            } else {
+                context.fill(path, with: .color(stanceColor.opacity(fillOpacity)))
+            }
         }
 
         // Draw economic growth highlight
@@ -579,7 +627,7 @@ struct NativeWorldMap: View {
             )
             context.stroke(path, with: .color(strokeColor), style: dashStyle)
         } else {
-            context.stroke(path, with: .color(stanceColor.opacity(0.4)), lineWidth: 1.0 / zoomScale)
+            context.stroke(path, with: .color(NativeWarRoomTheme.graphite.opacity(0.38)), lineWidth: 1.0 / zoomScale)
         }
 
         if let conflict {
@@ -719,12 +767,15 @@ struct NativeWorldMap: View {
         let maxY = maxLocalY / scaleY + 150.0
         let visibleRect = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
 
-        // Draw continents
+        // Draw continents (skip off-screen landmasses)
         let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
         for lm in GeopoliticalMapData.landmasses {
+            let bounds = lm.path.boundingRect
+            let center = CGPoint(x: bounds.midX, y: bounds.midY)
+            if !visibleRect.contains(center) { continue }
             let path = lm.path.applying(transform)
-            context.fill(path, with: .color(Color(hex: "#121b28")))
-            context.stroke(path, with: .color(Color.iceBlue.opacity(0.12)), lineWidth: 1.0 / zoomScale)
+            context.fill(path, with: .color(Color(hex: "#c9bc92")))
+            context.stroke(path, with: .color(NativeWarRoomTheme.graphite.opacity(0.28)), lineWidth: 1.0 / zoomScale)
         }
 
         let selectedCountryCode = selectedRegionID.flatMap { GeopoliticalMapData.regionByID[$0]?.countryCode }
@@ -760,12 +811,16 @@ struct NativeWorldMap: View {
                     let fontSize = (isState ? 5.5 : 7.0) / zoomScale
                     let nameText = Text(reg.name.uppercased())
                         .font(.system(size: fontSize, weight: isState ? .semibold : .black, design: .monospaced))
-                        .foregroundColor(isState ? Color.white.opacity(0.8) : Color.iceBlue)
+                        .foregroundColor(
+                            isState
+                                ? NativeWarRoomTheme.graphite.opacity(0.72)
+                                : NativeWarRoomTheme.archiveShadow.opacity(0.88)
+                        )
 
                     // Simple drop-shadow effect by drawing a dark background text first
                     let shadowText = Text(reg.name.uppercased())
                         .font(.system(size: fontSize, weight: isState ? .semibold : .black, design: .monospaced))
-                        .foregroundColor(Color.black.opacity(0.85))
+                        .foregroundColor(NativeWarRoomTheme.parchment.opacity(0.72))
 
                     let shadowOffset = 0.6 / zoomScale
                     context.draw(shadowText, at: CGPoint(x: scaledCenter.x + shadowOffset, y: scaledCenter.y + shadowOffset), anchor: .center)
@@ -784,7 +839,7 @@ struct NativeWorldMap: View {
             for stateReg in GeopoliticalMapData.states {
                 if !visibleRect.contains(stateReg.center) { continue }
                 let path = stateReg.path.applying(stateTransform)
-                context.stroke(path, with: .color(Color.white.opacity(0.18)), lineWidth: 0.8 / zoomScale)
+                context.stroke(path, with: .color(NativeWarRoomTheme.graphite.opacity(0.22)), lineWidth: 0.8 / zoomScale)
             }
         }
 
@@ -803,7 +858,10 @@ struct NativeWorldMap: View {
 
         for city in GeopoliticalMapData.cities {
             if !visibleRect.contains(city.coordinate) { continue }
-            guard city.isCapital || city.population >= cityPopulationThreshold else { continue }
+            let isPlayerCapital = city.isCapital &&
+                GeopoliticalMapData.canonicalCountryCode(city.countryCode) == GeopoliticalMapData.canonicalCountryCode(state.country.code)
+            let isVisibleAtWorldScale = isPlayerCapital || city.population >= cityPopulationThreshold
+            guard isVisibleAtWorldScale else { continue }
 
             let scaledPt = CGPoint(x: city.coordinate.x * scaleX, y: city.coordinate.y * scaleY)
             let radius: CGFloat = (city.isCapital ? 4.0 : 2.5) / zoomScale
@@ -814,14 +872,14 @@ struct NativeWorldMap: View {
                 height: radius * 2
             )
 
-            let markerColor = city.isCapital ? Color.alertGold : Color.white
+            let markerColor = city.isCapital ? NativeWarRoomTheme.threatRed : NativeWarRoomTheme.graphite
             context.fill(Path(ellipseIn: markerRect), with: .color(markerColor))
-            context.stroke(Path(ellipseIn: markerRect), with: .color(Color.black.opacity(0.8)), lineWidth: 0.6 / zoomScale)
+            context.stroke(Path(ellipseIn: markerRect), with: .color(NativeWarRoomTheme.parchment.opacity(0.8)), lineWidth: 0.6 / zoomScale)
 
-            if zoomScale >= 1.4 || (city.isCapital && city.population >= 800_000) {
+            if zoomScale >= 1.4 || isPlayerCapital || city.population >= 5_000_000 {
                 let text = Text(city.name)
                     .font(.system(size: (city.isCapital ? 7 : 6) / zoomScale, weight: city.isCapital ? .bold : .regular, design: .monospaced))
-                    .foregroundColor(city.isCapital ? .alertGold : .white.opacity(0.85))
+                    .foregroundColor(city.isCapital ? NativeWarRoomTheme.threatRed : NativeWarRoomTheme.graphite.opacity(0.84))
 
                 context.draw(text, at: CGPoint(x: scaledPt.x, y: scaledPt.y - radius - 3 / zoomScale), anchor: .bottom)
             }
@@ -865,6 +923,19 @@ struct NativeWorldMap: View {
     }
 
     private func drawArmiesAndPolice(context: GraphicsContext, scaleX: CGFloat, scaleY: CGFloat, visibleRect: CGRect) {
+        // Only derive abstract military markers from real conflict/control state.
+        // Army snapshots are rendered separately by drawStrategicMarkers; treating
+        // every military-budget country as an army made the world view unreadable.
+        var militaryRegionIDs = Set<String>()
+        militaryRegionIDs.formUnion(state.regionConflicts.keys.filter { id in
+            state.regionConflicts[id]?.mode == .contestedBorder || state.regionConflicts[id]?.mode == .conventionalOccupation
+        })
+        for (regionID, occupierCode) in state.regionOccupations {
+            // Only add if actually occupied (different from original owner)
+            if let region = GeopoliticalMapData.regionByID[regionID], occupierCode != region.countryCode {
+                militaryRegionIDs.insert(regionID)
+            }
+        }
         for reg in GeopoliticalMapData.nonWaterRegions {
             if !visibleRect.contains(reg.center) { continue }
             let occupierCode = state.regionOccupations[reg.id] ?? reg.countryCode
@@ -874,11 +945,15 @@ struct NativeWorldMap: View {
             let securityIndex = ledger?.securityIndex ?? 80.0
             let centerPt = CGPoint(x: reg.center.x * scaleX, y: reg.center.y * scaleY)
 
+            let shouldDrawPolice = selectedLayer == .strategy &&
+                zoomScale >= 2.5 &&
+                (reg.countryCode == state.country.code || securityIndex < 50.0 || conflict != nil)
+            if !militaryRegionIDs.contains(reg.id) && !shouldDrawPolice { continue }
+
             let isOccupied = occupierCode != reg.countryCode
             let isMilitaryConflict = conflict?.mode == .contestedBorder || conflict?.mode == .conventionalOccupation
-            let hasMilitaryFocus = state.aiCountryStates[occupierCode]?.budgetPriority == .military
 
-            if isOccupied || isMilitaryConflict || hasMilitaryFocus {
+            if isOccupied || isMilitaryConflict {
                 let armyColor = occupierCode == state.country.code ? Color.glowingCyan : Color.softRed
                 let scale: CGFloat = (1.2 / zoomScale)
                 let armyPt = CGPoint(x: centerPt.x - 10 / zoomScale, y: centerPt.y + 4 / zoomScale)
@@ -901,7 +976,7 @@ struct NativeWorldMap: View {
                 }
             }
 
-            if securityIndex > 10.0 {
+            if shouldDrawPolice, securityIndex > 10.0 {
                 let policeColor = securityIndex >= 50.0 ? Color.neonTeal : Color.alertGold
                 let scale: CGFloat = (1.2 / zoomScale)
                 let policePt = CGPoint(x: centerPt.x + 10 / zoomScale, y: centerPt.y + 4 / zoomScale)
@@ -928,6 +1003,7 @@ struct NativeWorldMap: View {
                 Text(layer.title).tag(layer)
             }
         }
+        .labelsHidden()
         .pickerStyle(.segmented)
         .controlSize(.small)
         .padding(8)
@@ -967,7 +1043,12 @@ struct NativeWorldMap: View {
                 .foregroundStyle(.secondary)
         }
         .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .foregroundStyle(NativeWarRoomTheme.ink)
+        .background(NativeWarRoomTheme.archiveShadow.opacity(0.92), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(NativeWarRoomTheme.brass.opacity(0.30), lineWidth: 1)
+        }
         .padding(12)
     }
 
@@ -1053,20 +1134,21 @@ struct NativeWorldMap: View {
                             }
                         }
 
-                    NativeMetalMapBackdrop(
-                        zoomScale: zoomScale,
-                        offset: offset,
-                        isAdvancing: store.isAdvancing,
-                        reduceMotion: reduceMotion
-                    )
-                    .frame(width: size.width, height: size.height)
+                    // One synchronous, opaque renderer owns both the backdrop
+                    // and semantic geography. Mixing MTKView presentation with
+                    // SwiftUI Canvas caused visible idle-frame flicker on macOS.
+                    Canvas(opaque: true, colorMode: .nonLinear, rendersAsynchronously: false) { context, size in
+                        context.fill(
+                            Path(CGRect(origin: .zero, size: size)),
+                            with: .color(Color(hex: "#b3b49a"))
+                        )
+                        drawGridLines(context: context, size: size)
 
-                    // Map view Canvas
-                    Canvas { context, size in
                         context.drawLayer { ctx in
                             ctx.translateBy(x: size.width / 2 + offset.width, y: size.height / 2 + offset.height)
                             ctx.scaleBy(x: zoomScale, y: zoomScale)
                             ctx.translateBy(x: -size.width / 2, y: -size.height / 2)
+                            drawOceanWaves(context: ctx, scaleX: scaleX, scaleY: scaleY)
                             drawMap(context: ctx, size: size, scaleX: scaleX, scaleY: scaleY)
                         }
                     }
@@ -1191,11 +1273,7 @@ struct NativeWorldMap: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(.white.opacity(0.12), lineWidth: 1)
-        }
-        .onReceive(timer) { _ in
-            guard !reduceMotion, needsMapAnimation else { return }
-            animationPhase -= 2.0
+                .stroke(NativeWarRoomTheme.brass.opacity(0.35), lineWidth: 1)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Strategic map centered on \(state.country.name) from a 2010 political baseline")
@@ -1315,8 +1393,8 @@ struct RegionDetailsCard: View {
     var body: some View {
         let occupierCode = state.regionOccupations[region.id] ?? region.countryCode
         let conflict = state.regionConflicts[region.id]
-        let originalCountryName = region.countryCode == "WATER" ? "International Waters" : (region.countryCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : (CountryCatalog.all.first(where: { $0.code == region.countryCode })?.name ?? region.countryCode))
-        let occupierCountryName = occupierCode == "WATER" ? "Uncontrolled" : (occupierCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : (CountryCatalog.all.first(where: { $0.code == occupierCode })?.name ?? (occupierCode == "REB" ? "Insurgents" : occupierCode)))
+        let originalCountryName = region.countryCode == "WATER" ? "International Waters" : (region.countryCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : CountryNameResolver.name(forCode: region.countryCode, in: state))
+        let occupierCountryName = occupierCode == "WATER" ? "Uncontrolled" : (occupierCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : (occupierCode == "REB" ? "Insurgents" : CountryNameResolver.name(forCode: occupierCode, in: state)))
 
         let isOccupied = occupierCode != region.countryCode
         let isRebel = occupierCode == "REB" || conflict?.mode == .guerrillaControl

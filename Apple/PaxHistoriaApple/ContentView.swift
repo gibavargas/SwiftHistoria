@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var campaignStore = Self.makeCampaignStore()
+    @EnvironmentObject var appState: AppState
     @State private var didApplyLaunchConfiguration = false
     @State private var didPrewarmMapData = false
 
@@ -9,7 +10,6 @@ struct ContentView: View {
         Group {
             if campaignStore.selectedCountry != nil {
                 NativeGameView(store: campaignStore)
-                    .environmentObject(campaignStore)
             } else {
                 CountrySelectionView(
                     countries: CountryCatalog.all,
@@ -25,7 +25,13 @@ struct ContentView: View {
                 )
             }
         }
-        .onAppear(perform: applyLaunchConfigurationIfNeeded)
+        .onAppear {
+            applyLaunchConfigurationIfNeeded()
+            appState.isGameActive = campaignStore.selectedCountry != nil
+        }
+        .onChange(of: campaignStore.selectedCountry) { _, newValue in
+            appState.isGameActive = newValue != nil
+        }
         .background(Color.black)
         .preferredColorScheme(.dark)
     }
@@ -144,16 +150,25 @@ struct ContentView: View {
             )
         }
 
-        func generateSuggestedActions(for _: NativeCampaignState) async throws -> [NativeSuggestedAction] {
-            [
-                NativeSuggestedAction(
-                    detail: "Run a deterministic UI test infrastructure action.",
-                    id: "ui-test-suggestion",
-                    rationale: "Keeps UI test suggestions stable.",
-                    title: "UI Test Suggested Action",
-                    urgency: "soon"
-                )
-            ]
+        func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
+            NativeDecisionMatrixRow.allCases.flatMap { row in
+                NativeDecisionMatrixColumn.allCases.map { column in
+                    NativeSuggestedAction(
+                        detail: "Implement the \(row.title) \(column.title) campaign policy through existing institutions.",
+                        id: "ui-test-matrix-\(row.rawValue)-\(column.rawValue)",
+                        rationale: "This legal state action keeps UI automation deterministic and repeatable.",
+                        title: "UI Test \(row.title) \(column.title)",
+                        urgency: "soon",
+                        primaryMechanic: "internal-stability",
+                        secondaryMechanic: "market-confidence",
+                        actionKind: "policy",
+                        administrativeCost: 5,
+                        matrixRow: row.rawValue,
+                        matrixColumn: column.rawValue,
+                        matrixStateFingerprint: NativeDecisionMatrixContract.stateFingerprint(for: state)
+                    )
+                }
+            }
         }
 
         func generateAdvisorBrief(for _: NativeCampaignState, question _: String) async throws -> String {

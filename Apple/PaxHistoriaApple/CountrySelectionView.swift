@@ -14,16 +14,20 @@ struct CountrySelectionView: View {
 
     @State private var query = ""
     @State private var setupStep = 0 // 0: Scenario/Language; 1: AI Provider; 2: Choose Country
-    @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderRaw: String = NativeAIProviderPreference.openRouter.rawValue
+    @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderRaw: String = NativeAIProviderPreference.nvidia.rawValue
+    @AppStorage("NVIDIA_API_KEY") private var nvidiaKey: String = ""
     @AppStorage("OPENROUTER_API_KEY") private var openRouterKey: String = ""
     @AppStorage("ZAI_API_KEY") private var zaiKey: String = ""
 
     private var selectedProvider: NativeAIProviderPreference {
-        NativeAIProviderPreference(rawValue: aiProviderRaw) ?? .openRouter
+        NativeAIProviderPreference(rawValue: aiProviderRaw) ?? .nvidia
     }
 
     private var canProceedFromProviderStep: Bool {
         switch selectedProvider {
+        case .nvidia:
+            !nvidiaKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                !openRouterKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case .appleFoundation:
             true
         case .openRouter:
@@ -119,13 +123,14 @@ struct CountrySelectionView: View {
                                             .font(.subheadline)
                                             .foregroundStyle(selectedScenarioAccentColor)
                                         }
+                                        .accessibilityIdentifier("native-provider-back")
                                         Spacer()
                                     }
 
                                     VStack(alignment: .leading, spacing: 8) {
-                                        Text("Choose AI Provider")
+                                        Text("Configure AI Routing")
                                             .font(.title2.weight(.bold))
-                                        Text("Select how SwiftHistoria generates turns. You can change this later in Settings.")
+                                        Text("NVIDIA NIM is the default primary route, with OpenRouter Free as its visible fallback. You can change this later in Settings.")
                                             .font(.subheadline)
                                             .foregroundStyle(.secondary)
                                     }
@@ -136,7 +141,10 @@ struct CountrySelectionView: View {
                                         }
                                     }
 
-                                    if selectedProvider == .openRouter || selectedProvider == .zai {
+                                    if selectedProvider == .nvidia {
+                                        apiKeyField(for: .nvidia)
+                                        apiKeyField(for: .openRouter, fallback: true)
+                                    } else if selectedProvider == .openRouter || selectedProvider == .zai {
                                         apiKeyField(for: selectedProvider)
                                     }
 
@@ -179,6 +187,7 @@ struct CountrySelectionView: View {
                                         .font(.subheadline)
                                         .foregroundStyle(selectedScenarioAccentColor)
                                     }
+                                    .accessibilityIdentifier("native-country-back")
                                     Spacer()
                                 }
                                 .padding(.horizontal, 20)
@@ -211,7 +220,7 @@ struct CountrySelectionView: View {
             aiProviderRaw = provider.rawValue
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: provider == .appleFoundation ? "cpu" : provider == .openRouter ? "network" : "bolt.fill")
+                Image(systemName: provider == .nvidia ? "sparkles" : provider == .appleFoundation ? "cpu" : provider == .openRouter ? "network" : "bolt.fill")
                     .font(.title3)
                     .foregroundStyle(isSelected ? Color.white : selectedScenarioAccentColor)
                     .frame(width: 32)
@@ -248,12 +257,34 @@ struct CountrySelectionView: View {
     }
 
     @ViewBuilder
-    private func apiKeyField(for provider: NativeAIProviderPreference) -> some View {
-        let key: Binding<String> = provider == .openRouter ? $openRouterKey : $zaiKey
-        let placeholder = provider == .openRouter ? "sk-or-v1-..." : "your-zai-key"
+    private func apiKeyField(for provider: NativeAIProviderPreference, fallback: Bool = false) -> some View {
+        let key: Binding<String> = switch provider {
+        case .nvidia: $nvidiaKey
+        case .openRouter: $openRouterKey
+        case .zai: $zaiKey
+        case .appleFoundation: .constant("")
+        }
+        let placeholder = switch provider {
+        case .nvidia: "nvapi-..."
+        case .openRouter: "sk-or-v1-..."
+        case .zai: "your-zai-key"
+        case .appleFoundation: ""
+        }
+        let helpText = switch provider {
+        case .nvidia:
+            "Primary route: NVIDIA NIM (minimaxai/minimax-m3, moonshotai/kimi-k2.6 & deepseek-ai/deepseek-v4-flash)."
+        case .openRouter:
+            fallback
+                ? "Used automatically when NVIDIA is unavailable. Get a key at openrouter.ai/keys."
+                : "Direct OpenRouter Free route. Get a key at openrouter.ai/keys."
+        case .zai:
+            "Get a key at z.ai."
+        case .appleFoundation:
+            "No API key required."
+        }
 
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(provider.title) API Key")
+            Text(fallback ? "\(provider.title) Fallback API Key" : "\(provider.title) API Key")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.primary)
 
@@ -262,9 +293,7 @@ struct CountrySelectionView: View {
                 .autocorrectionDisabled()
                 .accessibilityIdentifier("native-\(provider.rawValue)-key-field")
 
-            Text(provider == .openRouter
-                ? "Free tier: 20 requests/minute. Get a key at openrouter.ai/keys."
-                : "Get a key at z.ai")
+            Text(helpText)
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -348,11 +377,11 @@ struct CountrySelectionView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("SwiftHistoria")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(Color.glowingCyan)
+            Text("PAX HISTORIA")
+                .font(NativeWarRoomTheme.displayFont(.headline, weight: .bold))
+                .foregroundStyle(NativeWarRoomTheme.brass)
                 .textCase(.uppercase)
-                .tracking(2.6)
+                .tracking(3.2)
 
             if let activeState = activeCampaignState {
                 VStack(alignment: .leading, spacing: 10) {
@@ -389,6 +418,7 @@ struct CountrySelectionView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(Color.glowingCyan.opacity(0.3))
                     .foregroundStyle(Color.glowingCyan)
+                    .accessibilityIdentifier("native-resume-campaign")
                 }
                 .padding(14)
                 .background(Color.white.opacity(0.06))
@@ -485,7 +515,7 @@ struct CountrySelectionView: View {
     private var providerSetupDeck: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("AI Provider", systemImage: "cpu")
+                Label("AI Routing", systemImage: "cpu")
                     .font(NativeWarRoomTheme.labelFont(.subheadline))
                     .foregroundStyle(NativeWarRoomTheme.brass)
                 Spacer()
@@ -494,7 +524,7 @@ struct CountrySelectionView: View {
                     .foregroundStyle(selectedScenarioAccentColor)
             }
 
-            Text("Select how turns, suggestions, advisor answers, and diplomacy replies are generated.")
+            Text("NVIDIA NIM is primary by default; OpenRouter Free takes over visibly if the NVIDIA route is unavailable.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -505,12 +535,15 @@ struct CountrySelectionView: View {
                 }
             }
 
-            if selectedProvider == .openRouter || selectedProvider == .zai {
+            if selectedProvider == .nvidia {
+                apiKeyField(for: .nvidia)
+                apiKeyField(for: .openRouter, fallback: true)
+            } else if selectedProvider == .openRouter || selectedProvider == .zai {
                 apiKeyField(for: selectedProvider)
             }
 
             if !canProceedFromProviderStep {
-                Label("An API key is required for the selected external provider.", systemImage: "exclamationmark.triangle")
+                Label("Add a key for the selected route. The NVIDIA route can start with either its primary key or the OpenRouter fallback key.", systemImage: "exclamationmark.triangle")
                     .font(.caption)
                     .foregroundStyle(Color.alertGold)
                     .fixedSize(horizontal: false, vertical: true)
@@ -543,6 +576,7 @@ struct CountrySelectionView: View {
                             .foregroundStyle(.secondary)
                     }
                     .accessibilityLabel("Clear search")
+                    .accessibilityIdentifier("native-country-clear-search")
                 }
             }
             .padding(10)
@@ -552,7 +586,7 @@ struct CountrySelectionView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.white.opacity(0.08), lineWidth: 1)
             }
-            .accessibilityLabel("Search country or ISO code")
+            .accessibilityElement(children: .contain)
         }
         .padding(14)
         .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.18), cornerRadius: 10)
@@ -663,7 +697,7 @@ private struct CountryRow: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(country.name)
-                    .font(.body.weight(.bold))
+                    .font(NativeWarRoomTheme.bodyFont(.body, weight: .semibold))
                     .foregroundStyle(isHovered ? Color.accentColor : Color.primary)
             }
 
@@ -736,13 +770,15 @@ private struct ScenarioSelectionCard: View {
 // MARK: - Helper Extensions
 
 extension Color {
-    static let spaceBlack = Color(hex: "#02050a")
-    static let deepSlate = Color(hex: "#07111c")
-    static let iceBlue = Color(hex: "#8abeff")
-    static let glowingCyan = Color(hex: "#33c9ff")
-    static let neonTeal = Color(hex: "#4ad4a0")
-    static let alertGold = Color(hex: "#f4c96d")
-    static let softRed = Color(hex: "#ff5777")
+    // Legacy semantic names are retained so existing gameplay views inherit the
+    // Living Atlas palette without a risky, whole-product identifier migration.
+    static let spaceBlack = Color(hex: "#090a08")
+    static let deepSlate = Color(hex: "#181a15")
+    static let iceBlue = Color(hex: "#d4c7a5")
+    static let glowingCyan = Color(hex: "#c5a45f")
+    static let neonTeal = Color(hex: "#81966a")
+    static let alertGold = Color(hex: "#d3a55c")
+    static let softRed = Color(hex: "#b95645")
 
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -770,19 +806,20 @@ extension Color {
 }
 
 enum NativeWarRoomTheme {
-    static let blackboard = Color(hex: "#050706")
-    static let archiveShadow = Color(hex: "#0d0c09")
-    static let graphite = Color(hex: "#171a17")
-    static let olivePanel = Color(hex: "#24251b")
+    static let blackboard = Color(hex: "#090a08")
+    static let archiveShadow = Color(hex: "#0f100d")
+    static let graphite = Color(hex: "#181a15")
+    static let olivePanel = Color(hex: "#24251d")
     static let mapPaper = Color(hex: "#d8c79b")
-    static let brass = Color(hex: "#c9a45b")
-    static let oxidizedBrass = Color(hex: "#8d7742")
-    static let ink = Color(hex: "#f1e6c8")
-    static let mutedInk = Color(hex: "#b8ad8e")
-    static let signalCyan = Color(hex: "#6ec7d5")
-    static let fieldGreen = Color(hex: "#7fa66a")
-    static let alertAmber = Color(hex: "#e0ae55")
-    static let threatRed = Color(hex: "#c86454")
+    static let parchment = Color(hex: "#e6d9b8")
+    static let brass = Color(hex: "#c5a45f")
+    static let oxidizedBrass = Color(hex: "#806b3f")
+    static let ink = Color(hex: "#f2e8ce")
+    static let mutedInk = Color(hex: "#b8ad91")
+    static let signalCyan = Color(hex: "#9db4a2")
+    static let fieldGreen = Color(hex: "#81966a")
+    static let alertAmber = Color(hex: "#d3a55c")
+    static let threatRed = Color(hex: "#b95645")
 
     static func statusColor(for score: Int, highIsGood: Bool = true) -> Color {
         if highIsGood {
@@ -814,14 +851,28 @@ struct GlassmorphicCardModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .background(.ultraThinMaterial)
-            .background(Color.deepSlate.opacity(0.4))
+            .background(
+                LinearGradient(
+                    colors: [
+                        NativeWarRoomTheme.graphite.opacity(0.97),
+                        NativeWarRoomTheme.archiveShadow.opacity(0.95)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(borderColor, lineWidth: 1)
             }
-            .shadow(color: Color.black.opacity(0.4), radius: 8, x: 0, y: 4)
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(NativeWarRoomTheme.parchment.opacity(0.06))
+                    .frame(height: 1)
+                    .padding(.horizontal, cornerRadius)
+            }
+            .shadow(color: Color.black.opacity(0.34), radius: 8, x: 0, y: 4)
     }
 }
 

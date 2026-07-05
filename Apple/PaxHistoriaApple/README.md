@@ -32,6 +32,10 @@ Creates initial state, validates generated turns, applies accepted turns, resolv
 
 Calls Apple Foundation Models on supported systems. It slices turn generation into small structured prompts, decodes JSON drafts, retries repairable failures, and refuses to invent silent replacement content.
 
+`DynamicAIService.swift`, `NativeNVIDIAService.swift`, and `NativeOpenRouterService.swift`
+
+Own external-provider routing. NVIDIA NIM (hosting `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, and `deepseek-ai/deepseek-v4-flash` in round-robin) is the default primary route; OpenRouter Free is its visible fallback for turns, the 5×5 decision matrix, advisor answers, and diplomacy. Z.AI and Apple Foundation Models remain explicit alternate choices.
+
 `NativeStrategyContextDatabase.swift`
 
 Provides local facts, consequence rules, action memory, economic ledger updates, and prompt packets used as evidence for generation.
@@ -58,7 +62,7 @@ Views should not patch `NativeCampaignState` directly. If a UI needs a new actio
 ## Generated Turn Flow
 
 1. `NativeCampaignStore.advance(months:)` captures the current `stateVersion`.
-2. `NativeFoundationModelService.generateTurn` builds structured generation lanes.
+2. `DynamicAIService` calls NVIDIA NIM first and uses OpenRouter Free if the NVIDIA route is unavailable, unless the player explicitly selected another provider.
 3. `NativeGameEngine.validated` rejects incoherent drafts.
 4. `NativeGameEngine.apply` mutates deterministic state.
 5. The store persists and then refreshes suggestions.
@@ -98,7 +102,9 @@ Persistent campaign history is intentionally uncapped. Do not trim timelines, wo
 
 ## AI Notes
 
-Apple Foundation Models have a small local context window compared with remote providers. The service keeps prompts compact, evidence-based, and schema-oriented. The strategy context database is the source of grounded facts and consequence ranges; avoid adding large free-form prompt context without trimming or summarizing it.
+The default external route calls `https://integrate.api.nvidia.com/v1/chat/completions` balancing requests between `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, and `deepseek-ai/deepseek-v4-flash` via round-robin, with temperature `1.0` (for DeepSeek) or `0.6` (for others) and top-p `0.95`/`0.90`. OpenRouter Free (`openrouter/free`) is the fallback. Both routes omit `max_tokens`, so the app adds no completion-token cap or session budget; provider-side technical and account limits still apply.
+
+Apple Foundation Models have a small local context window compared with remote providers. The shared prompt harness keeps prompts compact, evidence-based, and schema-oriented. The strategy context database is the source of grounded facts and consequence ranges; avoid adding large free-form prompt context without trimming or summarizing it.
 
 All prompt families should stay connected to the same mechanics contract: economy, public security, insurgency pressure, map conflict, diplomacy/global friction, action memory, scenario canon, language, and bounded `hexLeverCode` map nudges. Suggestions are part of the game loop, so each generated suggestion should name the primary mechanic it intends to move and one secondary mechanic that benefits or trades off.
 
