@@ -1,7 +1,7 @@
 <h1 align="center">SwiftHistoria</h1>
 
 <div align="center">
-  <strong>A Swift-native, open-source historical strategy sandbox for macOS and iOS.</strong>
+  <strong>A Swift-native, open-source geopolitical strategy sandbox for macOS and iOS.</strong>
 </div>
 
 <br />
@@ -27,6 +27,11 @@
     <img src="https://img.shields.io/badge/platform-macOS%20%7C%20iOS-lightgrey.svg?style=flat-square"
       alt="Platform: macOS / iOS" />
   </a>
+  <!-- Swift -->
+  <a href="#">
+    <img src="https://img.shields.io/badge/Swift-6-F05138.svg?style=flat-square&logo=swift&logoColor=white"
+      alt="Swift 6" />
+  </a>
 </div>
 
 <div align="center">
@@ -36,22 +41,17 @@
 <br />
 <br />
 
-## Development Direction
-
-SwiftHistoria is a Swift-native Apple app in [`Apple/`](Apple/). The legacy React/Vite web app and Express server have been removed; all product work lands in the Swift-native implementation.
-
-For architectural orientation, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). For future AI coding agents, see [`docs/LLM_MAINTENANCE_GUIDE.md`](docs/LLM_MAINTENANCE_GUIDE.md).
-
----
-
 ## ✨ Features
 
-- **Interactive world map:** watch territory, borders, and nations shift as history unfolds
-- **AI-generated events:** dynamic events shaped by your decisions and the state of the world
+- **Interactive world map:** watch territory, borders, and nations shift as history unfolds — conventional occupation stripes, guerrilla-control zones, nuclear fallout rings, stabilization corridors, and contested borders
+- **AI-generated events:** dynamic events shaped by your decisions and the state of the world, presented as intelligence-briefing headlines
 - **Diplomacy:** negotiate with AI-controlled nations through natural language chat
 - **AI advisor:** consult your advisor for strategic guidance, economic analysis, and situation summaries
-- **Six scenarios:** choose from historical and future starting points — *Default*, *Fragmented Markets*, *Resilience Decade*, *Soviet Triumph*, *Pax Cybernetica*, *Solarpunk Dawn* — each with three canonical objectives
+- **Six scenarios:** *Default*, *Fragmented Markets*, *Resilience Decade*, *Soviet Triumph*, *Pax Cybernetica*, *Solarpunk Dawn* — each with three canonical objectives
 - **Objective-driven victory:** every scenario exposes three visible objectives evaluated after each turn; rival nations can also win by completing multi-turn strategic agendas
+- **Game modes:** Sandbox (light consequences), Normal (standard campaign), Iron Man (doubled sovereign risks, no reloading)
+- **Three save slots** with redundant local persistence and optional Turso cloud mirroring
+- **Multilingual:** English, Português, and Español player-facing prose, with full localization strings
 - **Self-hostable:** run your own instance with your own AI backend, completely offline
 
 ---
@@ -69,7 +69,9 @@ Routing is **strict** across all AI surfaces — turns, the decision matrix, adv
 
 SwiftHistoria does not enforce a session token budget on either selectable route. Provider-side context, output, rate, and trial-service limits still apply.
 
-Campaign turns use one fixed cadence: **every turn advances the game clock by three months.**
+Campaign turns use one fixed cadence: **every turn advances the game clock by three months**.
+
+All AI prompt families use the same explicit mechanic-code protocol — `⟦ECO⟧` economic resilience, `⟦MKT⟧` market confidence, `⟦STB⟧` internal stability, `⟦SEC⟧` security anxiety, `⟦DIP⟧` diplomatic leverage, `⟦MIL⟧` military readiness, `⟦TNS⟧` world tension. Suggestions emit primary and secondary codes; consequence events emit one code that must belong to the linked order. The parser still reads legacy raw track names for save compatibility.
 
 ---
 
@@ -86,6 +88,44 @@ Terminal states: `ongoing`, `won`, `lost-rival`, `lost-timeout`.
 ## 📊 Event Presentation
 
 The simulation and save archive retain **every event** — history is intentionally uncapped. Presentation is quieter by design: turn reports promote at most **five** salient events, the intelligence timeline promotes at most **eight**, and remaining records stay available in compact expandable archives. `NativeEventBriefing` owns that deterministic presentation-only ranking.
+
+---
+
+## 🗺️ Map & Conflict Mechanics
+
+SwiftHistoria models war, insurgency, public security, and nuclear fallout as high-level board-game state, not operational guidance.
+
+`NativeCampaignState.regionConflicts` is the explanatory source of truth, with five modes:
+
+- `contested-border` · `conventional-occupation` · `guerrilla-control` · `nuclear-fallout` · `stabilization`
+
+The older `regionOccupations` and `nuclearFalloutRegions` fields remain as compact drawing indexes for fast rendering and legacy save compatibility.
+
+The optional 8-character `hexLeverCode` lets generated events nudge the simulation without free-form map mutation: nibbles 1–6 are economic deltas, nibble 7 is public-security delta, nibble 8 is an abstract map-control nudge (border advance, guerrilla control, nuclear fallout, stabilization, etc.).
+
+Every strategic country has a full `NativeEconomicLedger` with GDP, trade balance, fiscal space, public debt, inflation, unemployment, security index, rebel control, government type, public approval, election cycles, and dynamic resource reserves (oil, minerals, agriculture, rare earths).
+
+---
+
+## 💾 Persistence & Cloud Mirror
+
+The native app writes a **redundant** local save: a versioned envelope, a last-good backup envelope, and a legacy state file, plus a `UserDefaults` mirror. Saves support **three slots**.
+
+If `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are configured in Settings or the process environment, saves are also mirrored to Turso (libSQL) via SQL-over-HTTP in the background. Local file persistence remains the fast launch path; Turso is used for recovery only when no local file or `UserDefaults` copy is available.
+
+Campaign history is intentionally **uncapped** — timelines, world effects, action memory, advisor messages, diplomatic threads, and ledger entries are never trimmed on save.
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+| Action | Shortcut |
+|--------|----------|
+| Navigate panels (Advisor, Diplomacy, Map, Orders, Economy, Library, Settings…) | `⌘⌥1` – `⌘⌥8` |
+| Next turn | `⌘]` |
+| Cancel / stop generation | `⌘.` |
+| Export campaign | `⇧⌘E` |
+| Import campaign | `⇧⌘I` |
 
 ---
 
@@ -129,11 +169,11 @@ brew install swiftlint swiftformat
 
 ### Tooling split
 
-| Concern            | Tool         | Config                        | CI gate                        |
-| ------------------ | ------------ | ----------------------------- | ------------------------------ |
+| Concern            | Tool         | Config                           | CI gate                        |
+| ------------------ | ------------ | -------------------------------- | ------------------------------ |
 | Style / whitespace | SwiftFormat  | [`.swiftformat`](.swiftformat)   | `swiftformat --lint` (strict)  |
-| Semantic issues    | SwiftLint    | [`.swiftlint.yml`](.swiftlint.yml) | `swiftlint lint --strict`      |
-| Build + tests      | `xcodebuild` | —                             | macOS / iOS-sim / test jobs    |
+| Semantic issues    | SwiftLint    | [`.swiftlint.yml`](.swiftlint.yml) | `swiftlint lint --strict`    |
+| Build + tests      | `xcodebuild` | —                                | macOS / iOS-sim / test jobs    |
 
 ### CI
 
@@ -145,3 +185,11 @@ GitHub Actions runs four jobs on every push and pull request (see [`.github/work
 4. **Test** — `PaxHistoriaMacTests` on the macOS host, with code coverage uploaded as an artifact.
 
 Runs cancel superseded runs on the same ref to save macOS minutes. The latest Xcode (26) is selected via `maxim-lobanov/setup-xcode`.
+
+---
+
+## 📖 Documentation
+
+- [**Architecture**](docs/ARCHITECTURE.md) — repository map, data flow, ownership rules, persistence contract, high-risk change checklist
+- [**LLM Maintenance Guide**](docs/LLM_MAINTENANCE_GUIDE.md) — safe editing patterns, async safety, ownership rules for AI coding agents
+- [**Native App Notes**](Apple/PaxHistoriaApple/README.md) — core file inventory, turn flow, conflict mechanics, AI notes
