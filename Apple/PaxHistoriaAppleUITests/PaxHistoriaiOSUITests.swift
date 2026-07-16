@@ -13,9 +13,9 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         XCTAssertTrue(continueButton.waitForExistence(timeout: 8))
         continueButton.tap()
 
-        let appleProvider = app.buttons["native-provider-appleFoundation"]
-        XCTAssertTrue(appleProvider.waitForExistence(timeout: 8))
-        appleProvider.tap()
+        let nvidiaProvider = app.buttons["native-provider-nvidia"]
+        XCTAssertTrue(nvidiaProvider.waitForExistence(timeout: 8))
+        nvidiaProvider.tap()
 
         let providerContinueButton = app.buttons["native-provider-continue"]
         XCTAssertTrue(providerContinueButton.waitForExistence(timeout: 4))
@@ -106,8 +106,7 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "UI Test Diplomatic Response")).firstMatch.waitForExistence(timeout: 8))
 
         tapTab(named: "Map", identifier: "native-map-tab", in: app)
-        tapButton(identifier: "native-advance-menu", in: app)
-        tapMenuButton(title: "1 month", identifier: "native-advance-1", in: app)
+        tapButton(identifier: "native-advance-3", in: app)
 
         XCTAssertTrue(firstElement("native-turn-report", in: app).waitForExistence(timeout: 12), "Missing turn report:\n\(app.debugDescription)")
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "UI Test Order Resolved")).firstMatch.waitForExistence(timeout: 4))
@@ -138,11 +137,11 @@ final class PaxHistoriaiOSUITests: XCTestCase {
     }
 
     func testSetupProviderCardsAreAllTappable() {
-        // Every provider card should exist and be tappable.
+        // The two supported provider cards should exist and be tappable.
         let app = launchResetApp()
         XCTAssertTrue(app.buttons["native-country-continue"].waitForExistence(timeout: 8))
         app.buttons["native-country-continue"].tap()
-        for id in ["native-provider-nvidia", "native-provider-appleFoundation", "native-provider-openRouter", "native-provider-zai"] {
+        for id in ["native-provider-nvidia", "native-provider-openRouter"] {
             let card = app.buttons[id]
             XCTAssertTrue(card.waitForExistence(timeout: 6), "Provider card \(id) not found")
             XCTAssertTrue(card.isHittable, "Provider card \(id) is not hittable")
@@ -153,24 +152,24 @@ final class PaxHistoriaiOSUITests: XCTestCase {
     func testSetupBackNavigationFromProviderStep() {
         let app = launchResetApp()
         app.buttons["native-country-continue"].tap()
-        XCTAssertTrue(app.buttons["native-provider-appleFoundation"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["native-provider-nvidia"].waitForExistence(timeout: 8))
         app.buttons["native-provider-back"].tap()
         XCTAssertTrue(app.buttons["native-country-continue"].waitForExistence(timeout: 4))
     }
 
     func testSetupBackNavigationFromCountryStep() {
-        let app = launchResetApp()
+        let app = launchResetApp(fakeAI: true)
         app.buttons["native-country-continue"].tap()
-        app.buttons["native-provider-appleFoundation"].tap()
+        app.buttons["native-provider-nvidia"].tap()
         app.buttons["native-provider-continue"].tap()
         app.buttons["native-country-back"].tap()
         XCTAssertTrue(app.buttons["native-provider-continue"].waitForExistence(timeout: 4))
     }
 
     func testSetupClearSearchButton() {
-        let app = launchResetApp()
+        let app = launchResetApp(fakeAI: true)
         app.buttons["native-country-continue"].tap()
-        app.buttons["native-provider-appleFoundation"].tap()
+        app.buttons["native-provider-nvidia"].tap()
         app.buttons["native-provider-continue"].tap()
         let search = app.textFields["native-country-search"]
         search.tap()
@@ -204,36 +203,25 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         XCTAssertTrue(firstElement("native-diplomacy-panel", in: app).waitForExistence(timeout: 4))
     }
 
-    func testMapAdvanceMenuAllOptions() {
+    func testMapAdvanceOnlyOffersFixedThreeMonthTurn() {
         let app = launchResetApp(fakeAI: true)
         startBrazilCampaign(in: app)
-        tapButton(identifier: "native-advance-menu", in: app)
-        XCTAssertTrue(app.buttons["native-advance-1"].exists)
         XCTAssertTrue(app.buttons["native-advance-3"].exists)
-        XCTAssertTrue(app.buttons["native-advance-12"].exists)
+        XCTAssertFalse(app.buttons["native-advance-1"].exists)
+        XCTAssertFalse(app.buttons["native-advance-12"].exists)
     }
 
     func testMapAdvance3MonthsStartsTurnReport() {
         let app = launchResetApp(fakeAI: true)
         startBrazilCampaign(in: app)
-        tapButton(identifier: "native-advance-menu", in: app)
-        tapMenuButton(title: "3 months", identifier: "native-advance-3", in: app)
-        XCTAssertTrue(firstElement("native-turn-report", in: app).waitForExistence(timeout: 12))
-    }
-
-    func testMapAdvance1YearStartsTurnReport() {
-        let app = launchResetApp(fakeAI: true)
-        startBrazilCampaign(in: app)
-        tapButton(identifier: "native-advance-menu", in: app)
-        tapMenuButton(title: "1 year", identifier: "native-advance-12", in: app)
+        tapButton(identifier: "native-advance-3", in: app)
         XCTAssertTrue(firstElement("native-turn-report", in: app).waitForExistence(timeout: 12))
     }
 
     func testTurnReportDismissViaAcknowledgeButton() {
         let app = launchResetApp(fakeAI: true)
         startBrazilCampaign(in: app)
-        tapButton(identifier: "native-advance-menu", in: app)
-        tapMenuButton(title: "1 month", identifier: "native-advance-1", in: app)
+        tapButton(identifier: "native-advance-3", in: app)
         let tr = firstElement("native-turn-report", in: app)
         XCTAssertTrue(tr.waitForExistence(timeout: 12))
         app.buttons["ACKNOWLEDGE & CLOSE DOSSIER"].tap()
@@ -322,12 +310,42 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         XCTAssertFalse(firstElement("native-ask-advisor", in: app).isEnabled)
     }
 
+    func testAdvisorStarterFillsAReadyToSendQuestion() {
+        let app = launchResetApp(fakeAI: true)
+        startBrazilCampaign(in: app)
+        tapButton(identifier: "native-map-command-advisor", in: app)
+        tapIntelSection(identifier: "native-intel-section-advisor", in: app)
+
+        let starter = app.buttons["native-advisor-starter-0"]
+        XCTAssertTrue(starter.waitForExistence(timeout: 4))
+        starter.tap()
+
+        let question = firstElement("native-advisor-question", in: app)
+        XCTAssertEqual(question.value as? String, "What is the most urgent risk this turn?")
+        XCTAssertTrue(firstElement("native-ask-advisor", in: app).isEnabled)
+    }
+
     func testDiplomacySendButtonDisabledWhenEmpty() {
         let app = launchResetApp(fakeAI: true)
         startBrazilCampaign(in: app)
         tapButton(identifier: "native-map-command-advisor", in: app)
         tapIntelSection(identifier: "native-intel-section-diplomacy", in: app)
         XCTAssertFalse(firstElement("native-send-diplomacy", in: app).isEnabled)
+    }
+
+    func testDiplomacyStarterFillsAReadyToSendProposal() {
+        let app = launchResetApp(fakeAI: true)
+        startBrazilCampaign(in: app)
+        tapButton(identifier: "native-map-command-advisor", in: app)
+        tapIntelSection(identifier: "native-intel-section-diplomacy", in: app)
+
+        let starter = app.buttons["native-diplomacy-starter-0"]
+        XCTAssertTrue(starter.waitForExistence(timeout: 4))
+        starter.tap()
+
+        let message = firstElement("native-diplomacy-message", in: app)
+        XCTAssertEqual(message.value as? String, "Propose a trade resilience compact.")
+        XCTAssertTrue(firstElement("native-send-diplomacy", in: app).isEnabled)
     }
 
     func testLibraryExportButtonExists() {
@@ -362,11 +380,39 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         tapButton(identifier: "native-save-campaign", in: app)
     }
 
+    func testSettingsSwitchesBetweenOnlyNVIDIAAndOpenRouterFree() {
+        let app = launchResetApp(fakeAI: true)
+        startBrazilCampaign(in: app)
+        tapButton(identifier: "native-map-command-advisor", in: app)
+        tapIntelSection(identifier: "native-intel-section-settings", in: app)
+
+        let settings = firstElement("native-settings-panel", in: app)
+        let section = firstElement("native-ai-connection-section", in: app)
+        for _ in 0 ..< 8 where !section.isHittable {
+            settings.swipeUp()
+        }
+        XCTAssertTrue(section.waitForExistence(timeout: 4))
+        section.tap()
+
+        let picker = firstElement("native-ai-provider-picker", in: app)
+        XCTAssertTrue(picker.waitForExistence(timeout: 4))
+        let openRouter = picker.buttons["OpenRouter Free"]
+        let nvidia = picker.buttons["NVIDIA NIM"]
+        XCTAssertTrue(openRouter.exists)
+        XCTAssertTrue(nvidia.exists)
+        XCTAssertEqual(picker.buttons.count, 2)
+        openRouter.tap()
+        XCTAssertTrue(openRouter.isSelected)
+        nvidia.tap()
+        XCTAssertTrue(nvidia.isSelected)
+    }
+
     func testSettingsExitToMainMenuButton() {
         let app = launchResetApp(fakeAI: true)
         startBrazilCampaign(in: app)
         tapButton(identifier: "native-map-command-advisor", in: app)
         tapIntelSection(identifier: "native-intel-section-settings", in: app)
+        openCampaignManagement(in: app)
         tapButton(identifier: "native-exit-to-menu", in: app)
         XCTAssertTrue(app.buttons["native-country-continue"].waitForExistence(timeout: 8))
     }
@@ -376,6 +422,7 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         startBrazilCampaign(in: app)
         tapButton(identifier: "native-map-command-advisor", in: app)
         tapIntelSection(identifier: "native-intel-section-settings", in: app)
+        openCampaignManagement(in: app)
         tapButton(identifier: "native-change-country", in: app)
         XCTAssertTrue(app.buttons["native-country-continue"].waitForExistence(timeout: 8))
     }
@@ -385,6 +432,7 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         startBrazilCampaign(in: app)
         tapButton(identifier: "native-map-command-advisor", in: app)
         tapIntelSection(identifier: "native-intel-section-settings", in: app)
+        openCampaignManagement(in: app)
 
         let settings = firstElement("native-settings-panel", in: app)
         let countryPanel = firstElement("native-new-country-panel", in: app)
@@ -432,6 +480,7 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         startBrazilCampaign(in: app)
         tapButton(identifier: "native-map-command-advisor", in: app)
         tapIntelSection(identifier: "native-intel-section-settings", in: app)
+        openCampaignManagement(in: app)
 
         let settings = firstElement("native-settings-panel", in: app)
         let switchPanel = firstElement("native-country-switch-panel", in: app)
@@ -507,6 +556,16 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         }
     }
 
+    private func openCampaignManagement(in app: XCUIApplication) {
+        let section = firstElement("native-campaign-management-section", in: app)
+        XCTAssertTrue(section.waitForExistence(timeout: 4))
+        for _ in 0 ..< 8 where !section.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(section.isHittable, "Campaign management should be reachable in settings")
+        section.tap()
+    }
+
     private func dismissKeyboardIfPresent(in app: XCUIApplication) {
         guard app.keyboards.firstMatch.exists else { return }
         let doneButton = app.buttons["native-keyboard-done"]
@@ -570,9 +629,9 @@ final class PaxHistoriaiOSUITests: XCTestCase {
         XCTAssertTrue(continueButton.waitForExistence(timeout: 8))
         continueButton.tap()
 
-        let appleProvider = app.buttons["native-provider-appleFoundation"]
-        XCTAssertTrue(appleProvider.waitForExistence(timeout: 8))
-        appleProvider.tap()
+        let nvidiaProvider = app.buttons["native-provider-nvidia"]
+        XCTAssertTrue(nvidiaProvider.waitForExistence(timeout: 8))
+        nvidiaProvider.tap()
 
         let providerContinueButton = app.buttons["native-provider-continue"]
         XCTAssertTrue(providerContinueButton.waitForExistence(timeout: 4))

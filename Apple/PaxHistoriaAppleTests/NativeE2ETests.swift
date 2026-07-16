@@ -111,7 +111,7 @@ final class NativeE2ETests: XCTestCase {
         ]
 
         // 5. Advance turn (simulating turn advance)
-        await store.performAdvance(months: 3)
+        await store.performAdvance()
 
         if let lastError = store.lastError {
             print("E2E Test Advance Failed Error: \(lastError)")
@@ -238,11 +238,11 @@ final class NativeE2ETests: XCTestCase {
             )
         ]
 
-        await otherStore.performAdvance(months: 1)
+        await otherStore.performAdvance()
 
         let finalState = try XCTUnwrap(otherStore.state)
         XCTAssertEqual(finalState.round, 3)
-        XCTAssertEqual(finalState.gameDate, "2010-05-15") // advanced 1 month
+        XCTAssertEqual(finalState.gameDate, "2010-07-15") // advanced one fixed 3-month turn
         XCTAssertTrue(finalState.timeline.contains { $0.id == "event-external-2" })
     }
 

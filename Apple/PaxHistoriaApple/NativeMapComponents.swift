@@ -575,13 +575,8 @@ struct NativeFloatingAdvanceButton: View {
     }
 
     var body: some View {
-        Menu {
-            Button(advanceTitle(months: 1, title: "Advance 1 Month")) { store.advance(months: 1) }
-                .accessibilityIdentifier("native-advance-1")
-            Button(advanceTitle(months: 3, title: "Advance 3 Months")) { store.advance(months: 3) }
-                .accessibilityIdentifier("native-advance-3")
-            Button(advanceTitle(months: 12, title: "Advance 1 Year")) { store.advance(months: 12) }
-                .accessibilityIdentifier("native-advance-12")
+        Button {
+            store.advance()
         } label: {
             HStack(spacing: 8) {
                 if store.isAdvancing {
@@ -597,7 +592,7 @@ struct NativeFloatingAdvanceButton: View {
                     Image(systemName: "calendar.badge.clock")
                         .font(.headline)
                         .foregroundStyle(NativeWarRoomTheme.ink)
-                    Text(pendingDirectiveCount > 0 ? "ADVANCE (\(pendingDirectiveCount))" : "ADVANCE TURN")
+                    Text(pendingDirectiveCount > 0 ? "ADVANCE 3 MONTHS (\(pendingDirectiveCount))" : "ADVANCE 3 MONTHS")
                         .font(NativeWarRoomTheme.displayFont(.subheadline, weight: .semibold))
                         .foregroundStyle(NativeWarRoomTheme.ink)
                     if pendingDirectiveCount > 0, !reduceMotion {
@@ -636,8 +631,8 @@ struct NativeFloatingAdvanceButton: View {
             }
         }
         .disabled(store.isAdvancing)
-        .accessibilityLabel("Advance time menu")
-        .accessibilityIdentifier("native-advance-menu")
+        .accessibilityLabel(advanceTitle(months: NativeCampaignStore.monthsPerTurn, title: "Advance 3 months"))
+        .accessibilityIdentifier("native-advance-3")
     }
 }
 
@@ -709,13 +704,8 @@ struct NativeAdvanceMenu: View {
     }
 
     var body: some View {
-        Menu {
-            Button(advanceTitle(months: 1, title: "1 month")) { store.advance(months: 1) }
-                .accessibilityIdentifier("native-advance-1")
-            Button(advanceTitle(months: 3, title: "3 months")) { store.advance(months: 3) }
-                .accessibilityIdentifier("native-advance-3")
-            Button(advanceTitle(months: 12, title: "1 year")) { store.advance(months: 12) }
-                .accessibilityIdentifier("native-advance-12")
+        Button {
+            store.advance()
         } label: {
             if store.isAdvancing {
                 VStack(spacing: 2) {
@@ -730,7 +720,7 @@ struct NativeAdvanceMenu: View {
                 VStack(spacing: 3) {
                     Image(systemName: "calendar.badge.clock")
                         .font(.system(size: 13, weight: .semibold))
-                    Text("ADVANCE")
+                    Text("3 MONTHS")
                         .font(NativeWarRoomTheme.labelFont(.caption2))
                         .lineLimit(1)
                 }
@@ -746,8 +736,8 @@ struct NativeAdvanceMenu: View {
                 .padding(1)
         }
         .disabled(store.isAdvancing)
-        .accessibilityLabel("Advance time")
-        .accessibilityIdentifier("native-advance-menu")
+        .accessibilityLabel(advanceTitle(months: NativeCampaignStore.monthsPerTurn, title: "Advance 3 months"))
+        .accessibilityIdentifier("native-advance-3")
     }
 }
 

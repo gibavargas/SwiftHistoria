@@ -53,7 +53,7 @@ struct NativeGameShell: View {
             onImportCampaign()
         }
         .onReceive(NotificationCenter.default.publisher(for: .advanceTurn)) { _ in
-            store.advance(months: 1)
+            store.advance()
         }
         .onReceive(NotificationCenter.default.publisher(for: .cancelTurn)) { _ in
             store.cancelInFlightTurn()
@@ -345,7 +345,7 @@ struct NativeGameShell: View {
                 .keyboardShortcut("o", modifiers: [.command])
 
                 Button {
-                    store.advance(months: 1)
+                    store.advance()
                 } label: {
                     HStack(spacing: 4) {
                         if store.isAdvancing {
@@ -365,7 +365,7 @@ struct NativeGameShell: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(store.isAdvancing)
-                .help("Advance one month")
+                .help("Advance one 3-month turn")
                 .keyboardShortcut("]", modifiers: [.command])
                 .accessibilityIdentifier("native-mac-toolbar-advance")
 

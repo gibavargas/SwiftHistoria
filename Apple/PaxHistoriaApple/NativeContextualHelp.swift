@@ -14,7 +14,7 @@ struct NativeContextualHelpOverlay: View {
         ("Advisor", "brain.head.profile",
          "Ask the AI advisor for assessments of threats, stability, or opportunities. Check Diplomacy to negotiate with other nations."),
         ("Advance", "calendar.badge.clock",
-         "Advance a month, quarter, or year when your orders are ready. The selected AI provider resolves the turn and any provider failure stays visible.")
+         "Advance one 3-month turn when your orders are ready. The selected AI provider resolves the turn and any provider failure stays visible.")
     ]
 
     var body: some View {

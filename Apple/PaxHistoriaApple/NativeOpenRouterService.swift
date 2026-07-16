@@ -1,8 +1,8 @@
 import Foundation
 import OSLog
 
-/// OpenRouter-based AI service using free models. This is the visible fallback
-/// for the default NVIDIA DiffusionGemma route and can also be selected directly.
+/// Player-selectable OpenRouter AI service using the unified free-model route.
+/// Routing is strict: NVIDIA failures never enter this service automatically.
 ///
 /// Inherits ALL prompt construction, JSON decoding, validation, and retry logic
 /// from `NativeZAIService` — only the endpoint, API key, model list, and thinking
@@ -293,7 +293,7 @@ class NativeOpenRouterService: NativeZAIService {
     }
 
     override func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction] {
-        let prompt = NativeDecisionMatrixPrompt.make(for: state)
+        let prompt = NativeDecisionMatrixPrompt.makeOpenRouterSafe(for: state)
         var lastFailure = "No response was validated."
         var repairNote = ""
         for attempt in 1 ... 2 {
@@ -302,7 +302,9 @@ class NativeOpenRouterService: NativeZAIService {
                 maxTokens: 8000,
                 temperature: attempt == 1 ? 0.5 : 0.2,
                 responseFormat: "json_object",
-                thinkingEnabled: false
+                thinkingEnabled: false,
+                requestTimeout: 45,
+                retryLimit: 0
             )
 
             let suggestions = OpenRouterSuggestionParser.suggestions(from: rawResponse, state: state)
@@ -313,6 +315,10 @@ class NativeOpenRouterService: NativeZAIService {
             } catch {
                 lastFailure = error.localizedDescription
                 orLogger.warning("OpenRouter decision matrix invalid count=\(suggestions.count, privacy: .public) attempt=\(attempt, privacy: .public): \(lastFailure, privacy: .public)")
+                if let tailored = try? NativeDecisionMatrixContract.aiTailoredPlayerMatrix(from: suggestions, state: state) {
+                    orLogger.info("OpenRouter tailored the engine-owned legal matrix cells=\(tailored.count, privacy: .public)")
+                    return tailored
+                }
                 repairNote = """
 
                 REPAIR: The previous board was rejected: \(lastFailure)
@@ -349,19 +355,14 @@ class NativeOpenRouterService: NativeZAIService {
         repairInstruction: String?
     ) -> String {
         let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        let plannedActions = Array(state.plannedActions.filter { $0.status == .planned }.prefix(3))
-        let actionLines = plannedActions.isEmpty
-            ? "No player orders are queued."
-            : plannedActions.enumerated().map { index, action in
-                "\(index + 1). id=\(action.id); title=\(action.title); detail=\(action.detail)"
-            }.joined(separator: "\n")
+        let plannedActions = Array(state.plannedActions.filter { $0.status == .planned }.prefix(NativeDecisionMatrixContract.maximumOrdersPerTurn))
+        let actionLines = openRouterOrderLines(plannedActions)
         let objectives = NativeGameEngine.campaignObjectives(for: state)
         let objectiveLines = objectives.isEmpty
             ? "No explicit campaign objectives."
             : objectives.prefix(4).map { objective in
                 "- \(objective.title): \(objective.currentValue) -> \(objective.targetValue) by \(objective.deadline). \(objective.detail)"
             }.joined(separator: "\n")
-        let ledger = state.economicLedger
         let recentEvents = state.timeline.prefix(4).map { "- \($0.date): \($0.title)" }.joined(separator: "\n")
         let repairBlock = repairInstruction.map {
             """
@@ -383,7 +384,7 @@ class NativeOpenRouterService: NativeZAIService {
         - World tension: \(state.worldTension)
         - Administrative capacity: \(state.administrativeCapacity)
 
-        Ledger: growth=\(ledger.realGrowthPercent)%, inflation=\(ledger.inflationPercent)%, budget=\(String(format: "%.1f", ledger.budgetBalancePercentGDP))%, debt=\(String(format: "%.1f", ledger.publicDebtPercentGDP))%, trade=\(String(format: "%.1f", ledger.tradeBalancePercentGDP))%, unemployment=\(String(format: "%.1f", ledger.unemploymentPercent))%, security=\(String(format: "%.0f", ledger.securityIndex))/100, rebels=\(String(format: "%.1f", ledger.rebelControlPercent))%, fiscal=\(ledger.fiscalSpaceIndex)/100
+        \(openRouterMechanicsContext(for: state))
 
         Campaign objectives:
         \(objectiveLines)
@@ -405,13 +406,13 @@ class NativeOpenRouterService: NativeZAIService {
             {
               "title": "Strict short news headline.",
               "description": "Concrete 1-2 sentence event description with agencies, dates, and measurable effect.",
-              "kind": "economy, domestic, or world",
-              "importance": "minor, major, or critical",
+              "kind": "action, economy, diplomacy, or world",
+              "importance": "minor, major, or severe",
               "notable": true,
               "playerRelated": false,
               "linkedActionID": null,
               "effectTarget": "Country code like \(state.country.code) or GLOBAL",
-              "effectTrack": "economic-resilience, market-confidence, diplomatic-leverage, internal-stability, world-tension, or security-anxiety",
+              "effectTrack": "⟦ECO⟧|⟦MKT⟧|⟦STB⟧|⟦SEC⟧|⟦DIP⟧|⟦MIL⟧|⟦TNS⟧",
               "effectMagnitude": -3,
               "effectSummary": "One concise sentence describing the game mechanics effect.",
               "hexLeverCode": null,
@@ -426,14 +427,16 @@ class NativeOpenRouterService: NativeZAIService {
         - Include one playerRelated=true event for each queued order above, using its exact linkedActionID.
         - Dates are assigned by the game engine; do not include date fields.
         - Keep every event concrete and avoid placeholder words like Native, Generated, Draft, Schema, Placeholder.
-        Valid "effectTrack" values: economic-resilience, market-confidence, diplomatic-leverage, internal-stability, world-tension, security-anxiety.
-        Valid "importance" values: minor, major, critical.
+        \(NativeStrategicTrack.mechanicCodebookPrompt)
+        Valid "kind" values: action, diplomacy, economy, world. Valid "importance" values: minor, major, severe.
+        Each linked action event must output the exact code corresponding to one of that order's listed mechanicTracks. Copy structured sovereigntyChange only from its linked order; otherwise use null.
+        effectTarget must be GLOBAL, \(state.country.code), or a country/region identifier explicitly present in the mechanics context. Never invent a target.
 
         Example events:
         1. Player-related event resolving a logistics order:
-           {"title":"Port Modernization Phase 1 Begins","description":"The National Infrastructure Authority commenced Phase 1 of the coastal port upgrade, deploying 2,400 workers to expand container capacity by 35%.","kind":"domestic","importance":"major","notable":true,"playerRelated":true,"linkedActionID":"action-3-1","effectTarget":"BRA","effectTrack":"economic-resilience","effectMagnitude":3,"effectSummary":"Infrastructure investment boosts economic resilience by 3.","hexLeverCode":"0x4D21F4","sovereigntyChange":null}
+           {"title":"Port Modernization Phase 1 Begins","description":"The National Infrastructure Authority commenced Phase 1 of the coastal port upgrade, deploying 2,400 workers to expand container capacity by 35%.","kind":"action","importance":"major","notable":true,"playerRelated":true,"linkedActionID":"action-3-1","effectTarget":"BRA","effectTrack":"⟦ECO⟧","effectMagnitude":3,"effectSummary":"Infrastructure investment boosts economic resilience by 3.","hexLeverCode":"0x4D21F4","sovereigntyChange":null}
         2. World event unrelated to the player:
-           {"title":"OPEC Announces Supply Restructuring","description":"The Organization of Petroleum Exporting Countries agreed to reduce daily output by 2.1 million barrels, signaling tighter global energy markets.","kind":"world","importance":"major","notable":true,"playerRelated":false,"linkedActionID":null,"effectTarget":"GLOBAL","effectTrack":"market-confidence","effectMagnitude":-2,"effectSummary":"Energy supply tightening reduces global market confidence by 2.","hexLeverCode":"0xCD42D8","sovereigntyChange":null}
+           {"title":"OPEC Announces Supply Restructuring","description":"The Organization of Petroleum Exporting Countries agreed to reduce daily output by 2.1 million barrels, signaling tighter global energy markets.","kind":"world","importance":"major","notable":true,"playerRelated":false,"linkedActionID":null,"effectTarget":"GLOBAL","effectTrack":"⟦MKT⟧","effectMagnitude":-2,"effectSummary":"Energy supply tightening reduces global market confidence by 2.","hexLeverCode":"0xCD42D8","sovereigntyChange":null}
         """
     }
 
@@ -452,7 +455,7 @@ class NativeOpenRouterService: NativeZAIService {
         return """
         Round: \(state.round) | Date: \(state.gameDate)
         Stability: \(state.stability)/100 | Tension: \(state.worldTension)/100
-        Capacity: \(state.administrativeCapacity)/100
+        Capacity: \(state.administrativeCapacity)/120
         Objectives:
         \(objectives.isEmpty ? "None." : objectives)
         Recent events:
@@ -472,17 +475,9 @@ class NativeOpenRouterService: NativeZAIService {
         repairInstruction: String?
     ) -> String {
         let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        let plannedActions = Array(state.plannedActions.filter { $0.status == .planned }.prefix(3))
-        let actionLines = plannedActions.isEmpty
-            ? "No player orders queued."
-            : plannedActions.enumerated().map { index, action in
-                let sovereignty = action.sovereigntyChange.map {
-                    "sovereignty=\($0.kind.rawValue),name=\($0.name),regions=\($0.regionIDs),sources=\($0.sourceCodes),target=\($0.targetCode)"
-                } ?? "sovereignty=none"
-                return "\(index + 1). id=\(action.id); kind=\(action.decisionKind); cost=\(action.administrativeCost); targetCountry=\(action.targetCountryCode ?? "none"); targetRegion=\(action.targetRegionID ?? "none"); \(sovereignty); title=\(action.title); detail=\(action.detail)"
-            }.joined(separator: "\n")
+        let plannedActions = Array(state.plannedActions.filter { $0.status == .planned }.prefix(NativeDecisionMatrixContract.maximumOrdersPerTurn))
+        let actionLines = openRouterOrderLines(plannedActions)
         let recentEvents = state.timeline.prefix(3).map { "- \($0.date): \($0.title)" }.joined(separator: "\n")
-        let ledger = state.economicLedger
         let repairBlock = repairInstruction.map {
             "\nRepair instruction from validator:\n\($0)"
         } ?? ""
@@ -490,8 +485,7 @@ class NativeOpenRouterService: NativeZAIService {
         return """
         Resolve player action consequences for one SwiftHistoria turn.
         Country: \(state.country.name) (\(state.country.code)) | Round: \(state.round) | Date: \(state.gameDate) → \(targetDate)
-        Ledger: growth=\(ledger.realGrowthPercent)%, inflation=\(ledger.inflationPercent)%, budget=\(String(format: "%.1f", ledger.budgetBalancePercentGDP))%, security=\(String(format: "%.0f", ledger.securityIndex))/100
-        Capacity: \(state.administrativeCapacity)/100
+        \(openRouterMechanicsContext(for: state))
         Player orders to resolve:
         \(actionLines)
         Recent events: \(recentEvents.isEmpty ? "None." : recentEvents)
@@ -506,13 +500,13 @@ class NativeOpenRouterService: NativeZAIService {
             {
               "title": "Short news headline.",
               "description": "Concrete 1-2 sentence description.",
-              "kind": "domestic or economy",
-              "importance": "minor, major, or critical",
+              "kind": "action, diplomacy, or economy",
+              "importance": "minor, major, or severe",
               "notable": true,
               "playerRelated": true,
               "linkedActionID": "action-id-from-orders-above-or-null",
               "effectTarget": "\(state.country.code)",
-              "effectTrack": "economic-resilience, market-confidence, diplomatic-leverage, internal-stability, world-tension, or security-anxiety",
+              "effectTrack": "⟦ECO⟧|⟦MKT⟧|⟦STB⟧|⟦SEC⟧|⟦DIP⟧|⟦MIL⟧|⟦TNS⟧",
               "effectMagnitude": -3,
               "effectSummary": "Concise game mechanics effect.",
               "hexLeverCode": null,
@@ -522,22 +516,23 @@ class NativeOpenRouterService: NativeZAIService {
         }
         Produce 1 event per queued player order. If no orders, produce 1 domestic planning event.
         If an order includes structured sovereignty metadata, copy it exactly into that order's event sovereigntyChange. Do not create sovereigntyChange for any other order.
-        Valid "effectTrack" values: economic-resilience, market-confidence, diplomatic-leverage, internal-stability, world-tension, security-anxiety.
-        Valid "importance" values: minor, major, critical.
+        \(NativeStrategicTrack.mechanicCodebookPrompt)
+        Valid "kind" values: action, diplomacy, economy. Valid "importance" values: minor, major, severe.
+        Each event's effectTrack code must correspond to one of its linked order's mechanicTracks. Preserve exact linkedActionID, target, and structured sovereignty metadata from that order.
         """
     }
 
     private func makeWorldEventOnlyPrompt(
         for state: NativeCampaignState,
-        months _: Int
+        months: Int
     ) -> String {
-        let ledger = state.economicLedger
+        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
         let recentEvents = state.timeline.prefix(3).map { "- \($0.date): \($0.title)" }.joined(separator: "\n")
 
         return """
         Generate world events for one SwiftHistoria turn.
-        Country: \(state.country.name) (\(state.country.code)) | Round: \(state.round) | Tension: \(state.worldTension)/100
-        Ledger: growth=\(ledger.realGrowthPercent)%, security=\(String(format: "%.0f", ledger.securityIndex))/100, rebels=\(String(format: "%.1f", ledger.rebelControlPercent))%
+        Country: \(state.country.name) (\(state.country.code)) | Round: \(state.round) | Period: \(state.gameDate) → \(targetDate)
+        \(openRouterMechanicsContext(for: state))
         Recent events: \(recentEvents.isEmpty ? "None." : recentEvents)
         Already-used event titles: \(state.timeline.prefix(4).map(\.title).joined(separator: "; "))
         Return one strict JSON object only. No markdown fences or prose.
@@ -551,12 +546,12 @@ class NativeOpenRouterService: NativeZAIService {
               "title": "Short world news headline.",
               "description": "Concrete 1-2 sentence description.",
               "kind": "world or economy",
-              "importance": "minor, major, or critical",
+              "importance": "minor, major, or severe",
               "notable": true,
               "playerRelated": false,
               "linkedActionID": null,
               "effectTarget": "GLOBAL or country code",
-              "effectTrack": "economic-resilience, market-confidence, diplomatic-leverage, internal-stability, world-tension, or security-anxiety",
+              "effectTrack": "⟦ECO⟧|⟦MKT⟧|⟦STB⟧|⟦SEC⟧|⟦DIP⟧|⟦MIL⟧|⟦TNS⟧",
               "effectMagnitude": -2,
               "effectSummary": "Concise game mechanics effect.",
               "hexLeverCode": null,
@@ -565,8 +560,39 @@ class NativeOpenRouterService: NativeZAIService {
           ]
         }
         Produce 1-2 world events unrelated to the player.
-        Valid "effectTrack" values: economic-resilience, market-confidence, diplomatic-leverage, internal-stability, world-tension, security-anxiety.
-        Valid "importance" values: minor, major, critical.
+        \(NativeStrategicTrack.mechanicCodebookPrompt)
+        Valid "kind" values: economy, world. Valid "importance" values: minor, major, severe.
+        World events must have linkedActionID=null, playerRelated=false, and sovereigntyChange=null. effectTarget must be GLOBAL or an existing country code from the mechanics context.
+        """
+    }
+
+    private func openRouterOrderLines(_ actions: [NativePlannedAction]) -> String {
+        guard !actions.isEmpty else { return "No player orders queued." }
+        return actions.enumerated().map { index, action in
+            let sovereignty = action.sovereigntyChange.map {
+                "{kind:\($0.kind.rawValue),name:\($0.name),regions:\($0.regionIDs),sources:\($0.sourceCodes),target:\($0.targetCode)}"
+            } ?? "null"
+            return "\(index + 1). id=\(action.id); kind=\(action.decisionKind); cost=\(action.administrativeCost); mechanicCodes=\(action.mechanicTracks.map(\.mechanicCode)); targetCountry=\(action.targetCountryCode ?? "none"); targetRegion=\(action.targetRegionID ?? "none"); sovereigntyChange=\(sovereignty); title=\(action.title); detail=\(action.detail)"
+        }.joined(separator: "\n")
+    }
+
+    private func openRouterMechanicsContext(for state: NativeCampaignState) -> String {
+        let ledger = state.economicLedger
+        let conflicts = state.regionConflicts.values.sorted { $0.regionID < $1.regionID }.prefix(6).map {
+            "\($0.regionID):owner=\($0.originalCountryCode),controller=\($0.controllerCode),mode=\($0.mode.rawValue),intensity=\($0.intensity)"
+        }.joined(separator: "; ")
+        let diplomacy = state.aiCountryStates.sorted { $0.key < $1.key }.prefix(12).map { code, ai in
+            "\(code):relation=\(ai.relationshipScores[state.country.code] ?? 0),doctrine=\(ai.doctrine.rawValue),agenda=\(ai.agendaProgress)%"
+        }.joined(separator: "; ")
+        return """
+        Mechanics snapshot (authoritative):
+        capacity=\(state.administrativeCapacity)/120; queueLimit=\(NativeDecisionMatrixContract.maximumOrdersPerTurn); stability=\(state.stability)/100; worldTension=\(state.worldTension)/100
+        government=\(ledger.governmentType); approval=\(String(format: "%.1f", ledger.publicApprovalPercent))%; nextElectionRound=\(ledger.nextElectionRound)
+        GDP=\(ledger.nominalGDPTrillions)T; growth=\(ledger.realGrowthPercent)%; inflation=\(ledger.inflationPercent)%; budget=\(String(format: "%.1f", ledger.budgetBalancePercentGDP))%; debt=\(String(format: "%.1f", ledger.publicDebtPercentGDP))%; trade=\(String(format: "%.1f", ledger.tradeBalancePercentGDP))%; unemployment=\(String(format: "%.1f", ledger.unemploymentPercent))%; fiscalSpace=\(ledger.fiscalSpaceIndex)/100; security=\(String(format: "%.0f", ledger.securityIndex))/100; rebels=\(String(format: "%.1f", ledger.rebelControlPercent))%
+        researchEra=\(state.techEra); researchPoints=\(state.researchPoints); units=\(state.militaryUnits.sorted { $0.key < $1.key })
+        conflicts=\(conflicts.isEmpty ? "none" : conflicts)
+        diplomacy=\(diplomacy.isEmpty ? "none" : diplomacy)
+        existingCountryCodes=\(NativeStrategyContextDatabase.strategicCountryCodes(for: state).filter { $0 != "GLOBAL" }.joined(separator: ","))
         """
     }
 }
@@ -752,9 +778,8 @@ private enum OpenRouterTurnParser {
         let eventID = "openrouter-unified-\(state.round)-\(index)"
         let kindText = (firstString(dictionary, keys: ["kind", "type"]) ?? "world").lowercased()
         let importanceText = (firstString(dictionary, keys: ["importance", "severity"]) ?? "minor").lowercased()
-        let trackText = (firstString(dictionary, keys: ["effectTrack", "track", "mechanic"]) ?? "economic-resilience")
+        let trackText = (firstString(dictionary, keys: ["effectTrack", "effectCode", "track", "mechanic"]) ?? "⟦ECO⟧")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
             .replacingOccurrences(of: "_", with: "-")
         let targetText = firstString(dictionary, keys: ["effectTarget", "target"]) ?? state.country.code
         let linkedActionID = firstString(dictionary, keys: ["linkedActionID", "linkedActionId", "actionID", "actionId"])
@@ -768,15 +793,15 @@ private enum OpenRouterTurnParser {
             magnitude: max(-5, min(5, intValue(dictionary["effectMagnitude"] ?? dictionary["magnitude"]) ?? 0)),
             summary: sanitizeFoundationModelText(effectSummary),
             target: sanitizeFoundationModelText(targetText == "PLAYER" ? state.country.code : targetText),
-            track: NativeStrategicTrack(rawValue: trackText) ?? .economicResilience
+            track: NativeStrategicTrack.decodeMechanicToken(trackText) ?? .economicResilience
         )
 
         return NativeCampaignEvent(
             date: eventDate,
             description: sanitizeFoundationModelText(description),
             id: eventID,
-            importance: importanceText == "critical" ? .severe : (importanceText == "major" ? .major : .minor),
-            kind: kindText == "economy" ? .economy : (kindText == "domestic" ? .action : .world),
+            importance: ["critical", "severe"].contains(importanceText) ? .severe : (importanceText == "major" ? .major : .minor),
+            kind: eventKind(kindText),
             linkedActionIDs: usableLinkedID.map { [$0] } ?? [],
             notable: boolValue(dictionary["notable"]) ?? true,
             playerRelated: playerRelated,
@@ -785,6 +810,15 @@ private enum OpenRouterTurnParser {
             hexLeverCode: firstString(dictionary, keys: ["hexLeverCode", "hexLever"]),
             sovereigntyChange: parsedOpenRouterSovereignty(dictionary["sovereigntyChange"] ?? dictionary["sovereignty_change"])
         )
+    }
+
+    private static func eventKind(_ value: String) -> NativeEventKind {
+        switch value {
+        case "action", "domestic": .action
+        case "diplomacy": .diplomacy
+        case "economy": .economy
+        default: .world
+        }
     }
 
     private static func firstString(_ dictionary: [String: Any], keys: [String]) -> String? {

@@ -139,4 +139,126 @@ final class NativeModuleTests: XCTestCase {
                           "GDP should decrease with negative growth")
         XCTAssertEqual(finalGDP, 9.85, accuracy: 0.01)
     }
+
+    // MARK: - Event briefing salience
+
+    func testEventBriefingCapsExpandedCardsAndPreservesCompleteLog() {
+        let routine = (0 ..< 10).map { index in
+            makeBriefingEvent(
+                id: "routine-\(index)",
+                importance: .minor,
+                kind: .world
+            )
+        }
+        let events = [
+            makeBriefingEvent(
+                id: "sovereignty",
+                importance: .major,
+                kind: .diplomacy,
+                sovereigntyChange: true
+            ),
+            makeBriefingEvent(
+                id: "critical",
+                importance: .severe,
+                kind: .crisis
+            ),
+            makeBriefingEvent(
+                id: "player-order",
+                importance: .major,
+                kind: .action,
+                playerRelated: true,
+                linkedActionIDs: ["order-1"]
+            )
+        ] + routine
+
+        let briefing = NativeEventBriefing.make(events: events, highlightLimit: 5)
+
+        XCTAssertEqual(briefing.highlights.count, 5)
+        XCTAssertEqual(briefing.additionalEvents.count, events.count - 5)
+        XCTAssertTrue(briefing.highlights.contains { $0.id == "critical" })
+        XCTAssertTrue(briefing.highlights.contains { $0.id == "player-order" })
+        XCTAssertTrue(briefing.highlights.contains { $0.id == "sovereignty" })
+        XCTAssertEqual(
+            Set((briefing.highlights + briefing.additionalEvents).map(\.id)),
+            Set(events.map(\.id))
+        )
+    }
+
+    func testEventBriefingBalancesNationAndGlobalSignals() {
+        let events = [
+            makeBriefingEvent(
+                id: "nation",
+                importance: .minor,
+                kind: .action,
+                playerRelated: true
+            ),
+            makeBriefingEvent(
+                id: "global",
+                importance: .minor,
+                kind: .world
+            ),
+            makeBriefingEvent(
+                id: "critical-global",
+                importance: .severe,
+                kind: .crisis
+            ),
+            makeBriefingEvent(
+                id: "major-global",
+                importance: .major,
+                kind: .world
+            )
+        ]
+
+        let briefing = NativeEventBriefing.make(events: events, highlightLimit: 3)
+
+        XCTAssertEqual(briefing.highlights.count, 3)
+        XCTAssertTrue(briefing.highlights.contains(where: \.playerRelated))
+        XCTAssertTrue(briefing.highlights.contains { !$0.playerRelated })
+        XCTAssertTrue(briefing.highlights.contains { $0.importance == .severe })
+        XCTAssertEqual(briefing.severeCount, 1)
+        XCTAssertEqual(briefing.majorCount, 1)
+        XCTAssertEqual(briefing.nationCount, 1)
+        XCTAssertEqual(briefing.globalCount, 3)
+    }
+
+    private func makeBriefingEvent(
+        id: String,
+        importance: NativeEventImportance,
+        kind: NativeEventKind,
+        playerRelated: Bool = false,
+        linkedActionIDs: [String] = [],
+        sovereigntyChange: Bool = false
+    ) -> NativeCampaignEvent {
+        NativeCampaignEvent(
+            date: "2026-07-01",
+            description: "A concrete geopolitical development produces visible consequences across the active campaign state.",
+            id: id,
+            importance: importance,
+            kind: kind,
+            linkedActionIDs: linkedActionIDs,
+            notable: importance != .minor,
+            playerRelated: playerRelated,
+            strategicEffects: [
+                NativeStrategicEffect(
+                    date: "2026-07-01",
+                    eventId: id,
+                    id: "\(id)-effect",
+                    magnitude: importance == .severe ? -5 : 1,
+                    summary: "The event changes a tracked strategic condition.",
+                    target: playerRelated ? "BRA" : "GLOBAL",
+                    track: .worldTension
+                )
+            ],
+            title: "Briefing event \(id)",
+            sovereigntyChange: sovereigntyChange
+                ? NativeSovereigntyChange(
+                    kind: .secession,
+                    name: "Test State",
+                    regionIDs: ["test-region"],
+                    sourceCodes: ["OLD"],
+                    targetCode: "NEW"
+                )
+                : nil
+        )
+    }
 }

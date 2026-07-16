@@ -101,7 +101,8 @@ extension NativeFoundationModelService {
         \(diplomacyLines.isEmpty ? "- No active diplomatic threads." : diplomacyLines)
 
         Current action/suggestion state:
-        pending planned actions \(pendingCount); visible suggestions \(suggestedCount).
+        administrative capacity \(state.administrativeCapacity)/120; pending planned actions \(pendingCount)/\(NativeDecisionMatrixContract.maximumOrdersPerTurn); visible suggestions \(suggestedCount).
+        Research: era \(state.techEra); points \(state.researchPoints); military units \(state.militaryUnits.sorted { $0.key < $1.key }).
         """
     }
 
@@ -110,7 +111,18 @@ extension NativeFoundationModelService {
     }
 
     private func mechanicsReminder() -> String {
-        "Mechanics checklist anchors: read the economic ledger, public security, insurgency pressure, map conflict, regionConflicts, diplomacy/global friction, and hexLeverCode rules where relevant; only event JSON may output hexLeverCode."
+        "Mechanics checklist anchors: read the economic ledger, public security, insurgency pressure, map conflict, regionConflicts, diplomacy/global friction, and hexLeverCode rules where relevant; only event JSON may output hexLeverCode. Narrative words never execute mechanics. Use exact codes ⟦ECO⟧ ⟦MKT⟧ ⟦STB⟧ ⟦SEC⟧ ⟦DIP⟧ ⟦MIL⟧ ⟦TNS⟧ in mechanic fields."
+    }
+
+    /// Keeps localized prose examples readable in source while ensuring the
+    /// actual model input demonstrates executable mechanic codes, not labels.
+    private func mechanicCodedJSONExamples(_ text: String) -> String {
+        NativeStrategicTrack.allCases.reduce(text) { result, track in
+            result.replacingOccurrences(
+                of: "\"effectTrack\":\"\(track.rawValue)\"",
+                with: "\"effectTrack\":\"\(track.mechanicCode)\""
+            )
+        }
     }
 
     private func recentContext(for state: NativeCampaignState) -> String {
@@ -198,7 +210,7 @@ extension NativeFoundationModelService {
         The period starts on \(state.gameDate) and ends on \(targetDate).
         \(repairLine(repairInstruction))
 
-        \(independentEventExamples(for: state.language))
+        \(mechanicCodedJSONExamples(independentEventExamples(for: state.language)))
 
         \(recentContext(for: state))
         """)
@@ -229,9 +241,9 @@ extension NativeFoundationModelService {
 
         Examples:
         [Example 1]
-        {"title":"China Secures Highland Resource Access","description":"China completes a transit corridor integration with neighboring highland districts, securing primary resource inputs to advance its mercantile doctrine.","kind":"world","importance":"major","notable":true,"effectTarget":"CHN","effectTrack":"economic-resilience","effectMagnitude":2,"effectSummary":"Corridor integration secures resource supply, raising economic resilience.","hexLeverCode":"0x120004"}
+        {"title":"China Secures Highland Resource Access","description":"China completes a transit corridor integration with neighboring highland districts, securing primary resource inputs to advance its mercantile doctrine.","kind":"world","importance":"major","notable":true,"effectTarget":"CHN","effectTrack":"⟦ECO⟧","effectMagnitude":2,"effectSummary":"Corridor integration secures resource supply, raising economic resilience.","hexLeverCode":"0x120004"}
         [Example 2]
-        {"title":"US Reinforces Pacific Maritime Security","description":"The United States deploys logistics units to Pacific trade corridors to counter competitor maritime pressure, reinforcing its collaborative defense doctrine.","kind":"world","importance":"major","notable":true,"effectTarget":"USA","effectTrack":"market-confidence","effectMagnitude":1,"effectSummary":"Logistics patrols stabilize maritime trade routes, bolstering confidence.","hexLeverCode":"0x0D0004"}
+        {"title":"US Reinforces Pacific Maritime Security","description":"The United States deploys logistics units to Pacific trade corridors to counter competitor maritime pressure, reinforcing its collaborative defense doctrine.","kind":"world","importance":"major","notable":true,"effectTarget":"USA","effectTrack":"⟦MKT⟧","effectMagnitude":1,"effectSummary":"Logistics patrols stabilize maritime trade routes, bolstering confidence.","hexLeverCode":"0x0D0004"}
 
         \(recentContext(for: state))
         """)
@@ -252,9 +264,9 @@ extension NativeFoundationModelService {
 
         Economic examples:
         [Example 1]
-        {"title":"Quarterly Fiscal Outlook Narrows","description":"The treasury office updates its revenue forecast after weaker customs intake and higher service commitments, trimming available fiscal space for the next planning period.","kind":"economy","importance":"major","notable":true,"effectTarget":"\(state.country.code)","effectTrack":"market-confidence","effectMagnitude":-1,"effectSummary":"A narrower budget balance weighs on market confidence and slows discretionary spending.","hexLeverCode":"0x0D0004"}
+        {"title":"Quarterly Fiscal Outlook Narrows","description":"The treasury office updates its revenue forecast after weaker customs intake and higher service commitments, trimming available fiscal space for the next planning period.","kind":"economy","importance":"major","notable":true,"effectTarget":"\(state.country.code)","effectTrack":"⟦MKT⟧","effectMagnitude":-1,"effectSummary":"A narrower budget balance weighs on market confidence and slows discretionary spending.","hexLeverCode":"0x0D0004"}
         [Example 2]
-        {"title":"Investment Pipeline Lifts Growth Estimate","description":"Regional finance agencies approve a sequenced capital pipeline that spreads costs over two budget cycles while improving logistics capacity for export sectors.","kind":"economy","importance":"minor","notable":false,"effectTarget":"\(state.country.code)","effectTrack":"economic-resilience","effectMagnitude":1,"effectSummary":"Phased investment preserves fiscal space while raising expected growth resilience.","hexLeverCode":"0x4D21F4"}
+        {"title":"Investment Pipeline Lifts Growth Estimate","description":"Regional finance agencies approve a sequenced capital pipeline that spreads costs over two budget cycles while improving logistics capacity for export sectors.","kind":"economy","importance":"minor","notable":false,"effectTarget":"\(state.country.code)","effectTrack":"⟦ECO⟧","effectMagnitude":1,"effectSummary":"Phased investment preserves fiscal space while raising expected growth resilience.","hexLeverCode":"0x4D21F4"}
 
         Current strategy database for this turn:
         \(NativeStrategyContextDatabase.promptPacket(for: state, months: months))
@@ -309,7 +321,7 @@ extension NativeFoundationModelService {
         The period starts on \(state.gameDate) and ends on \(targetDate).
         \(repairLine(repairInstruction))
 
-        \(actionEventExamples(for: state.language, countryCode: state.country.code))
+        \(mechanicCodedJSONExamples(actionEventExamples(for: state.language, countryCode: state.country.code)))
 
         \(hexLeverCodeInstruction())
 
@@ -363,7 +375,7 @@ extension NativeFoundationModelService {
 
         \(hexLeverCodeInstruction())
 
-        \(domesticEventExamples(for: state.language, countryCode: state.country.code))
+        \(mechanicCodedJSONExamples(domesticEventExamples(for: state.language, countryCode: state.country.code)))
 
         \(recentContext(for: state))
         """)
@@ -475,7 +487,8 @@ extension NativeFoundationModelService {
         The detail must include instrument, target agency or sector, timing, and expected game effect.
         The detail must name a bounded policy instrument, not a vague national goal.
         The rationale must explicitly name the primary affected mechanic, one connected secondary mechanic, and why this fits the current campaign objectives.
-        Output "primaryMechanic" and "secondaryMechanic" as separate JSON fields using these exact values: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, or world-tension. Do not embed these in the detail text.
+        \(NativeStrategicTrack.compactMechanicCodebookPrompt)
+        Output "primaryMechanic" and "secondaryMechanic" as separate JSON fields using exact codebook tokens. Do not embed mechanics only in the detail text.
         Prefer neutral terms like volatility, pressure, capacity gap, or opportunity when interpreting numeric effects.
 
         \(suggestionExamples(for: state.language))
@@ -500,7 +513,8 @@ extension NativeFoundationModelService {
         Each detail must include instrument, target agency or sector, timing, expected game effect, primary affected mechanic, and secondary mechanic.
         Each detail must name a bounded policy instrument, not a vague national goal.
         Each rationale must explain why the proposal fits the current campaign objectives and ledger/map/diplomacy context.
-        Each proposal must include "primaryMechanic" and "secondaryMechanic" as separate JSON fields using exact values: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, or world-tension.
+        \(NativeStrategicTrack.compactMechanicCodebookPrompt)
+        Each proposal must include "primaryMechanic" and "secondaryMechanic" as separate JSON fields using exact codebook tokens.
         Prefer neutral terms like volatility, pressure, capacity gap, or opportunity when interpreting numeric effects.
 
         \(suggestionExamples(for: state.language))
@@ -514,23 +528,23 @@ extension NativeFoundationModelService {
         case .portuguese:
             """
             [Example 1]
-            {"title":"Estabelecer Reservas Logísticas","detail":"Expandir buffers de armazenamento em pontos de trânsito regionais durante o próximo período.","primaryMechanic":"market-confidence","secondaryMechanic":"diplomatic-leverage","rationale":"O fortalecimento das margens de trânsito responde ao saldo comercial atual e reduz volatilidade na confiança do mercado.","urgency":"soon"}
+            {"title":"Estabelecer Reservas Logísticas","detail":"Expandir buffers de armazenamento em pontos de trânsito regionais durante o próximo período.","primaryMechanic":"⟦MKT⟧","secondaryMechanic":"⟦DIP⟧","rationale":"O fortalecimento das margens de trânsito responde ao saldo comercial atual e reduz volatilidade na confiança do mercado.","urgency":"soon"}
             [Example 2]
-            {"title":"Lançar Auditoria de Eficiência Energética","detail":"Contratar uma agência independente para auditar subestações regionais e publicar recomendações até o final do próximo período.","primaryMechanic":"economic-resilience","secondaryMechanic":"internal-stability","rationale":"A transparência da rede melhora resiliência econômica sem ocultar o custo fiscal de adaptação.","urgency":"immediate"}
+            {"title":"Lançar Auditoria de Eficiência Energética","detail":"Contratar uma agência independente para auditar subestações regionais e publicar recomendações até o final do próximo período.","primaryMechanic":"⟦ECO⟧","secondaryMechanic":"⟦STB⟧","rationale":"A transparência da rede melhora resiliência econômica sem ocultar o custo fiscal de adaptação.","urgency":"immediate"}
             """
         case .spanish:
             """
             [Example 1]
-            {"title":"Establecer Reservas Logísticas","detail":"Expandir buffers de almacenamiento en puntos de tránsito regionales durante el próximo período.","primaryMechanic":"market-confidence","secondaryMechanic":"diplomatic-leverage","rationale":"El fortalecimiento de los márgenes de tránsito responde al saldo comercial actual y reduce volatilidad en la confianza del mercado.","urgency":"soon"}
+            {"title":"Establecer Reservas Logísticas","detail":"Expandir buffers de almacenamiento en puntos de tránsito regionales durante el próximo período.","primaryMechanic":"⟦MKT⟧","secondaryMechanic":"⟦DIP⟧","rationale":"El fortalecimiento de los márgenes de tránsito responde al saldo comercial actual y reduce volatilidad en la confianza del mercado.","urgency":"soon"}
             [Example 2]
-            {"title":"Lanzar Auditoría de Eficiencia Energética","detail":"Contratar una agencia independiente para auditar subestaciones regionales y publicar recomendaciones antes del final del próximo período.","primaryMechanic":"economic-resilience","secondaryMechanic":"internal-stability","rationale":"La transparencia de la red mejora la resiliencia económica sin ocultar el costo fiscal de adaptación.","urgency":"immediate"}
+            {"title":"Lanzar Auditoría de Eficiencia Energética","detail":"Contratar una agencia independiente para auditar subestaciones regionales y publicar recomendaciones antes del final del próximo período.","primaryMechanic":"⟦ECO⟧","secondaryMechanic":"⟦STB⟧","rationale":"La transparencia de la red mejora la resiliencia económica sin ocultar el costo fiscal de adaptación.","urgency":"immediate"}
             """
         case .english:
             """
             [Example 1]
-            {"title":"Establish Logistics Reserves","detail":"Expand storage buffers at regional transit points over the next period.","primaryMechanic":"market-confidence","secondaryMechanic":"diplomatic-leverage","rationale":"Strengthening transit margins fits the current trade balance and reduces market-confidence volatility.","urgency":"soon"}
+            {"title":"Establish Logistics Reserves","detail":"Expand storage buffers at regional transit points over the next period.","primaryMechanic":"⟦MKT⟧","secondaryMechanic":"⟦DIP⟧","rationale":"Strengthening transit margins fits the current trade balance and reduces market-confidence volatility.","urgency":"soon"}
             [Example 2]
-            {"title":"Launch Energy Efficiency Audit","detail":"Commission an independent agency to audit regional substations and publish recommendations by end of next period.","primaryMechanic":"economic-resilience","secondaryMechanic":"internal-stability","rationale":"Grid transparency improves economic resilience while making the fiscal-space tradeoff visible.","urgency":"immediate"}
+            {"title":"Launch Energy Efficiency Audit","detail":"Commission an independent agency to audit regional substations and publish recommendations by end of next period.","primaryMechanic":"⟦ECO⟧","secondaryMechanic":"⟦STB⟧","rationale":"Grid transparency improves economic resilience while making the fiscal-space tradeoff visible.","urgency":"immediate"}
             """
         }
     }
@@ -556,6 +570,8 @@ extension NativeFoundationModelService {
         Use only board-game civic strategy: diplomacy, budgets, logistics, services, energy, trade, education, infrastructure, public security, insurgency pressure, map conflict, and resilience.
         Do not provide real-world operational instructions or unsafe tactical guidance.
         Treat the encoded campaign state as canon; never present post-start-date facts as if they already happened.
+        Label forecasts as forecasts. Do not claim that a proposal is queued, funded, enacted, or successful unless the stored state says so.
+        When recommending an order, check remaining administrative capacity, the three-order queue limit, its mechanic tracks, current objectives, and obvious ledger/map/diplomacy constraints.
 
         Selected polity: \(state.country.name) (\(state.country.code))
         Scenario: \(state.scenarioName)
@@ -598,6 +614,8 @@ extension NativeFoundationModelService {
         Do not provide real-world operational, unsafe tactical, monitoring, pressure, or evasion instructions.
         Never mention that you are an AI, a model, or a safety system.
         Treat the encoded campaign state as canon; never present post-start-date facts as if they already happened.
+        A chat reply is negotiation prose, not a state mutation. Never claim a treaty, transfer, alliance, ceasefire, or payment is finalized unless it already exists in stored campaign state.
+        Make acceptance, refusal, or a counteroffer consistent with the relationship score, counterpart doctrine, active agenda, and current economic/security constraints. State concrete conditions without inventing hidden resources.
 
         Current game state:
         Selected polity: \(state.country.name) (\(state.country.code))

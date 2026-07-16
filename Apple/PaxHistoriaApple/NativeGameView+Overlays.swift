@@ -44,7 +44,12 @@ struct SuggestionWarning: View {
 struct VictoryDefeatOverlay: View {
     let status: NativeVictoryStatus
     let scenarioName: String
+    let rivalName: String?
     let onExit: () -> Void
+
+    private var resolvedRivalName: String {
+        rivalName ?? "A rival power"
+    }
 
     var body: some View {
         ZStack {
@@ -58,10 +63,15 @@ struct VictoryDefeatOverlay: View {
                     .shadow(color: status == .won ? Color.neonTeal.opacity(0.4) : Color.softRed.opacity(0.4), radius: 10)
 
                 VStack(spacing: 8) {
-                    Text(status == .won ? "CAMPAIGN VICTORY ACHIEVED" : (status == .lostCollapse ? "NATION COLLAPSED" : "CAMPAIGN DEFEAT"))
+                    Text(status == .won
+                        ? "CAMPAIGN VICTORY ACHIEVED"
+                        : (status == .lostCollapse
+                            ? "NATION COLLAPSED"
+                            : (status == .lostRival ? "RIVAL VICTORY: \(resolvedRivalName.uppercased())" : "CAMPAIGN DEFEAT")))
                         .font(.system(.title2, design: .monospaced).weight(.bold))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
+                        .accessibilityIdentifier("native-terminal-title")
 
                     Text("Scenario: \(scenarioName)")
                         .font(.subheadline)
@@ -72,7 +82,9 @@ struct VictoryDefeatOverlay: View {
                     ? "Congratulations, Leader! Your administration has successfully met all scenario conditions and navigated the complex geopolitical landscape to achieve total victory."
                     : (status == .lostCollapse
                         ? "Sovereign Collapse: Civil order has broken down, and stability has hit zero. Your administration has been terminated."
-                        : "Campaign Defeat: The timeline has expired before you could meet all strategic scenario criteria."))
+                        : (status == .lostRival
+                            ? "Campaign Defeat: \(resolvedRivalName) completed the active scenario objectives before your administration secured its own victory."
+                            : "Campaign Defeat: The timeline has expired before you could meet all strategic scenario criteria.")))
                     .font(.body)
                     .foregroundStyle(.primary.opacity(0.8))
                     .multilineTextAlignment(.center)

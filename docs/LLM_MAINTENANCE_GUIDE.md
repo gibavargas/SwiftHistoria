@@ -60,7 +60,7 @@ Owns Apple Foundation Models prompts, structured JSON decoding, prompt clamping,
 
 `DynamicAIService`, `NativeNVIDIAService`, and `NativeOpenRouterService`
 
-Own external-provider dispatch. Keep NVIDIA NIM as the default primary and OpenRouter Free as its visible fallback across every AI surface. Do not add `max_tokens` or a local session budget to those two routes. Never put API keys in source, fixtures, logs, or documentation.
+Own external-provider dispatch. Keep NVIDIA NIM and OpenRouter Free as the only player-selectable routes, and route every AI surface strictly through the selected provider. Do not add a local session budget to those two routes. Never put API keys in source, fixtures, logs, or documentation.
 
 `NativeStrategyContextDatabase`
 
@@ -84,6 +84,10 @@ When adding a feature:
 4. If AI output is involved, update prompts and validation together.
 5. Add or update tests that assert the contract, not incidental UI text.
 6. Run focused tests.
+
+### Mechanic-code protocol
+
+AI prompts must teach and require the canonical tokens `⟦ECO⟧`, `⟦MKT⟧`, `⟦STB⟧`, `⟦SEC⟧`, `⟦DIP⟧`, `⟦MIL⟧`, and `⟦TNS⟧`. Never add a new prose-keyword execution path. Decode codes through `NativeStrategicTrack.decodeMechanicToken`, store typed `NativeStrategicTrack` values, and make `NativeGameEngine.validated` reject consequence tracks that are outside the linked order's code set. Legacy raw values may remain readable, but new AI output must use the code tokens.
 
 ## Async Safety Pattern
 

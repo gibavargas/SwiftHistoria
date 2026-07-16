@@ -81,7 +81,10 @@ struct ContentView: View {
             let environment = ProcessInfo.processInfo.environment
             let arguments = ProcessInfo.processInfo.arguments
             if environment["PAX_HISTORIA_UI_TEST_FAKE_AI"] == "1" || arguments.contains("--pax-historia-ui-test-fake-ai") {
-                return NativeCampaignStore(aiService: NativeUITestAIService())
+                let defaults = UserDefaults.standard
+                defaults.set(NativeAIProviderPreference.nvidia.rawValue, forKey: NativeAIProviderPreference.storageKey)
+                defaults.set("ui-test-nvidia-key", forKey: "NVIDIA_API_KEY")
+                return NativeCampaignStore(defaults: defaults, aiService: NativeUITestAIService())
             }
         #endif
 

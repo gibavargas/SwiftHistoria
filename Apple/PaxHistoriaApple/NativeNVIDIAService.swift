@@ -80,7 +80,9 @@ class NativeNVIDIAService: NativeZAIService {
                 maxTokens: 8000,
                 temperature: attempt == 1 ? 0.6 : (attempt == 2 ? 0.4 : 0.2),
                 responseFormat: "json_object",
-                thinkingEnabled: false
+                thinkingEnabled: false,
+                requestTimeout: 45,
+                retryLimit: 0
             )
 
             var suggestions = OpenRouterSuggestionParser.suggestions(from: rawResponse, state: state)
@@ -98,6 +100,10 @@ class NativeNVIDIAService: NativeZAIService {
             } catch {
                 lastFailure = error.localizedDescription
                 logger.warning("NVIDIA NIM decision matrix invalid count=\(suggestions.count, privacy: .public) attempt=\(attempt, privacy: .public): \(lastFailure, privacy: .public)")
+                if let tailored = try? NativeDecisionMatrixContract.aiTailoredPlayerMatrix(from: suggestions, state: state) {
+                    logger.info("NVIDIA NIM tailored the engine-owned legal matrix cells=\(tailored.count, privacy: .public)")
+                    return tailored
+                }
 
                 repairNote = """
 
@@ -117,7 +123,7 @@ class NativeNVIDIAService: NativeZAIService {
     /// sequential row/column indices. Simpler and more reliable than trying to
     /// interpret whatever the model returned.
     private func fixMatrixCoordinates(_ suggestions: [NativeSuggestedAction]) -> [NativeSuggestedAction] {
-        suggestions.enumerated().map { (idx, suggestion) -> NativeSuggestedAction in
+        suggestions.enumerated().map { idx, suggestion -> NativeSuggestedAction in
             var sug = suggestion
             sug.matrixRow = idx / 5
             sug.matrixColumn = idx % 5

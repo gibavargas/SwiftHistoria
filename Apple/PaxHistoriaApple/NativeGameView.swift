@@ -25,6 +25,7 @@ struct NativeGameView: View {
                 VictoryDefeatOverlay(
                     status: state.victoryStatus,
                     scenarioName: state.scenarioName,
+                    rivalName: NativeGameEngine.victoriousRivalName(in: state),
                     onExit: { store.exitToMainMenu() }
                 )
                 .transition(.opacity)

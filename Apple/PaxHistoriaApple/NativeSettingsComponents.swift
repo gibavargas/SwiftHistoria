@@ -2,16 +2,28 @@ import SwiftUI
 
 struct NativeSettingsPanel: View {
     @ObservedObject var store: NativeCampaignStore
-    @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderPreferenceRaw: String = NativeAIProviderPreference.nvidia.rawValue
     @AppStorage("NVIDIA_API_KEY") private var nvidiaApiKey: String = ""
     @AppStorage("OPENROUTER_API_KEY") private var openRouterApiKey: String = ""
-    @AppStorage("ZAI_API_KEY") private var zaiApiKey: String = ""
-    @AppStorage("ZAI_USE_CODING_ENDPOINT") private var zaiUseCodingEndpoint: Bool = false
     @AppStorage(NativeCampaignStore.tursoDatabaseURLKey) private var tursoDatabaseURL: String = ""
     @AppStorage(NativeCampaignStore.tursoAuthTokenKey) private var tursoAuthToken: String = ""
+    @State private var showAIConfiguration = false
+    @State private var showCloudMirror = false
+    @State private var showCampaignManagement = false
+    @State private var showScenarioLibrary = false
 
-    private var selectedAIProviderPreference: NativeAIProviderPreference {
-        NativeAIProviderPreference(rawValue: aiProviderPreferenceRaw) ?? .nvidia
+    private var aiProviderSelection: Binding<NativeAIProviderPreference> {
+        Binding(
+            get: { store.selectedAIProviderPreference },
+            set: { provider in
+                guard store.setAIProvider(provider) else { return }
+
+                Task {
+                    await store.checkAIStatus()
+                    guard store.selectedAIProviderPreference == provider else { return }
+                    await store.refreshSuggestedActions(force: true)
+                }
+            }
+        )
     }
 
     var body: some View {
@@ -61,209 +73,287 @@ struct NativeSettingsPanel: View {
                 }
 
                 NativeLanguagePicker(store: store, state: state)
-                NativeScenarioPicker(store: store)
+                DisclosureGroup(isExpanded: $showScenarioLibrary) {
+                    NativeScenarioPicker(store: store)
+                        .padding(.top, 8)
+                } label: {
+                    SettingsDisclosureLabel(
+                        title: "Scenario",
+                        detail: state.scenarioName,
+                        systemImage: "map",
+                        tint: Color.alertGold
+                    )
+                }
+                .accessibilityIdentifier("native-scenario-section")
                 NativeSaveSlotPicker(store: store)
                 NativeAIStatusPanel(readiness: state.aiReadiness, sessionTotalTokens: store.sessionTokenUsage.total)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("AI ROUTING")
-                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.alertGold)
-
-                    Picker("AI Route", selection: $aiProviderPreferenceRaw) {
-                        ForEach(NativeAIProviderPreference.allCases, id: \.rawValue) { provider in
-                            Text(provider.title).tag(provider.rawValue)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .accessibilityIdentifier("native-ai-provider-picker")
-                    .onChange(of: aiProviderPreferenceRaw) { _, _ in
-                        Task {
-                            await store.checkAIStatus()
-                            await store.refreshSuggestedActions(force: true)
-                        }
-                    }
-
-                    Text(selectedAIProviderPreference.subtitle)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    if selectedAIProviderPreference == .nvidia,
-                       nvidiaApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                       openRouterApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    {
-                        Label("Add an NVIDIA API key for the primary NVIDIA NIM route or an OpenRouter API key for its fallback.", systemImage: "exclamationmark.triangle")
-                            .font(.system(size: 11))
-                            .foregroundStyle(Color.alertGold)
-                            .fixedSize(horizontal: false, vertical: true)
-                    } else if selectedAIProviderPreference == .nvidia,
-                              nvidiaApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    {
-                        Label("No NVIDIA API key is saved. OpenRouter Free is currently the active fallback.", systemImage: "arrow.triangle.branch")
-                            .font(.system(size: 11))
-                            .foregroundStyle(Color.alertGold)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    if selectedAIProviderPreference == .openRouter, openRouterApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Label("OpenRouter is selected, but no API key is saved. Turn resolution, suggestions, advisor, and diplomacy requests will stay on OpenRouter and show a visible provider error until a key is saved.", systemImage: "exclamationmark.triangle")
-                            .font(.system(size: 11))
-                            .foregroundStyle(Color.alertGold)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    if selectedAIProviderPreference == .zai, zaiApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Label("Z.AI is selected, but no API key is saved. Turn resolution will fall back to Apple Foundation Models.", systemImage: "exclamationmark.triangle")
-                            .font(.system(size: 11))
-                            .foregroundStyle(Color.alertGold)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .padding(.vertical, 8)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("NVIDIA NIM // PRIMARY")
-                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.glowingCyan)
-
-                    SecureField("NVIDIA API Key (nvapi-...)", text: $nvidiaApiKey)
-                        .textFieldStyle(.roundedBorder)
-                        .accessibilityIdentifier("native-nvidia-api-key")
-
-                    Text("Primary inference route: minimaxai/minimax-m3, moonshotai/kimi-k2.6, and deepseek-ai/deepseek-v4-flash at NVIDIA NIM. Requests are balanced to prevent 429 rate limits.")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.vertical, 8)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("OPENROUTER FREE // FALLBACK")
-                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.neonTeal)
-
-                    SecureField("OpenRouter API Key", text: $openRouterApiKey)
-                        .textFieldStyle(.roundedBorder)
-                        .accessibilityIdentifier("native-openrouter-api-key")
-
-                    Text("Automatic fallback for the NVIDIA route and direct route when selected. Uses openrouter/free without an app-imposed completion-token cap.")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.vertical, 8)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Z.AI (GLM-5.1) CONFIGURATION")
-                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.glowingCyan)
-
-                    SecureField("Z.AI API Key", text: $zaiApiKey)
-                        .textFieldStyle(.roundedBorder)
-                        .accessibilityIdentifier("native-zai-api-key")
-
-                    Toggle("Use GLM Coding Endpoint", isOn: $zaiUseCodingEndpoint)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Text("Used when AI Provider is set to Z.AI. GLM lanes can run concurrently, with Apple Foundation Models as safety fallback if unavailable.")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.vertical, 8)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("TURSO SAVE MIRROR")
-                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.neonTeal)
-
-                    TextField("libsql://database-org.turso.io", text: $tursoDatabaseURL)
-                        .textFieldStyle(.roundedBorder)
-                        .textContentType(.URL)
-                        .disableAutocorrection(true)
-                        .accessibilityIdentifier("native-turso-database-url")
-
-                    SecureField("Turso database token", text: $tursoAuthToken)
-                        .textFieldStyle(.roundedBorder)
-                        .disableAutocorrection(true)
-                        .accessibilityIdentifier("native-turso-auth-token")
-
-                    Text("Optional. Campaign saves stay local for fast launches and are mirrored to Turso in the background when both fields are set.")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.vertical, 8)
-
-                Button {
-                    Task { await store.checkAIStatus() }
-                } label: {
-                    HStack {
-                        Image(systemName: "cpu")
-                        Text("POLL MODEL STATUS")
-                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                }
-                .buttonStyle(.bordered)
-                .accessibilityIdentifier("native-apple-status-check")
-
-                if state.gameMode == .ironman {
-                    HStack {
-                        Image(systemName: "lock.shield.fill")
-                            .foregroundStyle(Color.softRed)
-                        Text("AUTO-SAVE ONLY (IRON MAN)")
-                            .font(.system(.caption, design: .monospaced).weight(.bold))
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .background(Color.white.opacity(0.04))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                } else {
+                NativeSettingsSection(title: "Quick actions", systemImage: "bolt.fill", tint: Color.alertGold) {
                     Button {
-                        store.manualSaveCampaign()
+                        Task { await store.checkAIStatus() }
                     } label: {
-                        HStack {
-                            Image(systemName: "square.and.arrow.down")
-                            Text("SAVE CAMPAIGN")
-                                .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                        Label("Poll model status", systemImage: "cpu")
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("native-apple-status-check")
+
+                    if state.gameMode == .ironman {
+                        Label("Auto-save only (Iron Man)", systemImage: "lock.shield.fill")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.softRed)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(Color.softRed.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+                    } else {
+                        Button {
+                            store.manualSaveCampaign()
+                        } label: {
+                            Label("Save campaign", systemImage: "square.and.arrow.down")
+                                .frame(maxWidth: .infinity, minHeight: 44)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color.neonTeal.opacity(0.3))
+                        .accessibilityIdentifier("native-save-campaign")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color.neonTeal.opacity(0.3))
-                    .accessibilityIdentifier("native-save-campaign")
                 }
 
-                NativeCountrySwitchPanel(store: store, state: state)
-                NativeNewCountryPanel(store: store)
+                SettingsExpandableSection(
+                    isExpanded: $showAIConfiguration,
+                    accessibilityIdentifier: "native-ai-connection-section",
+                    title: "AI and connection",
+                    detail: "Strict NVIDIA or OpenRouter Free selection",
+                    systemImage: "cpu",
+                    tint: Color.glowingCyan
+                ) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("AI ROUTING")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.alertGold)
 
-                Button {
-                    store.exitToMainMenu()
+                        Picker("AI provider", selection: aiProviderSelection) {
+                            ForEach(NativeAIProviderPreference.allCases, id: \.rawValue) { provider in
+                                Text(provider.title).tag(provider)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("native-ai-provider-picker")
+
+                        Text(store.selectedAIProviderPreference.subtitle)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        if store.selectedAIProviderPreference == .nvidia,
+                           nvidiaApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        {
+                            Label("NVIDIA is selected, but no NVIDIA API key is saved. Requests will stay on NVIDIA and show a provider error.", systemImage: "exclamationmark.triangle")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Color.alertGold)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+
+                        if store.selectedAIProviderPreference == .openRouter, openRouterApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Label("OpenRouter Free is selected, but no API key is saved. Requests will stay on OpenRouter and show a provider error.", systemImage: "exclamationmark.triangle")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Color.alertGold)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .padding(.vertical, 8)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("NVIDIA API")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.glowingCyan)
+
+                        SecureField("NVIDIA API Key (nvapi-...)", text: $nvidiaApiKey)
+                            .textFieldStyle(.roundedBorder)
+                            .accessibilityIdentifier("native-nvidia-api-key")
+
+                        Text("Used only when NVIDIA is selected. MiniMax-M3, Kimi-K2.6, and DeepSeek-V4-Flash requests stay on NVIDIA.")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.vertical, 8)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("OPENROUTER FREE API")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.neonTeal)
+
+                        SecureField("OpenRouter API Key", text: $openRouterApiKey)
+                            .textFieldStyle(.roundedBorder)
+                            .accessibilityIdentifier("native-openrouter-api-key")
+
+                        Text("Used only when OpenRouter Free is selected. Requests use openrouter/free without an app-imposed completion-token cap.")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.vertical, 8)
+                }
+
+                DisclosureGroup(isExpanded: $showCloudMirror) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("TURSO SAVE MIRROR")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.neonTeal)
+
+                        TextField("libsql://database-org.turso.io", text: $tursoDatabaseURL)
+                            .textFieldStyle(.roundedBorder)
+                            .textContentType(.URL)
+                            .disableAutocorrection(true)
+                            .accessibilityIdentifier("native-turso-database-url")
+
+                        SecureField("Turso database token", text: $tursoAuthToken)
+                            .textFieldStyle(.roundedBorder)
+                            .disableAutocorrection(true)
+                            .accessibilityIdentifier("native-turso-auth-token")
+
+                        Text("Optional. Campaign saves stay local for fast launches and are mirrored to Turso in the background when both fields are set.")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.top, 8)
                 } label: {
-                    HStack {
-                        Image(systemName: "arrow.left.circle")
-                        Text("EXIT TO MAIN MENU")
-                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44)
+                    SettingsDisclosureLabel(
+                        title: "Cloud save mirror",
+                        detail: "Optional Turso recovery copy",
+                        systemImage: "externaldrive.badge.icloud",
+                        tint: Color.neonTeal
+                    )
                 }
-                .buttonStyle(.bordered)
-                .accessibilityIdentifier("native-exit-to-menu")
+                .accessibilityIdentifier("native-cloud-mirror-section")
 
-                Button(role: .destructive) {
-                    store.resetSelection()
-                } label: {
-                    HStack {
-                        Image(systemName: "flag.fill")
-                        Text("RESET & DELETE SAVE")
-                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                DisclosureGroup(isExpanded: $showCampaignManagement) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        NativeCountrySwitchPanel(store: store, state: state)
+                        NativeNewCountryPanel(store: store)
+
+                        Divider().background(Color.softRed.opacity(0.24))
+
+                        Text("Leaving or deleting changes the active campaign. Saves remain available unless you reset them.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        Button {
+                            store.exitToMainMenu()
+                        } label: {
+                            Label("Exit to main menu", systemImage: "arrow.left.circle")
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("native-exit-to-menu")
+
+                        Button(role: .destructive) {
+                            store.resetSelection()
+                        } label: {
+                            Label("Reset and delete save", systemImage: "trash")
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                        }
+                        .accessibilityIdentifier("native-change-country")
                     }
-                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .padding(.top, 8)
+                } label: {
+                    SettingsDisclosureLabel(
+                        title: "Campaign management",
+                        detail: "Country control, exit, and destructive actions",
+                        systemImage: "exclamationmark.shield",
+                        tint: Color.softRed
+                    )
                 }
-                .accessibilityIdentifier("native-change-country")
+                .accessibilityIdentifier("native-campaign-management-section")
+            }
+        }
+    }
+}
+
+private struct NativeSettingsSection<Content: View>: View {
+    let title: String
+    let systemImage: String
+    let tint: Color
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label(title.uppercased(), systemImage: systemImage)
+                .font(.system(.caption, design: .monospaced).weight(.bold))
+                .foregroundStyle(tint)
+            content
+        }
+        .padding(12)
+        .background(tint.opacity(0.045), in: RoundedRectangle(cornerRadius: 10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(tint.opacity(0.16), lineWidth: 1)
+        }
+    }
+}
+
+private struct SettingsDisclosureLabel: View {
+    let title: String
+    let detail: String
+    let systemImage: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: systemImage)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 22)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                    .foregroundStyle(.primary)
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 8)
+    }
+}
+
+private struct SettingsExpandableSection<Content: View>: View {
+    @Binding var isExpanded: Bool
+    let accessibilityIdentifier: String
+    let title: String
+    let detail: String
+    let systemImage: String
+    let tint: Color
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.16)) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.bold))
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                    SettingsDisclosureLabel(
+                        title: title,
+                        detail: detail,
+                        systemImage: systemImage,
+                        tint: tint
+                    )
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier(accessibilityIdentifier)
+            .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+
+            if isExpanded {
+                content
+                    .padding(.leading, 22)
             }
         }
     }

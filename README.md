@@ -1,7 +1,7 @@
 <h1 align="center">SwiftHistoria</h1>
 
 <div align="center">
-  <strong>A Swift-first, open-source historical strategy sandbox inspired by Pax Historia.</strong>
+  <strong>A Swift-native, open-source historical strategy sandbox for macOS and iOS.</strong>
 </div>
 
 <br />
@@ -19,8 +19,13 @@
   </a>
   <!-- Status -->
   <a href="#">
-    <img src="https://img.shields.io/badge/status-early%20development-orange.svg?style=flat-square"
-      alt="Early Development" />
+    <img src="https://img.shields.io/badge/status-active%20development-blue.svg?style=flat-square"
+      alt="Active Development" />
+  </a>
+  <!-- Platform -->
+  <a href="#">
+    <img src="https://img.shields.io/badge/platform-macOS%20%7C%20iOS-lightgrey.svg?style=flat-square"
+      alt="Platform: macOS / iOS" />
   </a>
 </div>
 
@@ -33,32 +38,54 @@
 
 ## Development Direction
 
-SwiftHistoria is being developed as a Swift-native Apple app in [`Apple/`](Apple/). The legacy React/Vite web app and Express server have been removed; new product work should land in the Swift-native implementation unless a task explicitly says otherwise.
+SwiftHistoria is a Swift-native Apple app in [`Apple/`](Apple/). The legacy React/Vite web app and Express server have been removed; all product work lands in the Swift-native implementation.
 
 For architectural orientation, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). For future AI coding agents, see [`docs/LLM_MAINTENANCE_GUIDE.md`](docs/LLM_MAINTENANCE_GUIDE.md).
-
-## AI Routing
-
-The default route is NVIDIA NIM (balancing [`minimaxai/minimax-m3`](https://build.nvidia.com/minimaxai/minimax-m3), [`moonshotai/kimi-k2.6`](https://build.nvidia.com/moonshotai/kimi-k2.6), and [`deepseek-ai/deepseek-v4-flash`](https://build.nvidia.com/deepseek-ai/deepseek-v4-flash) via round-robin) through its OpenAI-compatible inference endpoint:
-
-```text
-https://integrate.api.nvidia.com/v1/chat/completions
-```
-
-OpenRouter's `openrouter/free` route is the automatic fallback. The fallback is visible in progress and provider labels; it is not silently relabeled as NVIDIA. Configure `NVIDIA_API_KEY` and `OPENROUTER_API_KEY` in the native app's Settings or campaign setup screen. Never commit API keys.
-
-SwiftHistoria does not send `max_tokens` on the NVIDIA primary route or the OpenRouter fallback and does not enforce a session token budget. Provider-side context, output, rate, and trial-service limits still apply.
 
 ---
 
 ## ✨ Features
 
-- __interactive world map:__ watch territory, borders, and nations shift as history unfolds
-- __ai-generated events:__ dynamic events shaped by your decisions and the state of the world
-- __diplomacy:__ negotiate with AI-controlled nations through natural language chat
-- __ai advisor:__ consult your advisor for strategic guidance, economic analysis, and situation summaries
-- __scenarios:__ choose from a range of historical starting points and play as any nation
-- __self-hostable:__ run your own instance with your own AI backend completely offline
+- **Interactive world map:** watch territory, borders, and nations shift as history unfolds
+- **AI-generated events:** dynamic events shaped by your decisions and the state of the world
+- **Diplomacy:** negotiate with AI-controlled nations through natural language chat
+- **AI advisor:** consult your advisor for strategic guidance, economic analysis, and situation summaries
+- **Six scenarios:** choose from historical and future starting points — *Default*, *Fragmented Markets*, *Resilience Decade*, *Soviet Triumph*, *Pax Cybernetica*, *Solarpunk Dawn* — each with three canonical objectives
+- **Objective-driven victory:** every scenario exposes three visible objectives evaluated after each turn; rival nations can also win by completing multi-turn strategic agendas
+- **Self-hostable:** run your own instance with your own AI backend, completely offline
+
+---
+
+## 🤖 AI Routing
+
+Players choose **exactly one** external route in campaign setup or Settings:
+
+| Route | Models | Endpoint |
+|-------|--------|----------|
+| **NVIDIA NIM** | `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, `deepseek-ai/deepseek-v4-flash` (round-robin) | `https://integrate.api.nvidia.com/v1/chat/completions` |
+| **OpenRouter Free** | `openrouter/free` | OpenRouter |
+
+Routing is **strict** across all AI surfaces — turns, the decision matrix, advisor answers, and diplomacy. A missing key or provider failure stays on the selected route and is shown to the player; there is no silent fallback or hedged-request race. Configure `NVIDIA_API_KEY` and `OPENROUTER_API_KEY` in the native app's Settings or campaign setup screen. **Never commit API keys.**
+
+SwiftHistoria does not enforce a session token budget on either selectable route. Provider-side context, output, rate, and trial-service limits still apply.
+
+Campaign turns use one fixed cadence: **every turn advances the game clock by three months.**
+
+---
+
+## 🎯 Victory System
+
+Each scenario exposes three **canonical objectives** shown in the UI and evaluated after every deterministic turn mutation. A campaign is won when all three objectives are satisfied before the scenario deadline.
+
+Rivals can also win. A canonical, mapped AI actor must satisfy the active scenario objectives while completing three real multi-turn strategic agendas — opening ledger strength alone is not enough. Earned rival progress and the eventual winning country are persisted with tolerant defaults for older saves.
+
+Terminal states: `ongoing`, `won`, `lost-rival`, `lost-timeout`.
+
+---
+
+## 📊 Event Presentation
+
+The simulation and save archive retain **every event** — history is intentionally uncapped. Presentation is quieter by design: turn reports promote at most **five** salient events, the intelligence timeline promotes at most **eight**, and remaining records stay available in compact expandable archives. `NativeEventBriefing` owns that deterministic presentation-only ranking.
 
 ---
 
@@ -67,7 +94,7 @@ SwiftHistoria does not send `max_tokens` on the NVIDIA primary route or the Open
 ### Prerequisites
 
 - [Git](https://git-scm.com/)
-- Xcode with the macOS and iOS Simulator SDKs
+- Xcode 26 with the macOS and iOS Simulator SDKs
 
 ### Steps
 
@@ -102,11 +129,11 @@ brew install swiftlint swiftformat
 
 ### Tooling split
 
-| Concern               | Tool         | Config           | CI gate               |
-| --------------------- | ------------ | ---------------- | --------------------- |
-| Style / whitespace    | SwiftFormat  | [`.swiftformat`](.swiftformat)   | `swiftformat --lint` (strict) |
-| Semantic issues       | SwiftLint    | [`.swiftlint.yml`](.swiftlint.yml) | `swiftlint lint --strict`     |
-| Build + tests         | `xcodebuild` | —                | macOS / iOS-sim / test jobs    |
+| Concern            | Tool         | Config                        | CI gate                        |
+| ------------------ | ------------ | ----------------------------- | ------------------------------ |
+| Style / whitespace | SwiftFormat  | [`.swiftformat`](.swiftformat)   | `swiftformat --lint` (strict)  |
+| Semantic issues    | SwiftLint    | [`.swiftlint.yml`](.swiftlint.yml) | `swiftlint lint --strict`      |
+| Build + tests      | `xcodebuild` | —                             | macOS / iOS-sim / test jobs    |
 
 ### CI
 

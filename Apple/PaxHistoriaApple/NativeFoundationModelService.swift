@@ -13,6 +13,8 @@ enum NativePromptHarness {
     You are the game master for SwiftHistoria, a turn-based geopolitical strategy game.
     You narrate events like an experienced intelligence analyst covering global developments.
     Treat the current campaign state, selected scenario, start date, and stored mechanics as canon.
+    The deterministic game engine owns legality, costs, dates, targets, sovereignty transitions, and state mutation. Never invent or silently override those fields.
+    Distinguish observed stored facts from forecasts and recommendations. Advisor or diplomacy prose cannot itself change campaign state or finalize an agreement.
     Be specific: use real institutions and economic mechanisms only when supported by the campaign context; otherwise use plausible fictional civic agencies.
     Every event should read like a headline from a serious geopolitical intelligence briefing.
     Use concrete details: organizations, dates, economic indicators, and measurable game effects.
@@ -20,6 +22,7 @@ enum NativePromptHarness {
     Do not present post-start-date facts as already true unless they are stored in the campaign state.
     Follow the request's response-language instruction for all player-facing prose.
     Keep schema field names, enum values, identifiers, IDs, dates, and game tokens exactly as requested.
+    \(NativeStrategicTrack.mechanicCodebookPrompt)
     """
 
     static func clamped(_ value: String, characterLimit: Int = foundationCharacterLimit) -> String {
@@ -37,21 +40,14 @@ enum NativePromptHarness {
 
 enum NativeAIProviderPreference: String, CaseIterable {
     case nvidia
-    case appleFoundation
     case openRouter
-    case zai
 
     static let storageKey = "NATIVE_AI_PROVIDER_PREFERENCE"
-    static let nvidiaPrimaryMigrationKey = "NATIVE_AI_PROVIDER_NVIDIA_PRIMARY_MIGRATION_V1"
 
     static func migrateLegacyDefaultIfNeeded(defaults: UserDefaults = .standard) {
-        guard !defaults.bool(forKey: nvidiaPrimaryMigrationKey) else { return }
-
-        let savedValue = defaults.string(forKey: storageKey)
-        if savedValue == nil || savedValue == openRouter.rawValue {
-            defaults.set(nvidia.rawValue, forKey: storageKey)
-        }
-        defaults.set(true, forKey: nvidiaPrimaryMigrationKey)
+        let normalized = current(defaults: defaults)
+        guard defaults.string(forKey: storageKey) != normalized.rawValue else { return }
+        defaults.set(normalized.rawValue, forKey: storageKey)
     }
 
     var id: String {
@@ -61,31 +57,23 @@ enum NativeAIProviderPreference: String, CaseIterable {
     var title: String {
         switch self {
         case .nvidia: "NVIDIA NIM"
-        case .appleFoundation: "Apple Foundation"
-        case .openRouter: "OpenRouter"
-        case .zai: "Z.AI"
+        case .openRouter: "OpenRouter Free"
         }
     }
 
     var subtitle: String {
         switch self {
         case .nvidia:
-            "Primary: MiniMax-M3 / Kimi-K2.6 / DeepSeek-V4-Flash on NVIDIA NIM. Falls back visibly to OpenRouter Free when needed."
-        case .appleFoundation:
-            "Use Apple's on-device System Language Model. No external API key required."
+            "Use MiniMax-M3, Kimi-K2.6, and DeepSeek-V4-Flash through the NVIDIA API. Requests never switch providers automatically."
         case .openRouter:
-            "Use OpenRouter's unified Free Models Router directly. This is also the NVIDIA route's fallback."
-        case .zai:
-            "Use Z.AI GLM models first, then fall back to Apple if unavailable."
+            "Use OpenRouter's unified Free Models Router directly. Requests never switch providers automatically."
         }
     }
 
     var providerName: String {
         switch self {
-        case .nvidia: "NVIDIA NIM → OpenRouter"
-        case .appleFoundation: "Apple Foundation Models"
-        case .openRouter: "OpenRouter"
-        case .zai: "Z.AI"
+        case .nvidia: "NVIDIA NIM"
+        case .openRouter: "OpenRouter Free"
         }
     }
 
@@ -878,7 +866,7 @@ final class NativeFoundationModelService: NativeAIService {
           "importance": "minor or major",
           "notable": true,
           "effectTarget": "Target region, agency, sector, or external system",
-          "effectTrack": "economic-resilience, internal-stability, or market-confidence",
+          "effectTrack": "One exact code: ⟦ECO⟧, ⟦MKT⟧, ⟦STB⟧, ⟦SEC⟧, ⟦DIP⟧, ⟦MIL⟧, or ⟦TNS⟧",
           "effectMagnitude": 0,
           "effectSummary": "One concrete sentence explaining the mechanical consequence. No placeholder or draft text.",
           "hexLeverCode": "Optional 6-or-8-character hexadecimal lever code starting with 0x. Six nibbles represent Growth, Budget, Debt, Inflation, Trade, and Fiscal Space; optional seventh and eighth nibbles represent public-security delta and abstract map-control nudge.",
@@ -1044,25 +1032,10 @@ final class NativeFoundationModelService: NativeAIService {
     private func appleDraftStrategicTrack(from rawValue: String, playerRelated: Bool) -> NativeStrategicTrack {
         let normalized = sanitizeFoundationModelText(rawValue)
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-        if let track = NativeStrategicTrack(rawValue: normalized) {
+        if let track = NativeStrategicTrack.decodeMechanicToken(normalized) {
             return foundationVisibleTrack(track)
         }
-        if normalized.contains("stability") || normalized.contains("service") || normalized.contains("administr") {
-            return .internalStability
-        }
-        if normalized.contains("resilience") || normalized.contains("capacity") || normalized.contains("infrastructure") || normalized.contains("energy") {
-            return .economicResilience
-        }
-        if normalized.contains("relation") || normalized.contains("diplom") || normalized.contains("partner") {
-            return .diplomaticLeverage
-        }
-        if normalized.contains("friction") || normalized.contains("tension") || normalized.contains("external") {
-            return .worldTension
-        }
-        if normalized.contains("market") || normalized.contains("trade") || normalized.contains("confidence") || normalized.contains("logistics") {
-            return .marketConfidence
-        }
+        // Invalid protocol tokens do not gain mechanical meaning from prose.
         return playerRelated ? .economicResilience : .marketConfidence
     }
 
@@ -1133,8 +1106,8 @@ final class NativeFoundationModelService: NativeAIService {
         {
           "title": "Short imperative title for the civic proposal.",
           "detail": "Accept-ready board-game order with bounded instrument, generic agency or sector, timing, capacity fit, and intended game effect.",
-          "primaryMechanic": "One of: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, world-tension.",
-          "secondaryMechanic": "One of: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, world-tension.",
+          "primaryMechanic": "One exact mechanic code: ⟦ECO⟧, ⟦MKT⟧, ⟦STB⟧, ⟦SEC⟧, ⟦DIP⟧, ⟦MIL⟧, or ⟦TNS⟧.",
+          "secondaryMechanic": "One exact mechanic code different from primaryMechanic.",
           "rationale": "Why this civic proposal fits the current campaign state and objectives.",
           "urgency": "immediate, soon, or opportunistic"
         }

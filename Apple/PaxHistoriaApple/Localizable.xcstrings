@@ -7,14 +7,18 @@
     "..." : {
 
     },
-    "·" : {
-
-    },
-    "// %@ queued" : {
-
-    },
     "%@" : {
 
+    },
+    "%@  ·  ROUND %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  ·  ROUND %2$@"
+          }
+        }
+      }
     },
     "%@ · %@" : {
       "localizations" : {
@@ -109,9 +113,6 @@
     "%@ // STATUS" : {
 
     },
-    "%@ active" : {
-
-    },
     "%@ API Key" : {
 
     },
@@ -133,6 +134,16 @@
     },
     "%@ ORDERS" : {
 
+    },
+    "%@ queued · %@ remaining" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ queued · %2$@ remaining"
+          }
+        }
+      }
     },
     "%@/%@" : {
       "localizations" : {
@@ -196,7 +207,10 @@
     "+%@ more" : {
 
     },
-    "25 legal choices · Provider: %@" : {
+    "3 MONTHS" : {
+
+    },
+    "25 state-valid choices · Provider: %@" : {
 
     },
     "2010 COMMITMENTS" : {
@@ -395,6 +409,7 @@
       }
     },
     "Advance time" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -411,6 +426,7 @@
       }
     },
     "Advance time menu" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -427,6 +443,7 @@
       }
     },
     "ADVANCE TURN" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -569,6 +586,9 @@
     "AI ROUTING" : {
 
     },
+    "All queued orders resolve next turn" : {
+
+    },
     "ANALYZING CAMPAIGN TRACKS..." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -604,6 +624,7 @@
       }
     },
     "Apple Foundation" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -655,6 +676,7 @@
 
     },
     "AUTO-SAVE ONLY (IRON MAN)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -669,9 +691,6 @@
           }
         }
       }
-    },
-    "Automatic fallback for the NVIDIA route and direct route when selected. Uses openrouter/free without an app-imposed completion-token cap." : {
-
     },
     "AVAILABILITY:" : {
       "localizations" : {
@@ -858,6 +877,12 @@
         }
       }
     },
+    "Choose NVIDIA API or OpenRouter Free. The game uses only the selected route and shows its failures instead of switching providers." : {
+
+    },
+    "Choose one route. NVIDIA and OpenRouter Free never replace each other automatically." : {
+
+    },
     "Choose the nation you wish to direct in the simulator." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -892,6 +917,7 @@
       }
     },
     "CHRONOLOGICAL SIGNALS" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1101,6 +1127,9 @@
     "Cost %@" : {
 
     },
+    "COST %@" : {
+
+    },
     "Cost exceeds available administrative capacity." : {
 
     },
@@ -1157,6 +1186,9 @@
           }
         }
       }
+    },
+    "CRISIS DOSSIER" : {
+
     },
     "Current Occupier: %@ (%@)" : {
       "localizations" : {
@@ -1831,6 +1863,7 @@
       }
     },
     "Hide dossier" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1847,6 +1880,7 @@
       }
     },
     "Hide orders" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2051,6 +2085,9 @@
         }
       }
     },
+    "LATEST" : {
+
+    },
     "Latest event" : {
       "localizations" : {
         "es" : {
@@ -2066,6 +2103,9 @@
           }
         }
       }
+    },
+    "Leaving or deleting changes the active campaign. Saves remain available unless you reset them." : {
+
     },
     "Library" : {
       "localizations" : {
@@ -2335,6 +2375,9 @@
     "No decision matrix available." : {
 
     },
+    "No events match this filter." : {
+
+    },
     "No events yet" : {
       "localizations" : {
         "es" : {
@@ -2400,6 +2443,7 @@
       }
     },
     "No orders queued." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2479,13 +2523,7 @@
         }
       }
     },
-    "NVIDIA NIM // PRIMARY" : {
-
-    },
-    "NVIDIA NIM is primary by default; OpenRouter Free takes over visibly if the NVIDIA route is unavailable." : {
-
-    },
-    "NVIDIA NIM is the default primary route, with OpenRouter Free as its visible fallback. You can change this later in Settings." : {
+    "NVIDIA API" : {
 
     },
     "Ocean" : {
@@ -2536,7 +2574,7 @@
         }
       }
     },
-    "OPENROUTER FREE // FALLBACK" : {
+    "OPENROUTER FREE API" : {
 
     },
     "OpenRouter is selected, but no API key is saved. Turn resolution will fall back to Z.AI if configured, otherwise Apple Foundation Models." : {
@@ -2601,6 +2639,9 @@
         }
       }
     },
+    "ORDERS DECK" : {
+
+    },
     "Original Sovereign: %@ (%@)" : {
       "localizations" : {
         "en" : {
@@ -2643,6 +2684,12 @@
           }
         }
       }
+    },
+    "PAX HISTORIA" : {
+
+    },
+    "PAX HISTORIA · THE LIVING ATLAS" : {
+
     },
     "Plains" : {
       "localizations" : {
@@ -2713,6 +2760,7 @@
       }
     },
     "POLL MODEL STATUS" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2744,7 +2792,7 @@
         }
       }
     },
-    "Primary inference route: minimaxai/minimax-m3, moonshotai/kimi-k2.6, and deepseek-ai/deepseek-v4-flash at NVIDIA NIM. Requests are balanced to prevent 429 rate limits." : {
+    "PRIORITY SIGNALS" : {
 
     },
     "Projections of fiscal space, GDP growth, inflation, public debt, and trade balances across all major game polities. Selected policies dynamically trigger domestic and external adjustments." : {
@@ -2951,6 +2999,7 @@
       }
     },
     "RESET & DELETE SAVE" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2998,9 +3047,6 @@
         }
       }
     },
-    "Round %@" : {
-
-    },
     "ROUND %@" : {
 
     },
@@ -3021,6 +3067,7 @@
       }
     },
     "SAVE CAMPAIGN" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3187,7 +3234,7 @@
         }
       }
     },
-    "Select one or more cells from the matrix above." : {
+    "Select decisions from the matrix or write a custom order." : {
 
     },
     "Send" : {
@@ -3226,6 +3273,7 @@
       }
     },
     "Show dossier" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3434,6 +3482,7 @@
       }
     },
     "SWIFT HISTORIA COMMAND CENTER" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3535,6 +3584,12 @@
     "The campaign world stays intact. Current drafts clear, the active economic ledger changes to %@, and AI suggestions refresh for the new government." : {
 
     },
+    "THE LIVING ATLAS" : {
+
+    },
+    "The most consequential and decision-relevant signals are expanded. The complete period log is preserved below." : {
+
+    },
     "TIMELINE" : {
       "localizations" : {
         "es" : {
@@ -3622,6 +3677,7 @@
 
     },
     "Use Apple's on-device System Language Model. No external API key required." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3655,6 +3711,7 @@
       }
     },
     "Use Z.AI GLM models first, then fall back to Apple if unavailable." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3669,6 +3726,12 @@
           }
         }
       }
+    },
+    "Used only when NVIDIA is selected. MiniMax-M3, Kimi-K2.6, and DeepSeek-V4-Flash requests stay on NVIDIA." : {
+
+    },
+    "Used only when OpenRouter Free is selected. Requests use openrouter/free without an app-imposed completion-token cap." : {
+
     },
     "Used when AI Provider is set to OpenRouter. Routes through OpenRouter's unified Free Models Router (openrouter/free)." : {
       "extractionState" : "stale",
@@ -3688,6 +3751,7 @@
       }
     },
     "Used when AI Provider is set to Z.AI. GLM lanes can run concurrently, with Apple Foundation Models as safety fallback if unavailable." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3739,6 +3803,7 @@
       }
     },
     "Z.AI (GLM-5.1) CONFIGURATION" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3755,6 +3820,7 @@
       }
     },
     "Z.AI is selected, but no API key is saved. Turn resolution will fall back to Apple Foundation Models." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

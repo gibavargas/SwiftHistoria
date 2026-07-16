@@ -452,7 +452,8 @@ struct NativeWorldMap: View {
         scaleX: CGFloat,
         scaleY: CGFloat,
         selectedCountryCode: String?,
-        sectorsByCode: [String: Native2010MapSector]
+        sectorsByCode: [String: Native2010MapSector],
+        strategicRegionIDs: Set<String>
     ) {
         let occupierCode = state.regionOccupations[reg.id] ?? reg.countryCode
         let conflict = state.regionConflicts[reg.id]
@@ -515,7 +516,7 @@ struct NativeWorldMap: View {
         let relation = sectorRelation(code: occupierCode, playerCode: state.country.code, sectorsByCode: sectorsByCode)
         let relationStanceColor = relationColor(relation)
         let conflictLayerColor = conflict.map(conflictColor) ?? relationStanceColor.opacity(0.75)
-        let strategyLayerColor = state.mapArmies.contains { $0.currentRegionID == reg.id } || state.mapBuildings.contains { $0.regionID == reg.id }
+        let strategyLayerColor = strategicRegionIDs.contains(reg.id)
             ? Color.glowingCyan
             : relationStanceColor.opacity(0.45)
         let economyLayerColor = economyColor(for: state.economicLedgers[occupierCode])
@@ -688,6 +689,7 @@ struct NativeWorldMap: View {
         let armiesByRegion = Dictionary(grouping: state.mapArmies, by: \.currentRegionID)
         let buildingsByRegion = Dictionary(grouping: state.mapBuildings, by: \.regionID)
         let markerRegionIDs = Set(armiesByRegion.keys).union(buildingsByRegion.keys)
+        let showsFullStrategicPicture = selectedLayer == .strategy
 
         for regionID in markerRegionIDs.sorted() {
             guard let region = GeopoliticalMapData.regionByID[regionID],
@@ -696,6 +698,19 @@ struct NativeWorldMap: View {
 
             let armies = armiesByRegion[regionID, default: []]
             let buildings = buildingsByRegion[regionID, default: []]
+            let isPlayerAsset = armies.contains { $0.countryCode == state.country.code }
+                || buildings.contains { $0.ownerCountryCode == state.country.code }
+            let isActiveConflict = state.regionConflicts[regionID] != nil
+
+            // The relationship map is an orientation view. Showing every asset
+            // there quickly turns dense regions into an unreadable field of dots.
+            // Full asset detail is available deliberately on the Strategy layer;
+            // otherwise, reveal only the player's and active-conflict markers once
+            // the player has zoomed in far enough to act on them.
+            guard showsFullStrategicPicture || (zoomScale >= 1.75 && (isPlayerAsset || isActiveConflict)) else {
+                continue
+            }
+
             let center = CGPoint(x: region.center.x * scaleX, y: region.center.y * scaleY)
 
             if !buildings.isEmpty {
@@ -779,6 +794,7 @@ struct NativeWorldMap: View {
         }
 
         let selectedCountryCode = selectedRegionID.flatMap { GeopoliticalMapData.regionByID[$0]?.countryCode }
+        let strategicRegionIDs = Set(state.mapArmies.map(\.currentRegionID)).union(state.mapBuildings.map(\.regionID))
 
         // Draw countries / partitions
         for reg in GeopoliticalMapData.regions {
@@ -790,7 +806,8 @@ struct NativeWorldMap: View {
                 scaleX: scaleX,
                 scaleY: scaleY,
                 selectedCountryCode: selectedCountryCode,
-                sectorsByCode: sectorsByCode
+                sectorsByCode: sectorsByCode,
+                strategicRegionIDs: strategicRegionIDs
             )
         }
 
@@ -829,7 +846,7 @@ struct NativeWorldMap: View {
             }
         }
 
-        if selectedLayer == .strategy || zoomScale >= 1.2 {
+        if selectedLayer == .strategy || zoomScale >= 1.75 {
             drawStrategicMarkers(context: context, visibleRect: visibleRect, scaleX: scaleX, scaleY: scaleY)
         }
 
@@ -1134,10 +1151,11 @@ struct NativeWorldMap: View {
                             }
                         }
 
-                    // One synchronous, opaque renderer owns both the backdrop
-                    // and semantic geography. Mixing MTKView presentation with
-                    // SwiftUI Canvas caused visible idle-frame flicker on macOS.
-                    Canvas(opaque: true, colorMode: .nonLinear, rendersAsynchronously: false) { context, size in
+                    // Keep the expensive geography pass off the main actor. The
+                    // map has no idle animation, so asynchronous Canvas rendering
+                    // cannot create a stream of invalidations while the campaign
+                    // store is processing a turn.
+                    Canvas(opaque: true, colorMode: .nonLinear, rendersAsynchronously: true) { context, size in
                         context.fill(
                             Path(CGRect(origin: .zero, size: size)),
                             with: .color(Color(hex: "#b3b49a"))

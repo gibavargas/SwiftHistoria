@@ -363,6 +363,21 @@ struct NativeAdvisorPanel: View {
             }
             .fixedSize(horizontal: false, vertical: true)
 
+            if store.draftAdvisorQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                NativePromptStarterStrip(
+                    title: "Start with the live situation",
+                    prompts: [
+                        "What is the most urgent risk this turn?",
+                        "Which action best improves stability?",
+                        "Where should we spend limited capacity?"
+                    ],
+                    tint: Color.glowingCyan,
+                    accessibilityPrefix: "native-advisor-starter"
+                ) { prompt in
+                    store.draftAdvisorQuestion = prompt
+                }
+            }
+
             TextEditor(text: $store.draftAdvisorQuestion)
                 .font(.system(.body, design: .monospaced))
                 .standardTextEditorStyle(minHeight: 88)
@@ -398,7 +413,7 @@ struct NativeAdvisorPanel: View {
                     }
                 }
             } else {
-                Text("No messages yet.")
+                Label("Choose a prompt above or write your own briefing question.", systemImage: "text.bubble")
                     .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
@@ -461,6 +476,21 @@ struct NativeDiplomacyPanel: View {
                 }
                 .fixedSize(horizontal: false, vertical: true)
 
+                if store.draftDiplomaticMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    NativePromptStarterStrip(
+                        title: "Open with a clear proposal",
+                        prompts: [
+                            "Propose a trade resilience compact.",
+                            "Request a joint border-stability review.",
+                            "Offer technology sharing for critical infrastructure."
+                        ],
+                        tint: Color.neonTeal,
+                        accessibilityPrefix: "native-diplomacy-starter"
+                    ) { prompt in
+                        store.draftDiplomaticMessage = prompt
+                    }
+                }
+
                 Button {
                     Task { await store.sendDiplomaticMessage() }
                 } label: {
@@ -516,12 +546,53 @@ struct NativeDiplomacyPanel: View {
                         }
                     }
                 } else {
-                    Text("No messages yet.")
+                    Label("Draft a proposal above to begin a diplomatic thread.", systemImage: "bubble.left.and.bubble.right")
                         .font(.system(.callout, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
             }
         }
+    }
+}
+
+private struct NativePromptStarterStrip: View {
+    let title: String
+    let prompts: [String]
+    let tint: Color
+    let accessibilityPrefix: String
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(title, systemImage: "sparkles")
+                .font(.system(.caption, design: .monospaced).weight(.bold))
+                .foregroundStyle(tint)
+
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 8)], alignment: .leading, spacing: 8) {
+                ForEach(Array(prompts.enumerated()), id: \.offset) { index, prompt in
+                    Button {
+                        onSelect(prompt)
+                    }
+                    label: {
+                        Text(prompt)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(tint.opacity(0.75))
+                    .font(.caption)
+                    .accessibilityIdentifier("\(accessibilityPrefix)-\(index)")
+                }
+            }
+        }
+        .padding(10)
+        .background(tint.opacity(0.055), in: RoundedRectangle(cornerRadius: 10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(tint.opacity(0.22), lineWidth: 1)
+        }
+        .accessibilityIdentifier("\(accessibilityPrefix)-strip")
     }
 }
 
@@ -704,7 +775,7 @@ struct NativeTreatyStackPanel: View {
 
 struct NativeEventsPanel: View {
     let state: NativeCampaignState?
-    @State private var collapsedMinorEvents = true
+    @State private var showsAdditionalEvents = false
     @State private var selectedFilter: NativeEventFilter = .all
 
     var body: some View {
@@ -726,67 +797,60 @@ struct NativeEventsPanel: View {
                 // Filter pills
                 NativeEventFilterBar(selectedFilter: $selectedFilter, state: state)
 
-                // Compute filtered events once, then partition by severity
+                // Keep the archive complete while promoting only a small,
+                // balanced set of signals to full-size cards.
                 let filtered = state.timeline.filter { selectedFilter.matches($0) }
-                let severe = filtered.filter { $0.importance == .severe }.prefix(10).map(\.self)
-                let major = filtered.filter { $0.importance == .major }.prefix(15).map(\.self)
-                let minor = filtered.filter { $0.importance == .minor }.prefix(30).map(\.self)
+                let briefing = NativeEventBriefing.make(events: filtered, highlightLimit: 8)
 
-                // Critical events always visible
-                if !severe.isEmpty {
+                if filtered.isEmpty {
+                    Text("No events match this filter.")
+                        .font(.system(.callout, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                } else {
+                    NativeEventDigestStrip(
+                        briefing: briefing,
+                        accessibilityIdentifier: "native-timeline-event-digest"
+                    )
+
                     VStack(alignment: .leading, spacing: 12) {
-                        Label("CRITICAL SITUATIONS", systemImage: "exclamationmark.triangle.fill")
+                        Label("Priority signals", systemImage: "scope")
                             .font(.system(.subheadline, design: .monospaced).weight(.bold))
-                            .foregroundStyle(Color.softRed)
-                            .tracking(1.0)
+                            .foregroundStyle(Color.iceBlue)
 
-                        ForEach(severe) { event in
+                        ForEach(briefing.highlights) { event in
                             EventCard(event: event)
                         }
                     }
-                }
 
-                // Major events always visible
-                if !major.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if !severe.isEmpty {
-                            Divider().background(Color.white.opacity(0.08))
-                        }
-                        Label("Major Developments", systemImage: "chart.line.downtrend.xyaxis")
-                            .font(.system(.callout, design: .monospaced).weight(.bold))
-                            .foregroundStyle(Color.alertGold)
-
-                        ForEach(major) { event in
-                            EventCard(event: event)
-                        }
-                    }
-                }
-
-                // Minor events collapsible
-                if !minor.isEmpty {
-                    DisclosureGroup(
-                        isExpanded: Binding(
-                            get: { !collapsedMinorEvents },
-                            set: { collapsedMinorEvents = !$0 }
-                        )
-                    ) {
-                        LazyVStack(spacing: 12) {
-                            ForEach(minor) { event in
-                                EventCard(event: event)
+                    if !briefing.additionalEvents.isEmpty {
+                        DisclosureGroup(isExpanded: $showsAdditionalEvents) {
+                            LazyVStack(spacing: 8) {
+                                ForEach(briefing.additionalEvents) { event in
+                                    NativeCompactEventRow(event: event)
+                                }
                             }
-                        }
-                    } label: {
-                        Label("Routine updates (\(minor.count))", systemImage: "doc.text")
+                            .padding(.top, 10)
+                        } label: {
+                            Label(
+                                "Additional timeline records (\(briefing.additionalEvents.count))",
+                                systemImage: "archivebox"
+                            )
                             .font(.system(.callout, design: .monospaced).weight(.semibold))
                             .foregroundStyle(.secondary)
+                        }
+                        .padding(12)
+                        .background(Color.white.opacity(0.035), in: RoundedRectangle(cornerRadius: 10))
+                        .accessibilityIdentifier("native-timeline-additional-events")
                     }
-                    .padding(.top, minor.isEmpty ? 0 : 8)
                 }
             } else {
                 Text("No events yet.")
                     .font(.system(.callout, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
+        }
+        .onChange(of: selectedFilter) { _, _ in
+            showsAdditionalEvents = false
         }
     }
 

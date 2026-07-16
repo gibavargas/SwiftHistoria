@@ -311,6 +311,15 @@ enum NativeGameEngine {
             guard invalidLinks.isEmpty else {
                 throw NativeGameEngineError.invalidTurn("Event \(index + 1) linked to an unknown or already resolved action.")
             }
+            let linkedMechanicTracks = Set(state.plannedActions
+                .filter { event.linkedActionIDs.contains($0.id) }
+                .flatMap(\.mechanicTracks))
+            guard linkedMechanicTracks.isEmpty || event.strategicEffects.allSatisfy({ linkedMechanicTracks.contains($0.track) }) else {
+                let allowedCodes = linkedMechanicTracks.map(\.mechanicCode).sorted().joined(separator: ", ")
+                throw NativeGameEngineError.invalidTurn(
+                    "Event \(index + 1) used a mechanic outside its linked order codes. Allowed: \(allowedCodes)."
+                )
+            }
             guard event.strategicEffects.allSatisfy({
                 hasConcreteFoundationText($0.summary, minimumWords: 5) &&
                     !$0.target.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
@@ -1260,6 +1269,7 @@ enum NativeGameEngine {
             // New strategy fields
             administrativeCapacity: nextCapacity,
             victoryStatus: nextVictoryStatus,
+            rivalVictoryCountryCode: state.rivalVictoryCountryCode,
             activeOffers: state.activeOffers,
             budgetMilitarySlider: state.budgetMilitarySlider,
             budgetServicesSlider: state.budgetServicesSlider,
@@ -1270,41 +1280,28 @@ enum NativeGameEngine {
             militaryUnits: nextMilitaryUnits
         )
 
+        NativeStrategyContextDatabase.simulateAIDrift(state: &finalState, months: months)
+        finalState = BackgroundSimulationService.shared.simulatedTurn(finalState)
+
+        // Budget effects, elections, coups, AI agendas, and the background
+        // simulation all belong to this turn. Resolve victory only after those
+        // deterministic mutations so the terminal status matches the state the
+        // player actually receives.
         if finalState.victoryStatus == .ongoing {
-            finalState.victoryStatus = evaluateVictoryStatus(for: finalState)
-            if finalState.victoryStatus == .won {
-                let winEvent = NativeCampaignEvent(
-                    date: targetDate,
-                    description: "VICTORY: Your administration successfully achieved all objectives for scenario \(state.scenarioName)!",
-                    id: "victory-\(targetDate)",
-                    importance: .major,
-                    kind: .world,
-                    linkedActionIDs: [],
-                    notable: true,
-                    playerRelated: true,
-                    strategicEffects: [],
-                    title: "CAMPAIGN VICTORY ACHIEVED"
-                )
-                finalState.timeline.insert(winEvent, at: 0)
-            } else if finalState.victoryStatus == .lostTimeout {
-                let timeoutEvent = NativeCampaignEvent(
-                    date: targetDate,
-                    description: "DEFEAT: Time has run out. Your administration failed to meet the objectives by the deadline.",
-                    id: "timeout-\(targetDate)",
-                    importance: .severe,
-                    kind: .world,
-                    linkedActionIDs: [],
-                    notable: true,
-                    playerRelated: true,
-                    strategicEffects: [],
-                    title: "CAMPAIGN DEADLINE EXCEEDED"
-                )
-                finalState.timeline.insert(timeoutEvent, at: 0)
+            let evaluatedStatus = evaluateVictoryStatus(for: finalState)
+            if evaluatedStatus == .lostRival {
+                finalState.rivalVictoryCountryCode = victoriousRivalCode(in: finalState)
+            }
+            finalState.victoryStatus = evaluatedStatus
+            if let terminalEvent = terminalCampaignEvent(
+                for: finalState.victoryStatus,
+                state: finalState,
+                targetDate: targetDate
+            ) {
+                finalState.timeline.insert(terminalEvent, at: 0)
             }
         }
 
-        NativeStrategyContextDatabase.simulateAIDrift(state: &finalState, months: months)
-        finalState = BackgroundSimulationService.shared.simulatedTurn(finalState)
         finalState.semanticMemory = NativeStrategyContextDatabase.updatedSemanticMemory(
             state: finalState,
             events: Array(finalState.timeline.prefix(generatedEvents.count + 2))

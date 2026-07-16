@@ -1,6 +1,148 @@
 import MapKit
 import SwiftUI
 
+/// Presentation-only prioritization for campaign events.
+///
+/// The simulation and persisted timeline remain complete. This briefing only
+/// decides which signals deserve full cards and which belong in the compact,
+/// on-demand log so a busy world does not become a wall of equally loud text.
+struct NativeEventBriefing {
+    private struct RankedCandidate {
+        let event: NativeCampaignEvent
+        let offset: Int
+        let score: Int
+    }
+
+    let highlights: [NativeCampaignEvent]
+    let additionalEvents: [NativeCampaignEvent]
+    let totalCount: Int
+    let severeCount: Int
+    let majorCount: Int
+    let nationCount: Int
+    let globalCount: Int
+
+    static func make(
+        events: [NativeCampaignEvent],
+        highlightLimit: Int
+    ) -> NativeEventBriefing {
+        let limit = max(0, min(highlightLimit, events.count))
+        let candidateLimit = min(events.count, limit + 4)
+        var topCandidates: [RankedCandidate] = []
+        var strongest: RankedCandidate?
+        var strongestCrisis: RankedCandidate?
+        var strongestNationSignal: RankedCandidate?
+        var strongestGlobalSignal: RankedCandidate?
+        var severeCount = 0
+        var majorCount = 0
+        var nationCount = 0
+
+        func prefer(_ candidate: RankedCandidate, over current: RankedCandidate?) -> RankedCandidate {
+            guard let current else { return candidate }
+            return outranks(candidate, current) ? candidate : current
+        }
+
+        for (offset, event) in events.enumerated() {
+            let candidate = RankedCandidate(event: event, offset: offset, score: salience(of: event))
+            strongest = prefer(candidate, over: strongest)
+            if event.importance == .severe || event.kind == .crisis {
+                strongestCrisis = prefer(candidate, over: strongestCrisis)
+            }
+            if event.playerRelated || !event.linkedActionIDs.isEmpty {
+                strongestNationSignal = prefer(candidate, over: strongestNationSignal)
+            }
+            if !event.playerRelated {
+                strongestGlobalSignal = prefer(candidate, over: strongestGlobalSignal)
+            }
+
+            switch event.importance {
+            case .severe: severeCount += 1
+            case .major: majorCount += 1
+            case .minor: break
+            }
+            if event.playerRelated { nationCount += 1 }
+
+            guard candidateLimit > 0 else { continue }
+            let insertionIndex = topCandidates.firstIndex { outranks(candidate, $0) } ?? topCandidates.endIndex
+            topCandidates.insert(candidate, at: insertionIndex)
+            if topCandidates.count > candidateLimit {
+                topCandidates.removeLast()
+            }
+        }
+
+        var selectedIndices: Set<Int> = []
+        func ensure(_ candidate: RankedCandidate?) {
+            guard selectedIndices.count < limit, let candidate else { return }
+            selectedIndices.insert(candidate.offset)
+        }
+
+        // Reserve room for the perspectives a player needs, then fill from a
+        // bounded top-k list. This keeps unbounded campaign archives O(n * k)
+        // with k <= 12 instead of sorting the complete history every render.
+        ensure(strongest)
+        ensure(strongestCrisis)
+        ensure(strongestNationSignal)
+        ensure(strongestGlobalSignal)
+
+        for candidate in topCandidates where selectedIndices.count < limit {
+            selectedIndices.insert(candidate.offset)
+        }
+
+        let highlights = selectedIndices.map { offset in
+            RankedCandidate(event: events[offset], offset: offset, score: salience(of: events[offset]))
+        }
+        .sorted(by: outranks)
+        .map(\.event)
+        let additionalEvents = events.enumerated().compactMap { index, event in
+            selectedIndices.contains(index) ? nil : event
+        }
+
+        return NativeEventBriefing(
+            highlights: highlights,
+            additionalEvents: additionalEvents,
+            totalCount: events.count,
+            severeCount: severeCount,
+            majorCount: majorCount,
+            nationCount: nationCount,
+            globalCount: events.count - nationCount
+        )
+    }
+
+    private static func outranks(_ lhs: RankedCandidate, _ rhs: RankedCandidate) -> Bool {
+        if lhs.score == rhs.score {
+            // Timelines are newest-first, so equal signals retain recency.
+            return lhs.offset < rhs.offset
+        }
+        return lhs.score > rhs.score
+    }
+
+    private static func salience(of event: NativeCampaignEvent) -> Int {
+        let importanceScore = switch event.importance {
+        case .severe: 500
+        case .major: 220
+        case .minor: 0
+        }
+        let kindScore = switch event.kind {
+        case .crisis: 120
+        case .action: 35
+        case .diplomacy: 25
+        case .economy: 15
+        case .world: 0
+        }
+        let effectScore = min(
+            90,
+            event.strategicEffects.reduce(0) { result, effect in
+                result + min(abs(effect.magnitude), 12) * 5
+            }
+        )
+
+        return importanceScore + kindScore + effectScore
+            + (event.sovereigntyChange == nil ? 0 : 240)
+            + (event.linkedActionIDs.isEmpty ? 0 : 140)
+            + (event.playerRelated ? 100 : 0)
+            + (event.notable ? 70 : 0)
+    }
+}
+
 struct MetricCard: View {
     let title: String
     let value: String
@@ -230,12 +372,135 @@ struct EventCard: View {
         }
         .padding(14)
         .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 12)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("native-event-card-\(event.id)")
+    }
+}
+
+struct NativeEventDigestStrip: View {
+    let briefing: NativeEventBriefing
+    var accessibilityIdentifier = "native-event-digest"
+
+    var body: some View {
+        LazyVGrid(
+            columns: [GridItem(.adaptive(minimum: 118), spacing: 8)],
+            alignment: .leading,
+            spacing: 8
+        ) {
+            digestMetric(
+                value: briefing.totalCount,
+                label: "Signals",
+                systemImage: "waveform.path.ecg",
+                color: Color.iceBlue
+            )
+            digestMetric(
+                value: briefing.severeCount,
+                label: "Critical",
+                systemImage: "exclamationmark.triangle.fill",
+                color: briefing.severeCount > 0 ? Color.softRed : Color.secondary
+            )
+            digestMetric(
+                value: briefing.majorCount,
+                label: "Major",
+                systemImage: "star.fill",
+                color: Color.alertGold
+            )
+            digestMetric(
+                value: briefing.nationCount,
+                label: "Nation-linked",
+                systemImage: "building.columns.fill",
+                color: Color.glowingCyan
+            )
+            digestMetric(
+                value: briefing.globalCount,
+                label: "Global",
+                systemImage: "globe.americas.fill",
+                color: Color.neonTeal
+            )
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(accessibilityIdentifier)
+    }
+
+    private func digestMetric(
+        value: Int,
+        label: String,
+        systemImage: String,
+        color: Color
+    ) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .foregroundStyle(color)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(value)")
+                    .font(.system(.callout, design: .monospaced).weight(.black))
+                    .foregroundStyle(.primary)
+                Text(label)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(9)
+        .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+struct NativeCompactEventRow: View {
+    let event: NativeCampaignEvent
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Circle()
+                .fill(importanceColor)
+                .frame(width: 7, height: 7)
+                .padding(.top, 6)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(event.title)
+                        .font(.callout.weight(.bold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                    Spacer(minLength: 8)
+                    Text(event.importance.rawValue.uppercased())
+                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        .foregroundStyle(importanceColor)
+                }
+
+                Text("\(event.date) · \(event.kind.displayName)")
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundStyle(.secondary)
+
+                Text(event.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+        }
+        .padding(10)
+        .background(Color.white.opacity(0.035), in: RoundedRectangle(cornerRadius: 8))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("native-compact-event-\(event.id)")
+    }
+
+    private var importanceColor: Color {
+        switch event.importance {
+        case .severe: Color.softRed
+        case .major: Color.alertGold
+        case .minor: Color.iceBlue.opacity(0.72)
+        }
     }
 }
 
 struct NativeTurnReportView: View {
     let report: NativeGeneratedTurn
     let onDismiss: () -> Void
+    @State private var showsAdditionalSignals = false
+
+    private var briefing: NativeEventBriefing {
+        NativeEventBriefing.make(events: report.events, highlightLimit: 5)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -334,9 +599,11 @@ struct NativeTurnReportView: View {
                         .glassmorphicCard(borderColor: Color.white.opacity(0.08), cornerRadius: 12)
                     }
 
-                    // Events List
+                    // A concise briefing comes first; the complete log remains
+                    // available without making every autonomous action compete
+                    // for the player's attention.
                     VStack(alignment: .leading, spacing: 14) {
-                        Text("CHRONOLOGICAL SIGNALS")
+                        Text("PRIORITY SIGNALS")
                             .font(.system(.subheadline, design: .monospaced).weight(.bold))
                             .foregroundStyle(Color.iceBlue)
                             .tracking(1.5)
@@ -346,10 +613,44 @@ struct NativeTurnReportView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         } else {
+                            NativeEventDigestStrip(
+                                briefing: briefing,
+                                accessibilityIdentifier: "native-report-event-digest"
+                            )
+
+                            Text("The most consequential and decision-relevant signals are expanded. The complete period log is preserved below.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+
                             VStack(spacing: 14) {
-                                ForEach(report.events) { event in
+                                ForEach(briefing.highlights) { event in
                                     EventCard(event: event)
                                 }
+                            }
+
+                            if !briefing.additionalEvents.isEmpty {
+                                DisclosureGroup(isExpanded: $showsAdditionalSignals) {
+                                    LazyVStack(spacing: 8) {
+                                        ForEach(briefing.additionalEvents) { event in
+                                            NativeCompactEventRow(event: event)
+                                        }
+                                    }
+                                    .padding(.top, 10)
+                                } label: {
+                                    Label(
+                                        "Additional signals (\(briefing.additionalEvents.count))",
+                                        systemImage: "tray.full"
+                                    )
+                                    .font(.system(.callout, design: .monospaced).weight(.bold))
+                                    .foregroundStyle(Color.alertGold)
+                                }
+                                .padding(12)
+                                .background(
+                                    Color.alertGold.opacity(0.055),
+                                    in: RoundedRectangle(cornerRadius: 10)
+                                )
+                                .accessibilityIdentifier("native-report-additional-signals")
                             }
                         }
                     }

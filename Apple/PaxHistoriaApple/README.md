@@ -34,7 +34,7 @@ Calls Apple Foundation Models on supported systems. It slices turn generation in
 
 `DynamicAIService.swift`, `NativeNVIDIAService.swift`, and `NativeOpenRouterService.swift`
 
-Own external-provider routing. NVIDIA NIM (hosting `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, and `deepseek-ai/deepseek-v4-flash` in round-robin) is the default primary route; OpenRouter Free is its visible fallback for turns, the 5×5 decision matrix, advisor answers, and diplomacy. Z.AI and Apple Foundation Models remain explicit alternate choices.
+Own strict external-provider routing. The player selects NVIDIA NIM (hosting `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, and `deepseek-ai/deepseek-v4-flash` in round-robin) or OpenRouter Free. Every AI surface stays on that selected route and exposes failures without switching providers.
 
 `NativeStrategyContextDatabase.swift`
 
@@ -61,13 +61,19 @@ Views should not patch `NativeCampaignState` directly. If a UI needs a new actio
 
 ## Generated Turn Flow
 
-1. `NativeCampaignStore.advance(months:)` captures the current `stateVersion`.
-2. `DynamicAIService` calls NVIDIA NIM first and uses OpenRouter Free if the NVIDIA route is unavailable, unless the player explicitly selected another provider.
+1. `NativeCampaignStore.advance()` captures the current `stateVersion` and applies the fixed three-month cadence.
+2. `DynamicAIService` calls only the NVIDIA or OpenRouter Free route selected by the player.
 3. `NativeGameEngine.validated` rejects incoherent drafts.
 4. `NativeGameEngine.apply` mutates deterministic state.
 5. The store persists and then refreshes suggestions.
 
 The validation and application steps are separate by design. Validation explains why a generated turn cannot be used; application assumes a turn has already been accepted and focuses on deterministic state transitions.
+
+## Victory And Event Presentation
+
+`NativeGameEngine.campaignObjectives` is the canonical player-victory contract shown in the UI and evaluated after every deterministic turn mutation. Rival strength at campaign creation is not an automatic win: a canonical, mapped AI actor must satisfy the active scenario objectives while completing three real multi-turn strategic agendas. Earned rival progress and the eventual winning country are persisted with tolerant defaults for older saves.
+
+The simulation and save archive retain every event. Presentation is intentionally quieter: turn reports promote at most five salient events, the intelligence timeline promotes at most eight, and the remaining records stay available in compact expandable archives. `NativeEventBriefing` owns that deterministic presentation-only ranking.
 
 ## Conflict And Map Mechanics
 
@@ -102,10 +108,10 @@ Persistent campaign history is intentionally uncapped. Do not trim timelines, wo
 
 ## AI Notes
 
-The default external route calls `https://integrate.api.nvidia.com/v1/chat/completions` balancing requests between `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, and `deepseek-ai/deepseek-v4-flash` via round-robin, with temperature `1.0` (for DeepSeek) or `0.6` (for others) and top-p `0.95`/`0.90`. OpenRouter Free (`openrouter/free`) is the fallback. Both routes omit `max_tokens`, so the app adds no completion-token cap or session budget; provider-side technical and account limits still apply.
+The NVIDIA choice calls `https://integrate.api.nvidia.com/v1/chat/completions`, balancing requests between `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, and `deepseek-ai/deepseek-v4-flash` via round-robin, with temperature `1.0` (for DeepSeek) or `0.6` (for others) and top-p `0.95`/`0.90`. The OpenRouter Free choice uses `openrouter/free`. The app adds no session token budget; provider-side technical and account limits still apply.
 
 Apple Foundation Models have a small local context window compared with remote providers. The shared prompt harness keeps prompts compact, evidence-based, and schema-oriented. The strategy context database is the source of grounded facts and consequence ranges; avoid adding large free-form prompt context without trimming or summarizing it.
 
-All prompt families should stay connected to the same mechanics contract: economy, public security, insurgency pressure, map conflict, diplomacy/global friction, action memory, scenario canon, language, and bounded `hexLeverCode` map nudges. Suggestions are part of the game loop, so each generated suggestion should name the primary mechanic it intends to move and one secondary mechanic that benefits or trades off.
+All prompt families use the same explicit mechanic-code protocol: `⟦ECO⟧` economic resilience, `⟦MKT⟧` market confidence, `⟦STB⟧` internal stability, `⟦SEC⟧` security anxiety, `⟦DIP⟧` diplomatic leverage, `⟦MIL⟧` military readiness, and `⟦TNS⟧` world tension. Suggestions output primary and secondary codes; consequence events output one code that must belong to the linked order. Narrative prose never executes mechanics. The parser still reads legacy raw track names for save compatibility. `hexLeverCode` remains the separate bounded protocol for economic, security, and map-control deltas.
 
 Never treat generated content as authoritative until `NativeGameEngine.validated` accepts it.

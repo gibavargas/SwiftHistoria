@@ -54,7 +54,7 @@ final class AppState: ObservableObject {
             // Game menu — advance turn, refresh suggestions
             CommandGroup(after: .toolbar) {
                 Section("Game") {
-                    Button("Advance Turn") {
+                    Button("Advance 3-Month Turn") {
                         NotificationCenter.default.post(name: .advanceTurn, object: nil)
                     }
                     .keyboardShortcut("]", modifiers: [.command])

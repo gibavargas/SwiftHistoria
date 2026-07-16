@@ -17,7 +17,6 @@ struct CountrySelectionView: View {
     @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderRaw: String = NativeAIProviderPreference.nvidia.rawValue
     @AppStorage("NVIDIA_API_KEY") private var nvidiaKey: String = ""
     @AppStorage("OPENROUTER_API_KEY") private var openRouterKey: String = ""
-    @AppStorage("ZAI_API_KEY") private var zaiKey: String = ""
 
     private var selectedProvider: NativeAIProviderPreference {
         NativeAIProviderPreference(rawValue: aiProviderRaw) ?? .nvidia
@@ -26,14 +25,9 @@ struct CountrySelectionView: View {
     private var canProceedFromProviderStep: Bool {
         switch selectedProvider {
         case .nvidia:
-            !nvidiaKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                !openRouterKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        case .appleFoundation:
-            true
+            !nvidiaKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case .openRouter:
             !openRouterKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        case .zai:
-            !zaiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
     }
 
@@ -130,7 +124,7 @@ struct CountrySelectionView: View {
                                     VStack(alignment: .leading, spacing: 8) {
                                         Text("Configure AI Routing")
                                             .font(.title2.weight(.bold))
-                                        Text("NVIDIA NIM is the default primary route, with OpenRouter Free as its visible fallback. You can change this later in Settings.")
+                                        Text("Choose NVIDIA API or OpenRouter Free. The game uses only the selected route and shows its failures instead of switching providers.")
                                             .font(.subheadline)
                                             .foregroundStyle(.secondary)
                                     }
@@ -141,12 +135,7 @@ struct CountrySelectionView: View {
                                         }
                                     }
 
-                                    if selectedProvider == .nvidia {
-                                        apiKeyField(for: .nvidia)
-                                        apiKeyField(for: .openRouter, fallback: true)
-                                    } else if selectedProvider == .openRouter || selectedProvider == .zai {
-                                        apiKeyField(for: selectedProvider)
-                                    }
+                                    apiKeyField(for: selectedProvider)
 
                                     Button {
                                         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
@@ -220,7 +209,7 @@ struct CountrySelectionView: View {
             aiProviderRaw = provider.rawValue
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: provider == .nvidia ? "sparkles" : provider == .appleFoundation ? "cpu" : provider == .openRouter ? "network" : "bolt.fill")
+                Image(systemName: provider == .nvidia ? "sparkles" : "network")
                     .font(.title3)
                     .foregroundStyle(isSelected ? Color.white : selectedScenarioAccentColor)
                     .frame(width: 32)
@@ -257,34 +246,24 @@ struct CountrySelectionView: View {
     }
 
     @ViewBuilder
-    private func apiKeyField(for provider: NativeAIProviderPreference, fallback: Bool = false) -> some View {
+    private func apiKeyField(for provider: NativeAIProviderPreference) -> some View {
         let key: Binding<String> = switch provider {
         case .nvidia: $nvidiaKey
         case .openRouter: $openRouterKey
-        case .zai: $zaiKey
-        case .appleFoundation: .constant("")
         }
         let placeholder = switch provider {
         case .nvidia: "nvapi-..."
         case .openRouter: "sk-or-v1-..."
-        case .zai: "your-zai-key"
-        case .appleFoundation: ""
         }
         let helpText = switch provider {
         case .nvidia:
-            "Primary route: NVIDIA NIM (minimaxai/minimax-m3, moonshotai/kimi-k2.6 & deepseek-ai/deepseek-v4-flash)."
+            "Strict NVIDIA API route (MiniMax-M3, Kimi-K2.6, and DeepSeek-V4-Flash)."
         case .openRouter:
-            fallback
-                ? "Used automatically when NVIDIA is unavailable. Get a key at openrouter.ai/keys."
-                : "Direct OpenRouter Free route. Get a key at openrouter.ai/keys."
-        case .zai:
-            "Get a key at z.ai."
-        case .appleFoundation:
-            "No API key required."
+            "Strict OpenRouter Free route. Get a key at openrouter.ai/keys."
         }
 
         VStack(alignment: .leading, spacing: 8) {
-            Text(fallback ? "\(provider.title) Fallback API Key" : "\(provider.title) API Key")
+            Text("\(provider.title) API Key")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.primary)
 
@@ -341,7 +320,7 @@ struct CountrySelectionView: View {
                 } else {
                     if !canProceedFromProviderStep {
                         Label(
-                            "Choose Apple Foundation Models or enter the selected provider API key before starting.",
+                            "Enter the selected provider API key before starting.",
                             systemImage: "exclamationmark.triangle"
                         )
                         .font(.caption)
@@ -524,7 +503,7 @@ struct CountrySelectionView: View {
                     .foregroundStyle(selectedScenarioAccentColor)
             }
 
-            Text("NVIDIA NIM is primary by default; OpenRouter Free takes over visibly if the NVIDIA route is unavailable.")
+            Text("Choose one route. NVIDIA and OpenRouter Free never replace each other automatically.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -535,15 +514,10 @@ struct CountrySelectionView: View {
                 }
             }
 
-            if selectedProvider == .nvidia {
-                apiKeyField(for: .nvidia)
-                apiKeyField(for: .openRouter, fallback: true)
-            } else if selectedProvider == .openRouter || selectedProvider == .zai {
-                apiKeyField(for: selectedProvider)
-            }
+            apiKeyField(for: selectedProvider)
 
             if !canProceedFromProviderStep {
-                Label("Add a key for the selected route. The NVIDIA route can start with either its primary key or the OpenRouter fallback key.", systemImage: "exclamationmark.triangle")
+                Label("Add a key for the selected route before starting the campaign.", systemImage: "exclamationmark.triangle")
                     .font(.caption)
                     .foregroundStyle(Color.alertGold)
                     .fixedSize(horizontal: false, vertical: true)

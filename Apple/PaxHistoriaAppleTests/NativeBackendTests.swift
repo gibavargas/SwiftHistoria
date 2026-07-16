@@ -523,7 +523,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertLessThanOrEqual(applied.economicLedger.fiscalSpaceIndex, 100)
     }
 
-    func testPersistenceRecoversBackupAndLegacySaves() throws {
+    func testPersistenceRecoversBackupAndLegacySaves() async throws {
         let defaults = makeDefaults()
         let persistenceDirectory = try makePersistenceDirectory()
         let store = NativeCampaignStore(
@@ -532,6 +532,7 @@ final class NativeBackendTests: XCTestCase {
             persistenceDirectory: persistenceDirectory
         )
         store.choose(testCountry)
+        await store.waitForPersistence()
         let savedState = try XCTUnwrap(store.state)
         let primaryFile = persistenceDirectory.appendingPathComponent("campaign-state-envelope-v2.json")
         let backupFile = persistenceDirectory.appendingPathComponent("campaign-state-backup-v2.json")
@@ -651,7 +652,7 @@ final class NativeBackendTests: XCTestCase {
         store.addDraftAction()
         XCTAssertEqual(store.state?.plannedActions.first?.status, .planned)
 
-        await store.performAdvance(months: 1)
+        await store.performAdvance()
         XCTAssertGreaterThan(store.state?.round ?? 0, 1)
         XCTAssertFalse(store.state?.timeline.isEmpty ?? true)
 
@@ -723,7 +724,7 @@ final class NativeBackendTests: XCTestCase {
         store.addDraftAction()
 
         let before = try XCTUnwrap(store.state)
-        await store.performAdvance(months: 1)
+        await store.performAdvance()
 
         let after = try XCTUnwrap(store.state)
         XCTAssertEqual(after.round, before.round)
@@ -742,7 +743,7 @@ final class NativeBackendTests: XCTestCase {
         let store = try makeStore(aiService: service)
         store.choose(testCountry)
 
-        let task = Task { await store.performAdvance(months: 1) }
+        let task = Task { await store.performAdvance() }
         await gate.waitUntilEntered()
 
         XCTAssertTrue(store.isAdvancing)
@@ -768,12 +769,30 @@ final class NativeBackendTests: XCTestCase {
         let store = try makeStore(aiService: service)
         store.state = makeState()
 
-        await store.performAdvance(months: 1)
+        await store.performAdvance()
 
         XCTAssertEqual(suggestionRequestCount, 1)
         XCTAssertEqual(store.state?.suggestedActions.count, NativeDecisionMatrixContract.cellCount)
         XCTAssertNil(store.pendingSuggestionRefreshForce)
         XCTAssertFalse(store.isAdvancing)
+    }
+
+    func testCampaignStoreUsesOneFixedThreeMonthTurnCadence() async throws {
+        let service = FakeNativeAIService()
+        var requestedMonths: Int?
+        service.turnHandler = { state, months in
+            requestedMonths = months
+            return makeValidTurn(for: state, months: months)
+        }
+        let store = try makeStore(aiService: service)
+        store.state = makeState()
+
+        await store.performAdvance()
+
+        XCTAssertEqual(NativeCampaignStore.monthsPerTurn, 3)
+        XCTAssertEqual(requestedMonths, 3)
+        XCTAssertEqual(store.state?.round, 2)
+        XCTAssertEqual(store.state?.gameDate, "2010-04-15")
     }
 
     func testSuggestedActionsTimeoutClearsLoadingState() async throws {
@@ -832,7 +851,7 @@ final class NativeBackendTests: XCTestCase {
         store.choose(testCountry)
         await Task.yield()
 
-        let task = Task { await store.performAdvance(months: 1) }
+        let task = Task { await store.performAdvance() }
         await gate.waitUntilEntered()
         store.setLanguage(.spanish)
         await gate.resume()
@@ -840,6 +859,37 @@ final class NativeBackendTests: XCTestCase {
 
         XCTAssertEqual(store.state?.round, 1)
         XCTAssertEqual(store.state?.language, .spanish)
+    }
+
+    func testProviderSwitchInvalidatesPendingWorkBeforeChangingRoute() async throws {
+        let gate = AsyncGate()
+        let defaults = makeDefaults()
+        defaults.set(NativeAIProviderPreference.nvidia.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        let service = FakeNativeAIService()
+        service.turnHandler = { state, months in
+            await gate.wait()
+            return makeValidTurn(for: state, months: months)
+        }
+
+        let store = try makeStore(defaults: defaults, aiService: service)
+        var state = makeState()
+        state.aiReadiness = .available(tokenBudget: "old NVIDIA route")
+        state.suggestedActions = makeLegalDecisionMatrix(for: state, cost: 10)
+        store.state = state
+
+        let task = Task { await store.performAdvance() }
+        await gate.waitUntilEntered()
+        let previousVersion = store.stateVersion
+
+        XCTAssertTrue(store.setAIProvider(.openRouter))
+        XCTAssertGreaterThan(store.stateVersion, previousVersion)
+        XCTAssertEqual(defaults.string(forKey: NativeAIProviderPreference.storageKey), NativeAIProviderPreference.openRouter.rawValue)
+        XCTAssertEqual(store.state?.aiReadiness, .notChecked)
+        XCTAssertTrue(store.state?.suggestedActions.isEmpty == true)
+
+        await gate.resume()
+        await task.value
+        XCTAssertEqual(store.state?.round, state.round)
     }
 
     func testManualBudgetAndOfferChangesInvalidatePendingAdvance() async throws {
@@ -868,7 +918,7 @@ final class NativeBackendTests: XCTestCase {
         ]
         store.state = state
 
-        let task = Task { await store.performAdvance(months: 1) }
+        let task = Task { await store.performAdvance() }
         await gate.waitUntilEntered()
         store.updateBudgetSliders(military: 10, services: 0, diplomacy: 0)
         store.acceptDiplomaticOffer(id: "offer-arg-trade")
@@ -894,7 +944,7 @@ final class NativeBackendTests: XCTestCase {
         state.victoryStatus = .won
         store.state = state
 
-        await store.performAdvance(months: 1)
+        await store.performAdvance()
 
         XCTAssertEqual(store.state?.round, state.round)
         XCTAssertEqual(store.state?.gameDate, state.gameDate)
@@ -921,6 +971,7 @@ final class NativeBackendTests: XCTestCase {
 
     func testAIProviderPreferencePersistsInDefaults() {
         let defaults = makeDefaults()
+        XCTAssertEqual(NativeAIProviderPreference.allCases, [.nvidia, .openRouter])
         XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .nvidia)
 
         defaults.set(NativeAIProviderPreference.nvidia.rawValue, forKey: NativeAIProviderPreference.storageKey)
@@ -928,23 +979,20 @@ final class NativeBackendTests: XCTestCase {
 
         defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
         XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .openRouter)
-
-        defaults.set(NativeAIProviderPreference.zai.rawValue, forKey: NativeAIProviderPreference.storageKey)
-        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .zai)
     }
 
-    func testNVIDIAPrimaryMigrationMovesTheLegacyOpenRouterDefaultOnlyOnce() {
+    func testProviderMigrationPreservesOpenRouterAndNormalizesRemovedRoutes() {
         let defaults = makeDefaults()
         defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
 
         NativeAIProviderPreference.migrateLegacyDefaultIfNeeded(defaults: defaults)
 
-        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .nvidia)
-        XCTAssertTrue(defaults.bool(forKey: NativeAIProviderPreference.nvidiaPrimaryMigrationKey))
-
-        defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
-        NativeAIProviderPreference.migrateLegacyDefaultIfNeeded(defaults: defaults)
         XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .openRouter)
+
+        defaults.set("appleFoundation", forKey: NativeAIProviderPreference.storageKey)
+        NativeAIProviderPreference.migrateLegacyDefaultIfNeeded(defaults: defaults)
+        XCTAssertEqual(defaults.string(forKey: NativeAIProviderPreference.storageKey), NativeAIProviderPreference.nvidia.rawValue)
+        XCTAssertEqual(NativeAIProviderPreference.current(defaults: defaults), .nvidia)
     }
 
     func testAIProviderServicesReadInjectedDefaults() async throws {
@@ -953,7 +1001,6 @@ final class NativeBackendTests: XCTestCase {
         defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
         defaults.set("zai-test-key", forKey: "ZAI_API_KEY")
         defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
-        defaults.set(true, forKey: NativeAIProviderPreference.nvidiaPrimaryMigrationKey)
 
         let nvidia = NativeNVIDIAService(defaults: defaults)
         XCTAssertEqual(nvidia.apiKey, "nvapi-test-key")
@@ -1022,12 +1069,12 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(suggestionsProvider.modelLanes.map(\.name), ["openrouter/free"])
         XCTAssertEqual(suggestionsProvider.capturedRequests.count, 1)
         let firstPrompt = try XCTUnwrap(suggestionsProvider.capturedRequests.first?.prompt)
-        XCTAssertTrue(firstPrompt.contains("Produce exactly 25 actions in a 5 x 5 matrix"))
-        XCTAssertTrue(firstPrompt.contains("worldSeed="))
-        XCTAssertTrue(firstPrompt.contains("HARD ELIGIBILITY RULES"))
-        XCTAssertTrue(firstPrompt.contains("ALL COUNTRY STATES"))
-        XCTAssertTrue(firstPrompt.contains("PLAYER POWER AND VICTORY"))
-        XCTAssertTrue(firstPrompt.contains("EXACT POLITICAL DIRECTIVES CURRENTLY AVAILABLE"))
+        XCTAssertTrue(firstPrompt.contains("exactly 25 suggestions"))
+        XCTAssertTrue(firstPrompt.contains("LEGAL JSON SKELETON TO PERSONALIZE"))
+        XCTAssertTrue(firstPrompt.contains("EDITING CONTRACT"))
+        XCTAssertTrue(firstPrompt.contains("Preserve id, urgency"))
+        XCTAssertTrue(firstPrompt.contains("Rewrite only title, detail, and rationale"))
+        XCTAssertTrue(firstPrompt.contains("worldTension="))
         XCTAssertTrue(firstPrompt.contains("matrixRow"))
         XCTAssertTrue(firstPrompt.contains("\"suggestions\""))
         XCTAssertTrue(firstPrompt.contains("openrouter/free") == false)
@@ -1063,7 +1110,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertFalse(service.capturedRequests.allSatisfy(\.thinkingEnabled))
     }
 
-    func testDynamicAIServiceUsesNVIDIANIMAsPrimaryAcrossAISurfaces() async throws {
+    func testDynamicAIServiceRoutesEveryGameAISurfaceOnlyThroughSelectedNVIDIA() async throws {
         let defaults = makeDefaults()
         defaults.set("nvapi-test-key", forKey: "NVIDIA_API_KEY")
         defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
@@ -1088,15 +1135,12 @@ final class NativeBackendTests: XCTestCase {
             message: "Offer a bounded corridor."
         )
 
-        // With hedged suggestions, NVIDIA and OpenRouter race in parallel.
-        // NVIDIA should have been called for all surfaces; OpenRouter may also
-        // have been called for suggestions (hedged) but the winner is NVIDIA.
         XCTAssertEqual(nvidia.calledSurfaces, ["readiness", "turn", "suggestions", "advisor", "diplomacy"])
-        // The hedged race means OpenRouter may have received a suggestions request
-        // even though NVIDIA won. This is expected and correct behavior.
+        XCTAssertTrue(openRouter.capturedRequests.isEmpty)
+        XCTAssertEqual(service.lastProviderUsed, "NVIDIA NIM")
     }
 
-    func testDynamicAIServiceFallsBackFromNVIDIAToOpenRouterAcrossAISurfaces() async throws {
+    func testDynamicAIServiceKeepsSelectedNVIDIAFailuresOnNVIDIA() async throws {
         let defaults = makeDefaults()
         defaults.set("nvapi-test-key", forKey: "NVIDIA_API_KEY")
         defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
@@ -1111,26 +1155,41 @@ final class NativeBackendTests: XCTestCase {
         let state = makeState()
 
         let readiness = await service.checkReadiness()
-        XCTAssertTrue(readiness.ok)
-        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+        XCTAssertFalse(readiness.ok)
+        XCTAssertEqual(service.lastProviderUsed, "NVIDIA NIM")
 
-        let turn = try await service.generateTurn(for: state, months: 1) { _ in }
-        // Hedged requests do not guarantee a progress callback before the
-        // winning result returns. Assert the fallback result itself instead.
-        XCTAssertTrue(turn.summary.contains("OpenRouter Free"))
-        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+        do {
+            _ = try await service.generateTurn(for: state, months: 3) { _ in }
+            XCTFail("Expected the selected NVIDIA turn failure to propagate.")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains("NVIDIA fixture failure"))
+        }
+        do {
+            _ = try await service.generateSuggestedActions(for: state)
+            XCTFail("Expected the selected NVIDIA suggestion failure to propagate.")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains("NVIDIA fixture failure"))
+        }
+        do {
+            _ = try await service.generateAdvisorBrief(for: state, question: "What now?")
+            XCTFail("Expected the selected NVIDIA advisor failure to propagate.")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains("NVIDIA fixture failure"))
+        }
+        do {
+            _ = try await service.generateDiplomaticReply(
+                for: state,
+                thread: makeDiplomaticThread(for: state),
+                message: "Offer a bounded corridor."
+            )
+            XCTFail("Expected the selected NVIDIA diplomacy failure to propagate.")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains("NVIDIA fixture failure"))
+        }
 
-        let suggestions = try await service.generateSuggestedActions(for: state)
-        let advisor = try await service.generateAdvisorBrief(for: state, question: "What now?")
-        let diplomacy = try await service.generateDiplomaticReply(
-            for: state,
-            thread: makeDiplomaticThread(for: state),
-            message: "Offer a bounded corridor."
-        )
-        XCTAssertEqual(suggestions.count, 25)
-        XCTAssertTrue(advisor.contains("OpenRouter advisor"))
-        XCTAssertTrue(diplomacy.contains("OpenRouter diplomacy"))
-        XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
+        XCTAssertEqual(nvidia.calledSurfaces, ["readiness", "turn", "suggestions", "advisor", "diplomacy"])
+        XCTAssertTrue(openRouter.capturedRequests.isEmpty)
+        XCTAssertEqual(service.lastProviderUsed, "NVIDIA NIM")
     }
 
     func testDynamicAIServiceRoutesEveryGameAISurfaceThroughOpenRouterFree() async throws {
@@ -1154,6 +1213,8 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
         XCTAssertTrue(generatedTurn.events.contains { !$0.playerRelated })
         XCTAssertTrue(generatedTurn.events.contains { $0.playerRelated })
+        XCTAssertTrue(generatedTurn.events.contains { $0.kind == .action })
+        XCTAssertTrue(generatedTurn.events.contains { $0.importance == .severe })
         XCTAssertFalse(progressEvents.isEmpty)
         XCTAssertTrue(progressEvents.allSatisfy { $0.providerName == "OpenRouter" })
         XCTAssertTrue(progressEvents.contains { $0.modelIdentifier == "openrouter/free" })
@@ -1198,10 +1259,20 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("Required JSON schema") })
         XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("\"events\"") })
         XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("Campaign objectives") })
+        XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("Mechanics snapshot (authoritative)") })
+        XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("capacity=100/120") })
+        XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("queueLimit=3") })
+        XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("minor, major, or severe") })
+        XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("⟦ECO⟧") && $0.prompt.contains("⟦TNS⟧") })
+        XCTAssertTrue(unifiedTurnRequests.allSatisfy { $0.prompt.contains("narrative words never trigger mechanics") })
         XCTAssertTrue(openRouter.capturedRequests.contains { $0.thinkingEnabled && $0.hasReasoningProgress })
-        XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("Produce exactly 25 actions in a 5 x 5 matrix") && $0.prompt.contains("\"suggestions\"") })
+        XCTAssertTrue(openRouter.capturedRequests.contains {
+            $0.prompt.contains("LEGAL JSON SKELETON TO PERSONALIZE") &&
+                $0.prompt.contains("\"suggestions\"")
+        })
         XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("SwiftHistoria strategic advisor") && $0.prompt.contains("Campaign objectives") })
         XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("diplomacy chat inside SwiftHistoria") && $0.prompt.contains("Recent campaign context") })
+        XCTAssertTrue(openRouter.capturedRequests.contains { $0.prompt.contains("A chat reply is negotiation prose, not a state mutation") })
     }
 
     func testOpenRouterSuggestionsAcceptFreeModelSchemaVariants() async throws {
@@ -1211,7 +1282,7 @@ final class NativeBackendTests: XCTestCase {
         let actions = (0 ..< 5).flatMap { row in
             (0 ..< 5).map { column in
                 """
-                {"name":"Stage Policy Review \(row)-\(column)","summary":"Create a bounded treasury and service review for the current campaign period.","expectedOutcome":"The review uses existing institutions and remains within current administrative capacity.","why":"This legal proposal responds to stored objectives, budget pressure, and current institutional authority.","priority":"soon","row":\(row),"column":\(column),"cost":10,"action_kind":"policy"}
+                {"name":"Stage Policy Review \(row)-\(column)","summary":"Create a bounded treasury and service review for the current campaign period.","expectedOutcome":"The review uses existing institutions and remains within current administrative capacity.","why":"This legal proposal responds to stored objectives, budget pressure, and current institutional authority.","priority":"soon","primary_mechanic":"⟦ECO⟧","secondary_mechanic":"⟦STB⟧","row":\(row),"column":\(column),"cost":10,"action_kind":"policy"}
                 """
             }
         }
@@ -1298,7 +1369,7 @@ final class NativeBackendTests: XCTestCase {
 
     func testDynamicAIServiceDoesNotFallbackWhenOpenRouterIsSelectedWithoutKey() async throws {
         let defaults = makeDefaults()
-        defaults.set("zai-test-key", forKey: "ZAI_API_KEY")
+        defaults.set("nvapi-test-key", forKey: "NVIDIA_API_KEY")
         defaults.set(NativeAIProviderPreference.openRouter.rawValue, forKey: NativeAIProviderPreference.storageKey)
         let service = DynamicAIService(defaults: defaults)
         let state = makeState()
@@ -1306,7 +1377,7 @@ final class NativeBackendTests: XCTestCase {
         let readiness = await service.checkReadiness()
         XCTAssertFalse(readiness.ok)
         XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
-        XCTAssertTrue(readiness.lastError.contains("OpenRouter is selected"))
+        XCTAssertTrue(readiness.lastError.contains("OpenRouter Free is selected"))
         XCTAssertFalse(readiness.tokenBudget.localizedCaseInsensitiveContains("fallback"))
 
         do {
@@ -1317,7 +1388,7 @@ final class NativeBackendTests: XCTestCase {
             XCTFail("Expected missing OpenRouter key to fail instead of falling back.")
         } catch {
             XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
-            XCTAssertTrue(error.localizedDescription.contains("OpenRouter is selected"))
+            XCTAssertTrue(error.localizedDescription.contains("OpenRouter Free is selected"))
         }
 
         do {
@@ -1325,11 +1396,38 @@ final class NativeBackendTests: XCTestCase {
             XCTFail("Expected missing OpenRouter key to fail suggestions instead of falling back.")
         } catch {
             XCTAssertEqual(service.lastProviderUsed, "OpenRouter")
-            XCTAssertTrue(error.localizedDescription.contains("OpenRouter is selected"))
+            XCTAssertTrue(error.localizedDescription.contains("OpenRouter Free is selected"))
         }
     }
 
-    func testSaveSlotsResumeTheActiveCampaignAfterFreshLaunch() throws {
+    func testDynamicAIServiceDoesNotFallbackWhenNVIDIAIsSelectedWithoutKey() async throws {
+        let defaults = makeDefaults()
+        defaults.set("or-test-key", forKey: "OPENROUTER_API_KEY")
+        defaults.set(NativeAIProviderPreference.nvidia.rawValue, forKey: NativeAIProviderPreference.storageKey)
+        let openRouter = CapturingOpenRouterGameService(defaults: defaults)
+        let service = DynamicAIService(defaults: defaults, openRouterService: openRouter)
+        let state = makeState()
+
+        let readiness = await service.checkReadiness()
+        XCTAssertFalse(readiness.ok)
+        XCTAssertEqual(service.lastProviderUsed, "NVIDIA NIM")
+        XCTAssertTrue(readiness.lastError.contains("NVIDIA is selected"))
+
+        do {
+            _ = try await service.generateTurn(for: state, months: 3) { progress in
+                XCTAssertEqual(progress.providerName, "NVIDIA NIM")
+                XCTAssertEqual(progress.modelIdentifier, NativeNVIDIAService.modelIdentifier)
+            }
+            XCTFail("Expected missing NVIDIA key to fail instead of switching providers.")
+        } catch {
+            XCTAssertEqual(service.lastProviderUsed, "NVIDIA NIM")
+            XCTAssertTrue(error.localizedDescription.contains("NVIDIA is selected"))
+        }
+
+        XCTAssertTrue(openRouter.capturedRequests.isEmpty)
+    }
+
+    func testSaveSlotsResumeTheActiveCampaignAfterFreshLaunch() async throws {
         let defaults = makeDefaults()
         let persistenceDirectory = try makePersistenceDirectory()
         let store = NativeCampaignStore(
@@ -1349,6 +1447,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(store.state?.country.code, "ARG")
         XCTAssertEqual(store.state?.language, .spanish)
         XCTAssertEqual(store.state?.scenarioID, "solarpunk-dawn")
+        await store.waitForPersistence()
         XCTAssertEqual(store.slotSummary(1)?.countryName, "Brazil")
         XCTAssertEqual(store.slotSummary(2)?.countryName, "Argentina")
 
@@ -1404,7 +1503,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertNil(slot2.state)
     }
 
-    func testCountryOnlyRecoveryWritesInitialStateToActiveSlot() throws {
+    func testCountryOnlyRecoveryWritesInitialStateToActiveSlot() async throws {
         let defaults = makeDefaults()
         let persistenceDirectory = try makePersistenceDirectory()
         defaults.set(2, forKey: NativeCampaignStore.activeSlotKey)
@@ -1419,6 +1518,7 @@ final class NativeBackendTests: XCTestCase {
             persistenceDirectory: persistenceDirectory
         )
 
+        await store.waitForPersistence()
         XCTAssertEqual(store.saveSlot, 2)
         XCTAssertEqual(store.state?.country.code, "ARG")
         XCTAssertNil(store.slotSummary(1))
@@ -1427,46 +1527,157 @@ final class NativeBackendTests: XCTestCase {
 
     func testLiveOpenRouterFreeSuggestedActionsWhenEnabled() async throws {
         let environment = ProcessInfo.processInfo.environment
-        guard environment["PAX_HISTORIA_RUN_LIVE_OPENROUTER"] == "1" else {
+        let appDefaults = UserDefaults(suiteName: "com.gibavargas.SwiftHistoria.mac")
+        guard environment["PAX_HISTORIA_RUN_LIVE_OPENROUTER"] == "1" || appDefaults?.bool(forKey: "PAX_HISTORIA_RUN_LIVE_OPENROUTER") == true else {
             throw XCTSkip("Set PAX_HISTORIA_RUN_LIVE_OPENROUTER=1 to exercise the real OpenRouter Free suggestion path.")
         }
-        guard let key = environment["OPENROUTER_API_KEY"]?.trimmingCharacters(in: .whitespacesAndNewlines), !key.isEmpty else {
+        let key = (environment["OPENROUTER_API_KEY"] ?? appDefaults?.string(forKey: "OPENROUTER_API_KEY") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else {
             throw XCTSkip("OPENROUTER_API_KEY is required for the live OpenRouter Free suggestion path.")
         }
 
         let defaults = makeDefaults()
         defaults.set(key, forKey: "OPENROUTER_API_KEY")
         let service = NativeOpenRouterService(defaults: defaults)
+        let state = makeState()
 
-        let suggestions = try await service.generateSuggestedActions(for: makeState())
+        let suggestions = try await service.generateSuggestedActions(for: state)
 
         XCTAssertEqual(suggestions.count, 25)
         XCTAssertEqual(Set(suggestions.map { "\($0.matrixRow):\($0.matrixColumn)" }).count, 25)
         for suggestion in suggestions {
-            XCTAssertNil(NativeDecisionMatrixContract.eligibilityFailure(for: suggestion, state: makeState()))
+            XCTAssertNil(NativeDecisionMatrixContract.eligibilityFailure(for: suggestion, state: state))
+            XCTAssertNotNil(NativeStrategicTrack.allCases.first { $0.mechanicCode == suggestion.primaryMechanic })
+            XCTAssertNotNil(NativeStrategicTrack.allCases.first { $0.mechanicCode == suggestion.secondaryMechanic })
+        }
+    }
+
+    func testLiveOpenRouterGPTOSS20BFreeMatrixWhenEnabled() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        guard environment["PAX_HISTORIA_RUN_LIVE_GPT_OSS_20B"] == "1" else {
+            throw XCTSkip("Set PAX_HISTORIA_RUN_LIVE_GPT_OSS_20B=1 to exercise the dedicated GPT-OSS 20B Free matrix path.")
+        }
+        let appDefaults = UserDefaults(suiteName: "com.gibavargas.SwiftHistoria.mac")
+        let key = (environment["OPENROUTER_API_KEY"] ?? appDefaults?.string(forKey: "OPENROUTER_API_KEY") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else {
+            throw XCTSkip("OPENROUTER_API_KEY is required for the live GPT-OSS 20B Free matrix path.")
+        }
+
+        let defaults = makeDefaults()
+        defaults.set(key, forKey: "OPENROUTER_API_KEY")
+        let service = NativeOpenRouterService(defaults: defaults)
+        service.modelLanes = [
+            ZAIModelLane(
+                name: "openai/gpt-oss-20b:free",
+                displayName: "GPT-OSS 20B Free",
+                maxConcurrent: 1
+            )
+        ]
+        let state = makeState()
+
+        let suggestions = try await service.generateSuggestedActions(for: state)
+
+        XCTAssertEqual(suggestions.count, NativeDecisionMatrixContract.cellCount)
+        XCTAssertEqual(Set(suggestions.map { "\($0.matrixRow):\($0.matrixColumn)" }).count, NativeDecisionMatrixContract.cellCount)
+        for suggestion in suggestions {
+            XCTAssertNil(NativeDecisionMatrixContract.eligibilityFailure(for: suggestion, state: state))
         }
     }
 
     func testLiveNVIDIANIMWhenEnabled() async throws {
         let environment = ProcessInfo.processInfo.environment
-        guard environment["PAX_HISTORIA_RUN_LIVE_NVIDIA"] == "1" else {
+        let appDefaults = UserDefaults(suiteName: "com.gibavargas.SwiftHistoria.mac")
+        guard environment["PAX_HISTORIA_RUN_LIVE_NVIDIA"] == "1" || appDefaults?.bool(forKey: "PAX_HISTORIA_RUN_LIVE_NVIDIA") == true else {
             throw XCTSkip("Set PAX_HISTORIA_RUN_LIVE_NVIDIA=1 to exercise NVIDIA NIM inference.")
         }
-        guard let key = environment["NVIDIA_API_KEY"]?.trimmingCharacters(in: .whitespacesAndNewlines), !key.isEmpty else {
+        let key = (environment["NVIDIA_API_KEY"] ?? appDefaults?.string(forKey: "NVIDIA_API_KEY") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else {
             throw XCTSkip("NVIDIA_API_KEY is required for the live NVIDIA NIM path.")
         }
 
         let defaults = makeDefaults()
         defaults.set(key, forKey: "NVIDIA_API_KEY")
         let service = NativeNVIDIAService(defaults: defaults)
-        let response = try await service.executeProviderRequest(
-            prompt: "Return one short sentence confirming that the SwiftHistoria NVIDIA route is online.",
-            maxTokens: 16,
-            temperature: 1.0,
-            thinkingEnabled: true
-        )
+        let state = makeState()
 
-        XCTAssertFalse(response.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        let suggestions = try await service.generateSuggestedActions(for: state)
+
+        XCTAssertEqual(suggestions.count, NativeDecisionMatrixContract.cellCount)
+        XCTAssertEqual(Set(suggestions.map { "\($0.matrixRow):\($0.matrixColumn)" }).count, NativeDecisionMatrixContract.cellCount)
+        for suggestion in suggestions {
+            XCTAssertNil(NativeDecisionMatrixContract.eligibilityFailure(for: suggestion, state: state))
+        }
+    }
+
+    func testLiveDiffusionGemmaBrainstormOpenRouterMatrixWhenEnabled() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        guard environment["PAX_HISTORIA_RUN_LIVE_HYBRID_MATRIX"] == "1" else {
+            throw XCTSkip("Set PAX_HISTORIA_RUN_LIVE_HYBRID_MATRIX=1 to exercise the two-provider matrix pipeline.")
+        }
+        let appDefaults = UserDefaults(suiteName: "com.gibavargas.SwiftHistoria.mac")
+        let nvidiaKey = (environment["NVIDIA_API_KEY"] ?? appDefaults?.string(forKey: "NVIDIA_API_KEY") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let openRouterKey = (environment["OPENROUTER_API_KEY"] ?? appDefaults?.string(forKey: "OPENROUTER_API_KEY") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !nvidiaKey.isEmpty, !openRouterKey.isEmpty else {
+            throw XCTSkip("Both NVIDIA_API_KEY and OPENROUTER_API_KEY are required for the hybrid matrix path.")
+        }
+
+        let defaults = makeDefaults()
+        defaults.set(nvidiaKey, forKey: "NVIDIA_API_KEY")
+        defaults.set(openRouterKey, forKey: "OPENROUTER_API_KEY")
+        let state = makeState()
+        let nvidia = NativeNVIDIAService(defaults: defaults)
+        nvidia.modelLanes = [
+            ZAIModelLane(
+                name: "google/diffusiongemma-26b-a4b-it",
+                displayName: "DiffusionGemma 26B",
+                maxConcurrent: 1
+            )
+        ]
+        let brainstorm = try await nvidia.executeProviderRequest(
+            prompt: """
+            Brainstorm a diverse set of concrete policy ideas for the following strategy-game state.
+            Explore economy, society, diplomacy, security, and territorial governance across cautious through transformative postures.
+            Do not emit JSON. Do not decide costs, action kinds, target IDs, or sovereignty structures. Those mechanics are owned by the game engine.
+
+            \(NativeDecisionMatrixPrompt.make(for: state))
+            """,
+            maxTokens: 6000,
+            temperature: 0.9,
+            thinkingEnabled: true,
+            requestTimeout: 60,
+            retryLimit: 0
+        )
+        XCTAssertFalse(brainstorm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+        let openRouter = NativeOpenRouterService(defaults: defaults)
+        let formatted = try await openRouter.executeProviderRequest(
+            prompt: """
+            \(NativeDecisionMatrixPrompt.make(for: state))
+
+            CREATIVE BRAINSTORM FROM DIFFUSIONGEMMA:
+            \(brainstorm)
+
+            Use the brainstorm only for player-facing titles, details, and rationales. Return the required strict 25-cell JSON object now.
+            """,
+            maxTokens: 8000,
+            temperature: 0.2,
+            responseFormat: "json_object",
+            thinkingEnabled: false,
+            requestTimeout: 60,
+            retryLimit: 0
+        )
+        let parsed = OpenRouterSuggestionParser.suggestions(from: formatted, state: state)
+        let suggestions = try NativeDecisionMatrixContract.aiTailoredPlayerMatrix(from: parsed, state: state)
+
+        XCTAssertEqual(suggestions.count, NativeDecisionMatrixContract.cellCount)
+        for suggestion in suggestions {
+            XCTAssertNil(NativeDecisionMatrixContract.eligibilityFailure(for: suggestion, state: state))
+        }
     }
 
     func testCampaignObjectivesExposeScenarioWinProgress() {
@@ -1687,6 +1898,8 @@ final class NativeBackendTests: XCTestCase {
         print(independentPrompt)
         print("--- TEST PRINT: INDEPENDENT PROMPT END ---\n")
         XCTAssertTrue(independentPrompt.contains("North Sea Corridor Expansion"))
+        XCTAssertTrue(independentPrompt.contains("\"effectTrack\":\"⟦MKT⟧\""))
+        XCTAssertFalse(independentPrompt.contains("\"effectTrack\":\"market-confidence\""))
 
         let actionPrompt = service.makeActionEventPrompt(for: state, action: plannedAction, months: 1, repairInstruction: nil)
         print("\n--- TEST PRINT: ACTION PROMPT START ---")
@@ -1694,6 +1907,7 @@ final class NativeBackendTests: XCTestCase {
         print("--- TEST PRINT: ACTION PROMPT END ---\n")
         XCTAssertTrue(actionPrompt.contains("Corridor Transit Integration"))
         XCTAssertTrue(actionPrompt.contains("Action-specific facts and consequence ranges"))
+        XCTAssertTrue(actionPrompt.contains("\"effectTrack\":\"⟦ECO⟧\""))
 
         let economicPrompt = service.makeEconomicEventPrompt(for: state, months: 1, repairInstruction: nil)
         print("\n--- TEST PRINT: ECONOMIC PROMPT START ---")
@@ -1723,18 +1937,24 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(suggestionPrompt.contains("Respect current administrative capacity"))
         XCTAssertTrue(suggestionPrompt.contains("Campaign objectives"))
         XCTAssertTrue(suggestionPrompt.contains("Domestic legitimacy"))
+        XCTAssertTrue(suggestionPrompt.contains("⟦ECO⟧") && suggestionPrompt.contains("⟦TNS⟧"))
+        XCTAssertTrue(suggestionPrompt.contains("prose never executes mechanics"))
 
         let advisorPrompt = service.makeAdvisorPrompt(for: state, question: "What should we protect first this quarter?")
         print("\n--- TEST PRINT: ADVISOR PROMPT START ---")
         print(advisorPrompt)
         print("--- TEST PRINT: ADVISOR PROMPT END ---\n")
         XCTAssertTrue(advisorPrompt.contains("SwiftHistoria strategic advisor"))
+        XCTAssertTrue(advisorPrompt.contains("Label forecasts as forecasts"))
+        XCTAssertTrue(advisorPrompt.contains("three-order queue limit"))
 
         let diplomacyPrompt = service.makeDiplomacyPrompt(for: state, thread: thread, message: "Hello")
         print("\n--- TEST PRINT: DIPLOMACY PROMPT START ---")
         print(diplomacyPrompt)
         print("--- TEST PRINT: DIPLOMACY PROMPT END ---\n")
         XCTAssertTrue(diplomacyPrompt.contains("diplomacy chat inside SwiftHistoria"))
+        XCTAssertTrue(diplomacyPrompt.contains("A chat reply is negotiation prose, not a state mutation"))
+        XCTAssertTrue(diplomacyPrompt.contains("relationship score"))
 
         let mechanicsPrompts = [
             independentPrompt,
@@ -2040,7 +2260,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(crises.allSatisfy { !$0.title.isEmpty && !$0.detail.isEmpty && !$0.date.isEmpty })
     }
 
-    func testGameModePersistence() throws {
+    func testGameModePersistence() async throws {
         let defaults = makeDefaults()
         let persistenceDirectory = try makePersistenceDirectory()
         let store = NativeCampaignStore(
@@ -2053,6 +2273,7 @@ final class NativeBackendTests: XCTestCase {
 
         store.setGameMode(.ironman)
         XCTAssertEqual(store.state?.gameMode, .ironman)
+        await store.waitForPersistence()
 
         let newStore = NativeCampaignStore(
             defaults: defaults,
@@ -2451,6 +2672,96 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(store.state?.plannedActions.count, 2)
     }
 
+    func testMechanicCodebookRoundTripsEveryStrategicTrack() {
+        let codes = Set(NativeStrategicTrack.allCases.map(\.mechanicCode))
+
+        XCTAssertEqual(codes, ["⟦ECO⟧", "⟦MKT⟧", "⟦STB⟧", "⟦SEC⟧", "⟦DIP⟧", "⟦MIL⟧", "⟦TNS⟧"])
+        for track in NativeStrategicTrack.allCases {
+            XCTAssertEqual(NativeStrategicTrack.decodeMechanicToken(track.mechanicCode), track)
+            XCTAssertEqual(NativeStrategicTrack.decodeMechanicToken(track.rawValue), track)
+        }
+        XCTAssertNil(NativeStrategicTrack.decodeMechanicToken("infrastructure and diplomacy"))
+        XCTAssertTrue(NativeStrategicTrack.mechanicCodebookPrompt.contains("narrative words never trigger mechanics"))
+    }
+
+    func testDecisionMatrixUsesCodesAndRejectsInvalidMechanicTokens() throws {
+        let state = makeState()
+        let matrix = NativeDecisionMatrixContract.localPlayerMatrix(for: state)
+
+        XCTAssertEqual(matrix.count, 25)
+        XCTAssertTrue(matrix.allSatisfy {
+            NativeStrategicTrack.decodeMechanicToken($0.primaryMechanic) != nil &&
+                NativeStrategicTrack.decodeMechanicToken($0.secondaryMechanic) != nil &&
+                $0.primaryMechanic.hasPrefix("⟦") && $0.secondaryMechanic.hasPrefix("⟦")
+        })
+        XCTAssertEqual(try NativeDecisionMatrixContract.validatedPlayerMatrix(matrix, state: state).count, 25)
+
+        var invalid = matrix
+        invalid[0].primaryMechanic = "infrastructure"
+        XCTAssertThrowsError(try NativeDecisionMatrixContract.validatedPlayerMatrix(invalid, state: state))
+    }
+
+    func testSuggestedActionExecutesCodesInsteadOfNarrativeKeywords() throws {
+        let store = try makeStore()
+        let state = makeState()
+        store.state = state
+        var suggestion = try XCTUnwrap(
+            NativeDecisionMatrixContract.localPlayerMatrix(for: state).first {
+                $0.primaryMechanic == NativeStrategicTrack.diplomaticLeverage.mechanicCode
+            }
+        )
+        suggestion.detail = "Fund military security infrastructure while preserving the exact coded diplomatic consequence."
+        suggestion.primaryMechanic = NativeStrategicTrack.diplomaticLeverage.mechanicCode
+        suggestion.secondaryMechanic = NativeStrategicTrack.marketConfidence.mechanicCode
+
+        store.addSuggestedAction(suggestion)
+
+        let accepted = try XCTUnwrap(store.state?.plannedActions.first)
+        XCTAssertEqual(accepted.mechanicTracks, [.diplomaticLeverage, .marketConfidence])
+        XCTAssertFalse(accepted.mechanicTracks.contains(.securityAnxiety))
+        XCTAssertFalse(accepted.mechanicTracks.contains(.economicResilience))
+    }
+
+    func testTurnValidationEnforcesLinkedOrderMechanicCodes() throws {
+        var state = makeState()
+        let action = NativePlannedAction(
+            createdAt: state.gameDate,
+            detail: "Open a bounded negotiating channel.",
+            id: "coded-order",
+            status: .planned,
+            title: "Regional Negotiation",
+            mechanicTracks: [.diplomaticLeverage]
+        )
+        state.plannedActions = [action]
+        let wrongTrackTurn = NativeGeneratedTurn(
+            events: [
+                makeEvent(id: "world", playerRelated: false, track: .worldTension),
+                makeEvent(
+                    id: "linked",
+                    playerRelated: true,
+                    linkedActionIDs: [action.id],
+                    track: .securityAnxiety
+                )
+            ],
+            stabilityDelta: 0,
+            summary: "Diplomatic institutions review the negotiation mandate and regional response during this period.",
+            worldTensionDelta: 0
+        )
+
+        XCTAssertThrowsError(try NativeGameEngine.validated(wrongTrackTurn, state: state, months: 3)) { error in
+            XCTAssertTrue(String(describing: error).contains("⟦DIP⟧"))
+        }
+
+        var validTrackTurn = wrongTrackTurn
+        validTrackTurn.events[1] = makeEvent(
+            id: "linked",
+            playerRelated: true,
+            linkedActionIDs: [action.id],
+            track: .diplomaticLeverage
+        )
+        XCTAssertNoThrow(try NativeGameEngine.validated(validTrackTurn, state: state, months: 3))
+    }
+
     func testEmptyDraftActionIsANoOpWithoutCapacityError() {
         let state = makeState()
         let store = NativeCampaignStore(aiService: FakeNativeAIService())
@@ -2571,6 +2882,347 @@ final class NativeBackendTests: XCTestCase {
         lostState.gameDate = "2031-01-01"
         let lostStatus = NativeGameEngine.evaluateVictoryStatus(for: lostState)
         XCTAssertEqual(lostStatus, .lostTimeout)
+    }
+
+    func testVictoryEvaluationUsesTheDisplayedObjectiveContractForEveryCatalogScenario() {
+        let scenarios = [NativeScenarioCatalog.dividedSovereignty, NativeScenarioCatalog.resourceCrucible]
+
+        for scenario in scenarios {
+            var state = NativeGameEngine.initialState(for: testCountry, scenario: scenario)
+            state.aiCountryStates = [:]
+            state.stability = 85
+            state.worldTension = 69
+            state.economicLedger.securityIndex = 69
+            state.economicLedgers[state.country.code] = state.economicLedger
+
+            let incompleteObjectives = NativeGameEngine.campaignObjectives(for: state)
+            XCTAssertTrue(incompleteObjectives.contains { $0.id == "stability" && $0.isComplete }, scenario.id)
+            XCTAssertTrue(incompleteObjectives.contains { $0.id == "security" && !$0.isComplete }, scenario.id)
+            XCTAssertEqual(NativeGameEngine.evaluateVictoryStatus(for: state), .ongoing, scenario.id)
+
+            state.economicLedger.securityIndex = 70
+            state.economicLedgers[state.country.code] = state.economicLedger
+
+            XCTAssertTrue(NativeGameEngine.campaignObjectives(for: state).allSatisfy(\.isComplete), scenario.id)
+            XCTAssertEqual(NativeGameEngine.evaluateVictoryStatus(for: state), .won, scenario.id)
+        }
+    }
+
+    func testCompletedObjectivesAfterDeadlineStillLoseOnTime() {
+        var state = makeState()
+        state.aiCountryStates = [:]
+        state.gameDate = "2031-01-01"
+        state.stability = 100
+        state.regionOccupations = [:]
+        state.economicLedger.tradeBalancePercentGDP = 5
+        state.economicLedgers[state.country.code] = state.economicLedger
+
+        XCTAssertTrue(NativeGameEngine.campaignObjectives(for: state).allSatisfy(\.isComplete))
+        XCTAssertEqual(NativeGameEngine.evaluateVictoryStatus(for: state), .lostTimeout)
+    }
+
+    func testTurnEvaluatesVictoryAfterFinalDeterministicSimulation() {
+        var state = makeState()
+        state.aiCountryStates = [:]
+        state.gameDate = "2025-06-15"
+        state.stability = 79
+        state.regionOccupations = [:]
+        state.budgetMilitarySlider = 0.25
+        state.budgetServicesSlider = 0.50
+        state.budgetDiplomacySlider = 0.25
+        state.economicLedger.tradeBalancePercentGDP = 1
+        state.economicLedger.realGrowthPercent = 4
+        state.economicLedger.inflationPercent = 5
+        state.economicLedger.securityIndex = 60
+        state.economicLedgers = [state.country.code: state.economicLedger]
+
+        let applied = NativeGameEngine.apply(
+            NativeGeneratedTurn(
+                events: [],
+                stabilityDelta: 0,
+                summary: "Public services complete the final legitimacy milestone.",
+                worldTensionDelta: 0
+            ),
+            to: state,
+            months: 1
+        )
+
+        XCTAssertGreaterThanOrEqual(applied.stability, 80)
+        XCTAssertEqual(applied.victoryStatus, .won)
+        XCTAssertTrue(applied.timeline.contains { $0.id.hasPrefix("victory-") })
+    }
+
+    func testRivalCompletingVictoryRaceEndsTheCampaignWithNamedDefeatEvent() throws {
+        var state = makeState()
+        state.gameDate = "2025-06-15"
+        state.stability = 50
+        let rivalCode = "ARG"
+        var rivalState = try XCTUnwrap(state.aiCountryStates[rivalCode])
+        rivalState.rivalCampaignProgress = 100
+        state.aiCountryStates = [rivalCode: rivalState]
+
+        var rivalLedger = try XCTUnwrap(state.economicLedgers[rivalCode])
+        rivalLedger.securityIndex = 100
+        rivalLedger.fiscalSpaceIndex = 100
+        rivalLedger.realGrowthPercent = 16
+        rivalLedger.nominalGDPTrillions = 100
+        rivalLedger.tradeBalancePercentGDP = 0
+        // Keep the rival at 100% after the end-of-turn macro coupling
+        // recalculates fiscal space and security from debt, inflation, and
+        // insurgency. Victory is intentionally evaluated against that final
+        // deterministic state, not the pre-turn fixture.
+        rivalLedger.publicDebtPercentGDP = 1
+        rivalLedger.inflationPercent = 0
+        rivalLedger.rebelControlPercent = 0
+        state.economicLedgers = [
+            state.country.code: state.economicLedger,
+            rivalCode: rivalLedger
+        ]
+
+        let applied = NativeGameEngine.apply(
+            NativeGeneratedTurn(
+                events: [],
+                stabilityDelta: 0,
+                summary: "A rival power completes its strategic program.",
+                worldTensionDelta: 0
+            ),
+            to: state,
+            months: 1
+        )
+
+        XCTAssertEqual(
+            NativeStrategyContextDatabase.aiVictoryProgress(forCode: rivalCode, in: applied),
+            100,
+            accuracy: 0.001
+        )
+        XCTAssertEqual(applied.victoryStatus, .lostRival)
+        XCTAssertEqual(applied.rivalVictoryCountryCode, rivalCode)
+        XCTAssertEqual(NativeGameEngine.victoriousRivalName(in: applied), "Argentina")
+        XCTAssertTrue(applied.timeline.contains {
+            $0.id.hasPrefix("rival-victory-arg-") && $0.title.contains("Argentina")
+        })
+        XCTAssertFalse(applied.timeline.contains { $0.id.hasPrefix("rival-threat-arg-") })
+
+        let restored = try JSONDecoder().decode(
+            NativeCampaignState.self,
+            from: JSONEncoder().encode(applied)
+        )
+        XCTAssertEqual(restored.rivalVictoryCountryCode, rivalCode)
+        XCTAssertEqual(NativeGameEngine.victoriousRivalName(in: restored), "Argentina")
+    }
+
+    func testRivalVictoryProgressUsesTheActiveScenarioObjectives() throws {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.gameDate = "2000-01-15"
+        state.stability = 50
+        state.worldTension = 79
+        let rivalCode = "ARG"
+        var rivalState = try XCTUnwrap(state.aiCountryStates[rivalCode])
+        rivalState.rivalCampaignProgress = 100
+        state.aiCountryStates = [rivalCode: rivalState]
+
+        var rivalLedger = try XCTUnwrap(state.economicLedgers[rivalCode])
+        rivalLedger.securityIndex = 100
+        rivalLedger.fiscalSpaceIndex = 100
+        rivalLedger.realGrowthPercent = 16
+        rivalLedger.nominalGDPTrillions = 100
+        state.economicLedgers = [
+            state.country.code: state.economicLedger,
+            rivalCode: rivalLedger
+        ]
+
+        XCTAssertLessThan(NativeStrategyContextDatabase.aiVictoryReadiness(forCode: rivalCode, in: state), 100)
+        XCTAssertLessThan(NativeStrategyContextDatabase.aiVictoryProgress(forCode: rivalCode, in: state), 100)
+        XCTAssertEqual(NativeGameEngine.evaluateVictoryStatus(for: state), .ongoing)
+
+        state.worldTension = 80
+        let rivalTargets = GeopoliticalMapData.regions.filter {
+            $0.countryCode != rivalCode && $0.countryCode != "WATER"
+        }.prefix(2)
+        XCTAssertEqual(rivalTargets.count, 2)
+        for region in rivalTargets {
+            state.regionOccupations[region.id] = rivalCode
+        }
+
+        XCTAssertEqual(
+            NativeStrategyContextDatabase.aiVictoryReadiness(forCode: rivalCode, in: state),
+            100,
+            accuracy: 0.001
+        )
+        XCTAssertEqual(
+            NativeStrategyContextDatabase.aiVictoryProgress(forCode: rivalCode, in: state),
+            100,
+            accuracy: 0.001
+        )
+        XCTAssertEqual(NativeGameEngine.evaluateVictoryStatus(for: state), .lostRival)
+    }
+
+    func testRivalThreatWarningIsAggregatedAndEmittedOnlyOnce() throws {
+        var state = makeState()
+        state.stability = 50
+        let rivalCode = "ARG"
+        var rivalState = try XCTUnwrap(state.aiCountryStates[rivalCode])
+        rivalState.rivalCampaignProgress = NativeStrategyContextDatabase.rivalAgendaVictoryAward * 2
+        state.aiCountryStates = [rivalCode: rivalState]
+
+        var rivalLedger = try XCTUnwrap(state.economicLedgers[rivalCode])
+        rivalLedger.securityIndex = 100
+        rivalLedger.tradeBalancePercentGDP = 0
+        rivalLedger.publicDebtPercentGDP = 1
+        rivalLedger.inflationPercent = 0
+        rivalLedger.rebelControlPercent = 0
+        state.economicLedgers = [
+            state.country.code: state.economicLedger,
+            rivalCode: rivalLedger
+        ]
+
+        NativeStrategyContextDatabase.simulateAIDrift(state: &state, months: 3)
+        XCTAssertEqual(state.timeline.count(where: { $0.id.hasPrefix("rival-threat-") }), 1)
+
+        state.round += 1
+        NativeStrategyContextDatabase.simulateAIDrift(state: &state, months: 3)
+        XCTAssertEqual(state.timeline.count(where: { $0.id.hasPrefix("rival-threat-") }), 1)
+    }
+
+    func testOpeningStrengthCannotTriggerRivalVictoryWithoutEarnedAgendas() {
+        var state = makeState()
+        state.gameDate = "2029-01-15"
+        state.round = 99
+
+        let readyRivals = state.aiCountryStates.keys.filter {
+            NativeStrategyContextDatabase.aiVictoryReadiness(forCode: $0, in: state) >= 100
+        }
+        XCTAssertFalse(readyRivals.isEmpty)
+        XCTAssertTrue(readyRivals.allSatisfy {
+            NativeStrategyContextDatabase.aiVictoryProgress(forCode: $0, in: state) == 0
+        })
+        XCTAssertEqual(NativeGameEngine.evaluateVictoryStatus(for: state), .ongoing)
+    }
+
+    func testNoMapActorCannotEnterRivalVictoryRace() throws {
+        var state = makeState()
+        state.stability = 50
+        let rivalCode = "TUV"
+        var rivalState = try XCTUnwrap(state.aiCountryStates[rivalCode])
+        rivalState.rivalCampaignProgress = 100
+        state.aiCountryStates = [rivalCode: rivalState]
+
+        var rivalLedger = try XCTUnwrap(state.economicLedgers[rivalCode])
+        rivalLedger.securityIndex = 100
+        rivalLedger.tradeBalancePercentGDP = 20
+        state.economicLedgers = [
+            state.country.code: state.economicLedger,
+            rivalCode: rivalLedger
+        ]
+
+        XCTAssertTrue(GeopoliticalMapData.regions(forCountryCode: rivalCode).isEmpty)
+        XCTAssertEqual(NativeStrategyContextDatabase.aiVictoryReadiness(forCode: rivalCode, in: state), 0)
+        XCTAssertEqual(NativeStrategyContextDatabase.aiVictoryProgress(forCode: rivalCode, in: state), 0)
+        XCTAssertEqual(NativeGameEngine.evaluateVictoryStatus(for: state), .ongoing)
+    }
+
+    func testCountryAliasesShareOneCanonicalRivalRaceEntry() throws {
+        let state = makeState()
+        let palestineAliases = state.aiCountryStates.keys.filter {
+            GeopoliticalMapData.canonicalCountryCode($0) == "PSX"
+        }
+        let representatives = palestineAliases.filter {
+            NativeStrategyContextDatabase.isCanonicalRivalRepresentative(forCode: $0, in: state)
+        }
+
+        XCTAssertGreaterThan(palestineAliases.count, 1)
+        XCTAssertEqual(representatives.count, 1)
+        let representative = try XCTUnwrap(representatives.first)
+        let catalogName = try XCTUnwrap(CountryCatalog.all.first { $0.code == "PSE" }?.name)
+        XCTAssertEqual(CountryNameResolver.name(forCode: representative, in: state), catalogName)
+        XCTAssertNotEqual(catalogName, representative)
+    }
+
+    func testLegacyAIStateStartsWithNoEarnedRivalProgress() throws {
+        let decoded = try JSONDecoder().decode(NativeAICountryState.self, from: Data("{}".utf8))
+        XCTAssertEqual(decoded.rivalCampaignProgress, 0)
+    }
+
+    func testCompletedFullyReadyAgendaEarnsExactlyOneRivalMilestone() throws {
+        var state = makeState()
+        state.stability = 50
+        let rivalCode = "ARG"
+        var rivalState = try XCTUnwrap(state.aiCountryStates[rivalCode])
+        rivalState.agendaProgress = 99
+        rivalState.rivalCampaignProgress = 0
+        state.aiCountryStates = [rivalCode: rivalState]
+
+        var rivalLedger = try XCTUnwrap(state.economicLedgers[rivalCode])
+        rivalLedger.securityIndex = 100
+        rivalLedger.tradeBalancePercentGDP = 0
+        rivalLedger.publicDebtPercentGDP = 1
+        rivalLedger.inflationPercent = 0
+        rivalLedger.rebelControlPercent = 0
+        state.economicLedgers = [
+            state.country.code: state.economicLedger,
+            rivalCode: rivalLedger
+        ]
+
+        NativeStrategyContextDatabase.simulateAIDrift(state: &state, months: 3)
+        XCTAssertEqual(
+            try XCTUnwrap(state.aiCountryStates[rivalCode]).rivalCampaignProgress,
+            NativeStrategyContextDatabase.rivalAgendaVictoryAward,
+            accuracy: 0.001
+        )
+
+        NativeStrategyContextDatabase.simulateAIDrift(state: &state, months: 3)
+        XCTAssertEqual(
+            try XCTUnwrap(state.aiCountryStates[rivalCode]).rivalCampaignProgress,
+            NativeStrategyContextDatabase.rivalAgendaVictoryAward,
+            accuracy: 0.001
+        )
+    }
+
+    func testTurnReducerPreservesCompletedAgendaResetAcrossParallelSimulation() async throws {
+        let service = FakeNativeAIService()
+        service.turnHandler = { state, months in
+            makeValidTurn(for: state, months: months)
+        }
+        let store = try makeStore(aiService: service)
+        var state = makeState()
+        state.stability = 50
+        let rivalCode = "ARG"
+        var rivalState = try XCTUnwrap(state.aiCountryStates[rivalCode])
+        rivalState.agendaProgress = 99
+        rivalState.rivalCampaignProgress = 0
+        state.aiCountryStates = [rivalCode: rivalState]
+
+        var rivalLedger = try XCTUnwrap(state.economicLedgers[rivalCode])
+        rivalLedger.securityIndex = 100
+        rivalLedger.tradeBalancePercentGDP = 0
+        rivalLedger.publicDebtPercentGDP = 1
+        rivalLedger.inflationPercent = 0
+        rivalLedger.rebelControlPercent = 0
+        state.economicLedgers = [
+            state.country.code: state.economicLedger,
+            rivalCode: rivalLedger
+        ]
+        store.state = state
+
+        await store.performAdvance()
+        let afterCompletion = try XCTUnwrap(store.state?.aiCountryStates[rivalCode])
+        XCTAssertEqual(afterCompletion.agendaProgress, 0)
+        XCTAssertEqual(
+            afterCompletion.rivalCampaignProgress,
+            NativeStrategyContextDatabase.rivalAgendaVictoryAward,
+            accuracy: 0.001
+        )
+
+        await store.performAdvance()
+        let afterFollowingTurn = try XCTUnwrap(store.state?.aiCountryStates[rivalCode])
+        XCTAssertGreaterThan(afterFollowingTurn.agendaProgress, 0)
+        XCTAssertLessThan(afterFollowingTurn.agendaProgress, 100)
+        XCTAssertEqual(
+            afterFollowingTurn.rivalCampaignProgress,
+            NativeStrategyContextDatabase.rivalAgendaVictoryAward,
+            accuracy: 0.001
+        )
     }
 
     func testDiplomaticOfferProposalsAndActions() throws {
@@ -3247,7 +3899,9 @@ private final class CapturingNVIDIAMatrixService: NativeNVIDIAService {
         responseFormat: String? = nil,
         thinkingEnabled: Bool = true,
         onStreamProgress _: (@MainActor (String) -> Void)? = nil,
-        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil
+        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil,
+        requestTimeout _: TimeInterval = 90,
+        retryLimit _: Int = 2
     ) async throws -> String {
         capturedRequests.append(CapturedProviderRequest(
             hasReasoningProgress: onReasoningProgress != nil,
@@ -3277,7 +3931,9 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         responseFormat: String? = nil,
         thinkingEnabled: Bool = true,
         onStreamProgress _: (@MainActor (String) -> Void)? = nil,
-        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil
+        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil,
+        requestTimeout _: TimeInterval = 90,
+        retryLimit _: Int = 2
     ) async throws -> String {
         capturedRequests.append(CapturedProviderRequest(
             hasReasoningProgress: onReasoningProgress != nil,
@@ -3363,8 +4019,8 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
             {
               "title": "Security Capacity Audit",
               "description": "Civilian security planners audit high-pressure municipalities and report staffing needs without expanding the campaign beyond current capacity.",
-              "kind": "domestic",
-              "importance": "minor",
+              "kind": "action",
+              "importance": "severe",
               "notable": true,
               "playerRelated": true,
               "linkedActionID": null,
@@ -3683,6 +4339,50 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         XCTAssertThrowsError(try NativeDecisionMatrixContract.validatedPlayerMatrix(unaffordable, state: state))
     }
 
+    func testLocalDecisionMatrixIsImmediateDeterministicAndFullyLegal() throws {
+        var state = NativeGameEngine.initialState(for: testCountry, worldSeed: 424_242)
+        state.administrativeCapacity = 100
+
+        let first = NativeDecisionMatrixContract.localPlayerMatrix(for: state)
+        let second = NativeDecisionMatrixContract.localPlayerMatrix(for: state)
+        let validated = try NativeDecisionMatrixContract.validatedPlayerMatrix(first, state: state)
+
+        XCTAssertEqual(first, second)
+        XCTAssertEqual(validated.count, NativeDecisionMatrixContract.cellCount)
+        XCTAssertEqual(Set(validated.map { "\($0.matrixRow):\($0.matrixColumn)" }).count, 25)
+        XCTAssertTrue(validated.allSatisfy { $0.administrativeCost > 0 })
+        XCTAssertTrue(validated.allSatisfy { $0.administrativeCost <= state.administrativeCapacity })
+    }
+
+    func testMatrixQueueCapsAtEveryOrderTheTurnPipelineCanResolveAndSupportsToggle() throws {
+        let store = try makeStore()
+        var state = NativeGameEngine.initialState(for: testCountry, worldSeed: 99)
+        state.administrativeCapacity = 100
+        let matrix = NativeDecisionMatrixContract.localPlayerMatrix(for: state)
+        store.state = state
+
+        for suggestion in matrix.prefix(NativeDecisionMatrixContract.maximumOrdersPerTurn) {
+            store.addSuggestedAction(suggestion)
+        }
+
+        XCTAssertEqual(
+            store.state?.plannedActions.filter { $0.status == .planned }.count,
+            NativeDecisionMatrixContract.maximumOrdersPerTurn
+        )
+        XCTAssertEqual(store.state?.administrativeCapacity, 40)
+
+        store.addSuggestedAction(matrix[NativeDecisionMatrixContract.maximumOrdersPerTurn])
+        XCTAssertEqual(
+            store.state?.plannedActions.filter { $0.status == .planned }.count,
+            NativeDecisionMatrixContract.maximumOrdersPerTurn
+        )
+        XCTAssertTrue(store.lastError?.contains("queue is full") == true)
+
+        store.toggleSuggestedAction(matrix[0])
+        XCTAssertEqual(store.state?.plannedActions.filter { $0.status == .planned }.count, 2)
+        XCTAssertEqual(store.state?.administrativeCapacity, 50)
+    }
+
     func testOpenRouterMatrixPromptCarriesSeedsWorldPowerAndSovereigntyState() {
         var state = NativeGameEngine.initialState(for: testCountry, worldSeed: 0xA11C_E123)
         state.dynamicCountries["NBR"] = "New Brazil"
@@ -3697,6 +4397,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         XCTAssertTrue(prompt.contains("EXACT POLITICAL DIRECTIVES CURRENTLY AVAILABLE"))
         XCTAssertTrue(prompt.contains("Secession/new-country requires stored rebel/conflict pressure"))
         XCTAssertTrue(prompt.contains("victoryStatus="))
+        XCTAssertTrue(prompt.contains("queue at most 3 orders"))
     }
 
     func testSelectingMatrixCellPaysRecordedCostKeepsBoardAndRejectsDuplicate() throws {
@@ -3889,7 +4590,9 @@ private final class FailingOpenRouterGameService: NativeOpenRouterService {
         responseFormat _: String? = nil,
         thinkingEnabled _: Bool = true,
         onStreamProgress _: (@MainActor (String) -> Void)? = nil,
-        onReasoningProgress _: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil
+        onReasoningProgress _: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil,
+        requestTimeout _: TimeInterval = 90,
+        retryLimit _: Int = 2
     ) async throws -> String {
         throw NativeFoundationModelError.generationFailed("OpenRouter fixture failure")
     }

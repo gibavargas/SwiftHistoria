@@ -10,6 +10,12 @@ import Foundation
 enum CountryNameResolver {
     /// Cached lookup: alpha-3 code → display name from CountryCatalog.
     private static let catalogByName: [String: String] = Dictionary(CountryCatalog.all.map { ($0.code, $0.name) }, uniquingKeysWith: { _, last in last })
+    /// Map-geometry codes sometimes differ from catalog ISO codes. Index both
+    /// directions so PSX/PSE and KOS/XXK resolve to one human-readable actor.
+    private static let catalogByCanonicalCode: [String: String] = Dictionary(
+        CountryCatalog.all.map { (GeopoliticalMapData.canonicalCountryCode($0.code), $0.name) },
+        uniquingKeysWith: { _, last in last }
+    )
 
     /// Special display names for non-country entities that appear as effect targets.
     private static let specialNames: [String: String] = [
@@ -49,9 +55,9 @@ enum CountryNameResolver {
             return name
         }
 
-        // Canonical normalization (e.g. PSE → PSX in map data)
+        // Canonical normalization in either direction (for example PSE/PSX).
         let canonical = GeopoliticalMapData.canonicalCountryCode(upper)
-        if canonical != upper, let name = catalogByName[canonical] {
+        if let name = catalogByCanonicalCode[canonical] {
             return name
         }
 

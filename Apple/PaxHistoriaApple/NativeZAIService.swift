@@ -99,6 +99,16 @@ struct NativeReasoningDelta: Equatable {
     var text = ""
 }
 
+private final class NativeParsedProviderResponse: @unchecked Sendable {
+    let content: String
+    let usage: (prompt: Int, completion: Int, total: Int)?
+
+    init(content: String, usage: (prompt: Int, completion: Int, total: Int)?) {
+        self.content = content
+        self.usage = usage
+    }
+}
+
 /// Shared session-wide token usage counter. External AI providers report their
 /// `usage` payload here after each call; the campaign store republishes the
 /// running totals into SwiftUI for telemetry only. It never gates generation.
@@ -157,9 +167,9 @@ class NativeZAIService: NativeAIService {
         true
     }
 
-    /// External providers may omit `max_tokens` so SwiftHistoria does not add
-    /// its own completion cap. Z.AI retains the field for compatibility; the
-    /// NVIDIA primary route and OpenRouter fallback override this to false.
+    /// OpenRouter omits `max_tokens` so the free router can choose its own
+    /// completion length. NVIDIA and Z.AI retain the field for provider
+    /// compatibility.
     var includesMaxTokensField: Bool {
         true
     }
@@ -683,7 +693,6 @@ class NativeZAIService: NativeAIService {
     ) async throws -> T {
         let combinedPrompt = """
         \(prompt)
-
         Required JSON schema:
         \(schema)
         """
@@ -721,7 +730,9 @@ class NativeZAIService: NativeAIService {
         responseFormat: String? = nil,
         thinkingEnabled: Bool = true,
         onStreamProgress: (@MainActor (String) -> Void)? = nil,
-        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil
+        onReasoningProgress: (@MainActor (NativeReasoningStreamUpdate) -> Void)? = nil,
+        requestTimeout: TimeInterval = 90,
+        retryLimit: Int = 2
     ) async throws -> String {
         let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !key.isEmpty else {
@@ -747,7 +758,7 @@ class NativeZAIService: NativeAIService {
             var releaseLane = true
 
             // Rate limiting + retry with exponential backoff for OpenRouter/Z.AI
-            let maxRetries = 2
+            let maxRetries = max(0, retryLimit)
             for attempt in 0 ... maxRetries {
                 try await NativeRateLimiter.shared.acquire()
 
@@ -760,8 +771,7 @@ class NativeZAIService: NativeAIService {
                 request.setValue("https://github.com/gibavargas/swifthistoria", forHTTPHeaderField: "HTTP-Referer")
                 request.setValue("SwiftHistoria", forHTTPHeaderField: "X-Title")
                 // Enforce turn limit: up to 90s for all remote requests
-                let computedTimeout = 90.0
-                request.timeoutInterval = computedTimeout
+                request.timeoutInterval = requestTimeout
 
                 var payload: [String: Any] = [
                     "model": lane.name,
@@ -860,9 +870,20 @@ class NativeZAIService: NativeAIService {
                     }
 
                     do {
-                        let content = try Self.decodeCompletionContent(from: data, providerDisplayName: providerDisplayName)
+                        let providerName = providerDisplayName
+                        let parsed = try await Task.detached(priority: .userInitiated) {
+                            let content = try NativeZAIService.decodeCompletionContent(
+                                from: data,
+                                providerDisplayName: providerName
+                            )
+                            return NativeParsedProviderResponse(
+                                content: content,
+                                usage: NativeZAIService.parseTokenUsage(from: data)
+                            )
+                        }.value
+                        let content = parsed.content
                         // Parse token usage for cost telemetry
-                        if let usage = Self.parseTokenUsage(from: data) {
+                        if let usage = parsed.usage {
                             sessionPromptTokens += usage.prompt
                             sessionCompletionTokens += usage.completion
                             logger.info("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] tokens: prompt=\(usage.prompt, privacy: .public) completion=\(usage.completion, privacy: .public) session_total=\(self.sessionPromptTokens + self.sessionCompletionTokens, privacy: .public)")
@@ -883,7 +904,9 @@ class NativeZAIService: NativeAIService {
                                 responseFormat: responseFormat,
                                 thinkingEnabled: false,
                                 onStreamProgress: onStreamProgress,
-                                onReasoningProgress: onReasoningProgress
+                                onReasoningProgress: onReasoningProgress,
+                                requestTimeout: requestTimeout,
+                                retryLimit: retryLimit
                             )
                         }
                         throw error
@@ -944,6 +967,7 @@ class NativeZAIService: NativeAIService {
         var accumulatedReasoning = ""
         var reasoningIsEncrypted = false
         var selectedModel: String?
+        var lastContentEmission = Date.distantPast
         var lastReasoningEmission = Date.distantPast
         var usage: (prompt: Int, completion: Int, total: Int)?
         var sawChunk = false
@@ -966,7 +990,11 @@ class NativeZAIService: NativeAIService {
             {
                 if let deltaContent = delta["content"] as? String {
                     accumulated += deltaContent
-                    if let onProgress { onProgress(accumulated) }
+                    let now = Date()
+                    if now.timeIntervalSince(lastContentEmission) >= 0.15, let onProgress {
+                        onProgress(accumulated)
+                        lastContentEmission = now
+                    }
                 }
 
                 let reasoningDelta = Self.reasoningDelta(from: delta)
@@ -990,6 +1018,10 @@ class NativeZAIService: NativeAIService {
                 let total = (usageObject["total_tokens"] as? Int) ?? (prompt + completion)
                 usage = (prompt, completion, total)
             }
+        }
+
+        if let onProgress, !accumulated.isEmpty {
+            onProgress(accumulated)
         }
 
         if let onReasoningProgress {
@@ -1184,7 +1216,6 @@ class NativeZAIService: NativeAIService {
 
         return """
         \(basePrompt)\(repairBlock)\(deduplicationLine)
-
         Return one strict JSON object only. Do not include markdown fences, prose, schema labels, or comments.
         Banned title words: Apple, Native, Generated, Draft, Placeholder, Schema.
         Use a concrete title like Transit Funding Review, Grid Capacity Program, or School Access Plan.
@@ -1195,7 +1226,6 @@ class NativeZAIService: NativeAIService {
         guard !repairNotes.isEmpty else { return basePrompt }
         return """
         \(basePrompt)
-
         Recent correction requests:
         \(repairNotes.map { "- \($0)" }.joined(separator: "\n"))
         Do not return placeholder text, schema labels, unsafe operational instructions, or repeated sentences.
@@ -1206,7 +1236,6 @@ class NativeZAIService: NativeAIService {
         let repairBlock = repairNotes.isEmpty ? "" : "\n\nSuggestion repair notes:\n\(repairNotes.map { "- \($0)" }.joined(separator: "\n"))"
         return """
         \(basePrompt)\(repairBlock)
-
         Return one strict JSON object only. Do not include markdown fences, prose, schema labels, or comments.
         Banned title words: Apple, Native, Generated, Draft, Placeholder, Schema.
         """
@@ -1268,12 +1297,12 @@ class NativeZAIService: NativeAIService {
         if lang == .portuguese {
             """
             [Exemplo 1]
-            {"title":"Índice de Frete Marítimo Estabiliza","description":"A demanda por comércio transatlântico se alinha com a capacidade de navios cargueiros, reduzindo custos de trânsito em corredores globais de suprimentos.","kind":"world","importance":"major","notable":true,"effectTarget":"GLOBAL","effectTrack":"market-confidence","effectMagnitude":1,"effectSummary":"Custos estáveis de frete marítimo reduzem a fricção de importação, apoiando o comércio."}
+            {"title":"Índice de Frete Marítimo Estabiliza","description":"A demanda por comércio transatlântico se alinha com a capacidade de navios cargueiros, reduzindo custos de trânsito em corredores globais de suprimentos.","kind":"world","importance":"major","notable":true,"effectTarget":"GLOBAL","effectTrack":"⟦MKT⟧","effectMagnitude":1,"effectSummary":"Custos estáveis de frete marítimo reduzem a fricção de importação, apoiando o comércio."}
             """
         } else {
             """
             [Exemplo 1]
-            {"title":"Maritime Freight Index Stabilizes","description":"Transatlantic shipping demand aligns with carrier capacity, easing transit costs across major logistics corridors.","kind":"world","importance":"major","notable":true,"effectTarget":"GLOBAL","effectTrack":"market-confidence","effectMagnitude":1,"effectSummary":"Stable shipping costs ease import friction, supporting global trade."}
+            {"title":"Maritime Freight Index Stabilizes","description":"Transatlantic shipping demand aligns with carrier capacity, easing transit costs across major logistics corridors.","kind":"world","importance":"major","notable":true,"effectTarget":"GLOBAL","effectTrack":"⟦MKT⟧","effectMagnitude":1,"effectSummary":"Stable shipping costs ease import friction, supporting global trade."}
             """
         }
     }
@@ -1414,9 +1443,8 @@ private struct ZAIEventDraft: Decodable {
         let target = effectTarget == "GLOBAL" ? "GLOBAL" : (effectTarget == "PLAYER" ? state.country.code : effectTarget)
         let normalizedTrack = effectTrack
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
             .replacingOccurrences(of: "_", with: "-")
-        let safeTrack = NativeStrategicTrack(rawValue: normalizedTrack) ?? .economicResilience
+        let safeTrack = NativeStrategicTrack.decodeMechanicToken(normalizedTrack) ?? .economicResilience
         let safeKind: NativeEventKind = kind == "economy" ? .economy : (kind == "domestic" ? .action : .world)
 
         let targetEffect = NativeStrategicEffect(
@@ -1453,7 +1481,7 @@ private struct ZAIEventDraft: Decodable {
       "importance": "minor, major, or critical",
       "notable": true,
       "effectTarget": "Country code like USA, CHN, or GLOBAL",
-      "effectTrack": "economic-resilience, market-confidence, diplomatic-leverage, internal-stability, world-tension, military-readiness, or security-anxiety",
+      "effectTrack": "One exact code: ⟦ECO⟧, ⟦MKT⟧, ⟦STB⟧, ⟦SEC⟧, ⟦DIP⟧, ⟦MIL⟧, or ⟦TNS⟧",
       "effectMagnitude": -3 to 3,
       "effectSummary": "One concise sentence describing the game mechanics effect.",
       "hexLeverCode": "0xCode or null",
@@ -1520,8 +1548,8 @@ private struct ZAISuggestedAction: Decodable {
     {
       "title": "Short imperative title for the civic proposal.",
       "detail": "Accept-ready board-game order with bounded instrument, generic agency or sector, timing, capacity fit, and intended game effect.",
-      "primaryMechanic": "One of: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, world-tension.",
-      "secondaryMechanic": "One of: economic-resilience, market-confidence, internal-stability, security-anxiety, diplomatic-leverage, world-tension.",
+      "primaryMechanic": "One exact code: ⟦ECO⟧, ⟦MKT⟧, ⟦STB⟧, ⟦SEC⟧, ⟦DIP⟧, ⟦MIL⟧, or ⟦TNS⟧.",
+      "secondaryMechanic": "One exact code different from primaryMechanic.",
       "rationale": "Why this proposal fits the current campaign state and objectives.",
       "urgency": "immediate, soon, or opportunistic"
     }

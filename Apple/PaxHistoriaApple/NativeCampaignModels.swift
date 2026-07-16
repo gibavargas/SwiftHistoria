@@ -248,6 +248,150 @@ enum NativeIntelVisibility: String, Codable, Hashable {
     }
 }
 
+enum NativeCountryLifecycle: String, Codable, Hashable {
+    case active
+    case merged
+    case dissolved
+    case collapsed
+
+    var isActive: Bool {
+        self == .active
+    }
+}
+
+enum NativeCountrySimulationTier: String, Codable, Hashable {
+    case background
+    case relevant
+    case headline
+}
+
+struct NativeCountryFactionPressure: Codable, Hashable {
+    var institutions: Int
+    var military: Int
+    var regional: Int
+    var labor: Int
+
+    init(institutions: Int = 50, military: Int = 50, regional: Int = 50, labor: Int = 50) {
+        self.institutions = Swift.max(0, Swift.min(100, institutions))
+        self.military = Swift.max(0, Swift.min(100, military))
+        self.regional = Swift.max(0, Swift.min(100, regional))
+        self.labor = Swift.max(0, Swift.min(100, labor))
+    }
+}
+
+enum NativeDiplomaticPosture: String, Codable, Hashable {
+    case hostile
+    case wary
+    case neutral
+    case cooperative
+    case allied
+}
+
+struct NativeDiplomaticRelation: Codable, Hashable, Identifiable {
+    var sourceCode: String
+    var targetCode: String
+    var trust: Int
+    var threat: Int
+    var tradeDependence: Int
+    var posture: NativeDiplomaticPosture
+    var lastInteractionRound: Int
+    var grievances: [String]
+
+    var id: String {
+        "\(sourceCode)->\(targetCode)"
+    }
+
+    init(
+        sourceCode: String,
+        targetCode: String,
+        trust: Int = 0,
+        threat: Int = 0,
+        tradeDependence: Int = 0,
+        posture: NativeDiplomaticPosture = .neutral,
+        lastInteractionRound: Int = 0,
+        grievances: [String] = []
+    ) {
+        self.sourceCode = sourceCode
+        self.targetCode = targetCode
+        self.trust = Swift.max(-100, Swift.min(100, trust))
+        self.threat = Swift.max(0, Swift.min(100, threat))
+        self.tradeDependence = Swift.max(0, Swift.min(100, tradeDependence))
+        self.posture = posture
+        self.lastInteractionRound = Swift.max(0, lastInteractionRound)
+        self.grievances = Array(grievances.prefix(8))
+    }
+}
+
+enum NativeCountryOutcomeCausality: String, Codable, Hashable {
+    case autonomous
+    case playerInfluenced
+    case systemic
+}
+
+enum NativeCountryOutcomePromotion: String, Codable, Hashable {
+    case background
+    case relevant
+    case headline
+}
+
+struct NativeCountryTurnOutcome: Codable, Hashable, Identifiable {
+    var id: String
+    var countryCode: String
+    var date: String
+    var round: Int
+    var actionTitle: String
+    var actionDescription: String
+    var actionKind: String
+    var matrixRow: Int
+    var matrixColumn: Int
+    var effectTarget: String
+    var strategicEffects: [NativeStrategicEffect]
+    var relationshipDeltas: [String: Int]
+    var causality: NativeCountryOutcomeCausality
+    var promotion: NativeCountryOutcomePromotion
+    var playerRelated: Bool
+    var sovereigntyChange: NativeSovereigntyChange?
+    var linkedEventID: String?
+
+    init(
+        id: String,
+        countryCode: String,
+        date: String,
+        round: Int,
+        actionTitle: String,
+        actionDescription: String,
+        actionKind: String,
+        matrixRow: Int,
+        matrixColumn: Int,
+        effectTarget: String,
+        strategicEffects: [NativeStrategicEffect],
+        relationshipDeltas: [String: Int] = [:],
+        causality: NativeCountryOutcomeCausality = .autonomous,
+        promotion: NativeCountryOutcomePromotion = .background,
+        playerRelated: Bool = false,
+        sovereigntyChange: NativeSovereigntyChange? = nil,
+        linkedEventID: String? = nil
+    ) {
+        self.id = id
+        self.countryCode = countryCode
+        self.date = date
+        self.round = round
+        self.actionTitle = actionTitle
+        self.actionDescription = actionDescription
+        self.actionKind = actionKind
+        self.matrixRow = matrixRow
+        self.matrixColumn = matrixColumn
+        self.effectTarget = effectTarget
+        self.strategicEffects = strategicEffects
+        self.relationshipDeltas = relationshipDeltas
+        self.causality = causality
+        self.promotion = promotion
+        self.playerRelated = playerRelated
+        self.sovereigntyChange = sovereigntyChange
+        self.linkedEventID = linkedEventID
+    }
+}
+
 struct NativeAICountryState: Codable, Hashable, Identifiable {
     var countryCode: String
     var doctrine: NativeAIDoctrine
@@ -265,6 +409,16 @@ struct NativeAICountryState: Codable, Hashable, Identifiable {
     var lastAIActionSummary: String
     /// How many turns since this country last received a visible decision.
     var turnsSinceAIAction: Int
+    /// Long-horizon rival victory progress earned by completing in-campaign
+    /// strategic agendas while every active scenario objective is satisfied.
+    /// Opening strength alone never advances this meter.
+    var rivalCampaignProgress: Double
+    var lifecycle: NativeCountryLifecycle
+    var successorCode: String?
+    var lifecycleDate: String?
+    var simulationTier: NativeCountrySimulationTier
+    var factionPressure: NativeCountryFactionPressure
+    var lastOutcomeID: String?
 
     var id: String {
         countryCode
@@ -273,7 +427,8 @@ struct NativeAICountryState: Codable, Hashable, Identifiable {
     private enum CodingKeys: String, CodingKey {
         case countryCode, doctrine, budgetPriority, relationshipScores
         case multiTurnAgenda, agendaProgress, decisionProfileID, decisionSeed, decisionStep
-        case lastAIActionSummary, turnsSinceAIAction
+        case lastAIActionSummary, turnsSinceAIAction, rivalCampaignProgress
+        case lifecycle, successorCode, lifecycleDate, simulationTier, factionPressure, lastOutcomeID
     }
 
     init(
@@ -287,7 +442,14 @@ struct NativeAICountryState: Codable, Hashable, Identifiable {
         decisionSeed: UInt64 = 0,
         decisionStep: Int = 0,
         lastAIActionSummary: String = "",
-        turnsSinceAIAction: Int = 0
+        turnsSinceAIAction: Int = 0,
+        rivalCampaignProgress: Double = 0,
+        lifecycle: NativeCountryLifecycle = .active,
+        successorCode: String? = nil,
+        lifecycleDate: String? = nil,
+        simulationTier: NativeCountrySimulationTier = .background,
+        factionPressure: NativeCountryFactionPressure = NativeCountryFactionPressure(),
+        lastOutcomeID: String? = nil
     ) {
         self.countryCode = countryCode
         self.doctrine = doctrine
@@ -300,6 +462,13 @@ struct NativeAICountryState: Codable, Hashable, Identifiable {
         self.decisionStep = max(0, decisionStep)
         self.lastAIActionSummary = lastAIActionSummary
         self.turnsSinceAIAction = turnsSinceAIAction
+        self.rivalCampaignProgress = max(0, min(100, rivalCampaignProgress.isFinite ? rivalCampaignProgress : 0))
+        self.lifecycle = lifecycle
+        self.successorCode = successorCode
+        self.lifecycleDate = lifecycleDate
+        self.simulationTier = simulationTier
+        self.factionPressure = factionPressure
+        self.lastOutcomeID = lastOutcomeID
     }
 
     init(from decoder: Decoder) throws {
@@ -315,6 +484,14 @@ struct NativeAICountryState: Codable, Hashable, Identifiable {
         decisionStep = max(0, (try? c.decodeIfPresent(Int.self, forKey: .decisionStep)) ?? 0)
         lastAIActionSummary = (try? c.decodeIfPresent(String.self, forKey: .lastAIActionSummary)) ?? ""
         turnsSinceAIAction = (try? c.decodeIfPresent(Int.self, forKey: .turnsSinceAIAction)) ?? 0
+        let decodedRivalProgress = (try? c.decodeIfPresent(Double.self, forKey: .rivalCampaignProgress)) ?? 0
+        rivalCampaignProgress = max(0, min(100, decodedRivalProgress.isFinite ? decodedRivalProgress : 0))
+        lifecycle = (try? c.decodeIfPresent(NativeCountryLifecycle.self, forKey: .lifecycle)) ?? .active
+        successorCode = try? c.decodeIfPresent(String.self, forKey: .successorCode)
+        lifecycleDate = try? c.decodeIfPresent(String.self, forKey: .lifecycleDate)
+        simulationTier = (try? c.decodeIfPresent(NativeCountrySimulationTier.self, forKey: .simulationTier)) ?? .background
+        factionPressure = (try? c.decodeIfPresent(NativeCountryFactionPressure.self, forKey: .factionPressure)) ?? NativeCountryFactionPressure()
+        lastOutcomeID = try? c.decodeIfPresent(String.self, forKey: .lastOutcomeID)
     }
 }
 
@@ -452,6 +629,9 @@ struct NativeCampaignState: Codable, Hashable {
     // New Grand Strategy Layer fields
     var administrativeCapacity: Int
     var victoryStatus: NativeVictoryStatus
+    /// Stable attribution for a latched rival defeat. This prevents overlays
+    /// and restored saves from guessing the winner from later state.
+    var rivalVictoryCountryCode: String?
     var activeOffers: [NativeDiplomaticOffer]
     var budgetMilitarySlider: Double
     var budgetServicesSlider: Double
@@ -503,6 +683,7 @@ struct NativeCampaignState: Codable, Hashable {
         mapBuildings: [NativeBuildingSnapshot] = [],
         administrativeCapacity: Int = 100,
         victoryStatus: NativeVictoryStatus = .ongoing,
+        rivalVictoryCountryCode: String? = nil,
         activeOffers: [NativeDiplomaticOffer] = [],
         budgetMilitarySlider: Double = 0.33,
         budgetServicesSlider: Double = 0.34,
@@ -559,6 +740,7 @@ struct NativeCampaignState: Codable, Hashable {
         self.mapBuildings = mapBuildings
         self.administrativeCapacity = administrativeCapacity
         self.victoryStatus = victoryStatus
+        self.rivalVictoryCountryCode = rivalVictoryCountryCode
         self.activeOffers = activeOffers
         self.budgetMilitarySlider = budgetMilitarySlider
         self.budgetServicesSlider = budgetServicesSlider
@@ -603,6 +785,7 @@ struct NativeCampaignState: Codable, Hashable {
         case mapBuildings
         case administrativeCapacity
         case victoryStatus
+        case rivalVictoryCountryCode
         case activeOffers
         case budgetMilitarySlider
         case budgetServicesSlider
@@ -671,6 +854,7 @@ struct NativeCampaignState: Codable, Hashable {
         // Decoding new fields with defaults
         administrativeCapacity = (try? container.decodeIfPresent(Int.self, forKey: .administrativeCapacity)) ?? 100
         victoryStatus = (try? container.decodeIfPresent(NativeVictoryStatus.self, forKey: .victoryStatus)) ?? .ongoing
+        rivalVictoryCountryCode = try? container.decodeIfPresent(String.self, forKey: .rivalVictoryCountryCode)
         activeOffers = Self.decodeLossyArray(NativeDiplomaticOffer.self, from: container, forKey: .activeOffers)
         budgetMilitarySlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetMilitarySlider)) ?? 0.33
         budgetServicesSlider = (try? container.decodeIfPresent(Double.self, forKey: .budgetServicesSlider)) ?? 0.34
@@ -1097,6 +1281,7 @@ enum NativeVictoryStatus: String, Codable, Hashable {
     case ongoing
     case won
     case lostCollapse = "lost-collapse"
+    case lostRival = "lost-rival"
     case lostTimeout = "lost-timeout"
 }
 
@@ -1143,9 +1328,9 @@ struct NativeSuggestedAction: Codable, Hashable, Identifiable {
     var rationale: String
     var title: String
     var urgency: String
-    /// Extracted from detail or AI output; one of the canonical mechanic raw values.
+    /// Explicit AI protocol token such as `⟦ECO⟧`; never inferred from narrative in new boards.
     var primaryMechanic: String
-    /// Extracted from detail or AI output; one of the canonical mechanic raw values.
+    /// Explicit AI protocol token such as `⟦DIP⟧`; never inferred from narrative in new boards.
     var secondaryMechanic: String
     var matrixColumn: Int
     var matrixRow: Int
@@ -1300,6 +1485,49 @@ enum NativeStrategicTrack: String, Codable, CaseIterable, Hashable, Identifiable
 }
 
 extension NativeStrategicTrack {
+    /// Stable token exchanged with AI providers. The Unicode brackets make
+    /// mechanic identifiers visually distinct from player-facing narrative,
+    /// while the short ASCII payload remains safe in JSON and persisted text.
+    var mechanicCode: String {
+        switch self {
+        case .economicResilience: "⟦ECO⟧"
+        case .marketConfidence: "⟦MKT⟧"
+        case .internalStability: "⟦STB⟧"
+        case .securityAnxiety: "⟦SEC⟧"
+        case .diplomaticLeverage: "⟦DIP⟧"
+        case .militaryReadiness: "⟦MIL⟧"
+        case .worldTension: "⟦TNS⟧"
+        }
+    }
+
+    /// Decodes only explicit protocol tokens (plus legacy raw values). It does
+    /// not infer mechanics from prose; narrative words are never executable.
+    static func decodeMechanicToken(_ value: String) -> NativeStrategicTrack? {
+        let token = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let exact = allCases.first(where: { $0.mechanicCode == token }) {
+            return exact
+        }
+        return NativeStrategicTrack(rawValue: token.lowercased())
+    }
+
+    static var mechanicCodebookPrompt: String {
+        """
+        MECHANIC CODEBOOK (output these exact codes; narrative words never trigger mechanics)
+        - ⟦ECO⟧ economic resilience: growth, productive capacity, infrastructure, fiscal durability.
+        - ⟦MKT⟧ market confidence: trade, investment, inflation expectations, financing confidence.
+        - ⟦STB⟧ internal stability: legitimacy, public services, cohesion, institutional delivery.
+        - ⟦SEC⟧ security anxiety: insurgency, public insecurity, escalation pressure, civilian fear.
+        - ⟦DIP⟧ diplomatic leverage: relationships, negotiations, alliances, international influence.
+        - ⟦MIL⟧ military readiness: force preparedness, logistics, deterrence, command readiness.
+        - ⟦TNS⟧ world tension: international friction, war risk, systemic escalation or de-escalation.
+        Protocol rule: choose codes from state and intended mechanical consequences, then write matching narrative. Never derive or hide a mechanic only inside title, detail, rationale, description, or summary.
+        """
+    }
+
+    static var compactMechanicCodebookPrompt: String {
+        "Mechanic codes: ⟦ECO⟧=economy/infrastructure, ⟦MKT⟧=markets/trade, ⟦STB⟧=legitimacy/services, ⟦SEC⟧=insecurity/insurgency, ⟦DIP⟧=diplomatic leverage, ⟦MIL⟧=military readiness, ⟦TNS⟧=world tension. Output codes in mechanic fields; prose never executes mechanics."
+    }
+
     var displayName: String {
         switch self {
         case .diplomaticLeverage: String(localized: "Diplomatic Leverage")

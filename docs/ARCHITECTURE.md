@@ -40,7 +40,7 @@ The Swift-native app is organized around four core layers:
 
 4. AI service and strategy context
 
-`DynamicAIService.swift` is the provider dispatcher. Its default route calls `NativeNVIDIAService.swift` for NVIDIA NIM (balancing `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, and `deepseek-ai/deepseek-v4-flash`), then falls back visibly to `NativeOpenRouterService.swift` and `openrouter/free`. Apple Foundation Models and Z.AI remain explicit alternate routes. `NativeStrategyContextDatabase.swift` supplies grounded fact packets, consequence rules, action memory, deterministic economic ledger updates, and prompt evidence.
+`DynamicAIService.swift` is the strict two-route provider dispatcher. The player selects `NativeNVIDIAService.swift` for NVIDIA NIM (balancing `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, and `deepseek-ai/deepseek-v4-flash`) or `NativeOpenRouterService.swift` with `openrouter/free`. Missing keys and provider failures remain on the selected route. `NativeStrategyContextDatabase.swift` supplies grounded fact packets, consequence rules, action memory, deterministic economic ledger updates, and prompt evidence.
 
 ## Native Data Flow
 
@@ -49,9 +49,9 @@ The normal turn flow is:
 1. The player chooses a country, language, and scenario through SwiftUI.
 2. `NativeCampaignStore.choose(_:)` creates a `NativeCampaignState` by calling `NativeGameEngine.initialState`.
 3. The player adds planned actions or accepts suggested actions. The store records them and updates action memory through `NativeStrategyContextDatabase.remember`.
-4. The player advances time through `NativeCampaignStore.advance(months:)`.
+4. The player advances one fixed three-month turn through `NativeCampaignStore.advance()`.
 5. The store captures `stateVersion`, then asks `NativeAIService.generateTurn`.
-6. `DynamicAIService` sends the generation lanes through NVIDIA NIM first and OpenRouter Free on failure, unless another route was explicitly selected.
+6. `DynamicAIService` sends every generation request only through the selected NVIDIA or OpenRouter Free route.
 7. `NativeGameEngine.validated` rejects placeholder text, invalid dates, duplicate IDs, missing independent events, unsafe hidden tracks, and links to unknown actions.
 8. `NativeGameEngine.apply` resolves planned actions, updates economic ledgers, appends events, clamps metrics, preserves full history, and returns the next state.
 9. The store persists the new state as both a versioned envelope and a legacy state backup.
@@ -99,7 +99,7 @@ SwiftHistoria intentionally does not cap persistent campaign complexity. Timelin
 
 ## AI Generation Contract
 
-Every provider's output is treated as an untrusted draft. The shared service layer is responsible for grounded, schema-oriented prompts; the engine is responsible for validation and application. NVIDIA NIM is primary and OpenRouter Free is its visible fallback across turn generation, suggestions, advisor, and diplomacy.
+Every provider's output is treated as an untrusted draft. The shared service layer is responsible for grounded, schema-oriented prompts; the engine is responsible for validation and application. NVIDIA NIM and OpenRouter Free are explicit, mutually exclusive player choices across turn generation, suggestions, advisor, and diplomacy.
 
 The NVIDIA request contract uses `https://integrate.api.nvidia.com/v1/chat/completions`, balancing requests between `minimaxai/minimax-m3`, `moonshotai/kimi-k2.6`, and `deepseek-ai/deepseek-v4-flash` via round-robin, temperature `1.0` (for DeepSeek) or `0.6` (for others), and top-p `0.95`/`0.90`. NVIDIA and OpenRouter requests omit `max_tokens`, and the app has no session token budget. Provider-side limits still apply.
 

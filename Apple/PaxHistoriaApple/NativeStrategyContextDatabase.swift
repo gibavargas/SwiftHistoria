@@ -353,6 +353,10 @@ struct NativeStrategyContextPacket: Hashable {
 /// model can influence the campaign only through validated events and approved
 /// consequence ranges.
 enum NativeStrategyContextDatabase {
+    /// Three completed, fully-ready strategic agendas are required for an AI
+    /// country to earn a rival victory (34 + 34 + 34, clamped to 100).
+    static let rivalAgendaVictoryAward = 34.0
+
     static var defaultStrategicCountryCodes: [String] {
         let mappedCodes = GeopoliticalMapData.regions.map(\.countryCode).filter { $0 != "WATER" }
         return Array(Set(CountryCatalog.all.map(\.code) + mappedCodes + ["GLOBAL"])).sorted()
@@ -648,6 +652,15 @@ enum NativeStrategyContextDatabase {
         case .ironman: 2.0
         }
 
+        // Build the map indexes once per turn. The previous path rescanned all
+        // map regions and all buildings for every country ledger.
+        var regionIDsByController: [String: Set<String>] = [:]
+        for region in GeopoliticalMapData.regions {
+            let controller = state.regionOccupations[region.id] ?? region.countryCode
+            regionIDsByController[controller, default: []].insert(region.id)
+        }
+        let buildingsByRegion = Dictionary(grouping: state.mapBuildings, by: \.regionID)
+
         for (code, ledger) in nextLedgers {
             var nextLedger = ledger
             var entries = ledger.entries
@@ -803,12 +816,8 @@ enum NativeStrategyContextDatabase {
                 nextLedger.rebelControlPercent = clampDouble(nextLedger.rebelControlPercent + neighborRebelSpillover * Double(months), 0, 100)
 
                 // **Market & Port Buildings Integration**:
-                let controlledRegionIDs = Set(GeopoliticalMapData.regions.filter { reg in
-                    let controller = state.regionOccupations[reg.id] ?? reg.countryCode
-                    return controller == code
-                }.map(\.id))
-
-                let countryBuildings = state.mapBuildings.filter { controlledRegionIDs.contains($0.regionID) }
+                let controlledRegionIDs = regionIDsByController[code, default: []]
+                let countryBuildings = controlledRegionIDs.flatMap { buildingsByRegion[$0, default: []] }
                 let marketLevels = countryBuildings.filter { $0.type == .market }.reduce(0) { $0 + $1.level }
                 let portLevels = countryBuildings.filter { $0.type == .port }.reduce(0) { $0 + $1.level }
 
@@ -1761,6 +1770,17 @@ enum NativeStrategyContextDatabase {
                     title: "\(code) completes agenda: \(oldAgenda.prefix(32))..."
                 )
                 state.timeline.insert(agendaEvent, at: 0)
+
+                // Rival victory must be earned during this campaign. A country
+                // receives one bounded step only when it completes a real
+                // multi-turn agenda while all active-scenario objectives are
+                // currently satisfied; strong opening ledgers earn nothing.
+                if aiVictoryReadiness(forCode: code, in: state) >= 100 {
+                    aiState.rivalCampaignProgress = min(
+                        100,
+                        aiState.rivalCampaignProgress + rivalAgendaVictoryAward
+                    )
+                }
             }
 
             // Relationship drift & dynamic slider effects
@@ -2032,18 +2052,35 @@ enum NativeStrategyContextDatabase {
             state.aiCountryStates[code] = aiState
         }
 
-        // **AI Pursues Victory (#9) — Rival Threat**: when any AI country is
-        // within 20% of a scenario victory (progress >= 80), warn the player.
-        let existingThreatIDs = Set(state.timeline.filter { $0.id.hasPrefix("rival-threat-") }.map(\.id))
-        for code in strategicCodes {
-            guard code != state.country.code else { continue }
-            let progress = aiVictoryProgress(forCode: code, in: state)
-            guard progress >= 80 else { continue }
+        // Warn once after a rival earns two of the three agenda milestones.
+        // A completed rival gets the terminal event instead of a contradictory
+        // same-turn "near victory" alert.
+        let rivalThreatPrefix = "rival-threat-"
+        let hasRivalThreatWarning = state.timeline.contains { $0.id.hasPrefix(rivalThreatPrefix) }
+        let warningCandidate: (code: String, progress: Double)? = if !hasRivalThreatWarning {
+            strategicCodes.compactMap { code -> (code: String, progress: Double)? in
+                guard GeopoliticalMapData.canonicalCountryCode(code) !=
+                    GeopoliticalMapData.canonicalCountryCode(state.country.code)
+                else { return nil }
+                let progress = aiVictoryProgress(forCode: code, in: state)
+                guard progress >= rivalAgendaVictoryAward * 2, progress < 100 else { return nil }
+                return (code, progress)
+            }
+            .max { lhs, rhs in
+                lhs.progress == rhs.progress ? lhs.code > rhs.code : lhs.progress < rhs.progress
+            }
+        } else {
+            nil
+        }
+
+        if let warningCandidate {
+            let code = warningCandidate.code
+            let progress = warningCandidate.progress
             let threatID = "rival-threat-\(code.lowercased())-\(state.gameDate)"
-            guard !existingThreatIDs.contains(threatID) else { continue }
+            let rivalName = CountryNameResolver.name(forCode: code, in: state)
             let threatEvent = NativeCampaignEvent(
                 date: state.gameDate,
-                description: "Intelligence analysts report \(code) is within striking distance of scenario victory (≈\(Int(progress))% of objectives). Its growing stability and economic mass could trigger an AI win unless countered.",
+                description: "Intelligence analysts report \(rivalName) has earned two of the three strategic-agenda milestones required for scenario victory (≈\(Int(progress))% of the rival campaign meter). Its current trajectory could trigger a rival win unless countered.",
                 id: threatID,
                 importance: .severe,
                 kind: .crisis,
@@ -2056,12 +2093,12 @@ enum NativeStrategyContextDatabase {
                         eventId: threatID,
                         id: "\(threatID)-effect",
                         magnitude: 1,
-                        summary: "\(code) approaches victory conditions.",
+                        summary: "\(rivalName) has earned two rival-campaign milestones while holding every active objective.",
                         target: state.country.code,
                         track: .securityAnxiety
                     )
                 ],
-                title: "RIVAL THREAT: \(code) Near Victory"
+                title: "RIVAL THREAT: \(rivalName) Near Victory"
             )
             state.timeline.insert(threatEvent, at: 0)
         }
@@ -2499,29 +2536,124 @@ enum NativeStrategyContextDatabase {
         }
     }
 
-    /// **AI Pursues Victory (#9)**: a lightweight 0-100 progress score for an
-    /// AI country toward a generic scenario victory, derived from its economic
-    /// ledger (a proxy for the player-only `stability`/victory metrics). A score
-    /// >= 80 means the AI is within ~20% of victory and should trigger warnings.
+    /// Earned rival-campaign progress, capped by current scenario readiness.
+    /// This meter starts at zero for new and migrated campaigns and advances
+    /// only when a fully-ready AI completes a real multi-turn agenda.
     static func aiVictoryProgress(forCode code: String, in state: NativeCampaignState) -> Double {
+        guard let aiState = state.aiCountryStates[code] else { return 0 }
+        return min(
+            max(0, min(100, aiState.rivalCampaignProgress)),
+            aiVictoryReadiness(forCode: code, in: state)
+        )
+    }
+
+    /// Scenario-aligned 0-100 readiness snapshot. AI countries do not carry
+    /// the player's single stability field, so public security is their
+    /// stability proxy; every other component mirrors the active scenario's
+    /// visible objective contract. Actors without canonical map regions cannot
+    /// enter the rival race.
+    static func aiVictoryReadiness(forCode code: String, in state: NativeCampaignState) -> Double {
+        guard isCanonicalRivalRepresentative(forCode: code, in: state) else { return 0 }
         guard let ledger = state.economicLedgers[code] else { return 0 }
-        var score = 0.0
-        // Stability proxy from public security (0-40 pts).
-        score += min(40.0, ledger.securityIndex * 0.4)
-        // Fiscal strength (0-20 pts).
-        score += min(20.0, Double(ledger.fiscalSpaceIndex) * 0.2)
-        // Growth health (0-20 pts; 10% growth => full).
-        score += min(20.0, max(0.0, ledger.realGrowthPercent) * 2.0)
-        // Economic mass (0-20 pts; $40T => full).
-        score += min(20.0, max(0.0, ledger.nominalGDPTrillions) * 0.5)
-        // Bonus for controlled rival territory (conquest scenarios).
-        let occupiedRivals = state.regionOccupations.filter { key, val in
-            guard val == code else { return false }
-            let reg = GeopoliticalMapData.regionByID[key]
-            return reg?.countryCode != code && reg?.countryCode != nil
+        let canonicalCode = GeopoliticalMapData.canonicalCountryCode(code)
+        let coreRegions = GeopoliticalMapData.regions(forCountryCode: canonicalCode)
+        guard !coreRegions.isEmpty else { return 0 }
+        let coreRegionCount = coreRegions.count
+        let occupiedCoreCount = state.regionOccupations.filter { regionID, controllerCode in
+            let originalCode = GeopoliticalMapData.regionByID[regionID]?.countryCode ?? ""
+            return GeopoliticalMapData.canonicalCountryCode(originalCode) == canonicalCode &&
+                GeopoliticalMapData.canonicalCountryCode(controllerCode) != canonicalCode
         }.count
-        score += min(20.0, Double(occupiedRivals) * 10.0)
-        return min(100.0, max(0.0, score))
+        let occupiedRivals = state.regionOccupations.filter { key, val in
+            guard GeopoliticalMapData.canonicalCountryCode(val) == canonicalCode else { return false }
+            let reg = GeopoliticalMapData.regionByID[key]
+            let originalCode = GeopoliticalMapData.canonicalCountryCode(reg?.countryCode ?? "")
+            return !originalCode.isEmpty && originalCode != canonicalCode
+        }.count
+
+        let stability = risingVictoryProgress(ledger.securityIndex, target: 80)
+        let components: [Double] = switch state.scenarioID {
+        case "default":
+            [
+                stability,
+                rangedVictoryProgress(ledger.tradeBalancePercentGDP, floor: -20, target: 0),
+                risingVictoryProgress(Double(coreRegionCount - occupiedCoreCount), target: Double(coreRegionCount))
+            ]
+        case "fragmented-markets":
+            [
+                risingVictoryProgress(ledger.securityIndex, target: 75),
+                risingVictoryProgress(ledger.nominalGDPTrillions, target: 15),
+                risingVictoryProgress(Double(ledger.fiscalSpaceIndex), target: 60)
+            ]
+        case "resilience-decade":
+            [
+                stability,
+                risingVictoryProgress(ledger.securityIndex, target: 85),
+                fallingVictoryProgress(ledger.rebelControlPercent, target: 5)
+            ]
+        case "soviet-triumph":
+            [
+                stability,
+                risingVictoryProgress(Double(state.worldTension), target: 80),
+                risingVictoryProgress(Double(occupiedRivals), target: 2)
+            ]
+        case "pax-cybernetica":
+            [
+                risingVictoryProgress(ledger.securityIndex, target: 85),
+                risingVictoryProgress(ledger.nominalGDPTrillions, target: 25),
+                rangedVictoryProgress(ledger.tradeBalancePercentGDP, floor: -20, target: 2)
+            ]
+        case "solarpunk-dawn":
+            [
+                risingVictoryProgress(ledger.securityIndex, target: 85),
+                fallingVictoryProgress(ledger.rebelControlPercent, target: 0.1),
+                risingVictoryProgress(ledger.securityIndex, target: 80)
+            ]
+        default:
+            [
+                risingVictoryProgress(ledger.securityIndex, target: 85),
+                risingVictoryProgress(ledger.securityIndex, target: 70),
+                risingVictoryProgress(Double(100 - state.worldTension), target: 31)
+            ]
+        }
+
+        return components.reduce(0, +) / Double(components.count) * 100
+    }
+
+    /// Country catalogs and map geometry use a few aliases (for example,
+    /// XXK/KOS and PSE/PSX). Only one state may enter the victory race for each
+    /// canonical actor, preferring the canonical geometry code when present.
+    static func isCanonicalRivalRepresentative(forCode code: String, in state: NativeCampaignState) -> Bool {
+        let canonicalCode = GeopoliticalMapData.canonicalCountryCode(code)
+        let playerCode = GeopoliticalMapData.canonicalCountryCode(state.country.code)
+        guard !canonicalCode.isEmpty, canonicalCode != "GLOBAL", canonicalCode != playerCode else { return false }
+
+        let matchingCodes = state.aiCountryStates.keys.filter {
+            GeopoliticalMapData.canonicalCountryCode($0) == canonicalCode
+        }
+        guard !matchingCodes.isEmpty else { return false }
+        let representative = matchingCodes.min { lhs, rhs in
+            if lhs == canonicalCode { return true }
+            if rhs == canonicalCode { return false }
+            return lhs < rhs
+        }
+        return representative == code
+    }
+
+    private static func risingVictoryProgress(_ value: Double, target: Double) -> Double {
+        guard target > 0 else { return value >= target ? 1 : 0 }
+        return max(0, min(1, value / target))
+    }
+
+    private static func rangedVictoryProgress(_ value: Double, floor: Double, target: Double) -> Double {
+        guard target > floor else { return value >= target ? 1 : 0 }
+        return max(0, min(1, (value - floor) / (target - floor)))
+    }
+
+    private static func fallingVictoryProgress(_ value: Double, target: Double) -> Double {
+        let ceiling = 100.0
+        guard target < ceiling else { return value <= target ? 1 : 0 }
+        return max(0, min(1, (ceiling - value) / (ceiling - target)))
     }
 }
 

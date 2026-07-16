@@ -61,6 +61,82 @@ enum NativeDecisionMatrixColumn: Int, Codable, CaseIterable, Hashable, Identifia
 
 enum NativeDecisionMatrixContract {
     static let cellCount = NativeDecisionMatrixRow.allCases.count * NativeDecisionMatrixColumn.allCases.count
+    /// Turn generation has one consequence lane per player order and is deliberately
+    /// bounded so every queued order is adjudicated instead of silently falling off.
+    static let maximumOrdersPerTurn = 3
+
+    /// A deterministic, immediately available board. Remote providers may replace
+    /// this board with richer suggestions, but the player never has to wait on an
+    /// empty loading panel before planning a turn.
+    static func localPlayerMatrix(for state: NativeCampaignState) -> [NativeSuggestedAction] {
+        let fingerprint = stateFingerprint(for: state)
+        let costs = [10, 20, 30, 40, 50]
+        let urgency = ["immediate", "soon", "soon", "opportunistic", "opportunistic"]
+
+        return NativeDecisionMatrixRow.allCases.flatMap { row in
+            NativeDecisionMatrixColumn.allCases.map { column in
+                let copy = localCopy(row: row, column: column, state: state)
+                return NativeSuggestedAction(
+                    detail: copy.detail,
+                    id: "local-matrix-\(state.country.code.lowercased())-\(state.round)-\(row.rawValue)-\(column.rawValue)",
+                    rationale: copy.rationale,
+                    title: copy.title,
+                    urgency: urgency[column.rawValue],
+                    primaryMechanic: copy.primary.mechanicCode,
+                    secondaryMechanic: copy.secondary.mechanicCode,
+                    actionKind: "policy",
+                    administrativeCost: min(max(1, state.administrativeCapacity), costs[column.rawValue]),
+                    matrixRow: row.rawValue,
+                    matrixColumn: column.rawValue,
+                    matrixStateFingerprint: fingerprint
+                )
+            }
+        }
+    }
+
+    private static func localCopy(
+        row: NativeDecisionMatrixRow,
+        column: NativeDecisionMatrixColumn,
+        state: NativeCampaignState
+    ) -> (title: String, detail: String, rationale: String, primary: NativeStrategicTrack, secondary: NativeStrategicTrack) {
+        let posture = column.title.lowercased()
+        let country = state.country.name
+        let title: String
+        let detail: String
+        let primary: NativeStrategicTrack
+        let secondary: NativeStrategicTrack
+
+        switch row {
+        case .economy:
+            title = ["Protect essential supply", "Prepare strategic reserves", "Coordinate productive investment", "Expand export capacity", "Modernize the national economy"][column.rawValue]
+            detail = "\(country) will use a \(posture) economic package covering fiscal space, infrastructure, employment, and resilient supply chains."
+            primary = .economicResilience
+            secondary = column == .cooperate ? .marketConfidence : .internalStability
+        case .society:
+            title = ["Secure essential services", "Prepare civic institutions", "Coordinate social protection", "Expand public capacity", "Renew the social compact"][column.rawValue]
+            detail = "\(country) will adopt a \(posture) domestic program joining public services, institutional delivery, social cohesion, and accountable administration."
+            primary = .internalStability
+            secondary = .economicResilience
+        case .diplomacy:
+            title = ["Protect diplomatic channels", "Prepare a negotiating mandate", "Coordinate regional partners", "Expand diplomatic influence", "Reset the foreign policy doctrine"][column.rawValue]
+            detail = "\(country) will pursue a \(posture) diplomatic initiative through existing channels, matching commitments to current leverage and available resources."
+            primary = .diplomaticLeverage
+            secondary = column.rawValue >= NativeDecisionMatrixColumn.project.rawValue ? .worldTension : .marketConfidence
+        case .security:
+            title = ["Protect critical readiness", "Prepare national resilience", "Coordinate security agencies", "Expand strategic deterrence", "Modernize the defense posture"][column.rawValue]
+            detail = "\(country) will enact a \(posture) security policy for readiness, logistics, civil protection, and disciplined command without ordering an unsupported operation."
+            primary = .militaryReadiness
+            secondary = column.rawValue >= NativeDecisionMatrixColumn.project.rawValue ? .securityAnxiety : .internalStability
+        case .sovereignty:
+            title = ["Protect administrative cohesion", "Prepare territorial governance", "Coordinate border administration", "Expand federal reach", "Renew the territorial charter"][column.rawValue]
+            detail = "\(country) will review a \(posture) territorial policy for lawful administration, border governance, local autonomy, and national cohesion."
+            primary = .internalStability
+            secondary = .diplomaticLeverage
+        }
+
+        let rationale = "This option fits round \(state.round), current stability \(state.stability), world tension \(state.worldTension), and the available national power budget."
+        return (title, detail, rationale, primary, secondary)
+    }
 
     static func validatedPlayerMatrix(
         _ rawSuggestions: [NativeSuggestedAction],
@@ -80,6 +156,15 @@ enum NativeDecisionMatrixContract {
             suggestion.targetCountryCode = normalizedOptionalCode(suggestion.targetCountryCode)
             suggestion.targetRegionID = sanitizedOptional(suggestion.targetRegionID)
             suggestion.administrativeCost = effectiveCost(of: suggestion)
+
+            guard let primaryTrack = NativeStrategicTrack.decodeMechanicToken(suggestion.primaryMechanic),
+                  let secondaryTrack = NativeStrategicTrack.decodeMechanicToken(suggestion.secondaryMechanic)
+            else {
+                failures.append("\(suggestion.matrixRow):\(suggestion.matrixColumn): invalid mechanic code")
+                continue
+            }
+            suggestion.primaryMechanic = primaryTrack.mechanicCode
+            suggestion.secondaryMechanic = secondaryTrack.mechanicCode
 
             let coordinate = "\(suggestion.matrixRow):\(suggestion.matrixColumn)"
             let normalizedTitle = suggestion.title.lowercased()
@@ -115,6 +200,64 @@ enum NativeDecisionMatrixContract {
         return validated.sorted {
             ($0.matrixRow, $0.matrixColumn) < ($1.matrixRow, $1.matrixColumn)
         }
+    }
+
+    /// Keeps mechanics deterministic and legal while allowing a remote model to
+    /// personalize the player-facing framing of each coordinate. The model no
+    /// longer has to recreate costs, action kinds, targets, or sovereignty data.
+    static func aiTailoredPlayerMatrix(
+        from rawSuggestions: [NativeSuggestedAction],
+        state: NativeCampaignState
+    ) throws -> [NativeSuggestedAction] {
+        let local = localPlayerMatrix(for: state)
+        let remoteByCoordinate = Dictionary(
+            rawSuggestions.map { ("\($0.matrixRow):\($0.matrixColumn)", $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        var usedTitles = Set<String>()
+        var tailoredCount = 0
+
+        let tailored = local.map { fallback in
+            let coordinate = "\(fallback.matrixRow):\(fallback.matrixColumn)"
+            guard let remote = remoteByCoordinate[coordinate] else {
+                usedTitles.insert(fallback.title.lowercased())
+                return fallback
+            }
+
+            var candidate = fallback
+            let remoteTitle = sanitizeFoundationModelText(remote.title)
+            let remoteDetail = sanitizeFoundationModelText(remote.detail)
+            let remoteRationale = sanitizeFoundationModelText(remote.rationale)
+            if hasConcreteFoundationText(remoteTitle, minimumWords: 2),
+               usedTitles.insert(remoteTitle.lowercased()).inserted
+            {
+                candidate.title = remoteTitle
+            } else {
+                usedTitles.insert(fallback.title.lowercased())
+            }
+            if hasConcreteFoundationText(remoteDetail, minimumWords: 4) {
+                candidate.detail = remoteDetail
+            }
+            if hasConcreteFoundationText(remoteRationale, minimumWords: 5) {
+                candidate.rationale = remoteRationale
+            }
+
+            if eligibilityFailure(for: candidate, state: state) != nil {
+                candidate.detail = fallback.detail
+            }
+            if eligibilityFailure(for: candidate, state: state) == nil {
+                tailoredCount += 1
+                return candidate
+            }
+            return fallback
+        }
+
+        guard tailoredCount > 0 else {
+            throw NativeFoundationModelError.invalidSuggestedActions(
+                "The selected provider returned no usable AI tailoring for the legal decision matrix."
+            )
+        }
+        return try validatedPlayerMatrix(tailored, state: state)
     }
 
     static func eligibilityFailure(
@@ -292,6 +435,45 @@ enum NativeDecisionMatrixContract {
 // MARK: - External-provider matrix prompt
 
 enum NativeDecisionMatrixPrompt {
+    static func makeOpenRouterSafe(for state: NativeCampaignState) -> String {
+        let language = switch state.language {
+        case .portuguese: "Brazilian Portuguese"
+        case .spanish: "Spanish"
+        case .english: "English"
+        }
+        let skeletons = NativeDecisionMatrixContract.localPlayerMatrix(for: state)
+        let encoded = (try? JSONEncoder().encode(["suggestions": skeletons]))
+            .flatMap { String(data: $0, encoding: .utf8) } ?? "{\"suggestions\":[]}"
+        let objectiveSummary = NativeGameEngine.campaignObjectives(for: state)
+            .map { "\($0.title): \($0.currentValue)/\($0.targetValue)" }
+            .joined(separator: "; ")
+
+        return """
+        Personalize an existing legal 5 x 5 decision board for SwiftHistoria.
+        Return one strict JSON object only. It must contain exactly 25 suggestions and every coordinate 0:0 through 4:4 exactly once.
+
+        CAMPAIGN
+        country=\(state.country.name) (\(state.country.code)); date=\(state.gameDate); round=\(state.round)
+        stability=\(state.stability); worldTension=\(state.worldTension); administrativeCapacity=\(state.administrativeCapacity)
+        government=\(state.economicLedger.governmentType); approval=\(format(state.economicLedger.publicApprovalPercent))
+        objectives=\(objectiveSummary.nilIfEmpty ?? "sandbox")
+        outputLanguage=\(language)
+
+        EDITING CONTRACT
+        - The JSON below is already mechanically legal. Preserve its object count and coordinates.
+        - Preserve id, urgency, primaryMechanic, secondaryMechanic, actionKind, administrativeCost, matrixRow, matrixColumn, matrixStateFingerprint, targetCountryCode, targetRegionID, and sovereigntyChange exactly.
+        - Rewrite only title, detail, and rationale to be concrete, varied, and specific to the campaign.
+        - Keep every action an ordinary lawful policy. Do not mention elections, constitutional reform, secession, independence, breakaway states, country mergers, dissolution, invasions, occupation, or military attacks.
+        - title: 2 to 7 words. detail: 12 to 28 words. rationale: 8 to 20 words.
+        - Never add markdown, commentary, null placeholders as strings, or extra objects.
+
+        \(NativeStrategicTrack.mechanicCodebookPrompt)
+
+        LEGAL JSON SKELETON TO PERSONALIZE
+        \(encoded)
+        """
+    }
+
     static func make(for state: NativeCampaignState, matrixRow: Int? = nil) -> String {
         let worldSeed = NativeWorldSimulator.resolvedWorldSeed(for: state)
         let turnSeed = NativeWorldSimulator.turnSeed(worldSeed: worldSeed, round: state.round)
@@ -401,8 +583,9 @@ enum NativeDecisionMatrixPrompt {
         \(actionMemory.nilIfEmpty ?? "- none")
 
         HARD ELIGIBILITY RULES
-        - You are generating matrixRow=\(matrixRow ?? -1). Every cell MUST have this exact matrixRow value.
+        \(matrixRow.map { "- You are generating matrixRow=\($0). Every cell MUST have this exact matrixRow value." } ?? "- This is the full board. Use matrixRow values 0...4 exactly as defined by the axes.")
         - administrativeCost must be an integer > 0 and <= \(state.administrativeCapacity) for every cell. Cost is paid when selected.
+        - The player may queue at most \(NativeDecisionMatrixContract.maximumOrdersPerTurn) orders for the next turn. Costs should make the strategic tradeoff clear; do not assume every cell will be selected.
         - actionKind is exactly policy, political, diplomacy, military, regional, or sovereignty.
         - diplomacy requires targetCountryCode from the VALID DIPLOMACY TARGET COUNTRY CODES list above. Do NOT use codes that are not on that list.
         - political and region-targeted actions must use the exact allowed directive strings above.
@@ -412,8 +595,10 @@ enum NativeDecisionMatrixPrompt {
         - Do not repeat a recently resolved action. Do not promise guaranteed outcomes.
         - Write title/detail/rationale in \(language). Keep enum strings and codes unchanged.
 
+        \(NativeStrategicTrack.mechanicCodebookPrompt)
+
         Return one JSON object only, no markdown, with this exact shape:
-        {"suggestions":[{"matrixRow":0,"matrixColumn":0,"title":"...","detail":"...","rationale":"...","urgency":"immediate|soon|opportunistic","primaryMechanic":"economic-resilience|market-confidence|internal-stability|security-anxiety|diplomatic-leverage|military-readiness|world-tension","secondaryMechanic":"same enum","actionKind":"policy|political|diplomacy|military|regional|sovereignty","administrativeCost":10,"targetCountryCode":null,"targetRegionID":null,"sovereigntyChange":null}]}
+        {"suggestions":[{"matrixRow":0,"matrixColumn":0,"title":"...","detail":"...","rationale":"...","urgency":"immediate|soon|opportunistic","primaryMechanic":"⟦ECO⟧","secondaryMechanic":"⟦MKT⟧","actionKind":"policy|political|diplomacy|military|regional|sovereignty","administrativeCost":10,"targetCountryCode":null,"targetRegionID":null,"sovereigntyChange":null}]}
         sovereigntyChange shape when legally applicable: {"kind":"secession|new-country|merge|dissolution","name":"...","regionIDs":["existing-id"],"sourceCodes":["existing-code"],"targetCode":"3-6 uppercase letters"}.
         """
     }

@@ -613,7 +613,9 @@ struct NativeCampaignObjectivesPanel: View {
                 Spacer()
                 Text(state.victoryStatus.rawValue.uppercased())
                     .font(.system(.caption2, design: .monospaced).weight(.bold))
-                    .foregroundStyle(state.victoryStatus == .ongoing ? Color.alertGold : Color.neonTeal)
+                    .foregroundStyle(state.victoryStatus == .ongoing
+                        ? Color.alertGold
+                        : (state.victoryStatus == .won ? Color.neonTeal : Color.softRed))
             }
 
             #if os(macOS)
@@ -764,7 +766,7 @@ struct NativeSuggestedActionsPanel: View {
                         .font(NativeTypography.sectionTitle())
                         .foregroundStyle(Color.glowingCyan)
                         .help("A complete 5 by 5 board of actions that are legal in the current campaign state.")
-                    Text("25 legal choices · Provider: \(suggestionProviderName)")
+                    Text("25 state-valid choices · Provider: \(suggestionProviderName)")
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Color.alertGold)
                         .accessibilityIdentifier("native-suggestions-provider-label")
@@ -789,15 +791,37 @@ struct NativeSuggestedActionsPanel: View {
                 SuggestionWarning(message: suggestionError)
             }
 
-            let suggestions = store.state?.suggestedActions ?? []
-            let matrixSuggestions = suggestions.filter {
+            let savedSuggestions = store.state?.suggestedActions ?? []
+            let savedMatrix = savedSuggestions.filter {
                 (0 ..< 5).contains($0.matrixRow) && (0 ..< 5).contains($0.matrixColumn)
             }
+            let usesLocalBoard = savedMatrix.count != NativeDecisionMatrixContract.cellCount
+            let matrixSuggestions = if usesLocalBoard, let state = store.state {
+                NativeDecisionMatrixContract.localPlayerMatrix(for: state)
+            } else {
+                savedMatrix
+            }
+
             if matrixSuggestions.count == NativeDecisionMatrixContract.cellCount {
+                if usesLocalBoard {
+                    Label(
+                        store.isLoadingSuggestions
+                            ? "Instant local board ready — AI is refining it in the background."
+                            : "Instant local board active — refresh to request an AI-tailored board.",
+                        systemImage: "bolt.horizontal.circle"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(Color.neonTeal)
+                } else {
+                    Label("AI-tailored decision matrix active.", systemImage: "sparkles")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.glowingCyan)
+                        .accessibilityIdentifier("native-ai-suggestions-active")
+                }
                 NativeDecisionMatrixBoard(store: store, suggestions: matrixSuggestions)
-            } else if !suggestions.isEmpty {
+            } else if !savedSuggestions.isEmpty {
                 SuggestionWarning(message: "This saved board predates the 5 x 5 matrix contract. Refresh it to regenerate 25 state-valid decisions.")
-                ForEach(suggestions) { suggestion in
+                ForEach(savedSuggestions) { suggestion in
                     SuggestedActionRow(suggestion: suggestion) {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                             store.addSuggestedAction(suggestion)
@@ -818,9 +842,6 @@ struct NativeSuggestedActionsPanel: View {
 
     private var suggestionProviderName: String {
         let provider = store.lastAIProviderUsed
-        if store.selectedAIProviderPreference == .nvidia, provider == "OpenRouter" {
-            return "NVIDIA primary → OpenRouter fallback"
-        }
         return provider == "None" || provider == "Unknown"
             ? store.selectedAIProviderPreference.providerName
             : provider
@@ -836,47 +857,81 @@ private struct NativeDecisionMatrixBoard: View {
     private let spacing: CGFloat = 8
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: true) {
-            LazyVGrid(columns: gridColumns, alignment: .leading, spacing: spacing) {
-                Color.clear
-                    .frame(width: labelWidth, height: 28)
-                ForEach(NativeDecisionMatrixColumn.allCases) { column in
-                    Text(column.title.uppercased())
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Color.alertGold)
-                        .frame(width: cellWidth, alignment: .leading)
-                }
+        VStack(alignment: .leading, spacing: 12) {
+            turnBudgetStrip
 
-                ForEach(NativeDecisionMatrixRow.allCases) { row in
-                    Label(row.title, systemImage: row.systemImage)
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Color.iceBlue)
-                        .frame(width: labelWidth, alignment: .leading)
-
+            ScrollView(.horizontal, showsIndicators: true) {
+                LazyVGrid(columns: gridColumns, alignment: .leading, spacing: spacing) {
+                    Color.clear
+                        .frame(width: labelWidth, height: 28)
                     ForEach(NativeDecisionMatrixColumn.allCases) { column in
-                        if let suggestion = suggestion(row: row, column: column) {
-                            NativeDecisionMatrixCell(
-                                suggestion: suggestion,
-                                isQueued: isQueued(suggestion)
-                            ) {
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
-                                    store.addSuggestedAction(suggestion)
+                        Text(column.title.uppercased())
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundStyle(Color.alertGold)
+                            .frame(width: cellWidth, alignment: .leading)
+                    }
+
+                    ForEach(NativeDecisionMatrixRow.allCases) { row in
+                        Label(row.title, systemImage: row.systemImage)
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .foregroundStyle(Color.iceBlue)
+                            .frame(width: labelWidth, alignment: .leading)
+
+                        ForEach(NativeDecisionMatrixColumn.allCases) { column in
+                            if let suggestion = suggestion(row: row, column: column) {
+                                NativeDecisionMatrixCell(
+                                    suggestion: suggestion,
+                                    isQueued: isQueued(suggestion),
+                                    remainingPower: remainingPower,
+                                    queueIsFull: queueIsFull
+                                ) {
+                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                                        store.toggleSuggestedAction(suggestion)
+                                    }
                                 }
-                            }
-                            .frame(width: cellWidth)
-                            .frame(minHeight: 154)
-                        } else {
-                            ContentUnavailableView("Missing", systemImage: "exclamationmark.triangle")
                                 .frame(width: cellWidth)
                                 .frame(minHeight: 154)
+                            } else {
+                                ContentUnavailableView("Missing", systemImage: "exclamationmark.triangle")
+                                    .frame(width: cellWidth)
+                                    .frame(minHeight: 154)
+                            }
                         }
                     }
                 }
+                .frame(width: labelWidth + cellWidth * 5 + spacing * 5)
+                .padding(.vertical, 4)
             }
-            .frame(width: labelWidth + cellWidth * 5 + spacing * 5)
-            .padding(.vertical, 4)
         }
         .accessibilityIdentifier("native-decision-matrix")
+    }
+
+    private var turnBudgetStrip: some View {
+        let queued = store.state?.plannedActions.filter { $0.status == .planned } ?? []
+        let committedPower = queued.reduce(0) { partial, action in
+            partial + max(0, action.administrativeCost)
+        }
+        let totalPower = max(1, remainingPower + committedPower)
+
+        return VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 14) {
+                Label(
+                    "\(queued.count)/\(NativeDecisionMatrixContract.maximumOrdersPerTurn) orders",
+                    systemImage: "checklist"
+                )
+                Label("\(remainingPower) power left", systemImage: "bolt.fill")
+                    .foregroundStyle(remainingPower > 0 ? Color.alertGold : Color.softRed)
+                Spacer()
+                Text("All queued orders resolve next turn")
+                    .foregroundStyle(.secondary)
+            }
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
+            ProgressView(value: Double(remainingPower), total: Double(totalPower))
+                .tint(remainingPower > 0 ? Color.neonTeal : Color.softRed)
+        }
+        .padding(10)
+        .background(Color.iceBlue.opacity(0.045), in: RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("native-decision-turn-budget")
     }
 
     private var gridColumns: [GridItem] {
@@ -893,6 +948,15 @@ private struct NativeDecisionMatrixBoard: View {
         suggestions.first { $0.matrixRow == row.rawValue && $0.matrixColumn == column.rawValue }
     }
 
+    private var remainingPower: Int {
+        store.state?.administrativeCapacity ?? 0
+    }
+
+    private var queueIsFull: Bool {
+        let count = store.state?.plannedActions.filter { $0.status == .planned }.count ?? 0
+        return count >= NativeDecisionMatrixContract.maximumOrdersPerTurn
+    }
+
     private func isQueued(_ suggestion: NativeSuggestedAction) -> Bool {
         store.state?.plannedActions.contains {
             $0.status == .planned && $0.title == suggestion.title && $0.detail == suggestion.detail
@@ -903,7 +967,17 @@ private struct NativeDecisionMatrixBoard: View {
 private struct NativeDecisionMatrixCell: View {
     let suggestion: NativeSuggestedAction
     let isQueued: Bool
+    let remainingPower: Int
+    let queueIsFull: Bool
     let onSelect: () -> Void
+
+    private var isAffordable: Bool {
+        suggestion.administrativeCost <= remainingPower
+    }
+
+    private var isDisabled: Bool {
+        !isQueued && (!isAffordable || queueIsFull)
+    }
 
     var body: some View {
         Button(action: onSelect) {
@@ -915,8 +989,11 @@ private struct NativeDecisionMatrixCell: View {
                         .lineLimit(3)
                     Spacer(minLength: 4)
                     if isQueued {
-                        Image(systemName: "checkmark.circle.fill")
+                        Image(systemName: "minus.circle.fill")
                             .foregroundStyle(Color.neonTeal)
+                    } else if isDisabled {
+                        Image(systemName: queueIsFull ? "tray.full.fill" : "bolt.slash.fill")
+                            .foregroundStyle(Color.softRed)
                     }
                 }
 
@@ -930,10 +1007,10 @@ private struct NativeDecisionMatrixCell: View {
                 HStack {
                     Label("\(suggestion.administrativeCost)", systemImage: "bolt.fill")
                     Spacer()
-                    Text(suggestion.actionKind.uppercased())
+                    Text(cellStatus)
                 }
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(isQueued ? Color.neonTeal : Color.glowingCyan)
+                .foregroundStyle(statusColor)
             }
             .padding(10)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -945,11 +1022,32 @@ private struct NativeDecisionMatrixCell: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .disabled(isQueued)
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0.58 : 1)
         .help("\(suggestion.rationale) Cost: \(suggestion.administrativeCost).")
         .accessibilityLabel("\(suggestion.title), costs \(suggestion.administrativeCost) capacity")
-        .accessibilityHint(isQueued ? "Already queued" : "Adds this legal decision to the next turn")
+        .accessibilityHint(accessibilityHint)
         .accessibilityIdentifier("native-decision-cell-\(suggestion.matrixRow)-\(suggestion.matrixColumn)")
+    }
+
+    private var cellStatus: String {
+        if isQueued { return "QUEUED" }
+        if queueIsFull { return "QUEUE FULL" }
+        if !isAffordable { return "NEED \(suggestion.administrativeCost - remainingPower)" }
+        return suggestion.actionKind.uppercased()
+    }
+
+    private var statusColor: Color {
+        if isQueued { return Color.neonTeal }
+        if isDisabled { return Color.softRed }
+        return Color.glowingCyan
+    }
+
+    private var accessibilityHint: String {
+        if isQueued { return "Removes this decision from the next turn" }
+        if queueIsFull { return "The next-turn queue is full" }
+        if !isAffordable { return "Not enough power remains for this decision" }
+        return "Adds this legal decision to the next turn"
     }
 }
 

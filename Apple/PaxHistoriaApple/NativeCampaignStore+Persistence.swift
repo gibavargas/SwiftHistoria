@@ -2,6 +2,33 @@ import Foundation
 import OSLog
 import SwiftUI
 
+private final class NativePersistenceSnapshot: @unchecked Sendable {
+    let state: NativeCampaignState
+    let slot: Int
+    let defaults: UserDefaults
+    let persistenceDirectory: URL
+
+    init(state: NativeCampaignState, slot: Int, defaults: UserDefaults, persistenceDirectory: URL) {
+        self.state = state
+        self.slot = slot
+        self.defaults = defaults
+        self.persistenceDirectory = persistenceDirectory
+    }
+}
+
+private actor NativePersistenceWriter {
+    static let shared = NativePersistenceWriter()
+
+    func write(_ snapshot: NativePersistenceSnapshot) {
+        NativeCampaignStore.writeStateToDisk(
+            snapshot.state,
+            slot: snapshot.slot,
+            defaults: snapshot.defaults,
+            persistenceDirectory: snapshot.persistenceDirectory
+        )
+    }
+}
+
 /// File I/O, persistence, and campaign-state loading.
 extension NativeCampaignStore {
     static func removePersistedCampaignState(defaults: UserDefaults, persistenceDirectory: URL) {
@@ -37,33 +64,81 @@ extension NativeCampaignStore {
 
         // Cancel any pending debounced write — only the latest state matters.
         persistDebounceTask?.cancel()
+        persistenceRevision &+= 1
+        let revision = persistenceRevision
         let activeSlot = saveSlot
+        let defaults = self.defaults
+        let persistenceDirectory = self.persistenceDirectory
+        let snapshot = state
+        let persistence = NativePersistenceSnapshot(
+            state: snapshot,
+            slot: activeSlot,
+            defaults: defaults,
+            persistenceDirectory: persistenceDirectory
+        )
         persistDebounceTask = Task { @MainActor [weak self] in
             // 500 ms debounce: coalesces rapid mutations (e.g. delete 3 actions)
             // into a single JSON encode + disk write.
-            try? await Task.sleep(nanoseconds: 500_000_000)
-            guard !Task.isCancelled, let self else { return }
-            self.writeStateToDisk(state, slot: activeSlot)
+            do {
+                try await Task.sleep(nanoseconds: 500_000_000)
+            } catch {
+                return
+            }
+            guard !Task.isCancelled, self?.persistenceRevision == revision else { return }
+            await NativePersistenceWriter.shared.write(persistence)
         }
     }
 
     /// Immediate persistence for critical mutations (turn advance, new game).
-    /// Bypasses the debounce so the save is guaranteed before returning.
+    /// The snapshot is queued without making the main actor wait for JSON
+    /// encoding, backup decoding, or atomic file writes.
     func persistStateImmediately() {
         guard let state else {
             persistState()
             return
         }
         persistDebounceTask?.cancel()
-        persistDebounceTask = nil
-        writeStateToDisk(state, slot: saveSlot)
+        persistenceRevision &+= 1
+        let activeSlot = saveSlot
+        let defaults = self.defaults
+        let persistenceDirectory = self.persistenceDirectory
+        let snapshot = state
+        let persistence = NativePersistenceSnapshot(
+            state: snapshot,
+            slot: activeSlot,
+            defaults: defaults,
+            persistenceDirectory: persistenceDirectory
+        )
+        let previousImmediate = persistImmediateTask
+        persistImmediateTask = Task { @MainActor in
+            await previousImmediate?.value
+            await NativePersistenceWriter.shared.write(persistence)
+        }
     }
 
-    private func writeStateToDisk(_ state: NativeCampaignState, slot activeSlot: Int) {
+    /// Waits for the latest queued write. The app normally does not need to
+    /// await persistence, but this is useful for lifecycle handoff and
+    /// deterministic integration tests.
+    func waitForPersistence() async {
+        let pendingDebounce = persistDebounceTask
+        let pendingImmediate = persistImmediateTask
+        await pendingDebounce?.value
+        await pendingImmediate?.value
+    }
+
+    fileprivate nonisolated static func writeStateToDisk(
+        _ state: NativeCampaignState,
+        slot activeSlot: Int,
+        defaults: UserDefaults,
+        persistenceDirectory: URL
+    ) {
         // Persistence is deliberately redundant: primary versioned envelope,
         // last-good envelope backup, and a direct legacy state blob. The read
         // path tries them in that order so corrupt primary data can be recovered
         // without losing old-save compatibility.
+        let encoder = JSONEncoder()
+        let decoder = JSONDecoder()
+        let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeCampaignStore")
         let envelope = CampaignStateEnvelope(
             schemaVersion: 2,
             savedAt: NativeGameEngine.todayStamp(),
@@ -225,6 +300,51 @@ extension NativeCampaignStore {
         return CampaignLoadResult(state: nil, notice: nil)
     }
 
+    /// Remote recovery is deliberately asynchronous. Local files and
+    /// UserDefaults remain the launch path; this helper is only used after a
+    /// local miss so a slow provider cannot hold the main actor.
+    nonisolated static func loadRemoteCampaignState(
+        configuration: NativeTursoCampaignPersistence.Configuration,
+        decoder: JSONDecoder,
+        slot: Int
+    ) async -> CampaignLoadResult {
+        async let envelopeData = NativeTursoCampaignPersistence.readAsync(kind: .envelope, slot: slot, configuration: configuration)
+        async let backupData = NativeTursoCampaignPersistence.readAsync(kind: .backup, slot: slot, configuration: configuration)
+        async let legacyData = NativeTursoCampaignPersistence.readAsync(kind: .legacy, slot: slot, configuration: configuration)
+        let (envelope, backup, legacy) = await (envelopeData, backupData, legacyData)
+
+        if let envelope,
+           let decoded = try? decoder.decode(CampaignStateEnvelope.self, from: envelope),
+           decoded.schemaVersion == 2
+        {
+            return CampaignLoadResult(
+                state: decoded.state,
+                notice: "Loaded the campaign save from Turso because no local copy was available."
+            )
+        }
+
+        if let backup,
+           let decoded = try? decoder.decode(CampaignStateEnvelope.self, from: backup),
+           decoded.schemaVersion == 2
+        {
+            return CampaignLoadResult(
+                state: decoded.state,
+                notice: "Loaded the campaign backup from Turso because no local primary save was available."
+            )
+        }
+
+        if let legacy,
+           let decoded = try? decoder.decode(NativeCampaignState.self, from: legacy)
+        {
+            return CampaignLoadResult(
+                state: decoded,
+                notice: "Loaded a legacy campaign save from Turso and will upgrade it on the next save."
+            )
+        }
+
+        return CampaignLoadResult(state: nil, notice: nil)
+    }
+
     static func defaultPersistenceDirectory(fileManager: FileManager = .default) -> URL {
         let baseDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ??
             URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
@@ -233,7 +353,7 @@ extension NativeCampaignStore {
             .appendingPathComponent("NativeCampaigns", isDirectory: true)
     }
 
-    static func primaryPersistenceData(
+    nonisolated static func primaryPersistenceData(
         from defaults: UserDefaults,
         persistenceDirectory: URL,
         slotKey: (String) -> String = { $0 },
@@ -251,7 +371,7 @@ extension NativeCampaignStore {
         return newestEnvelope(from: sources, decoder: JSONDecoder())?.sourceData ?? sources.first?.data
     }
 
-    static func storeDefaultsFallback(_ data: Data, forKey key: String, defaults: UserDefaults) {
+    nonisolated static func storeDefaultsFallback(_ data: Data, forKey key: String, defaults: UserDefaults) {
         if data.count <= maximumUserDefaultsCampaignBlobBytes {
             defaults.set(data, forKey: key)
         } else {
@@ -259,7 +379,7 @@ extension NativeCampaignStore {
         }
     }
 
-    static func newestEnvelope(
+    nonisolated static func newestEnvelope(
         from sources: [PersistenceDataSource],
         decoder: JSONDecoder
     ) -> (envelope: CampaignStateEnvelope, sourceLabel: String, sourceData: Data)? {
@@ -280,7 +400,7 @@ extension NativeCampaignStore {
         return (newest.envelope, newest.sourceLabel, newest.sourceData)
     }
 
-    static func persistenceSources(
+    nonisolated static func persistenceSources(
         defaults: UserDefaults,
         key: String,
         fileName: String,
@@ -306,33 +426,33 @@ extension NativeCampaignStore {
         return sources
     }
 
-    static func persistenceURL(fileName: String, directory: URL) -> URL {
+    nonisolated static func persistenceURL(fileName: String, directory: URL) -> URL {
         directory.appendingPathComponent(fileName, isDirectory: false)
     }
 
-    static func readPersistenceData(fileName: String, directory: URL) -> Data? {
+    nonisolated static func readPersistenceData(fileName: String, directory: URL) -> Data? {
         try? Data(contentsOf: persistenceURL(fileName: fileName, directory: directory))
     }
 
-    static func writePersistenceData(_ data: Data, fileName: String, directory: URL) throws {
+    nonisolated static func writePersistenceData(_ data: Data, fileName: String, directory: URL) throws {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try data.write(to: persistenceURL(fileName: fileName, directory: directory), options: [.atomic])
     }
 
-    static func removePersistenceData(fileName: String, directory: URL) throws {
+    nonisolated static func removePersistenceData(fileName: String, directory: URL) throws {
         let url = persistenceURL(fileName: fileName, directory: directory)
         guard FileManager.default.fileExists(atPath: url.path) else { return }
         try FileManager.default.removeItem(at: url)
     }
 
-    static func slotNumber(from key: String) -> Int {
+    nonisolated static func slotNumber(from key: String) -> Int {
         guard let markerRange = key.range(of: ".slot", options: .backwards) else {
             return 1
         }
         return Int(key[markerRange.upperBound...]) ?? 1
     }
 
-    static func writeTursoPersistenceData(
+    nonisolated static func writeTursoPersistenceData(
         envelopeData: Data,
         backupData: Data,
         legacyData: Data,
@@ -408,6 +528,9 @@ enum NativeTursoCampaignPersistence {
         guard let configuration = configuration(defaults: defaults) else {
             return nil
         }
+        // Never turn optional remote recovery into synchronous launch I/O.
+        // `loadRemoteCampaignState` is the async path used after local misses.
+        guard !Thread.isMainThread else { return nil }
         let request = pipelineRequest(configuration: configuration, requests: readRequests(kind: kind, slot: slot))
         let semaphore = DispatchSemaphore(value: 0)
         let resultBox = NativeTursoReadResultBox()
@@ -417,6 +540,19 @@ enum NativeTursoCampaignPersistence {
             resultBox.data = dataBlob(fromPipelineResponse: response)
         }
         return semaphore.wait(timeout: .now() + timeoutSeconds) == .success ? resultBox.data : nil
+    }
+
+    static func readAsync(kind: Kind, slot: Int, defaults: UserDefaults) async -> Data? {
+        guard let configuration = configuration(defaults: defaults) else {
+            return nil
+        }
+        return await readAsync(kind: kind, slot: slot, configuration: configuration)
+    }
+
+    static func readAsync(kind: Kind, slot: Int, configuration: Configuration) async -> Data? {
+        let request = pipelineRequest(configuration: configuration, requests: readRequests(kind: kind, slot: slot))
+        guard let response = try? await execute(request: request) else { return nil }
+        return dataBlob(fromPipelineResponse: response)
     }
 
     static func writeRequests(records: [Record], slot: Int) -> [[String: Any]] {
