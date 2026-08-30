@@ -39,7 +39,7 @@ class NativeNVIDIAService: NativeZAIService {
     }
 
     override var apiKey: String {
-        defaults.string(forKey: "NVIDIA_API_KEY") ?? ""
+        NativeSecretStore.string(forKey: "NVIDIA_API_KEY", defaults: defaults) ?? ""
     }
 
     override var useCodingEndpoint: Bool {
@@ -56,6 +56,10 @@ class NativeNVIDIAService: NativeZAIService {
 
     override var includesMaxTokensField: Bool {
         true
+    }
+
+    override var rateLimiter: NativeRateLimiter {
+        .nvidia
     }
 
     override var providerDisplayName: String {

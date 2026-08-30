@@ -117,6 +117,34 @@ Campaign history is intentionally **uncapped** — timelines, world effects, act
 
 ---
 
+## 🌍 Living World Mode (day-based, procedural)
+
+At campaign setup you now choose a **simulation mode**:
+
+| Mode | Engine | AI | Cadence |
+|------|--------|----|---------|
+| **Living World** | `NativeLivingWorldEngine` — deterministic day-tick world | An OOP **brain in every country** (`LWCountryBrain` subclasses: Balanced, Expansionist, Turtle, Opportunist) reacting to economy, threats, and relations | **Daily ticks** with Vic3-style speed control (⏩1–5, play/pause) |
+| **Classic** | Quarterly 3-month turns | Your selected LLM route (strict NVIDIA NIM / OpenRouter Free) | **Quarterly** |
+
+Living World is **fully procedural and offline**: no hardcoded events — a 1936
+world is generated from the seed (10 core powers + 12 seeded minor nations),
+with a Victoria 3-inspired simulation: goods market with bounded prices
+(±75% of base), buildings with input→output chains, wages and treasuries,
+tax/spending sliders, interest groups, radicals, standard of living,
+alliances, relations (−100…100), abstract **fronts** (no unit control), war
+exhaustion and peace deals, infamy, and common/rare procedural events.
+
+**LLM hash bridge (optional, any provider):** Living World can export a JSON
+world prompt to paste into any LLM (e.g. ChatGPT with its Python sandbox).
+The model replies with `WORLDHASH:0x________` — 8 nibbles encoding economy,
+tension, stability, and event probability — which the game interprets
+deterministically and applies to the world.
+
+Everything is **seed-deterministic**: same seed + same player decisions ⇒
+identical world history (verified by `LivingWorldEngineTests`).
+
+---
+
 ## ⌨️ Keyboard Shortcuts
 
 | Action | Shortcut |

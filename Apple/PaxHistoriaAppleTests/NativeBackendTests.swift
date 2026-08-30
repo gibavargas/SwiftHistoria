@@ -3812,6 +3812,281 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(newElectionRound, state.round + 12, "Snap election should set nextElectionRound to round + 12.")
         XCTAssertNotEqual(newElectionRound, originalElectionRound, "Election round should have changed.")
     }
+
+    // MARK: - Dynamic AI-vs-AI Geopolitics (Rival World Life)
+
+    func testRivalGeopoliticsProducesAIvsAIWarThatChangesTheMap() {
+        // Force two expansionist, military-budgeted AI rivals with deep mutual
+        // animosity so the war-roll has the maximum chance of firing. Then run
+        // several turns — a war should erupt between them, redraw the
+        // occupation/conflict map, impose ledger costs on both sides, and bump
+        // world tension. All deterministically.
+        var state = makeState()
+        state.stability = 60
+        state.worldTension = 45
+
+        // Two valid strategic countries with real map regions.
+        let attacker = "USA"
+        let defender = "CHN"
+        XCTAssertFalse(GeopoliticalMapData.regions(forCountryCode: attacker).isEmpty)
+        XCTAssertFalse(GeopoliticalMapData.regions(forCountryCode: defender).isEmpty)
+
+        state.aiCountryStates[attacker] = NativeAICountryState(
+            countryCode: attacker,
+            doctrine: .expansionist,
+            budgetPriority: .military,
+            relationshipScores: [defender: -90, state.country.code: 0],
+            multiTurnAgenda: "Regional dominance",
+            agendaProgress: 0
+        )
+        state.aiCountryStates[defender] = NativeAICountryState(
+            countryCode: defender,
+            doctrine: .defensive,
+            budgetPriority: .military,
+            relationshipScores: [attacker: -90, state.country.code: 0],
+            multiTurnAgenda: "Defend sovereignty",
+            agendaProgress: 0
+        )
+
+        let beforeTension = state.worldTension
+
+        // Run enough turns that the deterministic war-roll fires at least once
+        // for at least one of the qualifying attacker/date seeds.
+        for round in 1 ... 15 {
+            state.round = round
+            state.gameDate = "2026-\(String(format: "%02d", ((round - 1) % 12) + 1))-15"
+            NativeStrategyContextDatabase.simulateAIDrift(state: &state, months: 1)
+        }
+
+        let warEvents = state.timeline.filter {
+            $0.id.hasPrefix("ai-war-") || $0.id.hasPrefix("ai-invasion-")
+        }
+        XCTAssertFalse(warEvents.isEmpty, "Expected at least one AI-vs-AI war or invasion event after 15 turns of provocation. Found: \(state.timeline.filter { $0.id.hasPrefix("ai-") }.map(\.id).prefix(5))")
+
+        // The war must have produced a tangible map change: either a conflict
+        // state or an occupation touching the defender's territory.
+        let defenderRegions = Set(GeopoliticalMapData.regions(forCountryCode: defender).map(\.id))
+        let touchedConflicts = state.regionConflicts.filter { defenderRegions.contains($0.key) }
+        let touchedOccupations = state.regionOccupations.filter { defenderRegions.contains($0.key) }
+        XCTAssertFalse(touchedConflicts.isEmpty && touchedOccupations.isEmpty,
+                       "AI-vs-AI war should change the map (conflict or occupation on \(defender)).")
+
+        // World tension should not have dropped as a result of a war.
+        XCTAssertGreaterThanOrEqual(state.worldTension, beforeTension)
+
+        // The player should not have accidentally become a party to an AI war.
+        let playerTargetedWars = warEvents.filter { $0.id.contains("-\(state.country.code)") }
+        XCTAssertTrue(playerTargetedWars.isEmpty, "AI-vs-AI wars must not target the player.")
+
+        // Autonomous AI-to-AI treaties must be accepted (never pending) — the
+        // player never votes on them.
+        XCTAssertTrue(state.activeOffers.allSatisfy { $0.targetCode == nil || $0.status == .accepted },
+                      "Autonomous AI treaties must be accepted (not pending) — player never votes on them.")
+    }
+
+    func testRivalGeopoliticsProducesIdeologicalAllianceBetweenAI() {
+        // Two democracies that already like each other (>55 mutual) should,
+        // over several turns, formalize an autonomous mutual-defense alliance
+        // that the player is NOT a party to and cannot accept/reject.
+        var state = makeState()
+        state.stability = 60
+        state.worldTension = 40
+
+        let codeA = "USA"
+        let codeB = "GBR"
+
+        // Ensure ledgers exist and are democracies.
+        if state.economicLedgers[codeA] == nil {
+            state.economicLedgers[codeA] = NativeStrategyContextDatabase.startingEconomicLedger(forCode: codeA, scenario: NativeScenarioCatalog.defaultScenario)
+        }
+        if state.economicLedgers[codeB] == nil {
+            state.economicLedgers[codeB] = NativeStrategyContextDatabase.startingEconomicLedger(forCode: codeB, scenario: NativeScenarioCatalog.defaultScenario)
+        }
+        state.economicLedgers[codeA]?.governmentType = "democracy"
+        state.economicLedgers[codeB]?.governmentType = "democracy"
+
+        state.aiCountryStates[codeA] = NativeAICountryState(
+            countryCode: codeA,
+            doctrine: .collaborative,
+            budgetPriority: .diplomacy,
+            relationshipScores: [codeB: 70, state.country.code: 10],
+            multiTurnAgenda: "Deepen democratic partnership",
+            agendaProgress: 0
+        )
+        state.aiCountryStates[codeB] = NativeAICountryState(
+            countryCode: codeB,
+            doctrine: .collaborative,
+            budgetPriority: .diplomacy,
+            relationshipScores: [codeA: 70, state.country.code: 10],
+            multiTurnAgenda: "Deepen democratic partnership",
+            agendaProgress: 0
+        )
+
+        for round in 1 ... 12 {
+            state.round = round
+            state.gameDate = "2026-\(String(format: "%02d", ((round - 1) % 12) + 1))-15"
+            NativeStrategyContextDatabase.simulateAIDrift(state: &state, months: 1)
+        }
+
+        // An autonomous alliance offer between A and B must exist and be
+        // accepted (the player never votes on it).
+        let alliance = state.activeOffers.first { offer in
+            offer.type == .militaryAlliance &&
+                offer.status == .accepted &&
+                offer.targetCode != nil &&
+                ((offer.proposerCode == codeA && offer.targetCode == codeB) ||
+                    (offer.proposerCode == codeB && offer.targetCode == codeA))
+        }
+        XCTAssertNotNil(alliance, "Expected an autonomous USA-GBR alliance after 12 turns of warm democratic relations.")
+
+        // It must be marked as NOT player-facing.
+        if let alliance {
+            XCTAssertTrue(alliance.isAutonomousAITreaty, "AI-to-AI alliance must be flagged autonomous.")
+            XCTAssertFalse(alliance.isPlayerFacing, "AI-to-AI alliance must not appear in the player's inbox.")
+        }
+
+        // A world event announcing the alliance should be on the timeline.
+        let allianceEvents = state.timeline.filter { $0.id.hasPrefix("ai-alliance-event-") }
+        XCTAssertFalse(allianceEvents.isEmpty, "Alliance formation should emit a world event.")
+    }
+
+    func testRivalGeopoliticsProducesTradeCorridorThatMovesLedgers() {
+        // Two mercantile partners with warm relations should sign a structured
+        // trade corridor that actually moves both their ledgers (trade + growth).
+        var state = makeState()
+        state.stability = 60
+        state.worldTension = 30
+
+        let codeA = "JPN"
+        let codeB = "DEU"
+
+        if state.economicLedgers[codeA] == nil {
+            state.economicLedgers[codeA] = NativeStrategyContextDatabase.startingEconomicLedger(forCode: codeA, scenario: NativeScenarioCatalog.defaultScenario)
+        }
+        if state.economicLedgers[codeB] == nil {
+            state.economicLedgers[codeB] = NativeStrategyContextDatabase.startingEconomicLedger(forCode: codeB, scenario: NativeScenarioCatalog.defaultScenario)
+        }
+
+        state.aiCountryStates[codeA] = NativeAICountryState(
+            countryCode: codeA,
+            doctrine: .mercantile,
+            budgetPriority: .growth,
+            relationshipScores: [codeB: 55, state.country.code: 5],
+            multiTurnAgenda: "Commercial expansion",
+            agendaProgress: 0
+        )
+        state.aiCountryStates[codeB] = NativeAICountryState(
+            countryCode: codeB,
+            doctrine: .mercantile,
+            budgetPriority: .growth,
+            relationshipScores: [codeA: 55, state.country.code: 5],
+            multiTurnAgenda: "Commercial expansion",
+            agendaProgress: 0
+        )
+
+        let tradeABefore = state.economicLedgers[codeA]?.tradeBalancePercentGDP ?? 0
+        let tradeBBefore = state.economicLedgers[codeB]?.tradeBalancePercentGDP ?? 0
+
+        for round in 1 ... 12 {
+            state.round = round
+            state.gameDate = "2026-\(String(format: "%02d", ((round - 1) % 12) + 1))-15"
+            NativeStrategyContextDatabase.simulateAIDrift(state: &state, months: 1)
+        }
+
+        // A trade corridor treaty between the two must exist and be accepted.
+        let tradePact = state.activeOffers.first { offer in
+            offer.type == .tradeAgreement &&
+                offer.status == .accepted &&
+                offer.targetCode != nil &&
+                ((offer.proposerCode == codeA && offer.targetCode == codeB) ||
+                    (offer.proposerCode == codeB && offer.targetCode == codeA))
+        }
+        XCTAssertNotNil(tradePact, "Expected a JPN-DEU trade corridor after 12 turns of warm commercial relations.")
+
+        // The ledger effect must be real and visible: trade entries tagged
+        // ai-trade-pact should exist for both signatories.
+        let pactEntriesA = state.economicLedgers[codeA]?.entries.filter { $0.ruleID == "ai-trade-pact" } ?? []
+        let pactEntriesB = state.economicLedgers[codeB]?.entries.filter { $0.ruleID == "ai-trade-pact" } ?? []
+        XCTAssertFalse(pactEntriesA.isEmpty, "Trade corridor should have produced ledger entries for \(codeA).")
+        XCTAssertFalse(pactEntriesB.isEmpty, "Trade corridor should have produced ledger entries for \(codeB).")
+
+        // The pact itself must be a positive trade contribution on both sides
+        // (other drifts may also apply, so we assert the pact's own contribution).
+        let pactContributionA = pactEntriesA.reduce(0.0) { $0 + $1.tradeBalanceDelta }
+        let pactContributionB = pactEntriesB.reduce(0.0) { $0 + $1.tradeBalanceDelta }
+        XCTAssertGreaterThan(pactContributionA, 0, "Trade pact must contribute positive trade balance to \(codeA).")
+        XCTAssertGreaterThan(pactContributionB, 0, "Trade pact must contribute positive trade balance to \(codeB).")
+
+        // Sanity: balances are finite.
+        let tradeAAfter = state.economicLedgers[codeA]?.tradeBalancePercentGDP ?? tradeABefore
+        let tradeBAfter = state.economicLedgers[codeB]?.tradeBalancePercentGDP ?? tradeBBefore
+        XCTAssertTrue(tradeAAfter.isFinite && tradeBAfter.isFinite)
+
+        // The player should never be a party to this trade pact.
+        if let tradePact {
+            XCTAssertNotEqual(tradePact.proposerCode, state.country.code)
+            XCTAssertNotEqual(tradePact.targetCode, state.country.code)
+        }
+    }
+
+    func testAutonomousAITreatiesDoNotLeakIntoPlayerDiplomacyInbox() {
+        // An autonomous AI-to-AI treaty (targetCode != nil) must be flagged as
+        // NOT player-facing, so the UI excludes it from the player's inbox.
+        let offer = NativeDiplomaticOffer(
+            id: "test-autonomous",
+            proposerCode: "USA",
+            type: .militaryAlliance,
+            description: "USA-CHN autonomous pact",
+            stabilityCost: 0,
+            relationshipEffect: 10,
+            growthDelta: 0,
+            status: .accepted,
+            turnProposed: 1,
+            targetCode: "CHN"
+        )
+        XCTAssertTrue(offer.isAutonomousAITreaty)
+        XCTAssertFalse(offer.isPlayerFacing)
+        XCTAssertEqual(offer.targetCode, "CHN")
+
+        // A legacy player-facing offer (no targetCode) must remain player-facing.
+        let playerOffer = NativeDiplomaticOffer(
+            id: "test-player",
+            proposerCode: "USA",
+            type: .tradeAgreement,
+            description: "USA offers player a trade deal",
+            stabilityCost: 0,
+            relationshipEffect: 10,
+            growthDelta: 0.2,
+            status: .pending,
+            turnProposed: 1
+        )
+        XCTAssertFalse(playerOffer.isAutonomousAITreaty)
+        XCTAssertTrue(playerOffer.isPlayerFacing)
+        XCTAssertNil(playerOffer.targetCode)
+    }
+
+    func testNativeDiplomaticOfferDecodesLegacySavesWithoutTargetCode() throws {
+        // Existing saves have offers WITHOUT the targetCode field. Decoding
+        // them must not crash and must default to nil (player-facing).
+        let legacyJSON = Data("""
+        {
+            "id": "offer-legacy",
+            "proposerCode": "USA",
+            "type": "trade-agreement",
+            "description": "legacy",
+            "stabilityCost": 0,
+            "relationshipEffect": 10,
+            "growthDelta": 0.2,
+            "status": "pending",
+            "turnProposed": 3
+        }
+        """.utf8)
+
+        let decoded = try JSONDecoder().decode(NativeDiplomaticOffer.self, from: legacyJSON)
+        XCTAssertEqual(decoded.id, "offer-legacy")
+        XCTAssertNil(decoded.targetCode, "Legacy saves must decode targetCode as nil.")
+        XCTAssertTrue(decoded.isPlayerFacing, "Legacy offers must be treated as player-facing.")
+    }
 }
 
 @MainActor

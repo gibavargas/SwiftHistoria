@@ -3,12 +3,22 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var campaignStore = Self.makeCampaignStore()
     @EnvironmentObject var appState: AppState
+    @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(NativeSimulationMode.storageKey) private var simulationModeRaw: String = NativeSimulationMode.livingWorld.rawValue
+    @State private var livingWorldCountry: PlayerCountry?
     @State private var didApplyLaunchConfiguration = false
     @State private var didPrewarmMapData = false
+    @State private var didInstallTerminationHook = false
+
+    private var simulationMode: NativeSimulationMode {
+        NativeSimulationMode(rawValue: simulationModeRaw) ?? .livingWorld
+    }
 
     var body: some View {
         Group {
-            if campaignStore.selectedCountry != nil {
+            if let lwCountry = livingWorldCountry {
+                LivingWorldGameView(playerCountryCode: lwCountry.code)
+            } else if campaignStore.selectedCountry != nil {
                 NativeGameView(store: campaignStore)
             } else {
                 CountrySelectionView(
@@ -19,7 +29,15 @@ struct ContentView: View {
                     scenarios: NativeScenarioCatalog.all,
                     selectedLanguage: campaignStore.selectedLanguage,
                     selectedScenarioID: campaignStore.selectedScenarioID,
-                    onSelect: campaignStore.choose,
+                    onSelect: { country in
+                        // Living World starts the day-tick session directly;
+                        // Classic keeps the LLM quarterly-turn store.
+                        if simulationMode == .livingWorld {
+                            livingWorldCountry = country
+                        } else {
+                            campaignStore.choose(country)
+                        }
+                    },
                     activeCampaignState: campaignStore.state,
                     onResumeCampaign: campaignStore.resumeActiveCampaign
                 )
@@ -28,9 +46,61 @@ struct ContentView: View {
         .onAppear {
             applyLaunchConfigurationIfNeeded()
             appState.isGameActive = campaignStore.selectedCountry != nil
+            // Move any pre-Keychain plaintext keys into the Keychain once.
+            NativeSecretStore.migrateIfNeeded(defaults: campaignStore.defaults)
         }
+        .onChange(of: scenePhase) { _, phase in
+            // Close the debounce persistence window on background/inactive:
+            // iOS backgrounding and macOS app-hide both land here.
+            if phase != .active {
+                campaignStore.flushPendingPersistence()
+            }
+        }
+        #if os(macOS)
+        .onReceive(NotificationCenter.default.publisher(
+            for: NSApplication.willTerminateNotification
+        )) { _ in
+            // macOS Cmd+Q lands here. The notification is synchronous and the
+            // process may exit before any awaited task resumes, so this flush
+            // must be synchronous — hence flushPendingPersistence() rather
+            // than await waitForPersistence().
+            campaignStore.flushPendingPersistence()
+        }
+        .onAppear {
+            if !didInstallTerminationHook {
+                didInstallTerminationHook = true
+                NotificationCenter.default.addObserver(
+                    forName: NSApplication.willTerminateNotification,
+                    object: nil,
+                    queue: .main
+                ) { _ in
+                    campaignStore.flushPendingPersistence()
+                }
+            }
+        }
+        #endif
         .onChange(of: campaignStore.selectedCountry) { _, newValue in
             appState.isGameActive = newValue != nil
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if campaignStore.selectedCountry == nil, livingWorldCountry == nil {
+                HStack {
+                    Text("SIMULATION MODE")
+                        .font(.system(.caption2, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.neonTeal)
+                    Picker("", selection: $simulationModeRaw) {
+                        ForEach(NativeSimulationMode.allCases) { mode in
+                            Text(mode.title).tag(mode.rawValue)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 460)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.spaceBlack)
+            }
         }
         .background(Color.black)
         .preferredColorScheme(.dark)

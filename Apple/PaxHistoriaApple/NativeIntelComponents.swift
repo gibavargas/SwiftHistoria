@@ -447,7 +447,12 @@ struct NativeDiplomacyPanel: View {
 
                     Picker("Counterparty", selection: $store.selectedDiplomaticPartnerCode) {
                         ForEach(partners) { country in
-                            let offerCount = state.activeOffers.filter { $0.status == .pending && $0.proposerCode == country.code }.count
+                            // Only player-facing offers (targetCode == nil) count
+                            // here; AI-to-AI treaties are world events, not
+                            // proposals the player can accept/reject.
+                            let offerCount = state.activeOffers.filter {
+                                $0.status == .pending && $0.proposerCode == country.code && $0.isPlayerFacing
+                            }.count
                             let badge = offerCount > 0 ? " (\(offerCount) proposed)" : ""
                             Text("\(country.name)\(badge)").tag(country.code)
                         }
@@ -512,7 +517,12 @@ struct NativeDiplomacyPanel: View {
                     SuggestionWarning(message: diplomacyError)
                 }
 
-                let partnerOffers = state.activeOffers.filter { $0.status == .pending && $0.proposerCode == store.selectedDiplomaticPartnerCode }
+                // Only show offers the player can actually act on; autonomous
+                // AI-to-AI treaties (targetCode != nil) are surfaced as world
+                // events in the timeline, not in the player's diplomacy inbox.
+                let partnerOffers = state.activeOffers.filter {
+                    $0.status == .pending && $0.proposerCode == store.selectedDiplomaticPartnerCode && $0.isPlayerFacing
+                }
 
                 if !partnerOffers.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {

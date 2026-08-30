@@ -196,6 +196,12 @@ class NativeZAIService: NativeAIService {
         "Z.AI"
     }
 
+    /// Per-route request budget. OpenRouter uses the conservative shared
+    /// window; NVIDIA overrides this with its own larger budget.
+    var rateLimiter: NativeRateLimiter {
+        .shared
+    }
+
     var routeDisplayName: String {
         useCodingEndpoint ? "Z.AI Coding Endpoint" : "Z.AI API"
     }
@@ -211,7 +217,7 @@ class NativeZAIService: NativeAIService {
     private var nextModelLaneStartIndex = 0
 
     var apiKey: String {
-        defaults.string(forKey: "ZAI_API_KEY") ?? ""
+        NativeSecretStore.string(forKey: "ZAI_API_KEY", defaults: defaults) ?? ""
     }
 
     var useCodingEndpoint: Bool {
@@ -333,6 +339,27 @@ class NativeZAIService: NativeAIService {
         )
         logger.info("\(self.providerDisplayName, privacy: .public) diplomatic reply completed")
         return reply
+    }
+
+    func generateRivalAgentTurns(for state: NativeCampaignState) async throws -> [NativeRivalAgentTurn] {
+        logger.info("\(self.providerDisplayName, privacy: .public) rival multi-agent generation started round=\(state.round)")
+        let prompt = promptHarness.makeRivalMultiAgentPrompt(for: state)
+        let responseText = try await generateTextResponse(
+            prompt: prompt,
+            maxTokens: 800,
+            repairNote: "Provide a JSON array of rival agent actions and dispatches."
+        )
+        logger.info("\(self.providerDisplayName, privacy: .public) rival multi-agent generation completed")
+
+        let candidates = NativeJSONExtraction.candidates(from: responseText)
+        let decoder = JSONDecoder()
+        for candidate in candidates {
+            let data = Data(candidate.utf8)
+            if let turns = try? decoder.decode([NativeRivalAgentTurn].self, from: data) {
+                return turns
+            }
+        }
+        return []
     }
 
     // MARK: - Internal Lane Slicing
@@ -542,7 +569,7 @@ class NativeZAIService: NativeAIService {
                     prompt: eventPrompt(prompt, state: state, repairNotes: repairNotes),
                     schema: ZAIEventDraft.schemaInstructions,
                     maximumResponseTokens: 260,
-                    temperature: attempt == 1 ? 0.85 : (attempt == 2 ? 0.65 : 0.4)
+                    temperature: NativeTemperaturePolicy.eventLaneLadder[min(attempt, NativeTemperaturePolicy.eventLaneLadder.count) - 1]
                 )
                 if draft.hasConcreteContent {
                     return draft
@@ -760,7 +787,7 @@ class NativeZAIService: NativeAIService {
             // Rate limiting + retry with exponential backoff for OpenRouter/Z.AI
             let maxRetries = max(0, retryLimit)
             for attempt in 0 ... maxRetries {
-                try await NativeRateLimiter.shared.acquire()
+                try await rateLimiter.acquire()
 
                 var request = URLRequest(url: apiEndpoint)
                 request.httpMethod = "POST"
@@ -859,14 +886,22 @@ class NativeZAIService: NativeAIService {
                     }
 
                     guard httpResponse.statusCode == 200 else {
+                        // Log the full provider body for diagnosis; keep it out
+                        // of the player-facing error string.
                         let errorText = String(data: data, encoding: .utf8) ?? "HTTP \(httpResponse.statusCode)"
+                        let bodyPrefix = String(errorText.prefix(600))
+                        logger.error("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] HTTP \(httpResponse.statusCode) body: \(bodyPrefix, privacy: .public)")
                         // Retry on 5xx server errors
                         if (500 ... 599).contains(httpResponse.statusCode), attempt < maxRetries {
                             logger.warning("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] HTTP \(httpResponse.statusCode); retrying \(attempt + 1)/\(maxRetries)")
                             try await Task.sleep(nanoseconds: UInt64(1.5 * pow(2.0, Double(attempt)) * 1_000_000_000))
                             continue
                         }
-                        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned status \(httpResponse.statusCode) model=\(lane.name): \(errorText)")
+                        throw NativeFoundationModelError.generationFailed(NativeProviderErrorSanitizer.playerMessage(
+                            provider: providerDisplayName,
+                            lane: lane.displayName,
+                            status: httpResponse.statusCode
+                        ))
                     }
 
                     do {
@@ -1152,7 +1187,8 @@ class NativeZAIService: NativeAIService {
             decoded = try JSONDecoder().decode(ZAICompletionResponse.self, from: data)
         } catch {
             let rawPrefix = String(data: data.prefix(600), encoding: .utf8) ?? "<non-utf8>"
-            throw NativeFoundationModelError.generationFailed("\(providerDisplayName) response decode failed: \(error.localizedDescription). Raw prefix: \(rawPrefix)")
+            NativeProviderErrorSanitizer.logRawBody(provider: providerDisplayName, body: rawPrefix)
+            throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned a malformed response (decode failed). Check logs for details.")
         }
         guard let firstChoice = decoded.choices.first else {
             throw NativeFoundationModelError.generationFailed("\(providerDisplayName) API returned empty choices.")

@@ -1550,7 +1550,11 @@ enum NativeStrategyContextDatabase {
         }
 
         // 1.5. Process accepted treaties (relationship drift & ongoing effects)
-        let acceptedOffers = state.activeOffers.filter { $0.status == .accepted }
+        // Only player-facing treaties (targetCode == nil) get the ongoing
+        // player+partner ledger buffs here. Autonomous AI-to-AI treaties get
+        // their one-shot ledger effect in simulateRivalGeopolitics and must NOT
+        // be double-counted as if they were player treaties.
+        let acceptedOffers = state.activeOffers.filter { $0.status == .accepted && $0.isPlayerFacing }
         let acceptedTreatyPartnerCodes = Set(acceptedOffers.map(\.proposerCode))
         for offer in acceptedOffers {
             let partnerCode = offer.proposerCode
@@ -1962,8 +1966,8 @@ enum NativeStrategyContextDatabase {
 
                 // Deterministic chance per turn to launch an invasion
                 let invasionSeed = "\(state.scenarioID)-\(state.gameDate)-\(code)-invade-\(targetCode)"
-                let invasionRoll = Int(NativeGameEngine.stablePercentagePublic(seed: invasionSeed) * 100)
-                guard invasionRoll < invasionChance else { continue }
+                let invasionRoll = NativeGameEngine.stablePercentagePublic(seed: invasionSeed)
+                guard invasionRoll < Double(invasionChance) else { continue }
 
                 // Find a border region of the target to contest
                 let targetRegions = GeopoliticalMapData.regions(forCountryCode: targetCode)
@@ -2032,7 +2036,7 @@ enum NativeStrategyContextDatabase {
                 for partnerCode in partnerCodes {
                     guard partnerCode != state.country.code else { continue }
                     let tradeSeed = "\(state.scenarioID)-\(state.gameDate)-\(code)-trade-\(partnerCode)"
-                    let tradeRoll = Int(NativeGameEngine.stablePercentagePublic(seed: tradeSeed) * 100)
+                    let tradeRoll = NativeGameEngine.stablePercentagePublic(seed: tradeSeed)
                     guard tradeRoll < 25 else { continue }
                     let tradeOffer = NativeDiplomaticOffer(
                         id: "ai-trade-\(code.lowercased())-\(partnerCode.lowercased())-\(state.gameDate)",
@@ -2125,7 +2129,7 @@ enum NativeStrategyContextDatabase {
 
                     // Deterministic 20% chance
                     let coalitionSeed = "\(state.scenarioID)-\(state.gameDate)-coalition-\(code)-\(otherCode)"
-                    let coalitionRoll = Int(NativeGameEngine.stablePercentagePublic(seed: coalitionSeed) * 100)
+                    let coalitionRoll = NativeGameEngine.stablePercentagePublic(seed: coalitionSeed)
                     guard coalitionRoll < 20 else { continue }
 
                     let pactOffer = NativeDiplomaticOffer(
@@ -2530,10 +2534,531 @@ enum NativeStrategyContextDatabase {
             state.economicLedgers[code] = ledger
         }
 
+        // MARK: - Dynamic AI-vs-AI Geopolitics (Rival World Life)
+
+        //
+        // The passive drift loop above advances each AI's agenda and relationship
+        // toward the *player*. This block is what makes the rivals feel alive
+        // among themselves: expansionist powers wage war on their neighbors
+        // (changing the occupation map), ideologically aligned regimes form
+        // lasting alliances, and mercantile powers sign trade corridors that
+        // actually move both countries' ledgers. All paths are deterministic
+        // (seeded by scenario/date/actors) and bounded so long campaigns don't
+        // cascade into chaos.
+        simulateRivalGeopolitics(state: &state, months: months)
+
         // Sync player's main ledger
         if let playerLedger = state.economicLedgers[state.country.code] {
             state.economicLedger = playerLedger
         }
+    }
+
+    /// **Dynamic AI-vs-AI Geopolitics** — rivals act on each other, not just on
+    /// the player. This is the "living world" pass: AI-vs-AI wars that redraw
+    /// the occupation map, ideological alliances that persist, and structured
+    /// trade corridors with real economic effects on both signatories.
+    ///
+    /// Design goals:
+    /// 1. **Visibility** — events change the map (occupations, conflicts) and
+    ///    the economy (ledger deltas on both sides), so the player sees a world
+    ///    in motion rather than a static board.
+    /// 2. **Determinism** — every roll is seeded by scenario/date/actors, so a
+    ///    given campaign replays identically and save diffs stay stable.
+    /// 3. **Bounded chaos** — at most one war start, one alliance, and one
+    ///    trade pact per AI per turn; relations are clamped to [-100, 100];
+    ///    ledger deltas are small and clamped.
+    /// 4. **Player relevance** — the player is never a direct party, but
+    ///    second-order effects (alliance blocs polarizing against the player,
+    ///    trade corridors diverting commerce, wars spilling refugees) ripple
+    ///    back into the player's economy and diplomacy over time.
+    static func simulateRivalGeopolitics(
+        state: inout NativeCampaignState,
+        months: Int,
+        agentTurns: [NativeRivalAgentTurn] = []
+    ) {
+        // ── 0. Process LLM Multi-Agent Rival Dispatches & Strategic Orders ──
+        for turn in agentTurns {
+            let actorName = CountryNameResolver.name(forCode: turn.actorCode, in: state)
+
+            // Intercepted Diplomatic Dispatches
+            for dispatch in turn.dispatches {
+                let recipientName = CountryNameResolver.name(forCode: dispatch.recipientCode, in: state)
+                let dispatchEvent = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: "Intercepted diplomatic dispatch from \(actorName) (\(dispatch.senderCode)) to \(recipientName) (\(dispatch.recipientCode)) [Tone: \(dispatch.tone.capitalized)]: \"\(dispatch.message)\"",
+                    id: "ai-dispatch-\(dispatch.senderCode)-\(dispatch.recipientCode)-\(state.gameDate)",
+                    importance: .minor,
+                    kind: .diplomacy,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: false,
+                    strategicEffects: [],
+                    title: "INTELLIGENCE INTERCEPT: \(dispatch.senderCode) ➔ \(dispatch.recipientCode)"
+                )
+                state.timeline.insert(dispatchEvent, at: 0)
+            }
+
+            // Intelligence Timeline Summary
+            if !turn.narrativeSummary.isEmpty {
+                let summaryEvent = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: turn.narrativeSummary,
+                    id: "ai-agent-action-\(turn.actorCode)-\(state.gameDate)",
+                    importance: .major,
+                    kind: .world,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: false,
+                    strategicEffects: [],
+                    title: "RIVAL INTEL: \(actorName) Strategy Update"
+                )
+                state.timeline.insert(summaryEvent, at: 0)
+            }
+
+            // Tactical Hex Nudge Execution
+            if let hexCode = turn.hexLeverCode, !hexCode.isEmpty, let lever = decodeHexLever(hexCode) {
+                if var ledger = state.economicLedgers[turn.actorCode] {
+                    ledger.realGrowthPercent = max(-10.0, min(15.0, ledger.realGrowthPercent + lever.growthDelta))
+                    ledger.budgetBalancePercentGDP = max(-20.0, min(15.0, ledger.budgetBalancePercentGDP + lever.budgetDelta))
+                    ledger.securityIndex = max(0.0, min(100.0, ledger.securityIndex + lever.securityDelta))
+                    state.economicLedgers[turn.actorCode] = ledger
+                }
+            }
+        }
+
+        let strategicCodes = defaultStrategicCountryCodes.filter { $0 != "GLOBAL" && $0 != state.country.code }
+
+        // ── 1. AI-vs-AI wars: expansionist/military regimes attack their rivals ──
+        // More aggressive than the legacy invasion path above because rivals now
+        // actively contest each other's territory. Each attack can escalate an
+        // existing conflict (raise intensity) or start a new one, and imposes
+        // real economic costs on both attacker (war spending) and defender
+        // (capital flight, supply disruption).
+        //
+        // Collect qualifying attackers first, sorted by how provoked they are
+        // (most-hated rival first), so the most dramatic conflicts resolve
+        // before the per-turn war cap is reached.
+        struct WarCandidate {
+            let attackerCode: String
+            let targetCode: String
+            let hatred: Int
+            let isAggressor: Bool
+        }
+        var warCandidates: [WarCandidate] = []
+        for attackerCode in strategicCodes {
+            guard let attacker = state.aiCountryStates[attackerCode] else { continue }
+            let isAggressor = attacker.doctrine == .expansionist && attacker.budgetPriority == .military
+            let isThreatenedDefender = attacker.doctrine == .defensive &&
+                (attacker.relationshipScores.values.filter { $0 < -60 }.count >= 2)
+            guard isAggressor || isThreatenedDefender else { continue }
+
+            let bestTarget = strategicCodes.compactMap { candidate -> (String, Int)? in
+                guard candidate != attackerCode else { return nil }
+                let score = attacker.relationshipScores[candidate] ?? 0
+                guard score < -40 else { return nil }
+                guard !GeopoliticalMapData.regions(forCountryCode: candidate).isEmpty else { return nil }
+                return (candidate, score)
+            }
+            .min { $0.1 < $1.1 }
+
+            guard let (target, hatred) = bestTarget else { continue }
+            warCandidates.append(WarCandidate(
+                attackerCode: attackerCode, targetCode: target,
+                hatred: abs(hatred), isAggressor: isAggressor
+            ))
+        }
+        // Sort: most provoked (highest hatred) first, aggressors before defenders.
+        warCandidates.sort { lhs, rhs in
+            if lhs.isAggressor != rhs.isAggressor { return lhs.isAggressor }
+            return lhs.hatred > rhs.hatred
+        }
+
+        var warsThisTurn = 0
+        for candidate in warCandidates {
+            // Cap at 2 war starts per turn to keep the map legible.
+            guard warsThisTurn < 2 else { break }
+            let attackerCode = candidate.attackerCode
+            let targetCode = candidate.targetCode
+
+            // Deterministic war-roll. Base 18% for aggressors, 8% for cornered
+            // defenders; scaled slightly by how hated the rival is.
+            let hatred = candidate.hatred
+            let baseChance: Int = candidate.isAggressor ? 18 : 8
+            let scaledChance = min(45, baseChance + hatred / 10)
+            let warSeed = "\(state.scenarioID)-\(state.gameDate)-war-\(attackerCode)-\(targetCode)"
+            let warRoll = NativeGameEngine.stablePercentagePublic(seed: warSeed)
+            guard warRoll < Double(scaledChance) else { continue }
+
+            // Resolve the attack: escalate an existing conflict or open a new one.
+            let targetRegions = GeopoliticalMapData.regions(forCountryCode: targetCode)
+            guard let primaryTargetRegion = targetRegions.first else { continue }
+
+            // Don't double-open a conflict the attacker already controls.
+            if let existing = state.regionConflicts[primaryTargetRegion.id],
+               existing.controllerCode == attackerCode,
+               existing.mode == .conventionalOccupation
+            {
+                // Escalate intensity instead (caps at 5).
+                state.regionConflicts[primaryTargetRegion.id]?.intensity = min(5, existing.intensity + 1)
+                state.regionConflicts[primaryTargetRegion.id]?.updatedAt = state.gameDate
+            } else {
+                // Aggressors that already hold a rival region occupy; otherwise
+                // contest the border. This makes wars *change the map*.
+                let attackerOccupations = state.regionOccupations.filter {
+                    $0.value == attackerCode &&
+                        GeopoliticalMapData.regionByID[$0.key]?.countryCode != attackerCode
+                }.count
+                let occupy = attackerOccupations >= 1 || candidate.isAggressor
+
+                if occupy {
+                    state.regionOccupations[primaryTargetRegion.id] = attackerCode
+                }
+                state.regionConflicts[primaryTargetRegion.id] = NativeRegionConflictState(
+                    controllerCode: attackerCode,
+                    intensity: occupy ? 4 : 3,
+                    mode: occupy ? .conventionalOccupation : .contestedBorder,
+                    originalCountryCode: targetCode,
+                    rebelDelta: 0,
+                    regionID: primaryTargetRegion.id,
+                    securityDelta: 0,
+                    sourceEventID: "ai-war-\(attackerCode)-\(targetCode)-\(state.gameDate)",
+                    summary: "\(attackerCode) launched a military offensive against \(targetCode) in the \(primaryTargetRegion.name) region.",
+                    updatedAt: state.gameDate
+                )
+            }
+
+            // Relationship collapse between the combatants; ripple to their allies.
+            applyRelationDelta(&state, from: attackerCode, to: targetCode, delta: -15)
+            applyRelationDelta(&state, from: targetCode, to: attackerCode, delta: -15)
+
+            // Third parties pick sides: enemies of the attacker warm to the
+            // defender; allies of the attacker cool toward the defender. This
+            // is how a single war cascades into bloc politics.
+            if let attackerState = state.aiCountryStates[attackerCode] {
+                for (thirdCode, thirdScore) in attackerState.relationshipScores {
+                    guard strategicCodes.contains(thirdCode), thirdCode != targetCode else { continue }
+                    if thirdScore > 40 {
+                        // Attacker's ally: cools toward defender.
+                        applyRelationDelta(&state, from: thirdCode, to: targetCode, delta: -4)
+                    } else if thirdScore < -40 {
+                        // Attacker's enemy: warms toward defender (enemy-of-my-enemy).
+                        applyRelationDelta(&state, from: thirdCode, to: targetCode, delta: 5)
+                    }
+                }
+            }
+
+            // Economic costs: war spending on the attacker, capital flight on
+            // the defender. Both are clamped and capped so a long war degrades
+            // but never bankrupts a country in a single turn.
+            applyWarEconomicCost(
+                state: &state, countryCode: attackerCode, months: months,
+                growthDelta: -0.3, debtDelta: 1.2, securityDelta: 1.5,
+                ledgerRuleID: "ai-war-spending", summary: "War spending vs \(targetCode) (\(primaryTargetRegion.name))."
+            )
+            applyWarEconomicCost(
+                state: &state, countryCode: targetCode, months: months,
+                growthDelta: -0.6, debtDelta: 0.8, securityDelta: -2.0,
+                ledgerRuleID: "ai-war-defense", summary: "Capital flight and supply disruption from war with \(attackerCode) (\(primaryTargetRegion.name))."
+            )
+
+            // Bump world tension: wars destabilize the global mood.
+            state.worldTension = min(100, state.worldTension + 2)
+
+            let warEvent = NativeCampaignEvent(
+                date: state.gameDate,
+                description: "\(attackerCode) opened a military offensive against \(targetCode) in the \(primaryTargetRegion.name) region. Combat operations are ongoing; regional trade routes are disrupted and neighboring powers are recalibrating their alignments.",
+                id: "ai-war-\(attackerCode)-\(targetCode)-\(state.gameDate)",
+                importance: .major,
+                kind: .crisis,
+                linkedActionIDs: [],
+                notable: true,
+                playerRelated: false,
+                strategicEffects: [
+                    NativeStrategicEffect(
+                        date: state.gameDate,
+                        eventId: "ai-war-\(attackerCode)-\(targetCode)-\(state.gameDate)",
+                        id: "ai-war-tension-\(state.gameDate)",
+                        magnitude: 2,
+                        summary: "\(attackerCode)–\(targetCode) war raised global tension.",
+                        target: "GLOBAL",
+                        track: .diplomaticLeverage
+                    )
+                ],
+                title: "\(attackerCode) vs \(targetCode): War Erupts"
+            )
+            state.timeline.insert(warEvent, at: 0)
+            warsThisTurn += 1
+        }
+
+        // ── 2. Emergent alliances: ideologically aligned regimes formalize pacts ──
+        // Unlike the tension-gated coalition above, this fires regardless of
+        // world tension: democracies drift toward democracies, autocracies
+        // toward autocracies, and close friends (>55) can convert a friendship
+        // into a formal mutual-defense pact. The pact then persists and shifts
+        // both members' relations with the rest of the world.
+        for codeA in strategicCodes {
+            guard let aiA = state.aiCountryStates[codeA],
+                  let ledgerA = state.economicLedgers[codeA]
+            else { continue }
+
+            // Find the best alliance candidate: same government type, high
+            // mutual relationship, not already allied.
+            let candidate = strategicCodes.compactMap { codeB -> (String, Int)? in
+                guard codeB > codeA else { return nil } // unique pair via lexical order
+                guard let aiB = state.aiCountryStates[codeB],
+                      let ledgerB = state.economicLedgers[codeB]
+                else { return nil }
+                let sameGov = ledgerA.governmentType == ledgerB.governmentType
+                guard sameGov else { return nil }
+                let relAB = aiA.relationshipScores[codeB] ?? 0
+                let relBA = aiB.relationshipScores[codeA] ?? 0
+                let mutual = min(relAB, relBA)
+                guard mutual > 55 else { return nil }
+                // Skip if an existing AI-to-AI alliance already links them.
+                let alreadyAllied = state.activeOffers.contains { offer in
+                    offer.type == .militaryAlliance &&
+                        offer.status == .accepted &&
+                        offer.targetCode != nil &&
+                        ((offer.proposerCode == codeA && offer.targetCode == codeB) ||
+                            (offer.proposerCode == codeB && offer.targetCode == codeA))
+                }
+                guard !alreadyAllied else { return nil }
+                return (codeB, mutual)
+            }
+            .max { $0.1 < $1.1 }
+
+            guard let (codeB, _) = candidate else { continue }
+
+            // Deterministic 22% formation chance per qualifying pair per turn.
+            let allianceSeed = "\(state.scenarioID)-\(state.gameDate)-alliance-\(codeA)-\(codeB)"
+            let allianceRoll = NativeGameEngine.stablePercentagePublic(seed: allianceSeed)
+            guard allianceRoll < 22 else { continue }
+
+            let govLabel = ledgerA.governmentType.capitalized
+            let pactOffer = NativeDiplomaticOffer(
+                id: "ai-alliance-\(codeA)-\(codeB)-\(state.gameDate)",
+                proposerCode: codeA,
+                type: .militaryAlliance,
+                description: "\(codeA) and \(codeB) formalized a \(govLabel) mutual-defense alliance, binding their security policies and aligning their diplomatic stances.",
+                stabilityCost: 0,
+                relationshipEffect: 15,
+                growthDelta: 0,
+                status: .accepted,
+                turnProposed: state.round,
+                targetCode: codeB
+            )
+            state.activeOffers.append(pactOffer)
+
+            // Both allies gain security; slight growth drag from coordination.
+            applyWarEconomicCost(
+                state: &state, countryCode: codeA, months: months,
+                growthDelta: -0.05, debtDelta: 0, securityDelta: 1.2,
+                ledgerRuleID: "ai-alliance-security", summary: "Mutual-defense alliance with \(codeB) improved readiness."
+            )
+            applyWarEconomicCost(
+                state: &state, countryCode: codeB, months: months,
+                growthDelta: -0.05, debtDelta: 0, securityDelta: 1.2,
+                ledgerRuleID: "ai-alliance-security", summary: "Mutual-defense alliance with \(codeA) improved readiness."
+            )
+
+            // Bloc polarization: both allies' enemies become each other's
+            // enemies too (cooler relations), and their friends warm slightly.
+            if let aiA = state.aiCountryStates[codeA] {
+                for (thirdCode, score) in aiA.relationshipScores {
+                    guard strategicCodes.contains(thirdCode), thirdCode != codeB else { continue }
+                    if score < -30 {
+                        applyRelationDelta(&state, from: codeB, to: thirdCode, delta: -3)
+                    } else if score > 30 {
+                        applyRelationDelta(&state, from: codeB, to: thirdCode, delta: 2)
+                    }
+                }
+            }
+            if let aiB = state.aiCountryStates[codeB] {
+                for (thirdCode, score) in aiB.relationshipScores {
+                    guard strategicCodes.contains(thirdCode), thirdCode != codeA else { continue }
+                    if score < -30 {
+                        applyRelationDelta(&state, from: codeA, to: thirdCode, delta: -3)
+                    } else if score > 30 {
+                        applyRelationDelta(&state, from: codeA, to: thirdCode, delta: 2)
+                    }
+                }
+            }
+
+            let allyEvent = NativeCampaignEvent(
+                date: state.gameDate,
+                description: "\(codeA) and \(codeB) signed a formal \(govLabel) mutual-defense alliance. The pact commits both nations to collective security and signals a new power bloc on the world stage — one the player's diplomacy will have to reckon with.",
+                id: "ai-alliance-event-\(codeA)-\(codeB)-\(state.gameDate)",
+                importance: .major,
+                kind: .diplomacy,
+                linkedActionIDs: [],
+                notable: true,
+                playerRelated: false,
+                strategicEffects: [],
+                title: "New Alliance: \(codeA) + \(codeB)"
+            )
+            state.timeline.insert(allyEvent, at: 0)
+            break // one alliance per turn
+        }
+
+        // ── 3. Structured AI-vs-AI trade corridors ──
+        // Mercantile/growth doctrines with a warm (>40) relationship toward
+        // another mercantile/growth partner sign a trade corridor that
+        // *actually moves both ledgers*: +trade balance and +growth on both
+        // sides, small but compounding. This is the "treaties" layer the
+        // passive drift loop never had.
+        for codeA in strategicCodes {
+            guard let aiA = state.aiCountryStates[codeA] else { continue }
+            let aIsCommercial = aiA.doctrine == .mercantile || aiA.budgetPriority == .growth
+            guard aIsCommercial else { continue }
+
+            let partner = strategicCodes.compactMap { codeB -> (String, Int)? in
+                guard codeB > codeA else { return nil }
+                guard let aiB = state.aiCountryStates[codeB] else { return nil }
+                let bIsCommercial = aiB.doctrine == .mercantile || aiB.budgetPriority == .growth
+                guard bIsCommercial else { return nil }
+                let mutual = min(
+                    aiA.relationshipScores[codeB] ?? 0,
+                    aiB.relationshipScores[codeA] ?? 0
+                )
+                guard mutual > 40 else { return nil }
+                // Skip pairs already linked by an active trade treaty.
+                let exists = state.activeOffers.contains { offer in
+                    offer.type == .tradeAgreement &&
+                        offer.status == .accepted &&
+                        offer.targetCode != nil &&
+                        ((offer.proposerCode == codeA && offer.targetCode == codeB) ||
+                            (offer.proposerCode == codeB && offer.targetCode == codeA))
+                }
+                guard !exists else { return nil }
+                return (codeB, mutual)
+            }
+            .max { $0.1 < $1.1 }
+            .map(\.0)
+
+            guard let codeB = partner else { continue }
+
+            let tradeSeed = "\(state.scenarioID)-\(state.gameDate)-ai-trade-\(codeA)-\(codeB)"
+            let tradeRoll = NativeGameEngine.stablePercentagePublic(seed: tradeSeed)
+            guard tradeRoll < 28 else { continue }
+
+            let tradeOffer = NativeDiplomaticOffer(
+                id: "ai-trade-\(codeA)-\(codeB)-\(state.gameDate)",
+                proposerCode: codeA,
+                type: .tradeAgreement,
+                description: "\(codeA) and \(codeB) established a structured trade corridor, lowering tariffs and coordinating commercial policy between their economies.",
+                stabilityCost: 0,
+                relationshipEffect: 8,
+                growthDelta: 0.15,
+                status: .accepted,
+                turnProposed: state.round,
+                targetCode: codeB
+            )
+            state.activeOffers.append(tradeOffer)
+
+            // Real ledger movement on both sides — this is the whole point.
+            applyTradePactBenefit(state: &state, countryCode: codeA, partnerCode: codeB, months: months)
+            applyTradePactBenefit(state: &state, countryCode: codeB, partnerCode: codeA, months: months)
+
+            let tradeEvent = NativeCampaignEvent(
+                date: state.gameDate,
+                description: "\(codeA) and \(codeB) signed a structured trade corridor agreement. Bilateral tariffs fall and commercial traffic between the two economies is projected to rise — a modest but compounding boost to both nations' ledgers, and a pact the player's own merchants will have to compete with.",
+                id: "ai-trade-event-\(codeA)-\(codeB)-\(state.gameDate)",
+                importance: .minor,
+                kind: .economy,
+                linkedActionIDs: [],
+                notable: false,
+                playerRelated: false,
+                strategicEffects: [],
+                title: "Trade Corridor: \(codeA) ↔ \(codeB)"
+            )
+            state.timeline.insert(tradeEvent, at: 0)
+            break // one trade pact per turn
+        }
+    }
+
+    /// Clamp a relationship delta into [-100, 100] and write it into both
+    /// directions of the `relationshipScores` maps. Safe against missing keys.
+    private static func applyRelationDelta(
+        _ state: inout NativeCampaignState,
+        from sourceCode: String,
+        to targetCode: String,
+        delta: Int
+    ) {
+        guard var source = state.aiCountryStates[sourceCode] else { return }
+        let current = source.relationshipScores[targetCode] ?? 0
+        source.relationshipScores[targetCode] = max(-100, min(100, current + delta))
+        state.aiCountryStates[sourceCode] = source
+    }
+
+    /// Apply a small, clamped economic cost/benefit to a country's ledger as a
+    /// consequence of an AI-vs-AI event (war spending, alliance readiness, etc).
+    /// Creates a ledger entry so the effect is visible in the economics panel.
+    private static func applyWarEconomicCost(
+        state: inout NativeCampaignState,
+        countryCode: String,
+        months: Int,
+        growthDelta: Double,
+        debtDelta: Double,
+        securityDelta: Double,
+        ledgerRuleID: String,
+        summary: String
+    ) {
+        guard var ledger = state.economicLedgers[countryCode] else { return }
+        ledger.realGrowthPercent = clampDouble(ledger.realGrowthPercent + growthDelta * Double(months), -12, 16)
+        ledger.publicDebtPercentGDP = clampDouble(ledger.publicDebtPercentGDP + debtDelta * Double(months), 1, 260)
+        ledger.securityIndex = clampDouble(ledger.securityIndex + securityDelta * Double(months), 0, 100)
+
+        let entry = NativeEconomicLedgerEntry(
+            budgetBalanceDelta: 0.0,
+            debtDelta: debtDelta * Double(months),
+            eventID: "\(ledgerRuleID)-\(countryCode.lowercased())-\(state.gameDate)",
+            fiscalSpaceDelta: 0,
+            growthDelta: growthDelta * Double(months),
+            id: "ledger-\(ledgerRuleID)-\(countryCode.lowercased())-\(state.gameDate)",
+            inflationDelta: 0.0,
+            ruleID: ledgerRuleID,
+            summary: summary,
+            tradeBalanceDelta: 0.0,
+            turnDate: state.gameDate,
+            securityDelta: securityDelta * Double(months),
+            rebelDelta: 0
+        )
+        ledger.entries.insert(entry, at: 0)
+        state.economicLedgers[countryCode] = ledger
+    }
+
+    /// Apply the compounding trade-pact benefit to a signatory: +trade balance
+    /// and +growth, scaled by elapsed months and clamped. Smaller than a
+    /// player-facing treaty so AI blocs grow rich slowly rather than overnight.
+    private static func applyTradePactBenefit(
+        state: inout NativeCampaignState,
+        countryCode: String,
+        partnerCode: String,
+        months: Int
+    ) {
+        guard var ledger = state.economicLedgers[countryCode] else { return }
+        let tradeBoost = 0.15 * Double(months)
+        let growthBoost = 0.08 * Double(months)
+        ledger.tradeBalancePercentGDP = clampDouble(ledger.tradeBalancePercentGDP + tradeBoost, -20, 20)
+        ledger.realGrowthPercent = clampDouble(ledger.realGrowthPercent + growthBoost, -12, 16)
+
+        let entry = NativeEconomicLedgerEntry(
+            budgetBalanceDelta: 0.0,
+            debtDelta: 0.0,
+            eventID: "ai-trade-pact-\(countryCode.lowercased())-\(state.gameDate)",
+            fiscalSpaceDelta: 0,
+            growthDelta: growthBoost,
+            id: "ledger-ai-trade-pact-\(countryCode.lowercased())-\(state.gameDate)",
+            inflationDelta: 0.0,
+            ruleID: "ai-trade-pact",
+            summary: "Trade corridor with \(partnerCode) boosted commerce (+\(String(format: "%.2f", tradeBoost))% trade).",
+            tradeBalanceDelta: tradeBoost,
+            turnDate: state.gameDate,
+            securityDelta: 0,
+            rebelDelta: 0
+        )
+        ledger.entries.insert(entry, at: 0)
+        state.economicLedgers[countryCode] = ledger
     }
 
     /// Earned rival-campaign progress, capped by current scenario readiness.

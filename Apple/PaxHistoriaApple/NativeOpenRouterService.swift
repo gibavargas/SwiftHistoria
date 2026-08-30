@@ -27,7 +27,7 @@ class NativeOpenRouterService: NativeZAIService {
     }
 
     override var apiKey: String {
-        defaults.string(forKey: "OPENROUTER_API_KEY") ?? ""
+        NativeSecretStore.string(forKey: "OPENROUTER_API_KEY", defaults: defaults) ?? ""
     }
 
     override var useCodingEndpoint: Bool {
@@ -122,7 +122,7 @@ class NativeOpenRouterService: NativeZAIService {
             let consequenceResponse = try await executeProviderRequest(
                 prompt: makeConsequenceOnlyPrompt(for: state, months: months, repairInstruction: nil),
                 maxTokens: 1800,
-                temperature: 0.1,
+                temperature: NativeTemperaturePolicy.consequencePass,
                 responseFormat: "json_object",
                 thinkingEnabled: true,
                 onReasoningProgress: { update in
@@ -150,7 +150,7 @@ class NativeOpenRouterService: NativeZAIService {
                 let worldResponse = try await executeProviderRequest(
                     prompt: makeWorldEventOnlyPrompt(for: state, months: months),
                     maxTokens: 1200,
-                    temperature: 0.1,
+                    temperature: NativeTemperaturePolicy.consequencePass,
                     responseFormat: "json_object",
                     thinkingEnabled: true,
                     onReasoningProgress: { update in
@@ -300,7 +300,7 @@ class NativeOpenRouterService: NativeZAIService {
             let rawResponse = try await executeProviderRequest(
                 prompt: prompt + repairNote,
                 maxTokens: 8000,
-                temperature: attempt == 1 ? 0.5 : 0.2,
+                temperature: attempt == 1 ? NativeTemperaturePolicy.matrixFirst : NativeTemperaturePolicy.matrixRepair,
                 responseFormat: "json_object",
                 thinkingEnabled: false,
                 requestTimeout: 45,
@@ -341,7 +341,7 @@ class NativeOpenRouterService: NativeZAIService {
         let rawResponse = try await executeProviderRequest(
             prompt: unifiedTurnPrompt(for: state, months: months, repairInstruction: repairInstruction),
             maxTokens: 2600,
-            temperature: repairInstruction == nil ? 0.7 : 0.3,
+            temperature: repairInstruction == nil ? NativeTemperaturePolicy.unifiedTurn : NativeTemperaturePolicy.unifiedRepair,
             responseFormat: "json_object",
             thinkingEnabled: true,
             onReasoningProgress: onReasoningProgress

@@ -97,9 +97,14 @@ protocol NativeAIService {
     func generateSuggestedActions(for state: NativeCampaignState) async throws -> [NativeSuggestedAction]
     func generateAdvisorBrief(for state: NativeCampaignState, question: String) async throws -> String
     func generateDiplomaticReply(for state: NativeCampaignState, thread: NativeDiplomaticThread, message: String) async throws -> String
+    func generateRivalAgentTurns(for state: NativeCampaignState) async throws -> [NativeRivalAgentTurn]
 }
 
 extension NativeAIService {
+    func generateRivalAgentTurns(for _: NativeCampaignState) async throws -> [NativeRivalAgentTurn] {
+        []
+    }
+
     func generateTurn(
         for state: NativeCampaignState,
         months: Int,

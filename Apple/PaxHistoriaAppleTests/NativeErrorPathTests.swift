@@ -82,7 +82,7 @@ final class NativeErrorPathTests: XCTestCase {
     }
 
     func testRateLimiterTracksAvailableSlotsAsRequestsAreConsumed() async throws {
-        let limiter = NativeRateLimiter()
+        let limiter = NativeRateLimiter(effectiveLimit: NativeRateLimiter.effectiveLimit)
 
         let initialSlots = await limiter.availableSlots()
         XCTAssertEqual(initialSlots, NativeRateLimiter.effectiveLimit)

@@ -1,0 +1,159 @@
+@testable import SwiftHistoria
+import XCTest
+
+// MARK: - Living World (day-tick) determinism & mechanics
+
+@MainActor
+final class LivingWorldEngineTests: XCTestCase {
+    /// Canonical fingerprint: sorted-country aggregate metrics so dictionary
+    /// ordering can never flake the comparison.
+    private func fingerprint(_ world: LivingWorldState) -> String {
+        let countries = world.countries.keys.sorted().map { code -> String in
+            let c = world.countries[code]!
+            let wars = world.wars.filter { $0.attacker == code || $0.defender == code }.count
+            return String(
+                format: "%@|sol=%.4f|treasury=%.4f|tax=%.4f|infamy=%.2f|mobilized=%d|wars=%d",
+                code, c.standardOfLiving, c.treasury, c.taxLevel, c.infamy, c.mobilized ? 1 : 0, wars
+            )
+        }
+        let market = world.goods.map { good -> String in
+            String(format: "%@=%.4f", good.id, world.market.prices[good.id] ?? 0)
+        }.joined(separator: ";")
+        return "day=\(world.dayIndex)\ncountries=\(countries.joined(separator: "\n"))\nmarket=\(market)"
+    }
+
+    func testFactoryProducesIdenticalWorldsForSameSeed() {
+        let a = LivingWorldFactory.makeWorld(seed: 12345, playerCode: "BRA", minorCount: 12)
+        let b = LivingWorldFactory.makeWorld(seed: 12345, playerCode: "BRA", minorCount: 12)
+        XCTAssertEqual(fingerprint(a), fingerprint(b), "Same seed must generate the identical world")
+        XCTAssertEqual(a.countries.count, b.countries.count)
+    }
+
+    func testFactoryVariesWithSeed() {
+        let a = LivingWorldFactory.makeWorld(seed: 1, playerCode: nil, minorCount: 8)
+        let b = LivingWorldFactory.makeWorld(seed: 2, playerCode: nil, minorCount: 8)
+        XCTAssertNotEqual(fingerprint(a), fingerprint(b), "Different seeds must generate different worlds")
+    }
+
+    func testThirtyTicksAreDeterministic() {
+        let a = LivingWorldFactory.makeWorld(seed: 777, playerCode: "BRA", minorCount: 10)
+        let b = LivingWorldFactory.makeWorld(seed: 777, playerCode: "BRA", minorCount: 10)
+        var worldA = a
+        var worldB = b
+        for _ in 0 ..< 30 {
+            worldA = LivingWorldTick.advanceDay(worldA, playerOrders: nil)
+        }
+        for _ in 0 ..< 30 {
+            worldB = LivingWorldTick.advanceDay(worldB, playerOrders: nil)
+        }
+        XCTAssertEqual(fingerprint(worldA), fingerprint(worldB), "Same seed + same ticks must stay identical")
+        XCTAssertEqual(worldA.dayIndex, 30)
+    }
+
+    func testPlayerOrdersOverrideBrainForPlayerCountry() throws {
+        var world = LivingWorldFactory.makeWorld(seed: 42, playerCode: "BRA", minorCount: 6)
+        var orders = LWBrainOrders()
+        orders.taxAdjust = 0.1
+        let before = try XCTUnwrap(world.countries["BRA"]?.taxLevel)
+        world = LivingWorldTick.advanceDay(world, playerOrders: orders)
+        let after = try XCTUnwrap(world.countries["BRA"]?.taxLevel)
+        XCTAssertGreaterThan(after, before, "Player orders must drive the player country")
+    }
+
+    func testMarketPricesStayInsideVicStyleBounds() {
+        var world = LivingWorldFactory.makeWorld(seed: 99, playerCode: nil, minorCount: 6)
+        for _ in 0 ..< 120 {
+            world = LivingWorldTick.advanceDay(world, playerOrders: nil)
+        }
+        for good in world.goods {
+            let price = world.market.prices[good.id] ?? 0
+            XCTAssertGreaterThanOrEqual(price, good.basePrice * LWMarket.priceFloorFactor - 0.0001)
+            XCTAssertLessThanOrEqual(price, good.basePrice * LWMarket.priceCeilingFactor + 0.0001)
+        }
+    }
+
+    func testDateArithmeticAcrossLeapYear() {
+        XCTAssertEqual(LWDate.start.dayIndex, 0)
+        XCTAssertEqual(LWDate.from(dayIndex: 0), LWDate(year: 1936, month: 1, day: 1))
+        XCTAssertEqual(LWDate.from(dayIndex: 365), LWDate(year: 1936, month: 12, day: 31))
+        // 1940 is a leap year: Feb 29 1940 exists.
+        let feb29 = LWDate(year: 1940, month: 2, day: 29)
+        XCTAssertEqual(feb29.advanced(byDays: 1), LWDate(year: 1940, month: 3, day: 1))
+    }
+
+    func testHashBridgeInterpretationRoundTrip() throws {
+        let world = LivingWorldFactory.makeWorld(seed: 5, playerCode: "BRA", minorCount: 4)
+        let interpretation = LivingWorldHashBridge.interpret(hash: "0x80808080", world: world)
+        XCTAssertNotNil(interpretation)
+        // Nibble pair (8,0) = 128/255 ≈ 0.502, so the delta is ≈ +0.02, near-neutral.
+        XCTAssertEqual(try XCTUnwrap(interpretation?.stabilityDelta), 0.0196, accuracy: 0.03, "0x80 pair should map to ~neutral 50%")
+        XCTAssertNotNil(LivingWorldHashBridge.interpret(hash: "WORLDHASH:0xABCDEF12", world: world))
+        XCTAssertNil(LivingWorldHashBridge.interpret(hash: "nonsense", world: world))
+        XCTAssertNil(LivingWorldHashBridge.interpret(hash: "0x123", world: world), "Short hash must be rejected")
+    }
+
+    func testHashBridgePromptContainsSnapshotAndContract() {
+        let world = LivingWorldFactory.makeWorld(seed: 5, playerCode: "BRA", minorCount: 4)
+        let prompt = LivingWorldHashBridge.makeWorldPrompt(for: world)
+        XCTAssertTrue(prompt.contains("WORLDHASH:0x"))
+        XCTAssertTrue(prompt.contains("BRA"))
+        XCTAssertTrue(prompt.contains("worldSeed"))
+    }
+
+    func testWarDeclarationAndPeaceCycle() throws {
+        let session = try LivingWorldSession(playerCountryCode: "DEU", seed: 2024, slot: 3,
+                                             defaults: XCTUnwrap(UserDefaults(suiteName: "lw-test-\(UUID().uuidString)")))
+        session.declareWar(on: "USA")
+        XCTAssertFalse(session.world.wars.isEmpty, "Declared war must exist")
+        let declaredWarID = session.world.wars[0].id
+        for _ in 0 ..< 400 {
+            session.stepDay()
+        }
+        // AI brains may start their own wars during the window (fresh wars have
+        // near-zero exhaustion), so only the *declared* war is asserted on.
+        // Peace consuming it is a pass; surviving 400 days requires a
+        // near-balanced stalemate, which must show real exhaustion. A winning
+        // attacker's exhaustion can shrink (progress rebate), so the max of
+        // both sides is the meaningful signal.
+        if let declared = session.world.wars.first(where: { $0.id == declaredWarID }) {
+            XCTAssertGreaterThan(max(declared.exhaustionAttacker, declared.exhaustionDefender), 30,
+                                 "A war surviving 400 days must be accruing exhaustion")
+        }
+    }
+
+    func testBrainsKeepEconomyParametersInLegalRange() {
+        var world = LivingWorldFactory.makeWorld(seed: 31337, playerCode: nil, minorCount: 10)
+        for _ in 0 ..< 90 {
+            world = LivingWorldTick.advanceDay(world, playerOrders: nil)
+        }
+        for country in world.countries.values {
+            XCTAssertGreaterThanOrEqual(country.taxLevel, 0.0499)
+            XCTAssertLessThanOrEqual(country.taxLevel, 0.6001)
+            XCTAssertGreaterThanOrEqual(country.spendingLevel, 0.0999)
+            XCTAssertLessThanOrEqual(country.spendingLevel, 1.0001)
+            XCTAssertLessThanOrEqual(country.radicals, 1.0001)
+        }
+    }
+
+    func testCommentaryIsNonEmptyForEveryStrategy() {
+        let world = LivingWorldFactory.makeWorld(seed: 8, playerCode: nil, minorCount: 8)
+        for country in world.countries.values {
+            let line = LWBrainFactory.brain(for: country).commentary(world: world, country: country)
+            XCTAssertFalse(line.isEmpty)
+            XCTAssertTrue(line.contains(country.name), "Commentary should name its country")
+        }
+    }
+
+    func testSessionPersistenceRoundTrip() throws {
+        let suite = try XCTUnwrap(UserDefaults(suiteName: "lw-persist-\(UUID().uuidString)"))
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("lw-test-\(UUID().uuidString)")
+        let session = LivingWorldSession(playerCountryCode: "GBR", seed: 606, slot: 2, defaults: suite, persistenceDirectory: dir)
+        for _ in 0 ..< 5 {
+            session.stepDay()
+        }
+        session.persistNow()
+        let loaded = LivingWorldSession(playerCountryCode: "GBR", seed: 0, slot: 2, defaults: suite, persistenceDirectory: dir)
+        XCTAssertEqual(loaded.world.dayIndex, 5, "Resume must restore the tick count")
+        XCTAssertTrue(LivingWorldSession.hasSave(slot: 2, directory: dir))
+    }
+}

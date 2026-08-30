@@ -15,8 +15,11 @@ struct CountrySelectionView: View {
     @State private var query = ""
     @State private var setupStep = 0 // 0: Scenario/Language; 1: AI Provider; 2: Choose Country
     @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderRaw: String = NativeAIProviderPreference.nvidia.rawValue
-    @AppStorage("NVIDIA_API_KEY") private var nvidiaKey: String = ""
-    @AppStorage("OPENROUTER_API_KEY") private var openRouterKey: String = ""
+    /// Keys are stored in the Keychain (NativeSecretStore), not UserDefaults.
+    /// These draft fields keep the SecureField UX; every keystroke is mirrored
+    /// to the Keychain on change.
+    @State private var nvidiaKey = ""
+    @State private var openRouterKey = ""
 
     private var selectedProvider: NativeAIProviderPreference {
         NativeAIProviderPreference(rawValue: aiProviderRaw) ?? .nvidia
@@ -196,6 +199,16 @@ struct CountrySelectionView: View {
                 }
             #endif
         }
+        .onAppear {
+            nvidiaKey = NativeSecretStore.string(forKey: "NVIDIA_API_KEY") ?? ""
+            openRouterKey = NativeSecretStore.string(forKey: "OPENROUTER_API_KEY") ?? ""
+        }
+        .onChange(of: nvidiaKey) { _, newValue in
+            NativeSecretStore.set(newValue, forKey: "NVIDIA_API_KEY")
+        }
+        .onChange(of: openRouterKey) { _, newValue in
+            NativeSecretStore.set(newValue, forKey: "OPENROUTER_API_KEY")
+        }
         .tint(selectedScenarioAccentColor)
         .preferredColorScheme(.dark)
     }
@@ -318,7 +331,7 @@ struct CountrySelectionView: View {
                     .listRowBackground(Color.clear)
                     .accessibilityIdentifier("native-country-empty")
                 } else {
-                    if !canProceedFromProviderStep {
+                    if !canProceedFromProviderStep, NativeSimulationMode.current() != .livingWorld {
                         Label(
                             "Enter the selected provider API key before starting.",
                             systemImage: "exclamationmark.triangle"
@@ -338,7 +351,7 @@ struct CountrySelectionView: View {
                                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                         }
                         .buttonStyle(.plain)
-                        .disabled(!canProceedFromProviderStep)
+                        .disabled(!canProceedFromProviderStep && NativeSimulationMode.current() != .livingWorld)
                         .accessibilityLabel("\(country.name), ISO code \(country.code)")
                         .accessibilityHint("Starts a campaign as \(country.name).")
                         .accessibilityIdentifier("native-country-option-\(country.code)")

@@ -2,10 +2,12 @@ import SwiftUI
 
 struct NativeSettingsPanel: View {
     @ObservedObject var store: NativeCampaignStore
-    @AppStorage("NVIDIA_API_KEY") private var nvidiaApiKey: String = ""
-    @AppStorage("OPENROUTER_API_KEY") private var openRouterApiKey: String = ""
+    /// API keys and the Turso token live in the Keychain (NativeSecretStore).
+    /// These drafts keep the SecureField bindings; changes persist on change.
+    @State private var nvidiaApiKey = ""
+    @State private var openRouterApiKey = ""
+    @State private var tursoAuthToken = ""
     @AppStorage(NativeCampaignStore.tursoDatabaseURLKey) private var tursoDatabaseURL: String = ""
-    @AppStorage(NativeCampaignStore.tursoAuthTokenKey) private var tursoAuthToken: String = ""
     @State private var showAIConfiguration = false
     @State private var showCloudMirror = false
     @State private var showCampaignManagement = false
@@ -266,6 +268,20 @@ struct NativeSettingsPanel: View {
                 }
                 .accessibilityIdentifier("native-campaign-management-section")
             }
+        }
+        .onAppear {
+            nvidiaApiKey = NativeSecretStore.string(forKey: "NVIDIA_API_KEY") ?? ""
+            openRouterApiKey = NativeSecretStore.string(forKey: "OPENROUTER_API_KEY") ?? ""
+            tursoAuthToken = NativeSecretStore.string(forKey: NativeCampaignStore.tursoAuthTokenKey) ?? ""
+        }
+        .onChange(of: nvidiaApiKey) { _, newValue in
+            NativeSecretStore.set(newValue, forKey: "NVIDIA_API_KEY")
+        }
+        .onChange(of: openRouterApiKey) { _, newValue in
+            NativeSecretStore.set(newValue, forKey: "OPENROUTER_API_KEY")
+        }
+        .onChange(of: tursoAuthToken) { _, newValue in
+            NativeSecretStore.set(newValue, forKey: NativeCampaignStore.tursoAuthTokenKey)
         }
     }
 }

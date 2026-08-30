@@ -126,4 +126,9 @@ class DynamicAIService: NativeAIService {
         let service = try selectedServiceForRequest()
         return try await service.generateDiplomaticReply(for: state, thread: thread, message: message)
     }
+
+    func generateRivalAgentTurns(for state: NativeCampaignState) async throws -> [NativeRivalAgentTurn] {
+        let service = try selectedServiceForRequest()
+        return try await service.generateRivalAgentTurns(for: state)
+    }
 }

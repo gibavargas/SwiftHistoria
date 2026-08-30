@@ -319,4 +319,43 @@ final class NativeZAITests: XCTestCase {
         XCTAssertEqual(secession.sovereigntyChange?.sourceCodes, ["ARG"])
         XCTAssertEqual(secession.sovereigntyChange?.regionIDs, [region.id])
     }
+
+    @MainActor
+    func testRivalAgentTurnsProcessingAndDispatches() {
+        var state = NativeGameEngine.initialState(
+            for: PlayerCountry(code: "BRA", name: "Brazil"),
+            worldSeed: 123
+        )
+
+        let dispatch = NativeAIDispatch(
+            senderCode: "USA",
+            recipientCode: "CHN",
+            message: "We propose a limited trade corridor.",
+            tone: "diplomatic"
+        )
+        let agentTurn = NativeRivalAgentTurn(
+            actorCode: "USA",
+            targetCode: "CHN",
+            intent: "trade",
+            narrativeSummary: "USA proposed trade corridor to CHN.",
+            hexLeverCode: "0x22FDF3",
+            dispatches: [dispatch]
+        )
+
+        NativeStrategyContextDatabase.simulateRivalGeopolitics(
+            state: &state,
+            months: 3,
+            agentTurns: [agentTurn]
+        )
+
+        let hasDispatchEvent = state.timeline.contains { event in
+            event.title.contains("INTELLIGENCE INTERCEPT: USA ➔ CHN")
+        }
+        let hasIntelEvent = state.timeline.contains { event in
+            event.title.contains("RIVAL INTEL")
+        }
+
+        XCTAssertTrue(hasDispatchEvent, "Expected intercepted dispatch event in campaign timeline.")
+        XCTAssertTrue(hasIntelEvent, "Expected rival intel summary event in campaign timeline.")
+    }
 }

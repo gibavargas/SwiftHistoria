@@ -640,6 +640,56 @@ extension NativeFoundationModelService {
         """)
     }
 
+    func makeRivalMultiAgentPrompt(for state: NativeCampaignState) -> String {
+        let strategicCodes = state.aiCountryStates.keys
+            .filter { $0 != "GLOBAL" && $0 != state.country.code }
+            .sorted()
+            .prefix(5)
+
+        let aiSummaries = strategicCodes.compactMap { code -> String? in
+            guard let ai = state.aiCountryStates[code] else { return nil }
+            let relations = ai.relationshipScores.map { "\($0.key):\($0.value)" }.joined(separator: ", ")
+            return "- \(code): Doctrine \(ai.doctrine.rawValue), Budget \(ai.budgetPriority.rawValue), Agenda \"\(ai.multiTurnAgenda)\", Relations: [\(relations)]"
+        }.joined(separator: "\n")
+
+        return clampedFoundationPrompt("""
+        Simulate autonomous rival AI nation actions and inter-nation diplomatic dispatches in SwiftHistoria.
+        \(languageInstruction(for: state))
+        \(hexLeverCodeInstruction())
+
+        You are the multi-agent strategic coordinator for rival powers. Produce a JSON array of objects representing actions and diplomatic dispatches for rival nations.
+
+        Available rival powers:
+        \(aiSummaries.isEmpty ? "- No active rival powers." : aiSummaries)
+
+        Player polity: \(state.country.name) (\(state.country.code))
+        Date: \(state.gameDate)
+        Scenario: \(state.scenarioName)
+        Global Tension: \(state.worldTension)/100
+
+        Output JSON format:
+        [
+          {
+            "actorCode": "USA",
+            "targetCode": "CHN",
+            "intent": "trade",
+            "narrativeSummary": "USA proposed a bilateral trade corridor to mitigate maritime supply disruptions.",
+            "hexLeverCode": "0x22FDF3",
+            "dispatches": [
+              {
+                "senderCode": "USA",
+                "recipientCode": "CHN",
+                "message": "We propose a limited maritime trade corridor to stabilize price inflation.",
+                "tone": "diplomatic"
+              }
+            ]
+          }
+        ]
+
+        Provide only valid JSON array matching the structure above. Include 1 to 3 relevant rival agent actions.
+        """)
+    }
+
     private func safeProposalBrief(for action: NativePlannedAction) -> String {
         let safeTitle = sanitizeFoundationModelText(String(action.title.prefix(60)))
         let text = "\(action.title) \(action.detail)".lowercased()

@@ -278,9 +278,9 @@ final class NativeCampaignStore: ObservableObject {
 
     private static func currentAIProviderRoute(defaults: UserDefaults) -> (provider: String, model: String, identifier: String, detail: String) {
         let preference = NativeAIProviderPreference.current(defaults: defaults)
-        let nvidiaKey = defaults.string(forKey: "NVIDIA_API_KEY") ?? ""
+        let nvidiaKey = NativeSecretStore.string(forKey: "NVIDIA_API_KEY", defaults: defaults) ?? ""
         let hasNVIDIAKey = !nvidiaKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        let openRouterKey = defaults.string(forKey: "OPENROUTER_API_KEY") ?? ""
+        let openRouterKey = NativeSecretStore.string(forKey: "OPENROUTER_API_KEY", defaults: defaults) ?? ""
         let hasOpenRouterKey = !openRouterKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
         switch preference {
@@ -421,6 +421,9 @@ final class NativeCampaignStore: ObservableObject {
     /// invalidated before the persisted preference changes.
     @discardableResult
     func setAIProvider(_ provider: NativeAIProviderPreference) -> Bool {
+        // The new route must start with a fresh request window; otherwise the
+        // previous route's timestamps throttle it (shared vs per-provider).
+        Task { await NativeRateLimiter.resetAll() }
         guard selectedAIProviderPreference != provider else { return false }
 
         invalidateInFlightWork()
@@ -518,6 +521,9 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func resetSelection() {
+        // Propagate deletion to the Turso mirror so a deleted campaign cannot
+        // resurrect via recoverRemoteCampaignIfNeeded() on the next launch.
+        NativeTursoCampaignPersistence.deleteSlot(slot: saveSlot, defaults: defaults)
         invalidateInFlightWork()
         selectedCountry = nil
         state = nil

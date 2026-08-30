@@ -116,6 +116,25 @@ extension NativeCampaignStore {
         }
     }
 
+    /// Synchronous flush for app-lifecycle hooks (scene phase changes,
+    /// NSApplication.willTerminateNotification). The willTerminate
+    /// notification is synchronous and the process may exit before any
+    /// awaited task resumes, so this cancels the debounce task and writes
+    /// the latest state inline. Guarantees Cmd+Q / background / crash
+    /// cannot lose the sub-second mutation window.
+    func flushPendingPersistence() {
+        persistDebounceTask?.cancel()
+        persistDebounceTask = nil
+        guard let state else { return }
+        persistenceRevision &+= 1
+        Self.writeStateToDisk(
+            state,
+            slot: saveSlot,
+            defaults: defaults,
+            persistenceDirectory: persistenceDirectory
+        )
+    }
+
     /// Waits for the latest queued write. The app normally does not need to
     /// await persistence, but this is useful for lifecycle handoff and
     /// deterministic integration tests.
@@ -500,7 +519,7 @@ enum NativeTursoCampaignPersistence {
     static func configuration(defaults: UserDefaults, environment: [String: String] = ProcessInfo.processInfo.environment) -> Configuration? {
         let rawURL = (defaults.string(forKey: NativeCampaignStore.tursoDatabaseURLKey) ?? environment[NativeCampaignStore.tursoDatabaseURLKey])?
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        let rawToken = (defaults.string(forKey: NativeCampaignStore.tursoAuthTokenKey) ?? environment[NativeCampaignStore.tursoAuthTokenKey])?
+        let rawToken = (NativeSecretStore.string(forKey: NativeCampaignStore.tursoAuthTokenKey, defaults: defaults) ?? environment[NativeCampaignStore.tursoAuthTokenKey])?
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard let rawURL, !rawURL.isEmpty, let rawToken, !rawToken.isEmpty else {
             return nil
@@ -594,6 +613,29 @@ enum NativeTursoCampaignPersistence {
         }
         requests.append(["type": "close"])
         return requests
+    }
+
+    /// Deletes every mirrored record for a slot (envelope/backup/legacy).
+    /// Called on campaign reset / slot clear so a deleted campaign cannot
+    /// resurrect via `recoverRemoteCampaignIfNeeded()` on the next launch.
+    static func deleteSlot(slot: Int, defaults: UserDefaults) {
+        guard let configuration = configuration(defaults: defaults) else {
+            return
+        }
+        let requests: [[String: Any]] = [
+            [
+                "type": "execute",
+                "stmt": [
+                    "sql": "DELETE FROM \(tableName) WHERE slot = ?",
+                    "args": [["type": "integer", "value": "\(slot)"]]
+                ]
+            ],
+            ["type": "close"]
+        ]
+        let request = pipelineRequest(configuration: configuration, requests: requests)
+        Task.detached(priority: .utility) {
+            _ = try? await execute(request: request)
+        }
     }
 
     static func readRequests(kind: Kind, slot: Int) -> [[String: Any]] {
