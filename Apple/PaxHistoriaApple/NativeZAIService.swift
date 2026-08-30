@@ -363,14 +363,6 @@ class NativeZAIService: NativeAIService {
 
     // MARK: - Internal Lane Slicing
 
-    private enum LaneResult {
-        case independent(ZAIEventDraft)
-        case economic(ZAIEventDraft)
-        case domestic(ZAIEventDraft)
-        case globalAI(ZAIEventDraft)
-        case action(NativePlannedAction, ZAIEventDraft)
-    }
-
     private func generateSlicedTurn(
         for state: NativeCampaignState,
         months: Int,
@@ -381,223 +373,60 @@ class NativeZAIService: NativeAIService {
             .filter { $0.status == .planned }
             .prefix(3))
         let totalLanes = NativeStrategyContextDatabase.estimatedLaneCount(for: state)
-        var completedLanes = 0
-        progress(NativeTurnProgress(
-            completedLanes: completedLanes,
-            detail: "Calling \(routeDisplayName) with \(primaryModelDisplayName) first; other lanes may use fallback models.",
-            phase: "Consulting \(providerDisplayName)",
-            totalLanes: totalLanes,
-            providerName: providerDisplayName,
-            modelName: primaryModelDisplayName,
-            modelIdentifier: primaryModelIdentifier
-        ))
 
-        var independentDraft: ZAIEventDraft?
-        var economicDraft: ZAIEventDraft?
-        var domesticDraft: ZAIEventDraft?
-        var globalAIDraft: ZAIEventDraft?
-        var actionDrafts: [String: ZAIEventDraft] = [:]
-
-        try await withThrowingTaskGroup(of: LaneResult.self) { group in
-            group.addTask {
-                let draft = try await self.generateEventDraft(
-                    prompt: self.makeIndependentEventPrompt(for: state, months: months, repairInstruction: repairInstruction),
-                    state: state
-                )
-                return .independent(draft)
-            }
-            group.addTask {
-                let draft = try await self.generateEventDraft(
-                    prompt: self.makeEconomicEventPrompt(for: state, months: months, repairInstruction: repairInstruction),
-                    state: state
-                )
-                return .economic(draft)
-            }
-            group.addTask {
-                let draft = try await self.generateEventDraft(
-                    prompt: self.makeDomesticEventPrompt(for: state, months: months, repairInstruction: repairInstruction),
-                    state: state
-                )
-                return .domestic(draft)
-            }
-            group.addTask {
-                let draft = try await self.generateEventDraft(
-                    prompt: self.makeGlobalAIActionsPrompt(for: state, months: months, repairInstruction: repairInstruction),
-                    state: state
-                )
-                return .globalAI(draft)
-            }
-            for action in plannedActions {
-                group.addTask {
-                    let draft = try await self.generateEventDraft(
-                        prompt: self.makeActionEventPrompt(for: state, action: action, months: months, repairInstruction: repairInstruction),
-                        state: state
-                    )
-                    return .action(action, draft)
-                }
-            }
-
-            for try await result in group {
-                completedLanes += 1
-                let phase: String
-                let detail: String
-
-                switch result {
-                case let .independent(draft):
-                    independentDraft = draft
-                    phase = NativeFoundationTurnLane.external.title
-                    detail = "External facts lane completed: \(sanitizeFoundationModelText(draft.title))"
-                case let .economic(draft):
-                    economicDraft = draft
-                    phase = NativeFoundationTurnLane.economy.title
-                    detail = "Economic consequences lane completed: \(sanitizeFoundationModelText(draft.title))"
-                case let .domestic(draft):
-                    domesticDraft = draft
-                    phase = NativeFoundationTurnLane.domestic.title
-                    detail = "Domestic response lane completed: \(sanitizeFoundationModelText(draft.title))"
-                case let .globalAI(draft):
-                    globalAIDraft = draft
-                    phase = NativeFoundationTurnLane.external.title
-                    detail = "Global AI Action lane completed: \(sanitizeFoundationModelText(draft.title))"
-                case let .action(action, draft):
-                    actionDrafts[action.id] = draft
-                    phase = NativeFoundationTurnLane.actionConsequence.title
-                    detail = "Resolved \(sanitizeFoundationModelText(action.title)): \(sanitizeFoundationModelText(draft.title))"
-                }
-
-                progress(NativeTurnProgress(
-                    completedLanes: completedLanes,
-                    detail: detail,
-                    phase: phase,
-                    totalLanes: totalLanes,
-                    providerName: providerDisplayName,
-                    modelName: primaryModelDisplayName,
-                    modelIdentifier: primaryModelIdentifier
-                ))
-            }
+        func updateProgress(_ completed: Int, _ phase: String, _ detail: String) {
+            progress(NativeTurnProgress(
+                completedLanes: completed,
+                detail: detail,
+                phase: phase,
+                totalLanes: totalLanes,
+                providerName: providerDisplayName,
+                modelName: primaryModelDisplayName,
+                modelIdentifier: primaryModelIdentifier
+            ))
         }
+
+        updateProgress(0, "Consulting \(providerDisplayName)",
+                       "Batching all turn lanes into one \(routeDisplayName) request.")
+        let batchPrompt = NativePromptHarness.makeBatchTurnPrompt(
+            for: state,
+            months: months,
+            plannedActions: plannedActions,
+            repairInstruction: repairInstruction
+        )
+        let envelope: ZAITurnEnvelope = try await generateStructuredJSON(
+            prompt: batchPrompt,
+            schema: ZAITurnEnvelope.schemaInstructions,
+            maximumResponseTokens: 1400,
+            temperature: NativeTemperaturePolicy.eventLaneLadder[0]
+        )
+        updateProgress(max(0, totalLanes - 1), NativeFoundationTurnLane.summary.title,
+                       "Batched turn received; assembling validated turn.")
 
         var events: [NativeCampaignEvent] = []
-        if let independent = independentDraft {
-            events.append(independent.toNativeEvent(
-                state: state,
-                months: months,
-                index: events.count,
-                linkedActionID: nil,
-                playerRelated: false
-            ))
-        }
-        if let economic = economicDraft {
-            events.append(economic.toNativeEvent(
-                state: state,
-                months: months,
-                index: events.count,
-                linkedActionID: nil,
-                playerRelated: true
-            ))
-        }
-        if let domestic = domesticDraft {
-            events.append(domestic.toNativeEvent(
-                state: state,
-                months: months,
-                index: events.count,
-                linkedActionID: nil,
-                playerRelated: true
-            ))
-        }
-        if let globalAI = globalAIDraft {
-            events.append(globalAI.toNativeEvent(
-                state: state,
-                months: months,
-                index: events.count,
-                linkedActionID: nil,
-                playerRelated: false
-            ))
-        }
-        for action in plannedActions {
-            if let draft = actionDrafts[action.id] {
-                events.append(draft.toNativeEvent(
-                    state: state,
-                    months: months,
-                    index: events.count,
-                    linkedActionID: action.id,
-                    playerRelated: true
-                ))
-            }
+        events.append(envelope.independent.toNativeEvent(
+            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: false))
+        events.append(envelope.economic.toNativeEvent(
+            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: true))
+        events.append(envelope.domestic.toNativeEvent(
+            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: true))
+        events.append(envelope.globalAI.toNativeEvent(
+            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: false))
+        let actionIDs = Set(plannedActions.map(\.id))
+        for actionDraft in envelope.actions where actionIDs.contains(actionDraft.actionID) {
+            guard let action = plannedActions.first(where: { $0.id == actionDraft.actionID }) else { continue }
+            events.append(actionDraft.draft.toNativeEvent(
+                state: state, months: months, index: events.count, linkedActionID: action.id, playerRelated: true))
         }
 
-        progress(NativeTurnProgress(
-            completedLanes: max(0, totalLanes - 1),
-            detail: "Synthesizing lane outputs into one validated turn.",
-            phase: NativeFoundationTurnLane.summary.title,
-            totalLanes: totalLanes,
-            providerName: providerDisplayName,
-            modelName: primaryModelDisplayName,
-            modelIdentifier: primaryModelIdentifier
-        ))
-
-        let summary = try await generateTurnSummary(state: state, months: months, events: events)
-        progress(NativeTurnProgress(
-            completedLanes: totalLanes,
-            detail: "\(providerDisplayName) turn synthesis completed.",
-            phase: NativeFoundationTurnLane.summary.title,
-            totalLanes: totalLanes,
-            providerName: providerDisplayName,
-            modelName: primaryModelDisplayName,
-            modelIdentifier: primaryModelIdentifier
-        ))
-        logger.info("\(self.providerDisplayName, privacy: .public) sliced turn assembled events=\(events.count)")
-
+        updateProgress(totalLanes, NativeFoundationTurnLane.summary.title,
+                       "\(providerDisplayName) batched turn synthesis completed.")
+        logger.info("\(self.providerDisplayName, privacy: .public) batched turn assembled events=\(events.count)")
         return NativeGeneratedTurn(
             events: events,
-            stabilityDelta: summary.stabilityDelta,
-            summary: sanitizeFoundationModelText(summary.summary),
-            worldTensionDelta: summary.globalFrictionDelta
-        )
-    }
-
-    private func generateEventDraft(
-        prompt: String,
-        state: NativeCampaignState
-    ) async throws -> ZAIEventDraft {
-        var repairNotes: [String] = []
-        for attempt in 1 ... 3 {
-            do {
-                logger.info("\(self.providerDisplayName, privacy: .public) event draft attempt=\(attempt)")
-                let draft: ZAIEventDraft = try await generateStructuredJSON(
-                    prompt: eventPrompt(prompt, state: state, repairNotes: repairNotes),
-                    schema: ZAIEventDraft.schemaInstructions,
-                    maximumResponseTokens: 260,
-                    temperature: NativeTemperaturePolicy.eventLaneLadder[min(attempt, NativeTemperaturePolicy.eventLaneLadder.count) - 1]
-                )
-                if draft.hasConcreteContent {
-                    return draft
-                }
-                logger.error("\(self.providerDisplayName, privacy: .public) event draft used non-concrete content attempt=\(attempt) \(draft.validationDiagnostics)")
-                repairNotes.append("Previous event used placeholder or draft text. Produce a concrete title, description, target, and effect summary.")
-            } catch {
-                if attempt == 3 {
-                    logger.error("\(self.providerDisplayName, privacy: .public) event draft failed after retries")
-                    throw NativeFoundationModelError.generationFailed(error.localizedDescription)
-                }
-                logger.error("\(self.providerDisplayName, privacy: .public) event draft attempt failed attempt=\(attempt)")
-                repairNotes.append("Previous event generation failed. Try a simpler civic-planning event with one concrete agency and one measurable game effect.")
-            }
-        }
-        throw NativeFoundationModelError.generationFailed("\(providerDisplayName) returned placeholder event content after three attempts.")
-    }
-
-    private func generateTurnSummary(
-        state: NativeCampaignState,
-        months: Int,
-        events: [NativeCampaignEvent]
-    ) async throws -> ZAITurnSummary {
-        let prompt = makeSummaryPrompt(for: state, months: months, events: events)
-        return try await generateStructuredJSON(
-            prompt: prompt,
-            schema: ZAITurnSummary.schemaInstructions,
-            maximumResponseTokens: 140,
-            temperature: 0.7
+            stabilityDelta: envelope.summary.stabilityDelta,
+            summary: sanitizeFoundationModelText(envelope.summary.summary),
+            worldTensionDelta: envelope.summary.globalFrictionDelta
         )
     }
 
@@ -1441,6 +1270,40 @@ class ConcurrencyLimiter {
 }
 
 // MARK: - Local Clean Decodable Structs for Z.AI API payloads
+
+/// One provider call returns the entire turn: four event sections, one
+/// event per planned action, and the turn summary. Replaces the per-lane
+/// fan-out (5-8 calls per turn) with a single batched request; a
+/// validation failure retries the whole envelope once with a repair note.
+private struct ZAITurnEnvelope: Decodable {
+    var independent: ZAIEventDraft
+    var economic: ZAIEventDraft
+    var domestic: ZAIEventDraft
+    var globalAI: ZAIEventDraft
+    var actions: [ZAIActionDraft]
+    var summary: ZAITurnSummary
+
+    struct ZAIActionDraft: Decodable {
+        var actionID: String
+        var draft: ZAIEventDraft
+
+        enum CodingKeys: String, CodingKey {
+            case actionID = "action_id"
+            case draft
+        }
+    }
+
+    static let schemaInstructions = """
+    {
+      "independent": { <event object> },
+      "economic": { <event object> },
+      "domestic": { <event object> },
+      "globalAI": { <event object> },
+      "actions": [ {"action_id": "<id from ACTIONS list>", "draft": <event object>} ],
+      "summary": { "summary": "2-3 sentence turn overview", "stabilityDelta": -10 to 10, "globalFrictionDelta": -10 to 10 }
+    }
+    """
+}
 
 private struct ZAIEventDraft: Decodable {
     var title: String

@@ -732,4 +732,47 @@ extension NativePromptHarness {
         The consequence event's effectTrack MUST match one of these tracks. Do not substitute a different track.
         """
     }
+
+    /// Single-request turn prompt: every lane (independent, economic,
+    /// domestic, global AI, one per planned action) plus the summary are
+    /// authored in one JSON envelope. Cuts the classic turn path from 5-8
+    /// provider calls to exactly one (two with repair).
+    static func makeBatchTurnPrompt(
+        for state: NativeCampaignState,
+        months: Int,
+        plannedActions: [NativePlannedAction],
+        repairInstruction: String?
+    ) -> String {
+        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
+        let aiDetails = state.aiCountryStates.sorted(by: { $0.key < $1.key }).map { code, aiState in
+            "- \(code): doctrine=\(aiState.doctrine.rawValue), agenda=\"\(aiState.multiTurnAgenda)\""
+        }.joined(separator: "\n")
+        let actionList = plannedActions.map { action in
+            "- id=\(action.id): \(action.title) - \(action.detail)"
+        }.joined(separator: "\n")
+
+        return clampedFoundationPrompt("""
+        You are producing ONE complete SwiftHistoria turn as a single JSON envelope with exactly six sections.
+        \(languageInstruction(for: state))
+        \(mechanicsReminder())
+        The period starts on \(state.gameDate) and ends on \(targetDate).
+
+        SECTION RULES
+        1. "independent": one external planning development unrelated to the selected region except through broad economic, logistics, climate, energy, education, or market conditions.
+        2. "economic": one selected-region economic assessment event (budget balance, fiscal space, debt, inflation, growth, trade, unemployment).
+        3. "domestic": one domestic response event for the selected region.
+        4. "globalAI": one action event initiated by an autonomous non-player country advancing its doctrine or agenda:
+        \(aiDetails)
+        5. "actions": exactly one event per planned action below, each tagged with its action_id. Planned actions:
+        \(actionList.isEmpty ? "(none - return an empty array)" : actionList)
+        6. "summary": an objective 2-3 sentence overview of the whole turn, stabilityDelta from -10 to 10, globalFrictionDelta from -10 to 10.
+
+        Every event object MUST follow the event schema: title, description, kind (economy, domestic, or world), importance (minor, major, critical), notable, effectTarget (country code or GLOBAL), effectTrack (one exact code), effectMagnitude (-3 to 3), effectSummary. Use "hexLeverCode" only when a map or ledger nudge is narratively justified.
+
+        \(hexLeverCodeInstruction())
+        \(repairLine(repairInstruction))
+
+        \(recentContext(for: state))
+        """)
+    }
 }
