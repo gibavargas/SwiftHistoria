@@ -137,8 +137,8 @@ final class NativeTokenUsageTracker: ObservableObject {
 }
 
 @MainActor
-class NativeZAIService: NativeAIService {
-    let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeZAIService")
+class NativeExternalAIService: NativeAIService {
+    let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeExternalAIService")
     let defaults: UserDefaults
 
     // MARK: - Cost telemetry (base class tracking)
@@ -740,13 +740,13 @@ class NativeZAIService: NativeAIService {
                     do {
                         let providerName = providerDisplayName
                         let parsed = try await Task.detached(priority: .userInitiated) {
-                            let content = try NativeZAIService.decodeCompletionContent(
+                            let content = try NativeExternalAIService.decodeCompletionContent(
                                 from: data,
                                 providerDisplayName: providerName
                             )
                             return NativeParsedProviderResponse(
                                 content: content,
-                                usage: NativeZAIService.parseTokenUsage(from: data)
+                                usage: NativeExternalAIService.parseTokenUsage(from: data)
                             )
                         }.value
                         let content = parsed.content

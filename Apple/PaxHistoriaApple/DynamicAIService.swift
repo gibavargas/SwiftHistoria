@@ -43,7 +43,7 @@ class DynamicAIService: NativeAIService {
         NativeAIProviderPreference.current(defaults: defaults)
     }
 
-    private var selectedService: NativeZAIService {
+    private var selectedService: NativeExternalAIService {
         switch providerPreference {
         case .nvidia:
             nvidiaService
@@ -61,7 +61,7 @@ class DynamicAIService: NativeAIService {
         }
     }
 
-    private func selectedServiceForRequest() throws -> NativeZAIService {
+    private func selectedServiceForRequest() throws -> NativeExternalAIService {
         let service = selectedService
         lastProviderUsed = service.providerDisplayName
         guard !service.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -89,7 +89,7 @@ class DynamicAIService: NativeAIService {
         months: Int,
         progress: @escaping @MainActor (NativeTurnProgress) -> Void
     ) async throws -> NativeGeneratedTurn {
-        let service: NativeZAIService
+        let service: NativeExternalAIService
         do {
             service = try selectedServiceForRequest()
         } catch {

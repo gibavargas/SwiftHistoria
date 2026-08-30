@@ -150,7 +150,7 @@ final class NativeZAITests: XCTestCase {
         }
         """
 
-        let content = try NativeZAIService.decodeCompletionContent(from: XCTUnwrap(response.data(using: .utf8)))
+        let content = try NativeExternalAIService.decodeCompletionContent(from: XCTUnwrap(response.data(using: .utf8)))
         XCTAssertEqual(content, "{\"title\":\"Corridor Security Upgrade\"}")
     }
 
@@ -163,7 +163,7 @@ final class NativeZAITests: XCTestCase {
             ]
         ]
 
-        let parsed = NativeZAIService.reasoningDelta(from: delta)
+        let parsed = NativeExternalAIService.reasoningDelta(from: delta)
 
         XCTAssertEqual(parsed.text, "Compare the queued orders. Check regional reactions.")
         XCTAssertTrue(parsed.encrypted)
@@ -171,17 +171,17 @@ final class NativeZAITests: XCTestCase {
 
     func testReasoningDeltaAcceptsOpenAICompatibleAliases() {
         XCTAssertEqual(
-            NativeZAIService.reasoningDelta(from: ["reasoning": "Reasoning alias"]).text,
+            NativeExternalAIService.reasoningDelta(from: ["reasoning": "Reasoning alias"]).text,
             "Reasoning alias"
         )
         XCTAssertEqual(
-            NativeZAIService.reasoningDelta(from: ["reasoning_content": "Legacy alias"]).text,
+            NativeExternalAIService.reasoningDelta(from: ["reasoning_content": "Legacy alias"]).text,
             "Legacy alias"
         )
     }
 
     func testReasoningPreviewIsWhitespaceStableAndBounded() {
-        let preview = NativeZAIService.reasoningPreview(
+        let preview = NativeExternalAIService.reasoningPreview(
             from: "First\n\nstep   then a much longer final conclusion",
             characterLimit: 24
         )
@@ -207,7 +207,7 @@ final class NativeZAITests: XCTestCase {
         }
         """
 
-        XCTAssertThrowsError(try NativeZAIService.decodeCompletionContent(from: XCTUnwrap(response.data(using: .utf8)))) { error in
+        XCTAssertThrowsError(try NativeExternalAIService.decodeCompletionContent(from: XCTUnwrap(response.data(using: .utf8)))) { error in
             XCTAssertTrue(error.localizedDescription.contains("finish_reason=length"))
         }
     }
@@ -227,7 +227,7 @@ final class NativeZAITests: XCTestCase {
         }
         """
 
-        XCTAssertThrowsError(try NativeZAIService.decodeCompletionContent(from: XCTUnwrap(response.data(using: .utf8)))) { error in
+        XCTAssertThrowsError(try NativeExternalAIService.decodeCompletionContent(from: XCTUnwrap(response.data(using: .utf8)))) { error in
             XCTAssertTrue(error.localizedDescription.contains("finish_reason=length"))
         }
     }

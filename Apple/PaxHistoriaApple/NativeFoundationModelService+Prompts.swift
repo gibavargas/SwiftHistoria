@@ -1,7 +1,7 @@
 import Foundation
 
 /// Prompt builders shared by every AI route. Extracted from the retired
-/// Apple Foundation Models service; NativeZAIService consumes these through
+/// Apple Foundation Models service; NativeExternalAIService consumes these through
 /// its `promptHarness` facade. Pure string assembly only — no transport,
 /// no sessions, no model types.
 extension NativePromptHarness {

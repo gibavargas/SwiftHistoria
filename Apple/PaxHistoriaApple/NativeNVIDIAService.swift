@@ -10,9 +10,9 @@ import Foundation
 /// rate limiting, timeouts, and coordination failures on the NVIDIA NIM free tier.
 ///
 /// Prompt construction, decoding, validation, retry, and telemetry stay shared
-/// with the other external providers through `NativeZAIService`.
+/// with the other external providers through `NativeExternalAIService`.
 @MainActor
-class NativeNVIDIAService: NativeZAIService {
+class NativeNVIDIAService: NativeExternalAIService {
     static let modelIdentifier = "minimaxai/minimax-m3"
 
     private var nvidiaModelLanes: [ZAIModelLane] = [

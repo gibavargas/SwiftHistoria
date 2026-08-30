@@ -130,7 +130,7 @@ final class NativeErrorPathTests: XCTestCase {
         }
         """
         let data = try XCTUnwrap(responseJSON.data(using: .utf8))
-        let usage = NativeZAIService.parseTokenUsage(from: data)
+        let usage = NativeExternalAIService.parseTokenUsage(from: data)
 
         XCTAssertNotNil(usage, "Should parse usage from valid response")
         XCTAssertEqual(usage?.prompt, 150)
@@ -144,14 +144,14 @@ final class NativeErrorPathTests: XCTestCase {
         }
         """
         let data = try XCTUnwrap(responseJSON.data(using: .utf8))
-        let usage = NativeZAIService.parseTokenUsage(from: data)
+        let usage = NativeExternalAIService.parseTokenUsage(from: data)
 
         XCTAssertNil(usage, "Should return nil when usage field is missing")
     }
 
     func testTokenUsageParsingReturnsNilForMalformedJSON() {
         let data = Data("not json at all".utf8)
-        let usage = NativeZAIService.parseTokenUsage(from: data)
+        let usage = NativeExternalAIService.parseTokenUsage(from: data)
 
         XCTAssertNil(usage, "Should return nil for malformed JSON")
     }

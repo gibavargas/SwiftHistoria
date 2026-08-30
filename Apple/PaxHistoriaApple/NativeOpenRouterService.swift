@@ -5,10 +5,10 @@ import OSLog
 /// Routing is strict: NVIDIA failures never enter this service automatically.
 ///
 /// Inherits ALL prompt construction, JSON decoding, validation, and retry logic
-/// from `NativeZAIService` — only the endpoint, API key, model list, and thinking
+/// from `NativeExternalAIService` — only the endpoint, API key, model list, and thinking
 /// field differ. OpenRouter uses the same OpenAI-compatible chat completions API.
 @MainActor
-class NativeOpenRouterService: NativeZAIService {
+class NativeOpenRouterService: NativeExternalAIService {
     private let orLogger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeOpenRouterService")
     private var openRouterModelLanes: [ZAIModelLane] = [
         ZAIModelLane(name: "openrouter/free", displayName: "Free Models Router", maxConcurrent: 3)

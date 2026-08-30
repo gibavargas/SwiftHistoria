@@ -9,7 +9,7 @@ import XCTest
 @MainActor
 final class ZAITurnPathBudgetTests: XCTestCase {
     /// Counts transport-layer invocations instead of hitting the network.
-    private final class CountingZAIService: NativeZAIService {
+    private final class CountingZAIService: NativeExternalAIService {
         private(set) var requestCount = 0
 
         override func executeProviderRequest(

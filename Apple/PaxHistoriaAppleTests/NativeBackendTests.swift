@@ -1080,7 +1080,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(firstPrompt.contains("openrouter/free") == false)
         XCTAssertEqual(suggestionsProvider.capturedRequests.first?.maxTokens, 8000)
 
-        let zai = NativeZAIService(defaults: defaults)
+        let zai = NativeExternalAIService(defaults: defaults)
         XCTAssertEqual(zai.apiKey, "zai-test-key")
         XCTAssertEqual(zai.providerDisplayName, "Z.AI")
 
@@ -1309,7 +1309,7 @@ final class NativeBackendTests: XCTestCase {
         }
         """
 
-        let content = try NativeZAIService.decodeCompletionContent(
+        let content = try NativeExternalAIService.decodeCompletionContent(
             from: XCTUnwrap(payload.data(using: .utf8)),
             providerDisplayName: "OpenRouter"
         )
