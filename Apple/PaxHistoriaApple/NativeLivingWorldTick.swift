@@ -33,9 +33,39 @@ class LWCountryBrain {
     }
 
     /// Vic3-style one-line situation commentary used by the main menu.
-    func commentary(world _: LivingWorldState, country: LWCountry) -> String {
-        let mood = country.standardOfLiving > 15 ? "content" : (country.radicals > 0.2 ? "restless" : "uneasy")
-        return "The government of \(country.name) watches the world \(mood)."
+    /// State-grounded: situation and cause slots are driven by world
+    /// predicates (war participation, fiscal balance, mobilization, infamy,
+    /// unrest, threat); the outlook slot reflects brain temperament with a
+    /// seeded pick so identical-state countries still differ deterministically.
+    func commentary(world: LivingWorldState, country: LWCountry, language: NativeGameLanguage, rng: LWRNG) -> String {
+        let atWar = world.wars.contains { $0.attacker == countryCode || $0.defender == countryCode }
+        let situation: LWProseKey = atWar
+            ? .sitAtWar
+            : (fiscalBalance(country) < 0 ? .sitDeficit : (country.mobilized ? .sitMobilized : .sitSteady))
+        let threat = threatLevel(world: world, country: country)
+        let cause: LWProseKey
+        if country.infamy > 40 {
+            cause = .causeInfamy
+        } else if country.radicals > 0.2 {
+            cause = .causeRadicals
+        } else if threat > 0.4 {
+            cause = .causeThreat
+        } else {
+            cause = .causePeace
+        }
+        let outlooks = temperamentOutlooks
+        let outlook = outlooks[rng.int("outlook-\(countryCode)", in: 0 ..< outlooks.count)]
+        let interp = ["country": country.name]
+        return [
+            LWProse.string(situation, language: language, interp),
+            LWProse.string(cause, language: language, interp),
+            LWProse.string(outlook, language: language),
+        ].joined(separator: " ")
+    }
+
+    /// Outlook fragments matching this brain's temperament.
+    var temperamentOutlooks: [LWProseKey] {
+        [.outlookCaution, .outlookTrade]
     }
 
     // Shared heuristics -------------------------------------------------
@@ -98,17 +128,6 @@ final class LWBalancedBrain: LWCountryBrain {
         }
         return orders
     }
-
-    override func commentary(world _: LivingWorldState, country: LWCountry) -> String {
-        let balance = fiscalBalance(country)
-        if balance < 0 {
-            return "\(country.name) runs a deficit; the treasury urges moderation."
-        }
-        if country.mobilized {
-            return "\(country.name) keeps its reserves ready while markets stay open."
-        }
-        return "\(country.name) enjoys steady finances and quiet borders."
-    }
 }
 
 final class LWExpansionistBrain: LWCountryBrain {
@@ -139,14 +158,8 @@ final class LWExpansionistBrain: LWCountryBrain {
         return orders
     }
 
-    override func commentary(world _: LivingWorldState, country: LWCountry) -> String {
-        if country.infamy > 40 {
-            return "Foreign chancelleries denounce \(country.name)'s appetite for conquest."
-        }
-        if country.mobilized {
-            return "\(country.name)'s staff officers finalize contingency plans."
-        }
-        return "\(country.name) dreams of empire while its arsenals grow."
+    override var temperamentOutlooks: [LWProseKey] {
+        [.outlookAmbition, .outlookOpportunity]
     }
 }
 
@@ -162,8 +175,8 @@ final class LWTurtleBrain: LWCountryBrain {
         return orders
     }
 
-    override func commentary(world _: LivingWorldState, country: LWCountry) -> String {
-        "In \(country.name), the merchant classes champion quiet trade over grand politics."
+    override var temperamentOutlooks: [LWProseKey] {
+        [.outlookTrade]
     }
 }
 
@@ -190,12 +203,8 @@ final class LWOpportunistBrain: LWCountryBrain {
         return orders
     }
 
-    override func commentary(world: LivingWorldState, country: LWCountry) -> String {
-        let wars = world.wars.count
-        if wars > 0 {
-            return "\(country.name) watches the world's wars for an opening."
-        }
-        return "\(country.name) bides its time, prospering on others' quarrels."
+    override var temperamentOutlooks: [LWProseKey] {
+        [.outlookOpportunity, .outlookTrade]
     }
 }
 

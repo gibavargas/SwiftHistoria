@@ -241,7 +241,8 @@ final class LivingWorldSession: ObservableObject {
         guard let player = playerCountry else {
             return LWProse.string(.worldHoldsBreath, language: world.language)
         }
-        return LWBrainFactory.brain(for: player).commentary(world: world, country: player)
+        let rng = LWRNG(worldSeed: world.worldSeed, dayIndex: world.dayIndex)
+        return LWBrainFactory.brain(for: player).commentary(world: world, country: player, language: world.language, rng: rng)
     }
 
     func worldSituationLine() -> String {

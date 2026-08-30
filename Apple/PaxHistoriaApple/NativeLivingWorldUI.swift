@@ -40,17 +40,17 @@ struct LivingWorldMenuCommentary: View {
 
     private func worldSituation(_ world: LivingWorldState) -> String {
         let wars = world.wars.count
-        return wars > 0
-            ? "\(world.today.stamp) — \(wars) war\(wars == 1 ? "" : "s") rage across the world"
-            : "\(world.today.stamp) — an uneasy peace holds"
+        let key: LWProseKey = wars > 0 ? .uiSituationWar : .uiSituationPeace
+        return LWProse.string(key, language: world.language, ["date": world.today.stamp, "wars": "\(wars)"])
     }
 
     private func notableLines(_ world: LivingWorldState) -> [String] {
         let countries = world.countries.values
             .sorted { $0.gdpEstimate > $1.gdpEstimate }
             .prefix(5)
+        let rng = LWRNG(worldSeed: world.worldSeed, dayIndex: world.dayIndex)
         return countries.map { country in
-            LWBrainFactory.brain(for: country).commentary(world: world, country: country)
+            LWBrainFactory.brain(for: country).commentary(world: world, country: country, language: world.language, rng: rng)
         }
     }
 }

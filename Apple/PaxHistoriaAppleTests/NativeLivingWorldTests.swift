@@ -215,13 +215,29 @@ final class LivingWorldEngineTests: XCTestCase {
         }
     }
 
-    func testCommentaryIsNonEmptyForEveryStrategy() {
+    func testCommentaryIsStateGroundedAndDeterministic() {
         let world = LivingWorldFactory.makeWorld(seed: 8, playerCode: nil, minorCount: 8)
+        let rng = LWRNG(worldSeed: world.worldSeed, dayIndex: 0)
         for country in world.countries.values {
-            let line = LWBrainFactory.brain(for: country).commentary(world: world, country: country)
+            let brain = LWBrainFactory.brain(for: country)
+            let line = brain.commentary(world: world, country: country, language: .english, rng: rng)
             XCTAssertFalse(line.isEmpty)
             XCTAssertTrue(line.contains(country.name), "Commentary should name its country")
+            XCTAssertEqual(line, brain.commentary(world: world, country: country, language: .english, rng: rng),
+                           "Same world + same day must yield identical commentary")
         }
+    }
+
+    func testCommentaryReflectsWarStateAndLanguage() throws {
+        var world = LivingWorldFactory.makeWorld(seed: 55, playerCode: "BRA", minorCount: 6)
+        world.language = .portuguese
+        var orders = LWBrainOrders()
+        orders.warDeclarationTarget = "USA"
+        world = LivingWorldTick.advanceDay(world, playerOrders: orders)
+        let brazil = try XCTUnwrap(world.countries["BRA"])
+        let rng = LWRNG(worldSeed: world.worldSeed, dayIndex: world.dayIndex)
+        let line = LWBrainFactory.brain(for: brazil).commentary(world: world, country: brazil, language: world.language, rng: rng)
+        XCTAssertTrue(line.contains("frentes ativas"), "A war-participating country must draw the at-war situation fragment, got: \(line)")
     }
 
     func testProseTablesCoverEveryLanguage() {
