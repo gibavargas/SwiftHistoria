@@ -97,6 +97,7 @@ struct NativeOverviewScreen: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Open decision matrix, \(pending.count) orders ready")
                 .accessibilityIdentifier("native-atlas-open-orders")
 
                 Rectangle()
@@ -206,6 +207,7 @@ struct NativeOverviewScreen: View {
                             .frame(minHeight: 32)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Submit draft order")
                         .padding(.vertical, 6)
                         .background(NativeWarRoomTheme.brass)
                         .foregroundStyle(NativeWarRoomTheme.blackboard)

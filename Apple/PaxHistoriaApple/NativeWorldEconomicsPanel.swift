@@ -212,6 +212,8 @@ struct ExpansionEconomicCard: View {
                 )
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(isExpanded ? "Collapse \(name) economic details" : "Expand \(name) economic details")
+            .accessibilityHint("Shows budget, debt, inflation, and other national indicators.")
             .overlay {
                 if visibilityLabel == "CLASSIFIED" {
                     HStack {

@@ -330,6 +330,7 @@ struct NativeGameShell: View {
                 }
                 .buttonStyle(.plain)
                 .help("Refresh decision matrix")
+                .accessibilityLabel("Refresh decision matrix")
                 .disabled(store.isLoadingSuggestions || store.isAdvancing)
                 .accessibilityIdentifier("native-mac-toolbar-refresh")
 
@@ -379,6 +380,7 @@ struct NativeGameShell: View {
                     }
                     .buttonStyle(.plain)
                     .help("Cancel turn")
+                    .accessibilityLabel("Cancel turn in flight")
                     .keyboardShortcut(".", modifiers: [.command])
                 }
             }
