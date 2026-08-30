@@ -43,15 +43,14 @@ class LWCountryBrain {
             ? .sitAtWar
             : (fiscalBalance(country) < 0 ? .sitDeficit : (country.mobilized ? .sitMobilized : .sitSteady))
         let threat = threatLevel(world: world, country: country)
-        let cause: LWProseKey
-        if country.infamy > 40 {
-            cause = .causeInfamy
+        let cause: LWProseKey = if country.infamy > 40 {
+            .causeInfamy
         } else if country.radicals > 0.2 {
-            cause = .causeRadicals
+            .causeRadicals
         } else if threat > 0.4 {
-            cause = .causeThreat
+            .causeThreat
         } else {
-            cause = .causePeace
+            .causePeace
         }
         let outlooks = temperamentOutlooks
         let outlook = outlooks[rng.int("outlook-\(countryCode)", in: 0 ..< outlooks.count)]
@@ -59,7 +58,7 @@ class LWCountryBrain {
         return [
             LWProse.string(situation, language: language, interp),
             LWProse.string(cause, language: language, interp),
-            LWProse.string(outlook, language: language),
+            LWProse.string(outlook, language: language)
         ].joined(separator: " ")
     }
 

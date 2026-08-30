@@ -168,7 +168,7 @@ final class LivingWorldEngineTests: XCTestCase {
         var pinDays: [String: Int] = [:]
         var days = 0
 
-        for day in 1 ... 1_000 {
+        for day in 1 ... 1000 {
             worldA = LivingWorldTick.advanceDay(worldA, playerOrders: nil)
             worldB = LivingWorldTick.advanceDay(worldB, playerOrders: nil)
             days = day
@@ -186,12 +186,12 @@ final class LivingWorldEngineTests: XCTestCase {
                 }
             }
 
-            if day == 100 || day == 500 || day == 1_000 {
+            if day == 100 || day == 500 || day == 1000 {
                 XCTAssertEqual(fingerprint(worldA), fingerprint(worldB), "Determinism must hold at day \(day)")
             }
         }
 
-        XCTAssertEqual(days, 1_000)
+        XCTAssertEqual(days, 1000)
         // Real activity: expansionist brains declare wars, exhaustion ends them.
         XCTAssertGreaterThan(warsDeclared, 0, "1,000 days must see at least one war declaration")
         XCTAssertGreaterThan(warsConcluded, 0, "1,000 days must see at least one peace deal")

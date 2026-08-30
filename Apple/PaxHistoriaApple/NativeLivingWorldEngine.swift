@@ -418,7 +418,7 @@ struct LivingWorldState: Codable {
         history = try container.decodeIfPresent([LWEventRecord].self, forKey: .history) ?? []
         playerCountryCode = try container.decodeIfPresent(String.self, forKey: .playerCountryCode)
         pendingWorldHash = try container.decodeIfPresent(String.self, forKey: .pendingWorldHash)
-        language = (try container.decodeIfPresent(String.self, forKey: .language)).flatMap(NativeGameLanguage.init(rawValue:)) ?? .english
+        language = try (container.decodeIfPresent(String.self, forKey: .language)).flatMap(NativeGameLanguage.init(rawValue:)) ?? .english
     }
 
     var today: LWDate {

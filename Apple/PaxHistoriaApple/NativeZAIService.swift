@@ -405,18 +405,23 @@ class NativeZAIService: NativeAIService {
 
         var events: [NativeCampaignEvent] = []
         events.append(envelope.independent.toNativeEvent(
-            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: false))
+            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: false
+        ))
         events.append(envelope.economic.toNativeEvent(
-            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: true))
+            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: true
+        ))
         events.append(envelope.domestic.toNativeEvent(
-            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: true))
+            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: true
+        ))
         events.append(envelope.globalAI.toNativeEvent(
-            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: false))
+            state: state, months: months, index: events.count, linkedActionID: nil, playerRelated: false
+        ))
         let actionIDs = Set(plannedActions.map(\.id))
         for actionDraft in envelope.actions where actionIDs.contains(actionDraft.actionID) {
             guard let action = plannedActions.first(where: { $0.id == actionDraft.actionID }) else { continue }
             events.append(actionDraft.draft.toNativeEvent(
-                state: state, months: months, index: events.count, linkedActionID: action.id, playerRelated: true))
+                state: state, months: months, index: events.count, linkedActionID: action.id, playerRelated: true
+            ))
         }
 
         updateProgress(totalLanes, NativeFoundationTurnLane.summary.title,

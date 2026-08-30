@@ -98,6 +98,7 @@
 		A100000000000000000000A4 /* NativeE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A3 /* NativeE2ETests.swift */; };
 		A100000000000000000000B3 /* PaxHistoriaiOSUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B2 /* PaxHistoriaiOSUITests.swift */; };
 		A100000000000000000000C4 /* NativeZAITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000C3 /* NativeZAITests.swift */; };
+		A100000000000000000000C6 /* ZAITurnPathBudgetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000C5 /* ZAITurnPathBudgetTests.swift */; };
 		A100000000000000000000F0 /* countries.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E0 /* countries.geojson */; };
 		A100000000000000000000F1 /* states.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E1 /* states.geojson */; };
 		A100000000000000000000F2 /* cities.geojson in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E2 /* cities.geojson */; };
@@ -222,6 +223,7 @@
 		A100000000000000000000B1 /* PaxHistoriaiOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaxHistoriaiOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A100000000000000000000B2 /* PaxHistoriaiOSUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxHistoriaiOSUITests.swift; sourceTree = "<group>"; };
 		A100000000000000000000C3 /* NativeZAITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeZAITests.swift; sourceTree = "<group>"; };
+		A100000000000000000000C5 /* ZAITurnPathBudgetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZAITurnPathBudgetTests.swift; sourceTree = "<group>"; };
 		A100000000000000000000E0 /* countries.geojson */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = countries.geojson; sourceTree = "<group>"; };
 		A100000000000000000000E1 /* states.geojson */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = states.geojson; sourceTree = "<group>"; };
 		A100000000000000000000E2 /* cities.geojson */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = cities.geojson; sourceTree = "<group>"; };
@@ -380,6 +382,7 @@
 				E099A5CA83BA8DBC63F02DC0 /* NativeLivingWorldTests.swift */,
 				A100000000000000000000A3 /* NativeE2ETests.swift */,
 				A100000000000000000000C3 /* NativeZAITests.swift */,
+				A100000000000000000000C5 /* ZAITurnPathBudgetTests.swift */,
 				59D04D350C19D6D7A8E0C871 /* NativeModuleTests.swift */,
 				418C52F097563CA17D4E0014 /* NativeErrorPathTests.swift */,
 			);
@@ -707,6 +710,7 @@
 				2E02CEB88D693943CE20D48D /* NativeLivingWorldTests.swift in Sources */,
 				A100000000000000000000A4 /* NativeE2ETests.swift in Sources */,
 				A100000000000000000000C4 /* NativeZAITests.swift in Sources */,
+				A100000000000000000000C6 /* ZAITurnPathBudgetTests.swift in Sources */,
 				A9C6C1664B222334D747DC72 /* NativeModuleTests.swift in Sources */,
 				37E222186A1FC4D3E2712944 /* NativeErrorPathTests.swift in Sources */,
 			);

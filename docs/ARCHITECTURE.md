@@ -106,7 +106,8 @@ The NVIDIA request contract uses `https://integrate.api.nvidia.com/v1/chat/compl
 Preserve these guardrails:
 
 - Keep prompts anchored to `NativeStrategyContextDatabase.promptPacket`.
-- Keep every AI prompt family connected to the shared mechanics checklist in `NativeFoundationModelService.mechanicsContract`: turn events, suggestions, advisor answers, diplomacy replies, and summaries should all see economy, public security, insurgency, map conflict, diplomacy, action memory, timeline effects, scenario canon, language, and bounded hex-map nudges.
+- Keep every AI prompt family connected to the shared mechanics checklist in `NativePromptHarness.mechanicsContract`: turn events, suggestions, advisor answers, diplomacy replies, and summaries should all see economy, public security, insurgency, map conflict, diplomacy, action memory, timeline effects, scenario canon, language, and bounded hex-map nudges.
+- Keep the classic turn path on its single-request budget: one batched envelope call per turn (two only with a repair retry). `ZAITurnPathBudgetTests` enforces this with a counting transport.
 - Keep player-facing prose in `state.language`, while identifiers, enum values, dates, and schema keys remain stable.
 - Keep generated events concrete: titles, descriptions, effects, dates, IDs, and linked action IDs must be usable.
 - Keep at least one generated event independent of the player country so the world does not feel player-only.

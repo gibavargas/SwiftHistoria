@@ -1484,13 +1484,20 @@ final class NativeBackendTests: XCTestCase {
 
         store.persistState()
         store.switchSlot(2)
-        try await Task.sleep(nanoseconds: 600_000_000)
 
-        let slot1 = NativeCampaignStore.loadCampaignState(
-            from: defaults,
-            decoder: JSONDecoder(),
-            persistenceDirectory: persistenceDirectory
-        )
+        // The debounced write sleeps 500 ms and then queues behind the shared
+        // serial writer; poll for the observable effect instead of racing a
+        // fixed sleep (which flakes under load).
+        var slot1State: NativeCampaignState?
+        for _ in 0 ..< 100 {
+            slot1State = NativeCampaignStore.loadCampaignState(
+                from: defaults,
+                decoder: JSONDecoder(),
+                persistenceDirectory: persistenceDirectory
+            ).state
+            if slot1State != nil { break }
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
         let slot2 = NativeCampaignStore.loadCampaignState(
             from: defaults,
             decoder: JSONDecoder(),
@@ -1499,7 +1506,7 @@ final class NativeBackendTests: XCTestCase {
             slotFileName: { NativeCampaignStore.slotFileName($0, slot: 2) }
         )
 
-        XCTAssertEqual(slot1.state?.country.code, testCountry.code)
+        XCTAssertEqual(slot1State?.country.code, testCountry.code)
         XCTAssertNil(slot2.state)
     }
 
@@ -1836,7 +1843,6 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(readiness.recoverySuggestion.contains("FoundationModels"))
     }
 
-
     func testPrintPromptExamples() {
         var state = makeState()
         let plannedAction = NativePlannedAction(
@@ -1860,7 +1866,6 @@ final class NativeBackendTests: XCTestCase {
             summary: "Cooperation agreement"
         )
         state.diplomaticThreads = [thread]
-
 
         let independentPrompt = NativePromptHarness.makeIndependentEventPrompt(for: state, months: 1, repairInstruction: nil)
         print("\n--- TEST PRINT: INDEPENDENT PROMPT START ---")
@@ -2535,7 +2540,6 @@ final class NativeBackendTests: XCTestCase {
 
         XCTAssertEqual(validated.events.compactMap(\.hexLeverCode), ["0x00000001", "0x000000"])
     }
-
 
     func testAICountryStatesInitialization() throws {
         let state = makeState()

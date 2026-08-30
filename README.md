@@ -129,10 +129,24 @@ At campaign setup you now choose a **simulation mode**:
 Living World is **fully procedural and offline**: no hardcoded events — a 1936
 world is generated from the seed (10 core powers + 12 seeded minor nations),
 with a Victoria 3-inspired simulation: goods market with bounded prices
-(±75% of base), buildings with input→output chains, wages and treasuries,
-tax/spending sliders, interest groups, radicals, standard of living,
-alliances, relations (−100…100), abstract **fronts** (no unit control), war
-exhaustion and peace deals, infamy, and common/rare procedural events.
+(±75% of base) and **price-elastic pop demand**, buildings with input→output
+chains, wages and treasuries, tax/spending sliders, interest groups,
+radicals, standard of living, alliances, relations (−100…100), abstract
+**fronts** (no unit control), war exhaustion and peace deals, infamy, and
+common/rare procedural events.
+
+**Localized generated prose:** every procedural string — events, war goals,
+dispatch flavors, brain commentary, status lines — resolves through the
+seeded `LWProse` pipeline in the save's language (English, Português, or
+Español). Country names come from the world catalog; the save persists its
+language, so history renders identically on any device. Commentary is
+state-grounded: brains describe the actual war/fiscal/mobilization
+situation with temperament-flavored outlooks, picked by a seeded daily die.
+
+**Classic turn path is one request:** the whole turn — external, economic,
+domestic, global-AI events plus one event per planned action and the
+summary — arrives in a single JSON envelope per provider call (two only if
+validation forces a repair retry).
 
 **LLM hash bridge (optional, any provider):** Living World can export a JSON
 world prompt to paste into any LLM (e.g. ChatGPT with its Python sandbox).

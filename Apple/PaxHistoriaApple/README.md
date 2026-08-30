@@ -30,7 +30,7 @@ Creates initial state, validates generated turns, applies accepted turns, resolv
 
 `NativeFoundationModelService.swift`
 
-Calls Apple Foundation Models on supported systems. It slices turn generation into small structured prompts, decodes JSON drafts, retries repairable failures, and refuses to invent silent replacement content.
+Defines the AI service protocol surface, strict provider preference (NVIDIA NIM or OpenRouter Free), and `NativePromptHarness` (shared system prompt, context clamping, and all prompt builders for every route, including the single-request batched turn envelope). The retired Apple Foundation Models service lived here; it was removed when strict routing made the route unselectable.
 
 `DynamicAIService.swift`, `NativeNVIDIAService.swift`, and `NativeOpenRouterService.swift`
 
