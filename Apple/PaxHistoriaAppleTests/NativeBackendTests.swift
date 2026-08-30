@@ -1836,36 +1836,6 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(readiness.recoverySuggestion.contains("FoundationModels"))
     }
 
-    func testLiveFoundationModelsGenerateValidNativeTurnWhenEnabled() async throws {
-        guard liveFoundationModelsGateEnabled else {
-            throw XCTSkip("Set PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS=1 or compile with -D PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS to run the live Apple Foundation Models backend gate.")
-        }
-
-        let service = NativeFoundationModelService()
-        let readiness = await service.checkReadiness()
-        XCTAssertTrue(readiness.ok, "Expected live Foundation Models support, got \(readiness.availability): \(readiness.lastError)")
-
-        var state = NativeGameEngine.initialState(
-            for: testCountry,
-            scenario: NativeScenarioCatalog.resilienceDecade,
-            language: .english
-        )
-        let plannedAction = try XCTUnwrap(NativeGameEngine.action(
-            from: "Fund a cross-agency energy reliability dashboard for essential service corridors.",
-            date: state.gameDate
-        ))
-        state.plannedActions = [plannedAction]
-
-        let generated = try await service.generateTurn(for: state, months: 1)
-        let validated = try NativeGameEngine.validated(generated, state: state, months: 1)
-        let applied = NativeGameEngine.apply(validated, to: state, months: 1)
-
-        XCTAssertEqual(applied.round, 2)
-        XCTAssertTrue(validated.events.contains { !$0.playerRelated })
-        XCTAssertTrue(validated.events.contains { $0.playerRelated })
-        XCTAssertTrue(applied.plannedActions.contains { $0.id == plannedAction.id && $0.status == .resolved })
-        XCTAssertFalse(validated.summary.isEmpty)
-    }
 
     func testPrintPromptExamples() {
         var state = makeState()
@@ -1891,9 +1861,8 @@ final class NativeBackendTests: XCTestCase {
         )
         state.diplomaticThreads = [thread]
 
-        let service = NativeFoundationModelService()
 
-        let independentPrompt = service.makeIndependentEventPrompt(for: state, months: 1, repairInstruction: nil)
+        let independentPrompt = NativePromptHarness.makeIndependentEventPrompt(for: state, months: 1, repairInstruction: nil)
         print("\n--- TEST PRINT: INDEPENDENT PROMPT START ---")
         print(independentPrompt)
         print("--- TEST PRINT: INDEPENDENT PROMPT END ---\n")
@@ -1901,7 +1870,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(independentPrompt.contains("\"effectTrack\":\"⟦MKT⟧\""))
         XCTAssertFalse(independentPrompt.contains("\"effectTrack\":\"market-confidence\""))
 
-        let actionPrompt = service.makeActionEventPrompt(for: state, action: plannedAction, months: 1, repairInstruction: nil)
+        let actionPrompt = NativePromptHarness.makeActionEventPrompt(for: state, action: plannedAction, months: 1, repairInstruction: nil)
         print("\n--- TEST PRINT: ACTION PROMPT START ---")
         print(actionPrompt)
         print("--- TEST PRINT: ACTION PROMPT END ---\n")
@@ -1909,26 +1878,26 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(actionPrompt.contains("Action-specific facts and consequence ranges"))
         XCTAssertTrue(actionPrompt.contains("\"effectTrack\":\"⟦ECO⟧\""))
 
-        let economicPrompt = service.makeEconomicEventPrompt(for: state, months: 1, repairInstruction: nil)
+        let economicPrompt = NativePromptHarness.makeEconomicEventPrompt(for: state, months: 1, repairInstruction: nil)
         print("\n--- TEST PRINT: ECONOMIC PROMPT START ---")
         print(economicPrompt)
         print("--- TEST PRINT: ECONOMIC PROMPT END ---\n")
         XCTAssertTrue(economicPrompt.contains("budget surplus or deficit"))
         XCTAssertTrue(economicPrompt.contains("Current strategy database"))
 
-        let domesticPrompt = service.makeDomesticEventPrompt(for: state, months: 1, repairInstruction: nil)
+        let domesticPrompt = NativePromptHarness.makeDomesticEventPrompt(for: state, months: 1, repairInstruction: nil)
         print("\n--- TEST PRINT: DOMESTIC PROMPT START ---")
         print(domesticPrompt)
         print("--- TEST PRINT: DOMESTIC PROMPT END ---\n")
         XCTAssertTrue(domesticPrompt.contains("Regional Services Consolidation"))
 
-        let summaryPrompt = service.makeSummaryPrompt(for: state, months: 1, events: [])
+        let summaryPrompt = NativePromptHarness.makeSummaryPrompt(for: state, months: 1, events: [])
         print("\n--- TEST PRINT: SUMMARY PROMPT START ---")
         print(summaryPrompt)
         print("--- TEST PRINT: SUMMARY PROMPT END ---\n")
         XCTAssertTrue(summaryPrompt.contains("Administrative streamlining"))
 
-        let suggestionPrompt = service.makeSuggestionPrompt(for: state, focus: "fiscal buffers and community services", index: 1)
+        let suggestionPrompt = NativePromptHarness.makeSuggestionPrompt(for: state, focus: "fiscal buffers and community services", index: 1)
         print("\n--- TEST PRINT: SUGGESTION PROMPT START ---")
         print(suggestionPrompt)
         print("--- TEST PRINT: SUGGESTION PROMPT END ---\n")
@@ -1940,7 +1909,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(suggestionPrompt.contains("⟦ECO⟧") && suggestionPrompt.contains("⟦TNS⟧"))
         XCTAssertTrue(suggestionPrompt.contains("prose never executes mechanics"))
 
-        let advisorPrompt = service.makeAdvisorPrompt(for: state, question: "What should we protect first this quarter?")
+        let advisorPrompt = NativePromptHarness.makeAdvisorPrompt(for: state, question: "What should we protect first this quarter?")
         print("\n--- TEST PRINT: ADVISOR PROMPT START ---")
         print(advisorPrompt)
         print("--- TEST PRINT: ADVISOR PROMPT END ---\n")
@@ -1948,7 +1917,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertTrue(advisorPrompt.contains("Label forecasts as forecasts"))
         XCTAssertTrue(advisorPrompt.contains("three-order queue limit"))
 
-        let diplomacyPrompt = service.makeDiplomacyPrompt(for: state, thread: thread, message: "Hello")
+        let diplomacyPrompt = NativePromptHarness.makeDiplomacyPrompt(for: state, thread: thread, message: "Hello")
         print("\n--- TEST PRINT: DIPLOMACY PROMPT START ---")
         print(diplomacyPrompt)
         print("--- TEST PRINT: DIPLOMACY PROMPT END ---\n")
@@ -2567,13 +2536,6 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(validated.events.compactMap(\.hexLeverCode), ["0x00000001", "0x000000"])
     }
 
-    private var liveFoundationModelsGateEnabled: Bool {
-        #if PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS
-            return true
-        #else
-            return ProcessInfo.processInfo.environment["PAX_HISTORIA_RUN_LIVE_FOUNDATION_MODELS"] == "1"
-        #endif
-    }
 
     func testAICountryStatesInitialization() throws {
         let state = makeState()

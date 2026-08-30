@@ -1,33 +1,31 @@
 import Foundation
-#if canImport(FoundationModels)
-    import FoundationModels
-    import OSLog
-#endif
 
-/// Prompt builders for the Apple Foundation Model service.
-extension NativeFoundationModelService {
-    func isValidNativeSuggestion(_ suggestion: NativeSuggestedAction) -> Bool {
+/// Prompt builders shared by every AI route. Extracted from the retired
+/// Apple Foundation Models service; NativeZAIService consumes these through
+/// its `promptHarness` facade. Pure string assembly only — no transport,
+/// no sessions, no model types.
+extension NativePromptHarness {
+    static func isValidNativeSuggestion(_ suggestion: NativeSuggestedAction) -> Bool {
         hasConcreteFoundationText(suggestion.title, minimumWords: 2) &&
             hasConcreteFoundationText(suggestion.detail, minimumWords: 8) &&
             hasConcreteFoundationText(suggestion.rationale, minimumWords: 8) &&
             normalizedFoundationUrgency(suggestion.urgency) == suggestion.urgency
     }
 
-    private func repairLine(_ repairInstruction: String?) -> String {
+    private static func repairLine(_ repairInstruction: String?) -> String {
         guard let repairInstruction, !repairInstruction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return ""
         }
         return "Repair note: \(sanitizeFoundationModelText(repairInstruction))"
     }
 
-    func clampedFoundationPrompt(_ value: String) -> String {
+    static func clampedFoundationPrompt(_ value: String) -> String {
         let text = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard text.count > promptCharacterLimit else { return text }
-        logger.info("Apple Foundation prompt clamped characters=\(text.count, privacy: .public)")
-        return NativePromptHarness.clamped(text, characterLimit: promptCharacterLimit)
+        guard text.count > foundationCharacterLimit else { return text }
+        return clamped(text, characterLimit: foundationCharacterLimit)
     }
 
-    private func hexLeverCodeInstruction() -> String {
+    private static func hexLeverCodeInstruction() -> String {
         """
         Hexadecimal Lever Code option:
         You can OPTIONALLY output a `"hexLeverCode"` representing standard economic deltas and abstract map-control nudges. Use only high-level board-game state changes: public security, insurgency pressure, conventional border pressure, nuclear fallout, contested borders, stabilization, or de-escalation. Do not include operational instructions.
@@ -54,15 +52,15 @@ extension NativeFoundationModelService {
         """
     }
 
-    private func promptPercent(_ value: Double) -> String {
+    private static func promptPercent(_ value: Double) -> String {
         String(format: "%.1f%%", value)
     }
 
-    private func promptSignedPercent(_ value: Double) -> String {
+    private static func promptSignedPercent(_ value: Double) -> String {
         String(format: "%+.2f%%", value)
     }
 
-    private func mechanicsContract(for state: NativeCampaignState) -> String {
+    private static func mechanicsContract(for state: NativeCampaignState) -> String {
         let ledger = state.economicLedger
         let conflictLines = state.regionConflicts.values
             .sorted { lhs, rhs in lhs.regionID < rhs.regionID }
@@ -106,17 +104,17 @@ extension NativeFoundationModelService {
         """
     }
 
-    private func languageInstruction(for state: NativeCampaignState) -> String {
+    private static func languageInstruction(for state: NativeCampaignState) -> String {
         state.language.promptInstruction
     }
 
-    private func mechanicsReminder() -> String {
+    private static func mechanicsReminder() -> String {
         "Mechanics checklist anchors: read the economic ledger, public security, insurgency pressure, map conflict, regionConflicts, diplomacy/global friction, and hexLeverCode rules where relevant; only event JSON may output hexLeverCode. Narrative words never execute mechanics. Use exact codes ⟦ECO⟧ ⟦MKT⟧ ⟦STB⟧ ⟦SEC⟧ ⟦DIP⟧ ⟦MIL⟧ ⟦TNS⟧ in mechanic fields."
     }
 
     /// Keeps localized prose examples readable in source while ensuring the
     /// actual model input demonstrates executable mechanic codes, not labels.
-    private func mechanicCodedJSONExamples(_ text: String) -> String {
+    private static func mechanicCodedJSONExamples(_ text: String) -> String {
         NativeStrategicTrack.allCases.reduce(text) { result, track in
             result.replacingOccurrences(
                 of: "\"effectTrack\":\"\(track.rawValue)\"",
@@ -125,7 +123,7 @@ extension NativeFoundationModelService {
         }
     }
 
-    private func recentContext(for state: NativeCampaignState) -> String {
+    private static func recentContext(for state: NativeCampaignState) -> String {
         // The local model should see a compact evidence packet rather than the
         // full save file. This keeps prompts inside the local context window and
         // makes generated events traceable to stored facts, action memory, and
@@ -199,7 +197,7 @@ extension NativeFoundationModelService {
         """
     }
 
-    func makeIndependentEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
+    static func makeIndependentEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
         let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
         return clampedFoundationPrompt("""
         Create one external planning development for a SwiftHistoria game turn.
@@ -216,7 +214,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    func makeGlobalAIActionsPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
+    static func makeGlobalAIActionsPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
         let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
 
         let aiDetails = state.aiCountryStates.sorted(by: { $0.key < $1.key }).map { code, aiState in
@@ -249,7 +247,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    func makeEconomicEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
+    static func makeEconomicEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
         let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
         return clampedFoundationPrompt("""
         Create one selected-region economic assessment event for a SwiftHistoria game turn.
@@ -275,7 +273,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    private func independentEventExamples(for language: NativeGameLanguage) -> String {
+    private static func independentEventExamples(for language: NativeGameLanguage) -> String {
         switch language {
         case .portuguese:
             """
@@ -307,7 +305,7 @@ extension NativeFoundationModelService {
         }
     }
 
-    func makeActionEventPrompt(for state: NativeCampaignState, action: NativePlannedAction, months: Int, repairInstruction: String?) -> String {
+    static func makeActionEventPrompt(for state: NativeCampaignState, action: NativePlannedAction, months: Int, repairInstruction: String?) -> String {
         let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
         let safeTitle = sanitizeFoundationModelText(String(action.title.prefix(60)))
         return clampedFoundationPrompt("""
@@ -332,7 +330,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    private func actionEventExamples(for language: NativeGameLanguage, countryCode: String) -> String {
+    private static func actionEventExamples(for language: NativeGameLanguage, countryCode: String) -> String {
         switch language {
         case .portuguese:
             """
@@ -364,7 +362,7 @@ extension NativeFoundationModelService {
         }
     }
 
-    func makeDomesticEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
+    static func makeDomesticEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
         let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
         return clampedFoundationPrompt("""
         Create one selected-region planning event because no planned proposal needs resolution.
@@ -381,7 +379,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    private func domesticEventExamples(for language: NativeGameLanguage, countryCode: String) -> String {
+    private static func domesticEventExamples(for language: NativeGameLanguage, countryCode: String) -> String {
         switch language {
         case .portuguese:
             """
@@ -413,7 +411,7 @@ extension NativeFoundationModelService {
         }
     }
 
-    func makeSummaryPrompt(for state: NativeCampaignState, months: Int, events: [NativeCampaignEvent]) -> String {
+    static func makeSummaryPrompt(for state: NativeCampaignState, months: Int, events: [NativeCampaignEvent]) -> String {
         let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
         let eventLines = events
             .map { event in
@@ -450,7 +448,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    private func summaryExamples(for language: NativeGameLanguage) -> String {
+    private static func summaryExamples(for language: NativeGameLanguage) -> String {
         switch language {
         case .portuguese:
             """
@@ -476,7 +474,7 @@ extension NativeFoundationModelService {
         }
     }
 
-    func makeSuggestionPrompt(for state: NativeCampaignState, focus: String, index: Int) -> String {
+    static func makeSuggestionPrompt(for state: NativeCampaignState, focus: String, index: Int) -> String {
         clampedFoundationPrompt("""
         Create one concrete civic proposal for the next SwiftHistoria turn.
         \(languageInstruction(for: state))
@@ -497,7 +495,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    func makeSuggestionBatchPrompt(for state: NativeCampaignState, focusAreas: [String]) -> String {
+    static func makeSuggestionBatchPrompt(for state: NativeCampaignState, focusAreas: [String]) -> String {
         let focusList = focusAreas.enumerated()
             .map { index, focus in "\(index + 1). \(focus)" }
             .joined(separator: "\n")
@@ -523,7 +521,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    private func suggestionExamples(for language: NativeGameLanguage) -> String {
+    private static func suggestionExamples(for language: NativeGameLanguage) -> String {
         switch language {
         case .portuguese:
             """
@@ -549,7 +547,7 @@ extension NativeFoundationModelService {
         }
     }
 
-    func makeAdvisorPrompt(for state: NativeCampaignState, question: String) -> String {
+    static func makeAdvisorPrompt(for state: NativeCampaignState, question: String) -> String {
         let advisorHistory = state.advisorMessages
             .prefix(8)
             .reversed()
@@ -593,7 +591,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    func makeDiplomacyPrompt(for state: NativeCampaignState, thread: NativeDiplomaticThread, message: String) -> String {
+    static func makeDiplomacyPrompt(for state: NativeCampaignState, thread: NativeDiplomaticThread, message: String) -> String {
         let transcript = thread.messages
             .suffix(12)
             .map { "\($0.speaker): \($0.text)" }
@@ -640,7 +638,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    func makeRivalMultiAgentPrompt(for state: NativeCampaignState) -> String {
+    static func makeRivalMultiAgentPrompt(for state: NativeCampaignState) -> String {
         let strategicCodes = state.aiCountryStates.keys
             .filter { $0 != "GLOBAL" && $0 != state.country.code }
             .sorted()
@@ -690,7 +688,7 @@ extension NativeFoundationModelService {
         """)
     }
 
-    private func safeProposalBrief(for action: NativePlannedAction) -> String {
+    private static func safeProposalBrief(for action: NativePlannedAction) -> String {
         let safeTitle = sanitizeFoundationModelText(String(action.title.prefix(60)))
         let text = "\(action.title) \(action.detail)".lowercased()
         let sector = if text.contains("health") || text.contains("clinic") || text.contains("medical") {
@@ -726,7 +724,7 @@ extension NativeFoundationModelService {
         return "title=\"\(safeTitle)\"; id=\(action.id); sector=\(sector); instrument=\(instrument); timing=next game period"
     }
 
-    private func mechanicConstraint(for action: NativePlannedAction) -> String {
+    private static func mechanicConstraint(for action: NativePlannedAction) -> String {
         guard !action.mechanicTracks.isEmpty else { return "" }
         let trackNames = action.mechanicTracks.map(\.rawValue).joined(separator: ", ")
         return """

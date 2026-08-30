@@ -140,7 +140,6 @@ final class NativeTokenUsageTracker: ObservableObject {
 class NativeZAIService: NativeAIService {
     let logger = Logger(subsystem: "com.gibavargas.SwiftHistoria", category: "NativeZAIService")
     let defaults: UserDefaults
-    let promptHarness = NativeFoundationModelService()
 
     // MARK: - Cost telemetry (base class tracking)
 
@@ -343,7 +342,7 @@ class NativeZAIService: NativeAIService {
 
     func generateRivalAgentTurns(for state: NativeCampaignState) async throws -> [NativeRivalAgentTurn] {
         logger.info("\(self.providerDisplayName, privacy: .public) rival multi-agent generation started round=\(state.round)")
-        let prompt = promptHarness.makeRivalMultiAgentPrompt(for: state)
+        let prompt = NativePromptHarness.makeRivalMultiAgentPrompt(for: state)
         let responseText = try await generateTextResponse(
             prompt: prompt,
             maxTokens: 800,
@@ -1284,39 +1283,39 @@ class NativeZAIService: NativeAIService {
     /// Reuse the Apple-native prompt harness so external providers stay aligned with
     /// the same scenario, mechanics, language, and repair contracts.
     private func makeIndependentEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
-        promptHarness.makeIndependentEventPrompt(for: state, months: months, repairInstruction: repairInstruction)
+        NativePromptHarness.makeIndependentEventPrompt(for: state, months: months, repairInstruction: repairInstruction)
     }
 
     private func makeEconomicEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
-        promptHarness.makeEconomicEventPrompt(for: state, months: months, repairInstruction: repairInstruction)
+        NativePromptHarness.makeEconomicEventPrompt(for: state, months: months, repairInstruction: repairInstruction)
     }
 
     private func makeDomesticEventPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
-        promptHarness.makeDomesticEventPrompt(for: state, months: months, repairInstruction: repairInstruction)
+        NativePromptHarness.makeDomesticEventPrompt(for: state, months: months, repairInstruction: repairInstruction)
     }
 
     private func makeGlobalAIActionsPrompt(for state: NativeCampaignState, months: Int, repairInstruction: String?) -> String {
-        promptHarness.makeGlobalAIActionsPrompt(for: state, months: months, repairInstruction: repairInstruction)
+        NativePromptHarness.makeGlobalAIActionsPrompt(for: state, months: months, repairInstruction: repairInstruction)
     }
 
     private func makeActionEventPrompt(for state: NativeCampaignState, action: NativePlannedAction, months: Int, repairInstruction: String?) -> String {
-        promptHarness.makeActionEventPrompt(for: state, action: action, months: months, repairInstruction: repairInstruction)
+        NativePromptHarness.makeActionEventPrompt(for: state, action: action, months: months, repairInstruction: repairInstruction)
     }
 
     private func makeSummaryPrompt(for state: NativeCampaignState, months: Int, events: [NativeCampaignEvent]) -> String {
-        promptHarness.makeSummaryPrompt(for: state, months: months, events: events)
+        NativePromptHarness.makeSummaryPrompt(for: state, months: months, events: events)
     }
 
     private func makeAdvisorPrompt(for state: NativeCampaignState, question: String) -> String {
-        promptHarness.makeAdvisorPrompt(for: state, question: question)
+        NativePromptHarness.makeAdvisorPrompt(for: state, question: question)
     }
 
     private func makeDiplomaticPrompt(for state: NativeCampaignState, thread: NativeDiplomaticThread, message: String) -> String {
-        promptHarness.makeDiplomacyPrompt(for: state, thread: thread, message: message)
+        NativePromptHarness.makeDiplomacyPrompt(for: state, thread: thread, message: message)
     }
 
     private func makeSuggestionPrompt(for state: NativeCampaignState, focus: String, index: Int) -> String {
-        promptHarness.makeSuggestionPrompt(for: state, focus: focus, index: index)
+        NativePromptHarness.makeSuggestionPrompt(for: state, focus: focus, index: index)
     }
 
     private func recentContext(for state: NativeCampaignState) -> String {
