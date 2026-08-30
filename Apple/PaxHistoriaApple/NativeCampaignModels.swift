@@ -1076,6 +1076,58 @@ enum NativeGameLanguage: String, Codable, CaseIterable, Hashable, Identifiable {
     }
 }
 
+/// Localized telemetry ticker lines for the turn-transition overlay.
+/// Same contract as `LWProse`: in-code tables keyed by `NativeGameLanguage`,
+/// NOT `String(localized:)` — xcstrings resolves from the device locale, while
+/// the campaign save carries its own language and the ticker must match the
+/// campaign's prose. English fallback; every column stays aligned line-for-line
+/// so `.shuffled().prefix(8)` variety is identical across languages.
+enum TurnTickerProse {
+    private static let lines: [(en: String, pt: String, es: String)] = [
+        ("Rebuilding regional intelligence networks...", "Reconstruindo redes de inteligência regional...", "Reconstruyendo redes de inteligencia regional..."),
+        ("Calibrating fiscal indicators against the outlook...", "Calibrando indicadores fiscais contra o cenário...", "Calibrando indicadores fiscales frente al escenario..."),
+        ("Synthesizing global diplomatic movements...", "Sintetizando movimentos diplomáticos globais...", "Sintetizando movimientos diplomáticos globales..."),
+        ("Assessing insurgent pressure along corridors...", "Avaliando pressão insurgente em corredores...", "Evaluando presión insurgente en corredores..."),
+        ("Recalibrating market confidence...", "Recalibrando confiança do mercado...", "Recalibrando la confianza del mercado..."),
+        ("Mapping strategic movements...", "Mapeando deslocamentos estratégicos...", "Mapeando desplazamientos estratégicos..."),
+        ("Compiling public safety reports...", "Compilando relatórios de segurança pública...", "Compilando informes de seguridad pública..."),
+        ("Cross-referencing electoral data with stability...", "Cruzando dados eleitorais com estabilidade...", "Cruzando datos electorales con estabilidad..."),
+        ("Processing military logistics heat...", "Processando calor logístico militar...", "Procesando presión logística militar..."),
+        ("Analyzing bilateral trade patterns...", "Analisando padrões comerciais bilaterais...", "Analizando patrones comerciales bilaterales..."),
+        ("Updating power doctrine profiles...", "Atualizando perfis doutrinários de potências...", "Actualizando perfiles doctrinales de potencias..."),
+        ("Measuring diplomatic pressure along borders...", "Medindo pressão diplomática em fronteiras...", "Midiendo presión diplomática en fronteras..."),
+        ("Integrating climate data into risk...", "Integrando dados climáticos ao risco...", "Integrando datos climáticos al riesgo..."),
+        ("Recalculating public policy impact...", "Recalculando impacto de políticas públicas...", "Recalculando impacto de políticas públicas..."),
+        ("Cross-referencing campaign semantic memory...", "Cruzando memória semântica da campanha...", "Cruzando memoria semántica de la campaña..."),
+        ("Probing emerging geopolitical alignments...", "Sondando alinhamentos geopolíticos emergentes...", "Sondeando alineamientos geopolíticos emergentes..."),
+        ("Assessing institutional collapse risk...", "Avaliando risco de colapso institucional...", "Evaluando riesgo de colapso institucional..."),
+        ("Simulating rival power reactions...", "Simulando reações de potências rivais...", "Simulando reacciones de potencias rivales..."),
+        ("Weighing fiscal costs of pending decisions...", "Pesando custos fiscais de decisões pendentes...", "Ponderando costos fiscales de decisiones pendientes..."),
+        ("Mapping supply chains and logistics impact...", "Mapeando cadeias de suprimento e impacto logístico...", "Mapeando cadenas de suministro e impacto logístico..."),
+        ("Auditing regional economic resilience...", "Auditando resiliência econômica regional...", "Auditando resiliencia económica regional..."),
+        ("Processing military unit telemetry...", "Processando telemetria de unidades militares...", "Procesando telemetría de unidades militares..."),
+        ("Analyzing external recession pressure...", "Analisando pressão de recessão externa...", "Analizando presión de recesión externa..."),
+        ("Reviewing the multilateral security agenda...", "Revisando agenda multilateral de segurança...", "Revisando la agenda multilateral de seguridad..."),
+        ("Quantifying government collapse risk...", "Quantificando risco de queda de governo...", "Cuantificando riesgo de caída de gobierno..."),
+        ("Scanning global doctrine shifts...", "Escaneando mudanças doutrinárias globais...", "Escaneando cambios doctrinales globales..."),
+        ("Evaluating political reform effectiveness...", "Avaliando efetividade de reformas políticas...", "Evaluando efectividad de reformas políticas..."),
+        ("Measuring commercial sanctions impact...", "Medindo impacto de sanções comerciais...", "Midiendo impacto de sanciones comerciales..."),
+        ("Computing sovereignty consequences...", "Computando consequências de soberania...", "Computando consecuencias de soberanía..."),
+        ("Integrating allied intelligence packages...", "Integrando pacotes de inteligência aliada...", "Integrando paquetes de inteligencia aliada...")
+    ]
+
+    static func quotes(for language: NativeGameLanguage) -> [String] {
+        switch language {
+        case .english:
+            lines.map(\.en)
+        case .portuguese:
+            lines.map(\.pt)
+        case .spanish:
+            lines.map(\.es)
+        }
+    }
+}
+
 struct NativeScenario: Codable, Hashable, Identifiable {
     var accentColor: String
     var baseStability: Int

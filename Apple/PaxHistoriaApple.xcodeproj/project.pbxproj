@@ -24,6 +24,7 @@
 		298A5ABAB6BE358D4A3FF184 /* NativeGameEngine+Victory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8975A239E8936ACF39AC8A /* NativeGameEngine+Victory.swift */; };
 		374ABC6B0AF2ABC34341EE8C /* NativeGameView+Report.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC3CAFBD0368A8216088E3E /* NativeGameView+Report.swift */; };
 		37E222186A1FC4D3E2712944 /* NativeErrorPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418C52F097563CA17D4E0014 /* NativeErrorPathTests.swift */; };
+		7A1E51C0A11E4B2F9D30B4E2 /* TurnTickerProseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2B62D1B22F5C30AE41C7D3 /* TurnTickerProseTests.swift */; };
 		3ABAE231B4915F73DDEC7536 /* NativeFoundationModelService+Prompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD0A08D730A3A4AE913E7738 /* NativeFoundationModelService+Prompts.swift */; };
 		3D7145838FBA4C80F0A43D86 /* NativeCrisisBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9EBDA7461737048C116036D /* NativeCrisisBanner.swift */; };
 		C9EBDA7461737048C116036E /* NativeCrisisBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9EBDA7461737048C116036D /* NativeCrisisBanner.swift */; };
@@ -186,6 +187,7 @@
 		2DC8B106F3AAF4695E690D56 /* NativeContextualHelp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeContextualHelp.swift; sourceTree = "<group>"; };
 		39A485366A3A14D42F508174 /* NativeGameView+Overlays.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeGameView+Overlays.swift"; sourceTree = "<group>"; };
 		418C52F097563CA17D4E0014 /* NativeErrorPathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeErrorPathTests.swift; sourceTree = "<group>"; };
+		5F2B62D1B22F5C30AE41C7D3 /* TurnTickerProseTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TurnTickerProseTests.swift; sourceTree = "<group>"; };
 		4FBDA4D60396B285CB9D1E5E /* NativeWorldMap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeWorldMap.swift; sourceTree = "<group>"; };
 		51A1E9B42F7C4D2AA7B10003 /* NativeArmyModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeArmyModel.swift; sourceTree = "<group>"; };
 		51A1E9B42F7C4D2AA7B10006 /* NativeBuildingModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeBuildingModel.swift; sourceTree = "<group>"; };
@@ -385,6 +387,7 @@
 				A100000000000000000000C5 /* ZAITurnPathBudgetTests.swift */,
 				59D04D350C19D6D7A8E0C871 /* NativeModuleTests.swift */,
 				418C52F097563CA17D4E0014 /* NativeErrorPathTests.swift */,
+				5F2B62D1B22F5C30AE41C7D3 /* TurnTickerProseTests.swift */,
 			);
 			path = PaxHistoriaAppleTests;
 			sourceTree = "<group>";
@@ -713,6 +716,7 @@
 				A100000000000000000000C6 /* ZAITurnPathBudgetTests.swift in Sources */,
 				A9C6C1664B222334D747DC72 /* NativeModuleTests.swift in Sources */,
 				37E222186A1FC4D3E2712944 /* NativeErrorPathTests.swift in Sources */,
+				7A1E51C0A11E4B2F9D30B4E2 /* TurnTickerProseTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

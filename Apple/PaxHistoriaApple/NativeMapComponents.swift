@@ -752,39 +752,6 @@ struct TurnTransitionOverlay: View {
     @State private var gridRotation = Double.random(in: -15 ... 15)
     @State private var appearOffset: CGFloat = 30
 
-    private let tickerQuotes = [
-        "Reconstruindo redes de inteligência regional...",
-        "Calibrando indicadores fiscais contra o cenário...",
-        "Sintetizando movimentos diplomáticos globais...",
-        "Avaliando pressão insurgente em corredores...",
-        "Recalibrando confiança do mercado...",
-        "Mapeando deslocamentos estratégicos...",
-        "Compilando relatórios de segurança pública...",
-        "Cruzando dados eleitorais com estabilidade...",
-        "Processando calor logístico militar...",
-        "Analisando padrões comerciais bilaterais...",
-        "Atualizando perfis doutrinários de potências...",
-        "Medindo pressão diplomática em fronteiras...",
-        "Integrando dados climáticos ao risco...",
-        "Recalculando impacto de políticas públicas...",
-        "Cruzando memoria semântica da campanha...",
-        "Sondando alinhamentos geopolíticos emergentes...",
-        "Avaliando risco de colapso institucional...",
-        "Simulando reações de potências rivais...",
-        "Pesando custos fiscais de decisões pendentes...",
-        "Mapeando cadeias de suprimento e impacto logístico...",
-        "Auditando resiliência econômica regional...",
-        "Processando telemetria de unidades militares...",
-        "Analisando pressão de recessão externa...",
-        "Revisando agenda multilateral de segurança...",
-        "Quantificando risco de queda de governo...",
-        "Escaneando mudanças doutrinárias globais...",
-        "Avaliando efetividade de reformas políticas...",
-        "Medindo impacto de sanções comerciais...",
-        "Computando consequências de soberania...",
-        "Integrando pacotes de inteligência aliada..."
-    ]
-
     private var engineName: String {
         if let summary = store.turnProgress?.providerSummary {
             return summary.uppercased()
@@ -838,6 +805,7 @@ struct TurnTransitionOverlay: View {
             .rotationEffect(.degrees(gridRotation))
             .opacity(0.5)
             .ignoresSafeArea()
+            .accessibilityHidden(true)
             .onAppear {
                 withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
                     pulsePhase = true
@@ -888,6 +856,7 @@ struct TurnTransitionOverlay: View {
                             }
                         }
                         .padding(.top, 8)
+                        .accessibilityHidden(true)
 
                         if !shuffledQuotes.isEmpty {
                             Text(shuffledQuotes[currentTickerIndex % shuffledQuotes.count])
@@ -899,6 +868,7 @@ struct TurnTransitionOverlay: View {
                                     removal: .move(edge: .leading).combined(with: .opacity)
                                 ))
                                 .id(currentTickerIndex)
+                                .accessibilityHidden(true)
                                 .onReceive(timer) { _ in
                                     withAnimation(.easeInOut(duration: 0.4)) {
                                         currentTickerIndex = (currentTickerIndex + 1) % max(1, shuffledQuotes.count)
@@ -965,14 +935,17 @@ struct TurnTransitionOverlay: View {
                 }
                 .frame(maxWidth: 480)
                 .padding(.horizontal, 20)
+                .accessibilityHidden(true)
 
                 Spacer()
             }
             .padding(.bottom, 40)
         }
         .onAppear {
-            // Shuffle quotes and pick a random subset for variety each turn
-            shuffledQuotes = tickerQuotes.shuffled().prefix(8).map(\.self)
+            // Shuffle quotes and pick a random subset for variety each turn.
+            // Ticker follows the campaign save's language (see TurnTickerProse).
+            let language = store.state?.language ?? store.selectedLanguage
+            shuffledQuotes = Array(TurnTickerProse.quotes(for: language).shuffled().prefix(8))
             currentTickerIndex = 0
             backgroundHue = Double.random(in: 0.5 ... 2.5)
             gridRotation = Double.random(in: -20 ... 20)
