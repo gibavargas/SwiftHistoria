@@ -135,6 +135,86 @@ final class LivingWorldEngineTests: XCTestCase {
         }
     }
 
+    func testConstructionTargetsVaryWithSeededRNG() {
+        // Balanced and Turtle brains gate construction on seeded dice; across
+        // many days the same country must not queue one building forever.
+        let world = LivingWorldFactory.makeWorld(seed: 4242, playerCode: nil, minorCount: 8)
+        for strategy in [LWCountryStrategy.balanced, .economicTurtle] {
+            guard let country = world.countries.values.first(where: { $0.strategy == strategy }) else {
+                continue
+            }
+            let brain = LWBrainFactory.brain(for: country)
+            var targets = Set<LWBuildingType>()
+            for day in 0 ..< 200 {
+                let rng = LWRNG(worldSeed: world.worldSeed, dayIndex: day)
+                if let target = brain.makeOrders(world: world, country: country, rng: rng).constructionTarget {
+                    targets.insert(target)
+                }
+            }
+            XCTAssertGreaterThan(targets.count, 1, "\(strategy.rawValue) brain must vary construction across days")
+        }
+    }
+
+    func testThousandDayTicksAreDeterministicAndBounded() {
+        let seed: UInt64 = 90210
+        var worldA = LivingWorldFactory.makeWorld(seed: seed, playerCode: "BRA", minorCount: 10)
+        var worldB = LivingWorldFactory.makeWorld(seed: seed, playerCode: "BRA", minorCount: 10)
+
+        var warsDeclared = 0
+        var warsConcluded = 0
+        var previousWarIDs = Set(worldA.wars.map(\.id))
+        // Track the tail of history for event-derived counters (history is
+        // capped at 400 records, so cumulative counts must be diffed daily).
+        var pinDays: [String: Int] = [:]
+        var days = 0
+
+        for day in 1 ... 1_000 {
+            worldA = LivingWorldTick.advanceDay(worldA, playerOrders: nil)
+            worldB = LivingWorldTick.advanceDay(worldB, playerOrders: nil)
+            days = day
+
+            let currentWarIDs = Set(worldA.wars.map(\.id))
+            warsDeclared += currentWarIDs.subtracting(previousWarIDs).count
+            warsConcluded += previousWarIDs.subtracting(currentWarIDs).count
+            previousWarIDs = currentWarIDs
+
+            for good in worldA.goods {
+                let base = good.basePrice
+                let price = worldA.market.prices[good.id] ?? base
+                if abs(price - base * LWMarket.priceFloorFactor) < 0.0001 || abs(price - base * LWMarket.priceCeilingFactor) < 0.0001 {
+                    pinDays[good.id, default: 0] += 1
+                }
+            }
+
+            if day == 100 || day == 500 || day == 1_000 {
+                XCTAssertEqual(fingerprint(worldA), fingerprint(worldB), "Determinism must hold at day \(day)")
+            }
+        }
+
+        XCTAssertEqual(days, 1_000)
+        // Real activity: expansionist brains declare wars, exhaustion ends them.
+        XCTAssertGreaterThan(warsDeclared, 0, "1,000 days must see at least one war declaration")
+        XCTAssertGreaterThan(warsConcluded, 0, "1,000 days must see at least one peace deal")
+
+        // Coupled industrial goods must not sit at a price bound; their
+        // supply and demand are linked through input chains.
+        for good in worldA.goods where [.minerals, .lumber, .steel, .machinery, .textiles].contains(good.category) {
+            let pinned = pinDays[good.id] ?? 0
+            XCTAssertLessThan(Double(pinned), 900, "\(good.id) pinned at a price bound for \(pinned)/1000 days")
+        }
+
+        // No terminal state: finite numbers everywhere, radicals bounded,
+        // every country still has a viable ledger.
+        for country in worldA.countries.values {
+            XCTAssertLessThanOrEqual(country.radicals, 1.0001)
+            XCTAssertTrue(country.treasury.isFinite)
+            XCTAssertTrue(country.standardOfLiving.isFinite)
+        }
+        for good in worldA.goods {
+            XCTAssertTrue((worldA.market.prices[good.id] ?? 0).isFinite)
+        }
+    }
+
     func testCommentaryIsNonEmptyForEveryStrategy() {
         let world = LivingWorldFactory.makeWorld(seed: 8, playerCode: nil, minorCount: 8)
         for country in world.countries.values {

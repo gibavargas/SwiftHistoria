@@ -81,12 +81,18 @@ class LWCountryBrain {
 // MARK: Concrete brains
 
 final class LWBalancedBrain: LWCountryBrain {
-    override func makeOrders(world: LivingWorldState, country: LWCountry, rng _: LWRNG) -> LWBrainOrders {
+    override func makeOrders(world: LivingWorldState, country: LWCountry, rng: LWRNG) -> LWBrainOrders {
         var orders = LWBrainOrders()
         let balance = fiscalBalance(country)
         orders.taxAdjust = balance < 0 ? 0.01 : -0.005
         orders.spendingAdjust = balance > 0 ? 0.01 : -0.01
-        orders.constructionTarget = country.infrastructure < 50 ? .constructionSector : .commercialFarms
+        // Construction focus drifts with a seeded die so balanced economies
+        // don't all queue the identical building forever.
+        if country.infrastructure < 50 {
+            orders.constructionTarget = rng.chance("build-infra-\(countryCode)", probability: 0.8) ? .constructionSector : .commercialFarms
+        } else {
+            orders.constructionTarget = rng.chance("build-farms-\(countryCode)", probability: 0.8) ? .commercialFarms : .toolingWorks
+        }
         if threatLevel(world: world, country: country) > 0.5 {
             orders.mobilization = true
         }
@@ -145,12 +151,13 @@ final class LWExpansionistBrain: LWCountryBrain {
 }
 
 final class LWTurtleBrain: LWCountryBrain {
-    override func makeOrders(world: LivingWorldState, country: LWCountry, rng _: LWRNG) -> LWBrainOrders {
+    override func makeOrders(world: LivingWorldState, country: LWCountry, rng: LWRNG) -> LWBrainOrders {
         var orders = LWBrainOrders()
         let balance = fiscalBalance(country)
         orders.taxAdjust = balance < 0 ? 0.008 : 0.0
         orders.spendingAdjust = balance < 0 ? -0.02 : -0.005
-        orders.constructionTarget = .commercialFarms
+        // Turtles diversify slowly: mostly farms, occasionally mines.
+        orders.constructionTarget = rng.chance("build-diversify-\(countryCode)", probability: 0.2) ? .mines : .commercialFarms
         orders.mobilization = threatLevel(world: world, country: country) > 0.8 ? true : nil
         return orders
     }
@@ -259,6 +266,16 @@ enum LivingWorldTick {
                 country.treasury = 0
                 country.radicals = min(1, country.radicals + 0.0008)
             }
+            // Pops buy from the market with unit price elasticity (clamped):
+            // demand contracts as prices rise and expands as they fall, which
+            // is the negative feedback that lets prices find an interior
+            // equilibrium instead of ratcheting to a bound.
+            let grainElastic = min(2.0, max(0.5, LWMarket.elasticDemand(basePrice: 20, price: market.price(for: "grain"))))
+            market.addDemand(country.pops.total * 1.8 * grainElastic, goodID: "grain")
+            let consumerElastic = min(2.0, max(0.5, LWMarket.elasticDemand(basePrice: 60, price: market.price(for: "consumer_goods"))))
+            market.addDemand(country.pops.total * 0.15 * (country.infrastructure / 100.0) * min(2, country.standardOfLiving / 10) * consumerElastic, goodID: "consumer_goods")
+            let luxuryElastic = min(2.0, max(0.5, LWMarket.elasticDemand(basePrice: 45, price: market.price(for: "luxury_food"))))
+            market.addDemand(country.pops.total * 0.06 * max(0, (country.standardOfLiving - 10) / 10) * luxuryElastic, goodID: "luxury_food")
             // Standard of living drifts with market participation + spending.
             let solTarget = 8.0 + country.spendingLevel * 6 + min(10, revenue * 0.02) - country.radicals * 4
             country.standardOfLiving += (solTarget - country.standardOfLiving) * 0.01

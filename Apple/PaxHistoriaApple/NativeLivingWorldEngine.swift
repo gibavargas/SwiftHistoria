@@ -123,6 +123,12 @@ struct LWMarket: Codable, Hashable {
         goods.first { $0.id == goodID }?.basePrice ?? 10.0
     }
 
+    /// Unit-elastic demand factor: consumption scales inversely with price
+    /// relative to base, so pop demand stabilizes the market.
+    static func elasticDemand(basePrice: Double, price: Double) -> Double {
+        basePrice / max(price, 0.01)
+    }
+
     /// One day of price discovery: ratio of demand to supply moves the price
     /// toward its bound, scaled by imbalance strength.
     mutating func resolveDay(goods: [LWGood]) {
@@ -586,14 +592,18 @@ enum LivingWorldFactory {
         var buildings: [LWBuilding] = [
             LWBuilding(type: .subsistenceFarms, levels: max(1, Int(pop * 2)), staffing: 0.85, lastProfit: 0),
             LWBuilding(type: .commercialFarms, levels: max(1, Int(Double(pop) * industrial * 1.5)), staffing: 0.8, lastProfit: 0),
-            LWBuilding(type: .mines, levels: max(1, Int(Double(pop) * industrial)), staffing: 0.75, lastProfit: 0),
-            LWBuilding(type: .lumberCamps, levels: max(1, Int(Double(pop) * industrial * 0.6)), staffing: 0.7, lastProfit: 0)
+            // Primary/processing ratios approximately close the input chains
+            // (mines feed steel mills, lumber feeds mills/tooling, tooling
+            // meets machinery demand) so goods prices oscillate around
+            // interior equilibria instead of pinning at bounds.
+            LWBuilding(type: .mines, levels: max(1, Int(Double(pop) * industrial * 0.65)), staffing: 0.75, lastProfit: 0),
+            LWBuilding(type: .lumberCamps, levels: max(1, Int(Double(pop) * industrial * 0.35)), staffing: 0.7, lastProfit: 0)
         ]
         if industrial > 0.4 {
             buildings.append(contentsOf: [
-                LWBuilding(type: .textileMills, levels: max(1, Int(Double(pop) * industrial * 0.5)), staffing: 0.7, lastProfit: 0),
-                LWBuilding(type: .steelMills, levels: max(1, Int(Double(pop) * industrial * 0.4)), staffing: 0.7, lastProfit: 0),
-                LWBuilding(type: .toolingWorks, levels: max(1, Int(Double(pop) * industrial * 0.3)), staffing: 0.65, lastProfit: 0),
+                LWBuilding(type: .textileMills, levels: max(1, Int(Double(pop) * industrial * 0.3)), staffing: 0.7, lastProfit: 0),
+                LWBuilding(type: .steelMills, levels: max(1, Int(Double(pop) * industrial * 0.55)), staffing: 0.7, lastProfit: 0),
+                LWBuilding(type: .toolingWorks, levels: max(1, Int(Double(pop) * industrial * 0.7)), staffing: 0.65, lastProfit: 0),
                 LWBuilding(type: .consumerFactories, levels: max(1, Int(Double(pop) * industrial * 0.35)), staffing: 0.7, lastProfit: 0)
             ])
         }
