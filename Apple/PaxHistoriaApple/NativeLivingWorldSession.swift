@@ -58,7 +58,7 @@ final class LivingWorldSession: ObservableObject {
 
     static let speedLevels: [Int] = [1, 2, 4, 8, 16] // days per second
 
-    init(playerCountryCode: String, seed: UInt64? = nil, slot: Int = 1, defaults: UserDefaults = .standard, persistenceDirectory: URL? = nil) {
+    init(playerCountryCode: String, seed: UInt64? = nil, slot: Int = 1, language: NativeGameLanguage? = nil, defaults: UserDefaults = .standard, persistenceDirectory: URL? = nil) {
         self.playerCountryCode = playerCountryCode
         self.slot = slot
         self.defaults = defaults
@@ -67,12 +67,18 @@ final class LivingWorldSession: ObservableObject {
             .appendingPathComponent("living-world", isDirectory: true)
         self.persistenceDirectory = dir
 
+        // Language resolution: explicit argument wins, else the campaign
+        // store's selected language, else English. A loaded save keeps the
+        // language it was generated with.
+        let resolvedLanguage = language ?? NativeGameLanguage.normalized(defaults.string(forKey: NativeCampaignStore.selectedLanguageKey))
+
         if let loaded = Self.load(slot: slot, directory: dir), loaded.playerCountryCode == playerCountryCode {
             world = loaded
             logger.info("Living world resumed day=\(loaded.dayIndex) slot=\(slot)")
         } else {
             let worldSeed = seed ?? Self.seedFromCountry(playerCountryCode)
             world = LivingWorldFactory.makeWorld(seed: worldSeed, playerCode: playerCountryCode)
+            world.language = resolvedLanguage
             persist()
             logger.info("Living world generated seed=\(worldSeed) countries=\(self.world.countries.count)")
         }
@@ -233,7 +239,7 @@ final class LivingWorldSession: ObservableObject {
 
     func menuCommentary() -> String {
         guard let player = playerCountry else {
-            return "The world holds its breath."
+            return LWProse.string(.worldHoldsBreath, language: world.language)
         }
         return LWBrainFactory.brain(for: player).commentary(world: world, country: player)
     }
@@ -241,9 +247,14 @@ final class LivingWorldSession: ObservableObject {
     func worldSituationLine() -> String {
         let wars = world.wars.count
         let greatPowers = world.countries.values.filter(\.isGreatPower).count
-        return wars > 0
-            ? "\(wars) war\(wars == 1 ? "" : "s") rage among \(greatPowers) great powers — \(world.today.stamp)."
-            : "An uneasy peace holds among \(greatPowers) great powers — \(world.today.stamp)."
+        let interp = ["wars": "\(wars)", "powers": "\(greatPowers)", "date": world.today.stamp]
+        if wars == 1 {
+            return LWProse.string(.situationWarSingular, language: world.language, interp)
+        }
+        if wars > 1 {
+            return LWProse.string(.situationWarPlural, language: world.language, interp)
+        }
+        return LWProse.string(.situationPeace, language: world.language, interp)
     }
 
     // MARK: Persistence (slot files + backup)

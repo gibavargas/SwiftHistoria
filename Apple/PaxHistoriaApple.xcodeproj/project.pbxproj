@@ -15,6 +15,7 @@
 		6B6BA0AA4E7B717A58AC3844 /* NativeLivingWorldSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6E96A11D61BA5FF4845CF3F /* NativeLivingWorldSession.swift */; };
 		A6CFE5CEB990EFC1FED0B996 /* NativeLivingWorldTick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 781C0646D12B09D0541ED230 /* NativeLivingWorldTick.swift */; };
 		157C58F4ECB290E404068995 /* NativeLivingWorldEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E319A06FA5945497A479B2 /* NativeLivingWorldEngine.swift */; };
+		7A3F9C2E51B8D4069EA2C17B /* NativeLivingWorldProse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8B21D7C9054FA6B2D10E8C /* NativeLivingWorldProse.swift */; };
 		ACD60658FC04742A74284C80 /* NativeProviderErrorSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EC9F305B23D506E33D6CD3 /* NativeProviderErrorSanitizer.swift */; };
 		55BA9F7B6F7FC558001C1A86 /* NativeSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A81D908AE66257DDAABF40 /* NativeSecretStore.swift */; };
 		D5EBBAD660D2E82C20F213EF /* NativeTemperaturePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA21140125E48501520A8FA7 /* NativeTemperaturePolicy.swift */; };
@@ -126,6 +127,7 @@
 		C7EECED7A880109F676BA097 /* NativeLivingWorldSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6E96A11D61BA5FF4845CF3F /* NativeLivingWorldSession.swift */; };
 		AF9E1A16868A6C688C0B55B3 /* NativeLivingWorldTick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 781C0646D12B09D0541ED230 /* NativeLivingWorldTick.swift */; };
 		B36171F4A0404C29C29A6790 /* NativeLivingWorldEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E319A06FA5945497A479B2 /* NativeLivingWorldEngine.swift */; };
+		B41D96F0A7E348C25D9B7F63 /* NativeLivingWorldProse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8B21D7C9054FA6B2D10E8C /* NativeLivingWorldProse.swift */; };
 		90F293FAD16B486EAFA6B925 /* NativeProviderErrorSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EC9F305B23D506E33D6CD3 /* NativeProviderErrorSanitizer.swift */; };
 		B1AA3B4576AAF85FEE3B0674 /* NativeSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A81D908AE66257DDAABF40 /* NativeSecretStore.swift */; };
 		601F25B90EF9E1ED97678907 /* NativeTemperaturePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA21140125E48501520A8FA7 /* NativeTemperaturePolicy.swift */; };
@@ -175,6 +177,7 @@
 		C6E96A11D61BA5FF4845CF3F /* NativeLivingWorldSession.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeLivingWorldSession.swift; sourceTree = "<group>"; };
 		781C0646D12B09D0541ED230 /* NativeLivingWorldTick.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeLivingWorldTick.swift; sourceTree = "<group>"; };
 		17E319A06FA5945497A479B2 /* NativeLivingWorldEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeLivingWorldEngine.swift; sourceTree = "<group>"; };
+		3E8B21D7C9054FA6B2D10E8C /* NativeLivingWorldProse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeLivingWorldProse.swift; sourceTree = "<group>"; };
 		E5EC9F305B23D506E33D6CD3 /* NativeProviderErrorSanitizer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeProviderErrorSanitizer.swift; sourceTree = "<group>"; };
 		74A81D908AE66257DDAABF40 /* NativeSecretStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeSecretStore.swift; sourceTree = "<group>"; };
 		DA21140125E48501520A8FA7 /* NativeTemperaturePolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeTemperaturePolicy.swift; sourceTree = "<group>"; };
@@ -332,6 +335,7 @@
 				C6E96A11D61BA5FF4845CF3F /* NativeLivingWorldSession.swift */,
 				781C0646D12B09D0541ED230 /* NativeLivingWorldTick.swift */,
 				17E319A06FA5945497A479B2 /* NativeLivingWorldEngine.swift */,
+				3E8B21D7C9054FA6B2D10E8C /* NativeLivingWorldProse.swift */,
 				E5EC9F305B23D506E33D6CD3 /* NativeProviderErrorSanitizer.swift */,
 				74A81D908AE66257DDAABF40 /* NativeSecretStore.swift */,
 				DA21140125E48501520A8FA7 /* NativeTemperaturePolicy.swift */,
@@ -604,6 +608,7 @@
 				6B6BA0AA4E7B717A58AC3844 /* NativeLivingWorldSession.swift in Sources */,
 				A6CFE5CEB990EFC1FED0B996 /* NativeLivingWorldTick.swift in Sources */,
 				157C58F4ECB290E404068995 /* NativeLivingWorldEngine.swift in Sources */,
+				7A3F9C2E51B8D4069EA2C17B /* NativeLivingWorldProse.swift in Sources */,
 				ACD60658FC04742A74284C80 /* NativeProviderErrorSanitizer.swift in Sources */,
 				55BA9F7B6F7FC558001C1A86 /* NativeSecretStore.swift in Sources */,
 				D5EBBAD660D2E82C20F213EF /* NativeTemperaturePolicy.swift in Sources */,
@@ -668,6 +673,7 @@
 				C7EECED7A880109F676BA097 /* NativeLivingWorldSession.swift in Sources */,
 				AF9E1A16868A6C688C0B55B3 /* NativeLivingWorldTick.swift in Sources */,
 				B36171F4A0404C29C29A6790 /* NativeLivingWorldEngine.swift in Sources */,
+				B41D96F0A7E348C25D9B7F63 /* NativeLivingWorldProse.swift in Sources */,
 				90F293FAD16B486EAFA6B925 /* NativeProviderErrorSanitizer.swift in Sources */,
 				B1AA3B4576AAF85FEE3B0674 /* NativeSecretStore.swift in Sources */,
 				601F25B90EF9E1ED97678907 /* NativeTemperaturePolicy.swift in Sources */,

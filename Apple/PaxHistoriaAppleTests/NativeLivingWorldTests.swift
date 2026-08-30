@@ -144,6 +144,56 @@ final class LivingWorldEngineTests: XCTestCase {
         }
     }
 
+    func testProseTablesCoverEveryLanguage() {
+        let interp = ["goal": "X", "winner": "X", "loser": "X", "country": "X", "target": "X", "wars": "1", "powers": "6", "date": "1936-01-01"]
+        for key in LWProseKey.allCases {
+            for language in [NativeGameLanguage.english, .portuguese, .spanish] {
+                let template = LWProse.tables[key]?[language]
+                XCTAssertNotNil(template, "\(key.rawValue) missing \(language.rawValue) template")
+                let resolved = LWProse.string(key, language: language, interp)
+                XCTAssertFalse(resolved.contains("{"), "\(key.rawValue)/\(language.rawValue) resolved with an unknown placeholder: \(resolved)")
+                XCTAssertFalse(resolved.isEmpty)
+            }
+        }
+    }
+
+    func testProseResolvesPerLanguageWithInterpolation() {
+        let en = LWProse.string(.warDeclarationTitle, language: .english, ["country": "Brazil", "target": "France"])
+        XCTAssertEqual(en, "Brazil declares war on France")
+        let pt = LWProse.string(.warDeclarationTitle, language: .portuguese, ["country": "Brazil", "target": "France"])
+        XCTAssertEqual(pt, "Brazil declara guerra a France")
+        let es = LWProse.string(.warDeclarationTitle, language: .spanish, ["country": "Brazil", "target": "France"])
+        XCTAssertEqual(es, "Brazil declara la guerra a France")
+    }
+
+    func testGeneratedEventsFollowWorldLanguage() throws {
+        var world = LivingWorldFactory.makeWorld(seed: 42, playerCode: "BRA", minorCount: 4)
+        world.language = .portuguese
+        var orders = LWBrainOrders()
+        orders.warDeclarationTarget = "USA"
+        world = LivingWorldTick.advanceDay(world, playerOrders: orders)
+        let warEvent = try XCTUnwrap(world.history.first { $0.id.hasPrefix("war-") }, "Player-ordered war must emit an event the same day")
+        XCTAssertEqual(warEvent.title, "Brazil declara guerra a United States")
+        XCTAssertEqual(world.wars.first?.warGoal, "Concessões de United States")
+        XCTAssertFalse(warEvent.summary.contains("embassies"), "English summary must not leak into a pt save")
+    }
+
+    func testSessionStatusLinesRespectLanguage() throws {
+        let session = try LivingWorldSession(playerCountryCode: "BRA", seed: 42, slot: 3, language: .portuguese,
+                                             defaults: XCTUnwrap(UserDefaults(suiteName: "lw-prose-\(UUID().uuidString)")))
+        XCTAssertTrue(session.worldSituationLine().contains("grandes potências"), "Peace status line must render in the save language")
+        XCTAssertFalse(session.menuCommentary().isEmpty)
+    }
+
+    func testLanguageSurvivesPersistenceRoundTrip() throws {
+        let suite = try XCTUnwrap(UserDefaults(suiteName: "lw-lang-\(UUID().uuidString)"))
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("lw-lang-\(UUID().uuidString)")
+        let session = LivingWorldSession(playerCountryCode: "BRA", seed: 77, slot: 2, language: .spanish, defaults: suite, persistenceDirectory: dir)
+        session.persistNow()
+        let loaded = LivingWorldSession(playerCountryCode: "BRA", seed: 0, slot: 2, defaults: suite, persistenceDirectory: dir)
+        XCTAssertEqual(loaded.world.language, .spanish, "Save language must survive the persistence round trip")
+    }
+
     func testSessionPersistenceRoundTrip() throws {
         let suite = try XCTUnwrap(UserDefaults(suiteName: "lw-persist-\(UUID().uuidString)"))
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("lw-test-\(UUID().uuidString)")

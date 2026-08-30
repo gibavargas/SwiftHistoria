@@ -362,6 +362,58 @@ struct LivingWorldState: Codable {
     var playerCountryCode: String?
     /// Classic-mode hash pending interpretation (LLM mode hand-off).
     var pendingWorldHash: String?
+    /// Save language: generated prose (events, status lines) follows it.
+    /// Persisted so a save renders identically on any device.
+    var language: NativeGameLanguage = .english
+
+    private enum CodingKeys: String, CodingKey {
+        case worldSeed, dayIndex, goods, market, countries, relations, pacts, wars, history, playerCountryCode, pendingWorldHash, language
+    }
+
+    init(
+        worldSeed: UInt64,
+        dayIndex: Int,
+        goods: [LWGood],
+        market: LWMarket,
+        countries: [String: LWCountry],
+        relations: [String: [String: Double]],
+        pacts: [LWPact],
+        wars: [LWWar],
+        history: [LWEventRecord],
+        playerCountryCode: String?,
+        pendingWorldHash: String?,
+        language: NativeGameLanguage = .english
+    ) {
+        self.worldSeed = worldSeed
+        self.dayIndex = dayIndex
+        self.goods = goods
+        self.market = market
+        self.countries = countries
+        self.relations = relations
+        self.pacts = pacts
+        self.wars = wars
+        self.history = history
+        self.playerCountryCode = playerCountryCode
+        self.pendingWorldHash = pendingWorldHash
+        self.language = language
+    }
+
+    /// Tolerant decode: older saves without `language` default to English.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        worldSeed = try container.decodeIfPresent(UInt64.self, forKey: .worldSeed) ?? 0
+        dayIndex = try container.decodeIfPresent(Int.self, forKey: .dayIndex) ?? 0
+        goods = try container.decodeIfPresent([LWGood].self, forKey: .goods) ?? LivingWorldFactory.defaultGoods()
+        market = try container.decodeIfPresent(LWMarket.self, forKey: .market) ?? .seeded(goods: goods)
+        countries = try container.decodeIfPresent([String: LWCountry].self, forKey: .countries) ?? [:]
+        relations = try container.decodeIfPresent([String: [String: Double]].self, forKey: .relations) ?? [:]
+        pacts = try container.decodeIfPresent([LWPact].self, forKey: .pacts) ?? []
+        wars = try container.decodeIfPresent([LWWar].self, forKey: .wars) ?? []
+        history = try container.decodeIfPresent([LWEventRecord].self, forKey: .history) ?? []
+        playerCountryCode = try container.decodeIfPresent(String.self, forKey: .playerCountryCode)
+        pendingWorldHash = try container.decodeIfPresent(String.self, forKey: .pendingWorldHash)
+        language = (try container.decodeIfPresent(String.self, forKey: .language)).flatMap(NativeGameLanguage.init(rawValue:)) ?? .english
+    }
 
     var today: LWDate {
         LWDate.from(dayIndex: dayIndex)

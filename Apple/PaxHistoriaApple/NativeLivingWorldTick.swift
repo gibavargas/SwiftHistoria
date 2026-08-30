@@ -309,8 +309,8 @@ enum LivingWorldTick {
                 newEvents.append(LWEventRecord(
                     id: "peace-\(war.id)-\(world.dayIndex)",
                     day: world.dayIndex,
-                    title: "Peace in \(war.warGoal)",
-                    summary: "\(winner.name) dictates terms; \(loser.name) concedes.",
+                    title: LWProse.string(.peaceTitle, language: world.language, ["goal": war.warGoal]),
+                    summary: LWProse.string(.peaceSummary, language: world.language, ["winner": winner.name, "loser": loser.name]),
                     countryCode: winner.code,
                     rarity: .rare,
                     severity: 0.7
@@ -343,7 +343,7 @@ enum LivingWorldTick {
                     attacker: code,
                     defender: target,
                     startedDay: world.dayIndex,
-                    warGoal: "Concessions from \(targetCountry.name)",
+                    warGoal: LWProse.string(.warGoalConcessions, language: world.language, ["country": targetCountry.name]),
                     attackerAllies: allies(of: code, world: world),
                     defenderAllies: allies(of: target, world: world),
                     fronts: [
@@ -357,8 +357,8 @@ enum LivingWorldTick {
                 newEvents.append(LWEventRecord(
                     id: "war-\(warID)",
                     day: world.dayIndex,
-                    title: "\(country.name) declares war on \(targetCountry.name)",
-                    summary: "Armies mobilize along the border; embassies are withdrawn.",
+                    title: LWProse.string(.warDeclarationTitle, language: world.language, ["country": country.name, "target": targetCountry.name]),
+                    summary: LWProse.string(.warDeclarationSummary, language: world.language),
                     countryCode: code,
                     rarity: .rare,
                     severity: 0.9
@@ -373,8 +373,8 @@ enum LivingWorldTick {
                 newEvents.append(LWEventRecord(
                     id: "pact-\(code)-\(target)-\(world.dayIndex)",
                     day: world.dayIndex,
-                    title: "Alliance signed",
-                    summary: "\(country.name) and \(world.countries[target]?.name ?? target) enter a defensive alliance.",
+                    title: LWProse.string(.allianceTitle, language: world.language),
+                    summary: LWProse.string(.allianceSummary, language: world.language, ["country": country.name, "target": world.countries[target]?.name ?? target]),
                     countryCode: code,
                     rarity: .weekly,
                     severity: 0.3
@@ -387,18 +387,11 @@ enum LivingWorldTick {
         if rng.chance("daily-flavor", probability: 0.30) {
             let codes = world.sortedCountryCodes()
             if let code = codes.isEmpty ? nil : codes[rng.int("daily-pick", in: 0 ..< codes.count)], let country = world.countries[code] {
-                let flavors = [
-                    "A bumper harvest steadies grain prices in \(country.name).",
-                    "Strikers blockade the docks of \(country.name).",
-                    "\(country.name)'s parliament debates tariff reform.",
-                    "A banking scandal rattles confidence in \(country.name).",
-                    "Railway expansion reaches the interior of \(country.name)."
-                ]
                 newEvents.append(LWEventRecord(
                     id: "flavor-\(world.dayIndex)-\(code)",
                     day: world.dayIndex,
-                    title: "Dispatch from \(country.name)",
-                    summary: flavors[rng.int("flavor-pick", in: 0 ..< flavors.count)],
+                    title: LWProse.string(.dispatchTitle, language: world.language, ["country": country.name]),
+                    summary: LWProse.dispatchFlavor(language: world.language, country: country.name, rng: rng, stream: "flavor-pick"),
                     countryCode: code,
                     rarity: .daily,
                     severity: 0.1
@@ -413,8 +406,8 @@ enum LivingWorldTick {
                 newEvents.append(LWEventRecord(
                     id: "crisis-\(world.dayIndex)-\(code)",
                     day: world.dayIndex,
-                    title: "Crisis in \(country.name)",
-                    summary: "Riots erupt over the price of bread; the government scrambles to respond.",
+                    title: LWProse.string(.crisisTitle, language: world.language, ["country": country.name]),
+                    summary: LWProse.string(.crisisSummary, language: world.language),
                     countryCode: code,
                     rarity: .weekly,
                     severity: 0.5
