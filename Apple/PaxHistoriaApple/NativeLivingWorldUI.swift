@@ -120,33 +120,42 @@ struct LivingWorldGameView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            hud
-            Divider()
-            HStack(spacing: 0) {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
-                        commentaryCard
-                        actionsCard
-                        if showHashBridge {
-                            HashBridgeCard(session: session)
-                        }
-                    }
-                    .padding(14)
-                }
-                .frame(maxWidth: 380)
+        ZStack {
+            VStack(spacing: 0) {
+                hud
                 Divider()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
-                        worldCard
-                        eventFeed
+                HStack(spacing: 0) {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 14) {
+                            commentaryCard
+                            actionsCard
+                            if showHashBridge {
+                                HashBridgeCard(session: session)
+                            }
+                        }
+                        .padding(14)
                     }
-                    .padding(14)
+                    .frame(maxWidth: 380)
+                    Divider()
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 14) {
+                            worldCard
+                            eventFeed
+                        }
+                        .padding(14)
+                    }
                 }
             }
+            .background(Color.black)
+            .accessibilityIdentifier("living-world-game")
+
+            if let pending = session.world.pendingDecision {
+                LivingWorldDecisionModalView(decision: pending) { option in
+                    session.chooseDecisionOption(option)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
         }
-        .background(Color.black)
-        .accessibilityIdentifier("living-world-game")
     }
 
     // MARK: HUD
@@ -160,7 +169,18 @@ struct LivingWorldGameView: View {
                     .frame(width: 34, height: 28)
             }
             .buttonStyle(.bordered)
+            .disabled(session.world.pendingDecision != nil)
             .accessibilityIdentifier("lw-play-pause")
+
+            if session.world.pendingDecision != nil {
+                Text("DECISION REQUIRED")
+                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.softRed)
+                    .cornerRadius(4)
+            }
 
             Text(session.today.stamp)
                 .font(.system(.title3, design: .monospaced).weight(.black))
@@ -327,6 +347,16 @@ struct LivingWorldGameView: View {
                             .font(.system(size: 9, design: .monospaced))
                             .foregroundStyle(.secondary)
                         severityDot(event.severity)
+                        if let decision = event.decisionChosen {
+                            Spacer()
+                            Text(decision)
+                                .font(.system(size: 8, design: .monospaced).weight(.semibold))
+                                .foregroundStyle(Color.neonTeal)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.neonTeal.opacity(0.15))
+                                .cornerRadius(3)
+                        }
                     }
                     Text(event.title).font(.caption.weight(.semibold))
                     Text(event.summary).font(.caption).foregroundStyle(.secondary).lineLimit(2)
@@ -433,3 +463,117 @@ struct HashBridgeCard: View {
             .foregroundStyle(Color.neonTeal)
     }
 }
+
+// MARK: - Decision Interruption Modal
+
+struct LivingWorldDecisionModalView: View {
+    let decision: LWDecisionEvent
+    let onChoose: (LWDecisionOption) -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.85)
+                .ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    Label("EXECUTIVE DECISION REQUIRED", systemImage: "exclamationmark.triangle.fill")
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(Color.softRed)
+                    Spacer()
+                    Text(LWDate.from(dayIndex: decision.day).stamp)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
+
+                if let asset = decision.imageAssetName {
+                    EventImageView(imageName: asset, height: 180)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(decision.title)
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(Color.iceBlue)
+
+                    Text(decision.summary)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Divider()
+
+                Text("POLICY DIRECTIVES")
+                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    .foregroundStyle(Color.neonTeal)
+
+                VStack(spacing: 10) {
+                    ForEach(decision.options) { option in
+                        Button {
+                            onChoose(option)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text(option.text)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(Color.iceBlue)
+                                    Spacer()
+                                    Image(systemName: "chevron.right.circle.fill")
+                                        .foregroundStyle(Color.neonTeal)
+                                }
+                                Text(option.consequenceSummary)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                HStack(spacing: 8) {
+                                    if option.treasuryDelta != 0 {
+                                        effectPill(
+                                            "£ \(option.treasuryDelta >= 0 ? "+" : "")\(String(format: "%.0fM", option.treasuryDelta))",
+                                            positive: option.treasuryDelta > 0
+                                        )
+                                    }
+                                    if option.stabilityDelta != 0 {
+                                        effectPill(
+                                            "STB \(option.stabilityDelta >= 0 ? "+" : "")\(String(format: "%.0f%%", option.stabilityDelta * 100))",
+                                            positive: option.stabilityDelta > 0
+                                        )
+                                    }
+                                    if option.radicalDelta != 0 {
+                                        effectPill(
+                                            "RAD \(option.radicalDelta <= 0 ? "" : "+")\(String(format: "%.0f%%", option.radicalDelta * 100))",
+                                            positive: option.radicalDelta < 0
+                                        )
+                                    }
+                                }
+                            }
+                            .padding(12)
+                            .background(Color.spaceBlack)
+                            .cornerRadius(8)
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.neonTeal.opacity(0.3), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("lw-decision-\(option.id)")
+                    }
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: 540)
+            .background(Color.deepSlate.opacity(0.95))
+            .cornerRadius(12)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.softRed.opacity(0.6), lineWidth: 1.5))
+            .shadow(color: Color.black.opacity(0.8), radius: 20, x: 0, y: 10)
+            .padding(24)
+        }
+    }
+
+    private func effectPill(_ text: String, positive: Bool) -> some View {
+        Text(text)
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .foregroundStyle(positive ? Color.neonTeal : Color.softRed)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background((positive ? Color.neonTeal : Color.softRed).opacity(0.15))
+            .cornerRadius(4)
+    }
+}
+

@@ -4816,6 +4816,81 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         }
         XCTAssertEqual(postConsState.economicLedgers["RUS"]?.governmentType, "autocracy")
     }
+
+    // MARK: - Alternative History Event Chains & Executive Decisions Tests
+
+    func testClassicModeAlternativeHistoryEventsTriggerForPlayer() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.round = 1
+
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+
+        XCTAssertNotNil(state.pendingEventDecision, "Executive decision must be pending when player is the targeted nation")
+        XCTAssertEqual(state.pendingEventDecision?.imageAssetName, "EventSovietCoup")
+        XCTAssertEqual(state.pendingEventDecision?.title, "GKChP State Emergency Committee Resolution")
+        XCTAssertEqual(state.eventFlags["soviet_gkchp"], "pending")
+    }
+
+    func testClassicModeTurnAdvanceBlockedOnPendingDecision() async throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.round = 1
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        store.state = state
+
+        XCTAssertNotNil(store.state?.pendingEventDecision)
+
+        await store.performAdvance()
+
+        XCTAssertNotNil(store.lastError, "Turn advance must be blocked with an error when a decision is pending")
+        XCTAssertTrue(store.lastError?.contains("decision is pending") == true)
+        XCTAssertEqual(store.state?.round, 1, "Round must not advance while decision is unresolved")
+    }
+
+    func testClassicModeResolvePendingEventDecisionAppliesDeltas() throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.round = 1
+        state.stability = 50
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        store.state = state
+
+        let pending = try XCTUnwrap(store.state?.pendingEventDecision)
+        let option = try XCTUnwrap(pending.decisionOptions?.first)
+
+        store.resolvePendingEventDecision(option: option)
+
+        XCTAssertNil(store.state?.pendingEventDecision, "Pending decision must be cleared upon store resolution")
+        XCTAssertEqual(store.state?.eventFlags["soviet_gkchp"], option.id)
+        XCTAssertEqual(store.state?.eventFlags["next_chain"], "soviet-ogas-launch")
+        XCTAssertGreaterThan(try XCTUnwrap(store.state?.stability), 50, "Stability must increase from hardline resolution")
+
+        // Timeline must record resolution event
+        let resolutionEvent = try XCTUnwrap(store.state?.timeline.first)
+        XCTAssertTrue(resolutionEvent.title.contains("Decision Enacted"))
+        XCTAssertEqual(resolutionEvent.imageAssetName, "EventSovietCoup")
+    }
+
+    func testClassicModeAINationResolvesEventWithoutBlocking() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "BRA", name: "Brazil")
+        state.round = 1
+
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+
+        XCTAssertNil(state.pendingEventDecision, "Pending decision must remain nil when player is not the target")
+        XCTAssertEqual(state.eventFlags["soviet_gkchp"], "gkchp-hardline", "AI Russia must have autonomously resolved the event")
+        XCTAssertEqual(state.eventFlags["next_chain"], "soviet-ogas-launch")
+        let coupEvent = state.timeline.first { $0.id == "event-soviet-coup-1991" }
+        XCTAssertNotNil(coupEvent, "Autonomous world event must be added to timeline")
+    }
 }
 
 @MainActor

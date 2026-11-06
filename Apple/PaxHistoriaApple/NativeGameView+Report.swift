@@ -311,6 +311,10 @@ struct EventCard: View {
             }
             .padding(.bottom, 2)
 
+            if let img = event.imageAssetName {
+                EventImageView(imageName: img, fallbackIcon: "doc.text.image", height: 140)
+            }
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(event.title)
                     .font(.headline.weight(.bold))
@@ -369,11 +373,150 @@ struct EventCard: View {
                     }
                 }
             }
+
+            if let options = event.decisionOptions, !options.isEmpty {
+                Divider()
+                    .background(Color.white.opacity(0.08))
+                    .padding(.vertical, 4)
+
+                Text("STRATEGIC DECISION BRANCHES")
+                    .font(.system(.caption2, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.neonTeal)
+
+                VStack(spacing: 8) {
+                    ForEach(options) { opt in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(opt.label)
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(.white)
+                                Text(opt.detail)
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Text(opt.effectTrack.mechanicCode)
+                                .font(.system(.caption2, design: .monospaced).weight(.bold))
+                                .foregroundStyle(Color.glowingCyan)
+                        }
+                        .padding(8)
+                        .background(Color.white.opacity(0.04))
+                        .cornerRadius(6)
+                    }
+                }
+            }
         }
         .padding(14)
         .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 12)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("native-event-card-\(event.id)")
+    }
+}
+
+struct NativeClassicDecisionView: View {
+    let decision: NativeCampaignEvent
+    let onChoose: (NativeEventDecisionOption) -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.85)
+                .ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.caption)
+                            .foregroundStyle(Color.alertGold)
+                        Text("CRITICAL EXECUTIVE DECISION // ADVANCE PAUSED")
+                            .font(.system(.caption2, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.alertGold)
+                    }
+                    Spacer()
+                    Text(decision.date)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
+
+                if let img = decision.imageAssetName {
+                    EventImageView(imageName: img, fallbackIcon: "shield.lefthalf.filled", height: 180)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(decision.title)
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(.white)
+                    Text(decision.kind.displayName.uppercased())
+                        .font(.system(.caption2, design: .monospaced).weight(.semibold))
+                        .foregroundStyle(Color.glowingCyan)
+                }
+
+                Text(decision.description)
+                    .font(.body)
+                    .foregroundStyle(.white.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Divider()
+                    .background(Color.white.opacity(0.12))
+
+                Text("POLICY DIRECTIVES (CHOOSE ONE TO FORM RESOLUTION)")
+                    .font(.system(.caption2, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.neonTeal)
+
+                if let options = decision.decisionOptions {
+                    VStack(spacing: 10) {
+                        ForEach(options) { opt in
+                            Button {
+                                onChoose(opt)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 5) {
+                                    HStack {
+                                        Text(opt.label)
+                                            .font(.subheadline.weight(.bold))
+                                            .foregroundStyle(.white)
+                                        Spacer()
+                                        Text(opt.effectTrack.mechanicCode)
+                                            .font(.system(.caption2, design: .monospaced).weight(.bold))
+                                            .foregroundStyle(Color.glowingCyan)
+                                    }
+                                    Text(opt.detail)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.leading)
+
+                                    HStack(spacing: 8) {
+                                        let isPos = opt.effectMagnitude >= 0
+                                        Text("\(isPos ? "+" : "")\(opt.effectMagnitude) \(opt.effectTrack.displayName)")
+                                            .font(.system(size: 9, design: .monospaced).weight(.bold))
+                                            .foregroundStyle(isPos ? Color.neonTeal : Color.softRed)
+
+                                        if opt.nextChainedEventID != nil {
+                                            Text("⟦CHAIN CASSETTE⟧")
+                                                .font(.system(size: 8, design: .monospaced).weight(.bold))
+                                                .foregroundStyle(Color.alertGold)
+                                        }
+                                    }
+                                }
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.spaceBlack)
+                                .cornerRadius(8)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.neonTeal.opacity(0.4), lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("classic-decision-\(opt.id)")
+                        }
+                    }
+                }
+            }
+            .padding(20)
+            .background(Color.deepSlate)
+            .cornerRadius(12)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.alertGold.opacity(0.6), lineWidth: 1.5))
+            .shadow(color: Color.black.opacity(0.85), radius: 24, x: 0, y: 12)
+            .frame(maxWidth: 620)
+            .padding(20)
+        }
     }
 }
 

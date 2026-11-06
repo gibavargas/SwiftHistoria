@@ -708,6 +708,10 @@ struct NativeCampaignState: Codable, Hashable {
     // Keys: "infantry", "armor", "air", "naval". Values = unit counts.
     var militaryUnits: [String: Int]
 
+    // Alternative History event chains and interactive player decisions
+    var pendingEventDecision: NativeCampaignEvent?
+    var eventFlags: [String]
+
     init(
         actionMemory: [NativeActionMemory] = [],
         advisorMessages: [NativeAdvisorMessage] = [],
@@ -750,7 +754,9 @@ struct NativeCampaignState: Codable, Hashable {
         techEra: String = NativeTechEra.industrial.rawValue,
         researchPoints: Int = 0,
         budgetResearchSlider: Double = 0.15,
-        militaryUnits: [String: Int]? = nil
+        militaryUnits: [String: Int]? = nil,
+        pendingEventDecision: NativeCampaignEvent? = nil,
+        eventFlags: [String] = []
     ) {
         self.actionMemory = actionMemory
         self.advisorMessages = advisorMessages
@@ -808,6 +814,8 @@ struct NativeCampaignState: Codable, Hashable {
         self.researchPoints = max(0, researchPoints)
         self.budgetResearchSlider = min(1.0, max(0.0, budgetResearchSlider.isFinite ? budgetResearchSlider : 0.15))
         self.militaryUnits = militaryUnits ?? Self.defaultMilitaryUnits(forCode: country.code)
+        self.pendingEventDecision = pendingEventDecision
+        self.eventFlags = eventFlags
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -853,6 +861,8 @@ struct NativeCampaignState: Codable, Hashable {
         case researchPoints
         case budgetResearchSlider
         case militaryUnits
+        case pendingEventDecision
+        case eventFlags
     }
 
     /// **Schema Normalization Mechanic**:
@@ -925,6 +935,8 @@ struct NativeCampaignState: Codable, Hashable {
         budgetResearchSlider = (decodedResearchSlider.isFinite && decodedResearchSlider >= 0 && decodedResearchSlider <= 1) ? decodedResearchSlider : 0.15
         let decodedUnits = (try? container.decodeIfPresent([String: Int].self, forKey: .militaryUnits)) ?? [:]
         militaryUnits = decodedUnits.isEmpty ? Self.defaultMilitaryUnits(forCode: country.code) : decodedUnits
+        pendingEventDecision = try? container.decodeIfPresent(NativeCampaignEvent.self, forKey: .pendingEventDecision)
+        eventFlags = (try? container.decodeIfPresent([String].self, forKey: .eventFlags)) ?? []
     }
 
     private static func decodeLossyArray<Element: Decodable>(
@@ -1564,6 +1576,31 @@ struct NativeSuggestedAction: Codable, Hashable, Identifiable {
     }
 }
 
+struct NativeEventDecisionOption: Codable, Hashable, Identifiable {
+    var id: String
+    var label: String
+    var detail: String
+    var effectTrack: NativeStrategicTrack
+    var effectMagnitude: Int
+    var nextChainedEventID: String?
+
+    init(
+        id: String,
+        label: String,
+        detail: String,
+        effectTrack: NativeStrategicTrack,
+        effectMagnitude: Int,
+        nextChainedEventID: String? = nil
+    ) {
+        self.id = id
+        self.label = label
+        self.detail = detail
+        self.effectTrack = effectTrack
+        self.effectMagnitude = effectMagnitude
+        self.nextChainedEventID = nextChainedEventID
+    }
+}
+
 struct NativeCampaignEvent: Codable, Hashable, Identifiable {
     var date: String
     var description: String
@@ -1577,6 +1614,9 @@ struct NativeCampaignEvent: Codable, Hashable, Identifiable {
     var title: String
     var hexLeverCode: String?
     var sovereigntyChange: NativeSovereigntyChange?
+    var imageAssetName: String?
+    var decisionOptions: [NativeEventDecisionOption]?
+    var chainedEventID: String?
 
     init(
         date: String,
@@ -1590,7 +1630,10 @@ struct NativeCampaignEvent: Codable, Hashable, Identifiable {
         strategicEffects: [NativeStrategicEffect],
         title: String,
         hexLeverCode: String? = nil,
-        sovereigntyChange: NativeSovereigntyChange? = nil
+        sovereigntyChange: NativeSovereigntyChange? = nil,
+        imageAssetName: String? = nil,
+        decisionOptions: [NativeEventDecisionOption]? = nil,
+        chainedEventID: String? = nil
     ) {
         self.date = date
         self.description = description
@@ -1604,6 +1647,9 @@ struct NativeCampaignEvent: Codable, Hashable, Identifiable {
         self.title = title
         self.hexLeverCode = hexLeverCode
         self.sovereigntyChange = sovereigntyChange
+        self.imageAssetName = imageAssetName
+        self.decisionOptions = decisionOptions
+        self.chainedEventID = chainedEventID
     }
 }
 

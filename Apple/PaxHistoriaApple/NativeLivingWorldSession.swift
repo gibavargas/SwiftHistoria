@@ -115,6 +115,10 @@ final class LivingWorldSession: ObservableObject {
     // MARK: Clock
 
     func togglePlay() {
+        guard world.pendingDecision == nil else {
+            pause()
+            return
+        }
         isRunning.toggle()
         if isRunning {
             startTimer()
@@ -139,15 +143,26 @@ final class LivingWorldSession: ObservableObject {
     }
 
     func advanceOneSecond() {
-        guard isRunning else { return }
+        guard isRunning, world.pendingDecision == nil else {
+            if world.pendingDecision != nil { pause() }
+            return
+        }
         let days = Self.speedLevels[max(0, min(speed, Self.speedLevels.count - 1))]
         for _ in 0 ..< days {
+            guard isRunning, world.pendingDecision == nil else { break }
             stepDay()
         }
     }
 
     func stepDay() {
+        guard world.pendingDecision == nil else {
+            pause()
+            return
+        }
         world = LivingWorldTick.advanceDay(world, playerOrders: nil)
+        if world.pendingDecision != nil {
+            pause()
+        }
         daysSinceSave += 1
         if daysSinceSave >= 30 {
             persist()
@@ -158,6 +173,12 @@ final class LivingWorldSession: ObservableObject {
         isRunning = false
         timer?.cancel()
         timer = nil
+    }
+
+    func chooseDecisionOption(_ option: LWDecisionOption) {
+        guard let decision = world.pendingDecision else { return }
+        world = LivingWorldTick.resolveDecision(world: world, decision: decision, option: option)
+        persist()
     }
 
     // MARK: Player actions (Vic3-flavored, deterministic)

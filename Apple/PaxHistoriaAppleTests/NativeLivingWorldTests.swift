@@ -302,4 +302,170 @@ final class LivingWorldEngineTests: XCTestCase {
         XCTAssertEqual(loaded.world.dayIndex, 5, "Resume must restore the tick count")
         XCTAssertTrue(LivingWorldSession.hasSave(slot: 2, directory: dir))
     }
+
+    // MARK: - Alternative History Event Chains & Decision Interruption Tests
+
+    func testDecisionEventPausesPlayerLivingWorldSession() {
+        var world = LivingWorldFactory.makeWorld(seed: 101, playerCode: "BRA", minorCount: 4)
+        let decision = LWDecisionEvent(
+            id: "test-crisis",
+            title: "Test Crisis",
+            summary: "A critical crisis demands executive intervention.",
+            day: world.dayIndex,
+            targetCountryCode: "BRA",
+            imageAssetName: "EventBreadRiots",
+            options: [
+                LWDecisionOption(
+                    id: "opt-1",
+                    text: "Option 1",
+                    consequenceSummary: "Subsidize",
+                    radicalDelta: -0.1,
+                    treasuryDelta: -5.0,
+                    stabilityDelta: 0.1,
+                    nextChainedEventID: nil,
+                    setFlag: "opt1_chosen"
+                ),
+                LWDecisionOption(
+                    id: "opt-2",
+                    text: "Option 2",
+                    consequenceSummary: "Crackdown",
+                    radicalDelta: 0.1,
+                    treasuryDelta: 0.0,
+                    stabilityDelta: -0.05,
+                    nextChainedEventID: nil,
+                    setFlag: "opt2_chosen"
+                )
+            ]
+        )
+        world.pendingDecision = decision
+
+        let initialDay = world.dayIndex
+        let nextWorld = LivingWorldTick.advanceDay(world, playerOrders: nil)
+
+        // Day tick must be halted when a decision is pending
+        XCTAssertEqual(nextWorld.dayIndex, initialDay, "AdvanceDay must pause when pendingDecision is not nil")
+        XCTAssertNotNil(nextWorld.pendingDecision, "Pending decision must remain until player makes a choice")
+    }
+
+    func testResolveDecisionAppliesEffectsAndClearsPending() throws {
+        var world = LivingWorldFactory.makeWorld(seed: 102, playerCode: "BRA", minorCount: 4)
+        let initialTreasury = try XCTUnwrap(world.countries["BRA"]?.treasury)
+        let initialRadicals = try XCTUnwrap(world.countries["BRA"]?.radicals)
+
+        let option = LWDecisionOption(
+            id: "opt-reform",
+            text: "Enact Emergency Subsidy",
+            consequenceSummary: "Drains treasury but lowers radicals.",
+            radicalDelta: -0.15,
+            treasuryDelta: -8.0,
+            stabilityDelta: 0.12,
+            nextChainedEventID: "next-strike-settlement",
+            setFlag: "reform_passed"
+        )
+        let decision = LWDecisionEvent(
+            id: "strike-event",
+            title: "Strike Event",
+            summary: "Workers strike across the capital.",
+            day: world.dayIndex,
+            targetCountryCode: "BRA",
+            imageAssetName: "EventBreadRiots",
+            options: [option]
+        )
+        world.pendingDecision = decision
+
+        let resolved = LivingWorldTick.resolveDecision(world: world, decision: decision, chosenOption: option)
+
+        XCTAssertNil(resolved.pendingDecision, "Pending decision must be cleared upon resolution")
+        XCTAssertEqual(resolved.eventFlags["reform_passed"], "opt-reform")
+        XCTAssertEqual(resolved.eventFlags["next_chain"], "next-strike-settlement")
+
+        let updatedCountry = try XCTUnwrap(resolved.countries["BRA"])
+        XCTAssertEqual(updatedCountry.treasury, max(0, initialTreasury - 8.0), accuracy: 0.001)
+        XCTAssertLessThan(updatedCountry.radicals, initialRadicals)
+        XCTAssertTrue(resolved.completedChainEvents.contains("strike-event"))
+
+        // History must record the resolution with chosen option text
+        let record = try XCTUnwrap(resolved.history.first { $0.id == "strike-event" })
+        XCTAssertEqual(record.decisionChosen, "Enact Emergency Subsidy")
+    }
+
+    func testAINationAutonomouslyResolvesDecisionEvents() throws {
+        var world = LivingWorldFactory.makeWorld(seed: 103, playerCode: "BRA", minorCount: 4)
+        let aiCountryCode = "USA"
+        let initialTreasury = try XCTUnwrap(world.countries[aiCountryCode]?.treasury)
+
+        // Target an AI nation with a decision event
+        let decision = LWDecisionEvent(
+            id: "ai-event-1",
+            title: "AI Geopolitical Decision",
+            summary: "AI government evaluates crisis autonomously.",
+            day: world.dayIndex,
+            targetCountryCode: aiCountryCode,
+            imageAssetName: "EventCyberBlackout",
+            options: [
+                LWDecisionOption(
+                    id: "ai-opt-a",
+                    text: "Strengthen Defense Posture",
+                    consequenceSummary: "Invests treasury into security.",
+                    radicalDelta: -0.05,
+                    treasuryDelta: -4.0,
+                    stabilityDelta: 0.05,
+                    nextChainedEventID: nil,
+                    setFlag: "ai_defense"
+                )
+            ]
+        )
+
+        // Direct AI option choice
+        let aiBrain = LWBrainFactory.brain(for: try XCTUnwrap(world.countries[aiCountryCode]))
+        let chosen = LivingWorldTick.chooseAIOption(decision.options, for: try XCTUnwrap(world.countries[aiCountryCode]), brain: aiBrain)
+        XCTAssertEqual(chosen.id, "ai-opt-a")
+
+        let resolved = LivingWorldTick.resolveDecision(world: world, decision: decision, chosenOption: chosen)
+        XCTAssertNil(resolved.pendingDecision, "AI resolution must not block player")
+        XCTAssertEqual(resolved.eventFlags["ai_defense"], "ai-opt-a")
+        let updatedAI = try XCTUnwrap(resolved.countries[aiCountryCode])
+        XCTAssertEqual(updatedAI.treasury, max(0, initialTreasury - 4.0), accuracy: 0.001)
+    }
+
+    func testSessionChooseDecisionOptionResumesClock() throws {
+        let suite = try XCTUnwrap(UserDefaults(suiteName: "lw-decision-\(UUID().uuidString)"))
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("lw-decision-\(UUID().uuidString)")
+        let session = LivingWorldSession(playerCountryCode: "BRA", seed: 55, slot: 2, defaults: suite, persistenceDirectory: dir)
+
+        let option = LWDecisionOption(
+            id: "opt-1",
+            text: "Executive Directive A",
+            consequenceSummary: "Stabilizes capital.",
+            radicalDelta: -0.1,
+            treasuryDelta: -2.0,
+            stabilityDelta: 0.1,
+            nextChainedEventID: nil,
+            setFlag: "test_flag"
+        )
+        let decision = LWDecisionEvent(
+            id: "session-decision",
+            title: "Cabinet Emergency",
+            summary: "Cabinet awaits presidential directive.",
+            day: session.world.dayIndex,
+            targetCountryCode: "BRA",
+            imageAssetName: "EventBreadRiots",
+            options: [option]
+        )
+        session.world.pendingDecision = decision
+
+        // Attempting to step or play while decision is pending should be blocked
+        let dayBefore = session.world.dayIndex
+        session.stepDay()
+        XCTAssertEqual(session.world.dayIndex, dayBefore, "stepDay must be blocked while decision is pending")
+
+        // Player makes decision
+        session.chooseDecisionOption(option)
+        XCTAssertNil(session.world.pendingDecision, "Pending decision must be cleared")
+        XCTAssertEqual(session.world.eventFlags["test_flag"], "opt-1")
+
+        // Clock can now advance
+        session.stepDay()
+        XCTAssertEqual(session.world.dayIndex, dayBefore + 1, "Clock must resume advancing after decision is resolved")
+    }
 }

@@ -1043,10 +1043,95 @@ final class NativeCampaignStore: ObservableObject {
         invalidateInFlightWork()
     }
 
+    // MARK: - Executive Event Decision Resolution
+
+    func resolvePendingEventDecision(option: NativeEventDecisionOption) {
+        guard var currentState = state, let pending = currentState.pendingEventDecision else { return }
+
+        // Apply deltas based on effect track
+        switch option.effectTrack {
+        case .internalStability:
+            currentState.stability = max(0, min(100, currentState.stability + option.effectMagnitude))
+        case .worldTension:
+            currentState.worldTension = max(0, min(100, currentState.worldTension + option.effectMagnitude))
+        case .economy, .economicResilience:
+            if var playerLedger = currentState.economicLedgers[currentState.country.code] {
+                playerLedger.nominalGDPTrillions = max(0.01, playerLedger.nominalGDPTrillions + Double(option.effectMagnitude) * 0.05)
+                playerLedger.realGrowthPercent = max(-12.0, min(16.0, playerLedger.realGrowthPercent + Double(option.effectMagnitude) * 0.2))
+                currentState.economicLedgers[currentState.country.code] = playerLedger
+                currentState.economicLedger = playerLedger
+            }
+        case .securityIndex, .militaryReadiness:
+            if var playerLedger = currentState.economicLedgers[currentState.country.code] {
+                playerLedger.securityIndex = max(0.0, min(100.0, playerLedger.securityIndex + Double(option.effectMagnitude)))
+                currentState.economicLedgers[currentState.country.code] = playerLedger
+                currentState.economicLedger = playerLedger
+            }
+        case .diplomaticLeverage:
+            for (code, var aiState) in currentState.aiCountryStates {
+                if (aiState.relationshipScores[currentState.country.code] ?? 0) > 0 {
+                    aiState.relationshipScores[currentState.country.code] = min(100, (aiState.relationshipScores[currentState.country.code] ?? 0) + option.effectMagnitude * 2)
+                    currentState.aiCountryStates[code] = aiState
+                }
+            }
+        case .marketConfidence:
+            if var playerLedger = currentState.economicLedgers[currentState.country.code] {
+                playerLedger.tradeBalancePercentGDP = max(-20.0, min(20.0, playerLedger.tradeBalancePercentGDP + Double(option.effectMagnitude) * 0.1))
+                currentState.economicLedgers[currentState.country.code] = playerLedger
+                currentState.economicLedger = playerLedger
+            }
+        default:
+            currentState.stability = max(0, min(100, currentState.stability + option.effectMagnitude))
+        }
+
+        if let flag = option.setFlag {
+            currentState.eventFlags[flag] = option.id
+        }
+
+        if let nextChain = option.nextChainedEventID {
+            currentState.eventFlags["next_chain"] = nextChain
+        }
+
+        let resolutionEvent = NativeCampaignEvent(
+            date: currentState.gameDate,
+            description: "Executive Resolution: In response to '\(pending.title)', the administration enacted directive '\(option.label)'. \(option.detail)",
+            id: "resolution-\(pending.id)-\(option.id)",
+            importance: .major,
+            kind: .action,
+            linkedActionIDs: [],
+            notable: true,
+            playerRelated: true,
+            strategicEffects: [
+                NativeStrategicEffect(
+                    date: currentState.gameDate,
+                    eventId: "resolution-\(pending.id)-\(option.id)",
+                    id: "eff-res-\(pending.id)",
+                    magnitude: option.effectMagnitude,
+                    summary: option.detail,
+                    target: currentState.country.code,
+                    track: option.effectTrack
+                )
+            ],
+            title: "Decision Enacted: \(option.label)",
+            imageAssetName: pending.imageAssetName
+        )
+        currentState.timeline.insert(resolutionEvent, at: 0)
+        currentState.pendingEventDecision = nil
+
+        invalidateInFlightWork()
+        self.state = currentState
+        persistState()
+        logger.info("Executive event decision resolved: \(option.id, privacy: .public)")
+    }
+
     func performAdvance() async {
         guard var currentState = state, !isAdvancing else { return }
         guard currentState.victoryStatus == .ongoing else {
             lastError = "This campaign has already ended. Start or import a new campaign to continue playing."
+            return
+        }
+        guard currentState.pendingEventDecision == nil else {
+            lastError = "A critical executive decision is pending. You must formulate a policy directive before advancing the quarter."
             return
         }
         let months = Self.monthsPerTurn

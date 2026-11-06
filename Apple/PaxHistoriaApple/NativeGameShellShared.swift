@@ -439,3 +439,48 @@ struct NativeTurnProgressPanel: View {
         .accessibilityIdentifier("native-turn-progress-panel")
     }
 }
+
+// MARK: - Event Artwork & Illustration View
+
+struct EventImageView: View {
+    let imageName: String?
+    var fallbackIcon: String = "doc.text.image"
+    var height: CGFloat = 160
+
+    var body: some View {
+        if let imageName, !imageName.isEmpty {
+            Image(imageName)
+                .resizable()
+                .aspectRatio(16 / 9, contentMode: .fill)
+                .frame(maxHeight: height)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(Color.neonTeal.opacity(0.3), lineWidth: 1)
+                }
+        } else {
+            fallbackBadge
+        }
+    }
+
+    private var fallbackBadge: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color.spaceBlack, Color.deepSlate],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            Image(systemName: fallbackIcon)
+                .font(.system(size: 28, weight: .semibold))
+                .foregroundStyle(Color.neonTeal.opacity(0.6))
+        }
+        .frame(height: 70)
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Color.neonTeal.opacity(0.18), lineWidth: 1)
+        }
+    }
+}
+

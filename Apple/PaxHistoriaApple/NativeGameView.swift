@@ -30,6 +30,13 @@ struct NativeGameView: View {
                 )
                 .transition(.opacity)
             }
+
+            if let pending = store.state?.pendingEventDecision, store.lastTurnReport == nil {
+                NativeClassicDecisionView(decision: pending) { opt in
+                    store.resolvePendingEventDecision(option: opt)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
         }
         .fileExporter(
             isPresented: $isExportingCampaign,

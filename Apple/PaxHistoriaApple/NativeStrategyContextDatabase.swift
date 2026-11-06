@@ -959,7 +959,12 @@ enum NativeStrategyContextDatabase {
         NativeFactRecord(countryCodes: ["BRA"], detail: "Brazil starts with strong growth, commodity leverage, manageable debt, and inflation pressure from demand.", id: "BRA_2010_COMMODITY_EXPANSION", startDate: "2010-01-01", tags: ["commodity", "energy", "budget", "growth"], title: "Brazil commodity expansion"),
         NativeFactRecord(countryCodes: ["DEU", "FRA", "GBR"], detail: "European economies face Eurozone debt stress, bank repair, and tighter fiscal politics.", id: "EUROPE_2010_DEBT_STRESS", startDate: "2010-01-01", tags: ["budget", "debt", "market"], title: "European debt stress"),
         NativeFactRecord(countryCodes: ["JPN"], detail: "Japan starts with deflation pressure, heavy public debt, advanced industry, and high energy import dependence.", id: "JPN_2010_DEFLATION_DEBT", startDate: "2010-01-01", tags: ["debt", "energy", "industry"], title: "Japan deflation and debt"),
-        NativeFactRecord(countryCodes: ["IND"], detail: "India starts with fast growth, infrastructure bottlenecks, inflation pressure, and rising services capacity.", id: "IND_2010_GROWTH_INFLATION", startDate: "2010-01-01", tags: ["growth", "inflation", "infrastructure"], title: "India growth and inflation")
+        NativeFactRecord(countryCodes: ["IND"], detail: "India starts with fast growth, infrastructure bottlenecks, inflation pressure, and rising services capacity.", id: "IND_2010_GROWTH_INFLATION", startDate: "2010-01-01", tags: ["growth", "inflation", "infrastructure"], title: "India growth and inflation"),
+        NativeFactRecord(countryCodes: ["RUS", "SOV"], detail: "The GKChP State Emergency Committee maintained union integrity, halting market shock therapy in favor of cybernetic Gosplan optimization.", id: "SOVIET_1991_GKCHP_COUP", startDate: "1991-08-19", tags: ["soviet", "planning", "security", "bipolar"], title: "GKChP Union Integrity"),
+        NativeFactRecord(countryCodes: ["GBR", "FRA"], detail: "Imperial standoff at Fashoda established divided colonial sovereignty along the Upper Nile basin under strict naval parity.", id: "FASHODA_1898_NILE_CONFRONTATION", startDate: "1898-09-18", tags: ["fashoda", "colonial", "naval", "sovereignty"], title: "Fashoda Sovereign Standoff"),
+        NativeFactRecord(countryCodes: ["GLOBAL"], detail: "Global aquifer depletion has forced militarized resource checkpoints along trans-border agricultural trade corridors.", id: "RESOURCE_2035_AQUIFER_DEPLETION", startDate: "2035-03-01", tags: ["resource", "water", "logistics", "checkpoint"], title: "Aquifer Depletion Crisis"),
+        NativeFactRecord(countryCodes: ["GLOBAL"], detail: "Autonomous cybernetic networks and high-frequency trading protocol bridges enforce automated market clearing.", id: "PAX_2055_CYBERNETIC_PLANNING", startDate: "2055-01-01", tags: ["cyber", "automation", "grid", "dao"], title: "Algorithmic Infrastructure"),
+        NativeFactRecord(countryCodes: ["GLOBAL"], detail: "Bioregional ecological assemblies have instituted strict biocapacity accounting and shared microgrid cooperatives.", id: "SOLARPUNK_2060_BIOCAPACITY_PACT", startDate: "2060-01-01", tags: ["ecology", "climate", "bioregion", "solarpunk"], title: "Bioregional Ecological Assembly")
     ]
 
     private static let consequenceRules: [NativeConsequenceRule] = [
@@ -2547,6 +2552,9 @@ enum NativeStrategyContextDatabase {
         // cascade into chaos.
         simulateRivalGeopolitics(state: &state, months: months)
 
+        // Evaluate alternative history scenario event chains
+        evaluateAlternativeHistoryEvents(state: &state)
+
         // Sync player's main ledger
         if let playerLedger = state.economicLedgers[state.country.code] {
             state.economicLedger = playerLedger
@@ -3059,6 +3067,415 @@ enum NativeStrategyContextDatabase {
         )
         ledger.entries.insert(entry, at: 0)
         state.economicLedgers[countryCode] = ledger
+    }
+
+    /// Evaluates alternative history event chains based on scenario ID, current date/round, and nation status.
+    /// Autonomous AI countries resolve their candidate events without player interruption.
+    /// When the player country is the executive target, `pendingEventDecision` is set, blocking turn advancement.
+    static func evaluateAlternativeHistoryEvents(state: inout NativeCampaignState) {
+        guard state.pendingEventDecision == nil else { return }
+
+        // 1. Scenario: Soviet Triumph (1991 August Coup & OGAS Cybernetic Network)
+        if state.scenarioID == "soviet-triumph" {
+            if state.eventFlags["soviet_gkchp"] == nil && state.round >= 1 {
+                let isPlayerTarget = (state.country.code == "RUS" || state.country.code == "SOV")
+                let event = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: "In August 1991, the State Emergency Committee moved armor into Moscow to arrest radical reformists and secure union integrity. With sovereign central authority re-established, the Central Committee demands an immediate directive on economic planning and regional defense.",
+                    id: "event-soviet-coup-1991",
+                    importance: .severe,
+                    kind: .crisis,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: isPlayerTarget,
+                    strategicEffects: [
+                        NativeStrategicEffect(
+                            date: state.gameDate,
+                            eventId: "event-soviet-coup-1991",
+                            id: "eff-gkchp-stability",
+                            magnitude: 8,
+                            summary: "Sovereign central authority stabilized across federal republics.",
+                            target: isPlayerTarget ? state.country.code : "RUS",
+                            track: .internalStability
+                        )
+                    ],
+                    title: "GKChP State Emergency Committee Resolution",
+                    imageAssetName: "EventSovietCoup",
+                    decisionOptions: [
+                        NativeEventDecisionOption(
+                            id: "gkchp-hardline",
+                            label: "Affirm Hardline Gosplan Centralization",
+                            detail: "Re-nationalize decentralized trade corridors and commit state treasury to union heavy industry. [⟦ECO⟧ +5, ⟦SEC⟧ +10, ⟦MKT⟧ -10]",
+                            effectTrack: .internalStability,
+                            effectMagnitude: 10,
+                            nextChainedEventID: "soviet-ogas-launch",
+                            setFlag: "soviet_gkchp"
+                        ),
+                        NativeEventDecisionOption(
+                            id: "gkchp-pragmatic",
+                            label: "Cybernetic OGAS Network Modernization",
+                            detail: "Deploy nationwide computerized resource balancing to automate planned quotas without market price shocks. [⟦ECO⟧ +8, ⟦STB⟧ +5]",
+                            effectTrack: .economicResilience,
+                            effectMagnitude: 8,
+                            nextChainedEventID: "soviet-techno-bloc",
+                            setFlag: "soviet_gkchp"
+                        ),
+                        NativeEventDecisionOption(
+                            id: "gkchp-decentralized",
+                            label: "Treaty of Sovereign Republics Compromise",
+                            detail: "Grant fiscal autonomy to federal republics while maintaining common defense and energy grids. [⟦DIP⟧ +12, ⟦STB⟧ +4]",
+                            effectTrack: .diplomaticLeverage,
+                            effectMagnitude: 12,
+                            nextChainedEventID: "soviet-miners-strike",
+                            setFlag: "soviet_gkchp"
+                        )
+                    ]
+                )
+
+                if isPlayerTarget {
+                    state.pendingEventDecision = event
+                    state.eventFlags["soviet_gkchp"] = "pending"
+                    return
+                } else {
+                    state.timeline.insert(event, at: 0)
+                    state.eventFlags["soviet_gkchp"] = "gkchp-hardline"
+                    state.eventFlags["next_chain"] = "soviet-ogas-launch"
+                }
+            } else if state.eventFlags["next_chain"] == "soviet-ogas-launch" && state.eventFlags["soviet_ogas_resolved"] == nil {
+                let isPlayerTarget = (state.country.code == "RUS" || state.country.code == "SOV")
+                let event = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: "The All-Union Automated Information System (OGAS) links over 20,000 industrial manufacturing nodes into a real-time computerized resource-clearing grid, bypassing currency arbitrage.",
+                    id: "event-soviet-ogas-1992",
+                    importance: .major,
+                    kind: .world,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: isPlayerTarget,
+                    strategicEffects: [
+                        NativeStrategicEffect(
+                            date: state.gameDate,
+                            eventId: "event-soviet-ogas-1992",
+                            id: "eff-ogas-econ",
+                            magnitude: 6,
+                            summary: "Automated logistics grid eliminates allocation bottlenecks.",
+                            target: isPlayerTarget ? state.country.code : "RUS",
+                            track: .economicResilience
+                        )
+                    ],
+                    title: "OGAS Cybernetic Production Network Activated",
+                    imageAssetName: "EventCyberBlackout",
+                    decisionOptions: [
+                        NativeEventDecisionOption(
+                            id: "ogas-military",
+                            label: "Direct Computing Quotas to Military Pacts",
+                            detail: "Prioritize automated tank and avionics fabrication for Warsaw Pact modernization. [⟦MIL⟧ +15, ⟦TNS⟧ +8]",
+                            effectTrack: .militaryReadiness,
+                            effectMagnitude: 15,
+                            nextChainedEventID: nil,
+                            setFlag: "soviet_ogas_resolved"
+                        ),
+                        NativeEventDecisionOption(
+                            id: "ogas-consumer",
+                            label: "Consumer Goods & Agricultural Optimization",
+                            detail: "Automate collective harvest storage and consumer goods distribution to end retail shortages. [⟦ECO⟧ +10, ⟦STB⟧ +8]",
+                            effectTrack: .internalStability,
+                            effectMagnitude: 8,
+                            nextChainedEventID: nil,
+                            setFlag: "soviet_ogas_resolved"
+                        )
+                    ]
+                )
+
+                if isPlayerTarget {
+                    state.pendingEventDecision = event
+                    state.eventFlags["soviet_ogas_resolved"] = "pending"
+                    return
+                } else {
+                    state.timeline.insert(event, at: 0)
+                    state.eventFlags["soviet_ogas_resolved"] = "ogas-military"
+                }
+            }
+        }
+
+        // 2. Scenario: Divided Sovereignty (1898 Fashoda Incident & Dreadnought Crisis)
+        if state.scenarioID == "divided-sovereignty" {
+            if state.eventFlags["fashoda_crisis"] == nil && state.round >= 1 {
+                let isPlayerTarget = (state.country.code == "GBR" || state.country.code == "FRA")
+                let event = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: "Major Marchand's French expeditionary force and General Kitchener's Anglo-Egyptian flotilla confront each other at the mud fort of Fashoda. Neither empire's officer corps is willing to withdraw without orders from the metropolis.",
+                    id: "event-fashoda-incident-1898",
+                    importance: .severe,
+                    kind: .crisis,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: isPlayerTarget,
+                    strategicEffects: [
+                        NativeStrategicEffect(
+                            date: state.gameDate,
+                            eventId: "event-fashoda-incident-1898",
+                            id: "eff-fashoda-tension",
+                            magnitude: 14,
+                            summary: "Imperial naval standoff elevates world tension.",
+                            target: "GLOBAL",
+                            track: .worldTension
+                        )
+                    ],
+                    title: "Fashoda Confrontation on the Upper Nile",
+                    imageAssetName: "EventFashodaCrisis",
+                    decisionOptions: [
+                        NativeEventDecisionOption(
+                            id: "fashoda-ultimatum",
+                            label: "Deliver Uncompromising Imperial Ultimatum",
+                            detail: "Order total fleet mobilization in the English Channel and threaten immediate bombardment. [⟦TNS⟧ +20, ⟦MIL⟧ +10]",
+                            effectTrack: .worldTension,
+                            effectMagnitude: 20,
+                            nextChainedEventID: "fashoda-channel-mobilization",
+                            setFlag: "fashoda_crisis"
+                        ),
+                        NativeEventDecisionOption(
+                            id: "fashoda-condominium",
+                            label: "Negotiate Dual-Sovereignty Nile Condominium",
+                            detail: "Divide trade navigation rights and establish joint garrisons along the Bahr-el-Ghazal watershed. [⟦DIP⟧ +15, ⟦TNS⟧ -10]",
+                            effectTrack: .diplomaticLeverage,
+                            effectMagnitude: 15,
+                            nextChainedEventID: "fashoda-continental-league",
+                            setFlag: "fashoda_crisis"
+                        ),
+                        NativeEventDecisionOption(
+                            id: "fashoda-tactical-pivot",
+                            label: "Discreet Tactical Withdrawal for European Leverage",
+                            detail: "Cede the fort in exchange for diplomatic guarantees and recognition in North Africa. [⟦STB⟧ +6, ⟦DIP⟧ +8]",
+                            effectTrack: .internalStability,
+                            effectMagnitude: 6,
+                            nextChainedEventID: "fashoda-dreadnought-panic",
+                            setFlag: "fashoda_crisis"
+                        )
+                    ]
+                )
+
+                if isPlayerTarget {
+                    state.pendingEventDecision = event
+                    state.eventFlags["fashoda_crisis"] = "pending"
+                    return
+                } else {
+                    state.timeline.insert(event, at: 0)
+                    state.eventFlags["fashoda_crisis"] = "fashoda-condominium"
+                    state.eventFlags["next_chain"] = "fashoda-continental-league"
+                }
+            }
+        }
+
+        // 3. Scenario: Fragmented Markets (Resource Crucible 2035)
+        if state.scenarioID == "fragmented-markets" {
+            if state.eventFlags["resource_crisis"] == nil && state.round >= 1 {
+                let event = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: "Trans-border water tables have fallen below critical reserve volume. Militarized security details have established regional checkpoints along key agricultural trade corridors.",
+                    id: "event-resource-crisis-2035",
+                    importance: .severe,
+                    kind: .crisis,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [
+                        NativeStrategicEffect(
+                            date: state.gameDate,
+                            eventId: "event-resource-crisis-2035",
+                            id: "eff-res-market",
+                            magnitude: -8,
+                            summary: "Agricultural supply chain disruptions trigger food price inflation.",
+                            target: state.country.code,
+                            track: .marketConfidence
+                        )
+                    ],
+                    title: "Strategic Aquifer Depletion & Logistics Checkpoints",
+                    imageAssetName: "EventResourceCrisis",
+                    decisionOptions: [
+                        NativeEventDecisionOption(
+                            id: "res-rationing",
+                            label: "Enforce Federal Strategic Water Rationing",
+                            detail: "Nationalize agricultural irrigation conduits and prioritize civilian grain basins. [⟦STB⟧ +8, ⟦ECO⟧ -4]",
+                            effectTrack: .internalStability,
+                            effectMagnitude: 8,
+                            nextChainedEventID: "resource-fertilizer-crisis",
+                            setFlag: "resource_crisis"
+                        ),
+                        NativeEventDecisionOption(
+                            id: "res-desalination",
+                            label: "Crash Desalination & Solar Pipeline Subsidies",
+                            detail: "Authorize emergency capital bonds to construct coastal desalination infrastructure. [⟦ECO⟧ +10, ⟦MKT⟧ +6]",
+                            effectTrack: .economicResilience,
+                            effectMagnitude: 10,
+                            nextChainedEventID: nil,
+                            setFlag: "resource_crisis"
+                        )
+                    ]
+                )
+
+                state.pendingEventDecision = event
+                state.eventFlags["resource_crisis"] = "pending"
+                return
+            }
+        }
+
+        // 4. Scenario: Pax Cybernetica (2055 Digital Blackout)
+        if state.scenarioID == "pax-cybernetica" {
+            if state.eventFlags["cyber_blackout"] == nil && state.round >= 1 {
+                let event = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: "A coordinated zero-day cyberstrike desynchronizes subsea data links and algorithmic trading nodes across key industrial sectors, causing nationwide market turbulence.",
+                    id: "event-cyber-blackout-2055",
+                    importance: .severe,
+                    kind: .crisis,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [
+                        NativeStrategicEffect(
+                            date: state.gameDate,
+                            eventId: "event-cyber-blackout-2055",
+                            id: "eff-cyber-resilience",
+                            magnitude: -10,
+                            summary: "Algorithmic infrastructure desynchronization stalls trade settlements.",
+                            target: state.country.code,
+                            track: .marketConfidence
+                        )
+                    ],
+                    title: "Subsea Cable Severance & Digital Blackout",
+                    imageAssetName: "EventCyberBlackout",
+                    decisionOptions: [
+                        NativeEventDecisionOption(
+                            id: "cyber-airgap",
+                            label: "Air-Gap Sovereign Industrial Grids",
+                            detail: "Sever external network bridges and revert critical infrastructure to localized manual protocols. [⟦SEC⟧ +15, ⟦MKT⟧ -12]",
+                            effectTrack: .securityIndex,
+                            effectMagnitude: 15,
+                            nextChainedEventID: "cyber-microgrid-secession",
+                            setFlag: "cyber_blackout"
+                        ),
+                        NativeEventDecisionOption(
+                            id: "cyber-quantum",
+                            label: "Deploy Quantum Encryption Safeguards",
+                            detail: "Infuse emergency capital into defense quantum key distribution networks. [⟦ECO⟧ +6, ⟦STB⟧ +8]",
+                            effectTrack: .economicResilience,
+                            effectMagnitude: 8,
+                            nextChainedEventID: nil,
+                            setFlag: "cyber_blackout"
+                        )
+                    ]
+                )
+
+                state.pendingEventDecision = event
+                state.eventFlags["cyber_blackout"] = "pending"
+                return
+            }
+        }
+
+        // 5. Scenario: Solarpunk Dawn (2060 Bioregional Assembly)
+        if state.scenarioID == "solarpunk-dawn" {
+            if state.eventFlags["solarpunk_dawn"] == nil && state.round >= 1 {
+                let event = NativeCampaignEvent(
+                    date: state.gameDate,
+                    description: "Citizen communes and bioregional councils assemble to inaugurate decentralized microgrids and ecological watershed restoration pacts.",
+                    id: "event-solarpunk-assembly-2060",
+                    importance: .major,
+                    kind: .world,
+                    linkedActionIDs: [],
+                    notable: true,
+                    playerRelated: true,
+                    strategicEffects: [
+                        NativeStrategicEffect(
+                            date: state.gameDate,
+                            eventId: "event-solarpunk-assembly-2060",
+                            id: "eff-solarpunk-stb",
+                            magnitude: 10,
+                            summary: "Bioregional assembly consensus strengthens social trust.",
+                            target: state.country.code,
+                            track: .internalStability
+                        )
+                    ],
+                    title: "Bioregional Assembly & Ecological Pact Ratification",
+                    imageAssetName: "EventSolarpunkDawn",
+                    decisionOptions: [
+                        NativeEventDecisionOption(
+                            id: "solar-commons",
+                            label: "Codify Bioregional Energy Commons",
+                            detail: "Guarantee universal free solar access and community-governed storage arrays. [⟦STB⟧ +12, ⟦ECO⟧ +6]",
+                            effectTrack: .internalStability,
+                            effectMagnitude: 12,
+                            nextChainedEventID: nil,
+                            setFlag: "solarpunk_dawn"
+                        ),
+                        NativeEventDecisionOption(
+                            id: "solar-diplomacy",
+                            label: "Global Climatic Technology Transfer",
+                            detail: "Export carbon-negative modular housing and drought-resistant polyculture crops. [⟦DIP⟧ +16, ⟦TNS⟧ -12]",
+                            effectTrack: .diplomaticLeverage,
+                            effectMagnitude: 16,
+                            nextChainedEventID: nil,
+                            setFlag: "solarpunk_dawn"
+                        )
+                    ]
+                )
+
+                state.pendingEventDecision = event
+                state.eventFlags["solarpunk_dawn"] = "pending"
+                return
+            }
+        }
+
+        // 6. Dynamic Crisis: Bread Riots & General Strike (when stability collapses < 35 in any scenario)
+        if state.stability < 35 && state.eventFlags["bread_riots"] == nil {
+            let event = NativeCampaignEvent(
+                date: state.gameDate,
+                description: "Severe inflation and declining living conditions have sparked widespread strikes and violent bread riots across industrial centers. Garrisons stand by awaiting political command.",
+                id: "event-bread-riots-dynamic",
+                importance: .severe,
+                kind: .crisis,
+                linkedActionIDs: [],
+                notable: true,
+                playerRelated: true,
+                strategicEffects: [
+                    NativeStrategicEffect(
+                        date: state.gameDate,
+                        eventId: "event-bread-riots-dynamic",
+                        id: "eff-bread-riots-stb",
+                        magnitude: -12,
+                        summary: "Urban unrest collapses domestic stability.",
+                        target: state.country.code,
+                        track: .internalStability
+                    )
+                ],
+                title: "General Strike & Bread Riots in Capital Regions",
+                imageAssetName: "EventBreadRiots",
+                decisionOptions: [
+                    NativeEventDecisionOption(
+                        id: "bread-subsidies",
+                        label: "Open Strategic Grain Reserves & Subsidize Loaves",
+                        detail: "Drain state emergency reserves to provide price ceilings on staple food. [⟦STB⟧ +14, ⟦ECO⟧ -10]",
+                        effectTrack: .internalStability,
+                        effectMagnitude: 14,
+                        nextChainedEventID: nil,
+                        setFlag: "bread_riots"
+                    ),
+                    NativeEventDecisionOption(
+                        id: "bread-crackdown",
+                        label: "Deploy Military Police to Clear Distribution Hubs",
+                        detail: "Enforce curfew and arrest strike organizers to resume port logistics. [⟦SEC⟧ +12, ⟦STB⟧ -6]",
+                        effectTrack: .securityIndex,
+                        effectMagnitude: 12,
+                        nextChainedEventID: nil,
+                        setFlag: "bread_riots"
+                    )
+                ]
+            )
+
+            state.pendingEventDecision = event
+            state.eventFlags["bread_riots"] = "pending"
+            return
+        }
     }
 
     /// Earned rival-campaign progress, capped by current scenario readiness.
