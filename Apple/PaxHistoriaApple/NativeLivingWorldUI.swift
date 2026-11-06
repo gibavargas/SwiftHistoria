@@ -475,89 +475,109 @@ struct LivingWorldDecisionModalView: View {
             Color.black.opacity(0.85)
                 .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Label("EXECUTIVE DECISION REQUIRED", systemImage: "exclamationmark.triangle.fill")
-                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.softRed)
-                    Spacer()
-                    Text(LWDate.from(dayIndex: decision.day).stamp)
-                        .font(.system(.caption, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                }
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Label("EXECUTIVE DECISION REQUIRED", systemImage: "exclamationmark.triangle.fill")
+                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                            .foregroundStyle(Color.softRed)
+                        Spacer()
+                        Text(LWDate.from(dayIndex: decision.day).stamp)
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                    }
 
-                if let asset = decision.imageAssetName {
-                    EventImageView(imageName: asset, height: 180)
-                }
+                    if let asset = decision.imageAssetName {
+                        EventImageView(imageName: asset, height: 180)
+                    }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(decision.title)
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(Color.iceBlue)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(decision.title)
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(Color.iceBlue)
 
-                    Text(decision.summary)
-                        .font(.body)
-                        .foregroundStyle(.primary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                        Text(decision.summary)
+                            .font(.body)
+                            .foregroundStyle(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
-                Divider()
+                    Divider()
 
-                Text("POLICY DIRECTIVES")
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundStyle(Color.neonTeal)
+                    Text("POLICY DIRECTIVES")
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.neonTeal)
 
-                VStack(spacing: 10) {
-                    ForEach(decision.options) { option in
-                        Button {
-                            onChoose(option)
-                        } label: {
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack {
-                                    Text(option.text)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(Color.iceBlue)
-                                    Spacer()
-                                    Image(systemName: "chevron.right.circle.fill")
-                                        .foregroundStyle(Color.neonTeal)
+                    VStack(spacing: 10) {
+                        ForEach(decision.options) { option in
+                            Button {
+                                onChoose(option)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
+                                        Text(option.label)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(Color.iceBlue)
+                                        Spacer()
+                                        if let code = option.mechanicCode {
+                                            Text(code)
+                                                .font(.system(.caption2, design: .monospaced).weight(.bold))
+                                                .foregroundStyle(Color.glowingCyan)
+                                        }
+                                        Image(systemName: "chevron.right.circle.fill")
+                                            .foregroundStyle(Color.neonTeal)
+                                    }
+                                    Text(option.detail)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.leading)
+
+                                    HStack(spacing: 8) {
+                                        if option.treasuryDelta != 0 {
+                                            effectPill(
+                                                "£ \(option.treasuryDelta >= 0 ? "+" : "")\(String(format: "%.0fM", option.treasuryDelta))",
+                                                positive: option.treasuryDelta > 0
+                                            )
+                                        }
+                                        if option.stabilityDelta != 0 {
+                                            effectPill(
+                                                "STB \(option.stabilityDelta >= 0 ? "+" : "")\(String(format: "%.0f%%", option.stabilityDelta * 100))",
+                                                positive: option.stabilityDelta > 0
+                                            )
+                                        }
+                                        if option.radicalsDelta != 0 {
+                                            effectPill(
+                                                "RAD \(option.radicalsDelta <= 0 ? "" : "+")\(String(format: "%.0f%%", option.radicalsDelta * 100))",
+                                                positive: option.radicalsDelta < 0
+                                            )
+                                        }
+                                        if option.worldTensionDelta != 0 {
+                                            effectPill(
+                                                "TNS \(option.worldTensionDelta >= 0 ? "+" : "")\(String(format: "%.0f", option.worldTensionDelta))",
+                                                positive: option.worldTensionDelta < 0
+                                            )
+                                        }
+                                        if option.nextChainedEventID != nil {
+                                            Text("⟦CHAIN⟧")
+                                                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                                .foregroundStyle(Color.alertGold)
+                                        }
+                                    }
                                 }
-                                Text(option.consequenceSummary)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-
-                                HStack(spacing: 8) {
-                                    if option.treasuryDelta != 0 {
-                                        effectPill(
-                                            "£ \(option.treasuryDelta >= 0 ? "+" : "")\(String(format: "%.0fM", option.treasuryDelta))",
-                                            positive: option.treasuryDelta > 0
-                                        )
-                                    }
-                                    if option.stabilityDelta != 0 {
-                                        effectPill(
-                                            "STB \(option.stabilityDelta >= 0 ? "+" : "")\(String(format: "%.0f%%", option.stabilityDelta * 100))",
-                                            positive: option.stabilityDelta > 0
-                                        )
-                                    }
-                                    if option.radicalDelta != 0 {
-                                        effectPill(
-                                            "RAD \(option.radicalDelta <= 0 ? "" : "+")\(String(format: "%.0f%%", option.radicalDelta * 100))",
-                                            positive: option.radicalDelta < 0
-                                        )
-                                    }
-                                }
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.spaceBlack)
+                                .cornerRadius(8)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.neonTeal.opacity(0.3), lineWidth: 1))
                             }
-                            .padding(12)
-                            .background(Color.spaceBlack)
-                            .cornerRadius(8)
-                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.neonTeal.opacity(0.3), lineWidth: 1))
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("lw-decision-\(option.id)")
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier("lw-decision-\(option.id)")
                     }
                 }
+                .padding(20)
             }
-            .padding(20)
-            .frame(maxWidth: 540)
+            .frame(maxWidth: 540, maxHeight: 680)
             .background(Color.deepSlate.opacity(0.95))
             .cornerRadius(12)
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.softRed.opacity(0.6), lineWidth: 1.5))

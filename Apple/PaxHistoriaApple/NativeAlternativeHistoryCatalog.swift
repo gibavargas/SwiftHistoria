@@ -23030,51 +23030,57 @@ public struct NativeAlternativeHistoryCatalog {
 
     /// Evaluates candidate decision events for the current campaign state.
     /// Combines scenario candidates with country-specific candidates,
-    /// filters out events already completed, and checks chain prerequisites.
+    /// filters out events already completed, and prioritizes active chains without deadlocking.
     public static func candidateDecisions(state: NativeCampaignState) -> [NativeCampaignEvent] {
         let scenarioEvents = events(forScenario: state.scenarioID)
         let playerCountry = state.country.code
-        
+        let playerCountryName = state.country.name
+
         let filteredScenario = scenarioEvents.filter { event in
-            // Must target player or be global
-            let isTarget = event.strategicEffects.contains { $0.target == playerCountry || $0.target == "GLOBAL" }
-            guard isTarget else { return false }
-            
-            // Must not have already triggered
-            guard state.eventFlags[event.id] == nil else { return false }
-            
-            // If part of an active chain requirement, verify flag
-            if let requiredChain = state.eventFlags["next_chain"], !requiredChain.isEmpty {
-                return event.id == requiredChain
+            let isTarget = event.strategicEffects.contains {
+                $0.target == playerCountry || $0.target == playerCountryName || $0.target == "GLOBAL"
             }
-            
-            return true
+            guard isTarget else { return false }
+            return state.eventFlags[event.id] == nil
         }
 
         let countryCandidates = NativeCountryEventsCatalog.candidateDecisions(forCountry: playerCountry, state: state)
 
-        // If an explicit chain requirement is active, return that specific event
-        if let requiredChain = state.eventFlags["next_chain"], !requiredChain.isEmpty {
-            if let matchedCountry = countryCandidates.first(where: { $0.id == requiredChain }) {
-                return [matchedCountry]
-            }
-            if let matchedScenario = filteredScenario.first(where: { $0.id == requiredChain }) {
-                return [matchedScenario]
-            }
-        }
+        // When the scenario's lead candidate directly targets the player's nation (e.g. RUS in soviet-triumph),
+        // lead with the scenario event first; otherwise lead with the player's national event tree.
+        let scenarioLeadsDirectly = filteredScenario.first?.strategicEffects.contains {
+            $0.target == playerCountry || $0.target == playerCountryName
+        } ?? false
 
-        // Interleave country events with scenario events so the player experiences
-        // their country's unique event tree starting from turn 1 alongside global crises
         var combined: [NativeCampaignEvent] = []
         let maxCount = max(countryCandidates.count, filteredScenario.count)
         for i in 0 ..< maxCount {
-            if i < countryCandidates.count {
-                combined.append(countryCandidates[i])
-            }
-            if i < filteredScenario.count {
-                combined.append(filteredScenario[i])
+            if scenarioLeadsDirectly {
+                if i < filteredScenario.count {
+                    combined.append(filteredScenario[i])
+                }
+                if i < countryCandidates.count {
+                    combined.append(countryCandidates[i])
+                }
+            } else {
+                if i < countryCandidates.count {
+                    combined.append(countryCandidates[i])
+                }
+                if i < filteredScenario.count {
+                    combined.append(filteredScenario[i])
+                }
             }
         }
+
+        // If an explicit chain requirement is active and matches an uncompleted candidate,
+        // place that chained event at the front of the queue without discarding fallback candidates.
+        if let requiredChain = state.eventFlags["next_chain"], !requiredChain.isEmpty {
+            if let matchedIndex = combined.firstIndex(where: { $0.id == requiredChain }) {
+                let matched = combined.remove(at: matchedIndex)
+                combined.insert(matched, at: 0)
+            }
+        }
+
         return combined
     }
 

@@ -55462,13 +55462,14 @@ public struct NativeCountryEventsCatalog {
     /// Evaluates candidate decision events for a country's current campaign state.
     public static func candidateDecisions(forCountry countryCode: String, state: NativeCampaignState) -> [NativeCampaignEvent] {
         let countryEvents = events(forCountryCode: countryCode)
-        return countryEvents.filter { event in
-            guard state.eventFlags[event.id] == nil else { return false }
-            if let requiredChain = state.eventFlags["next_chain"], !requiredChain.isEmpty {
-                return event.id == requiredChain
-            }
-            return true
+        let uncompleted = countryEvents.filter { event in
+            state.eventFlags[event.id] == nil
         }
+        if let requiredChain = state.eventFlags["next_chain"], !requiredChain.isEmpty,
+           let matched = uncompleted.first(where: { $0.id == requiredChain }) {
+            return [matched] + uncompleted.filter { $0.id != requiredChain }
+        }
+        return uncompleted
     }
 
     private struct EventThemeTemplate {
@@ -55488,14 +55489,14 @@ public struct NativeCountryEventsCatalog {
         EventThemeTemplate(title: "Critical Energy Import Tariffs", desc: "Emergency protective levies insulate municipal grid operators from price shocks.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦ECO⟧", image: "EventResourceCrisis", importance: .major),
         EventThemeTemplate(title: "Constitutional Decentralization Accord", desc: "Regional assemblies demand devolved fiscal powers to fund infrastructure.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦DIP⟧", image: "EventFashodaCrisis", importance: .severe),
         EventThemeTemplate(title: "Domestic Industrial Labor Compact", desc: "Tripartite negotiations between syndicates and employers establish wage corridors.", track: .marketConfidence, tokenA: "⟦MKT⟧", tokenB: "⟦STB⟧", image: "EventBreadRiots", importance: .major),
-        EventThemeTemplate(title: "Maritime Customs Enforcement Surge", desc: "Naval patrol cutters intercept contraband and protect exclusive economic zones.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventFashodaCrisis", importance: .minor),
+        EventThemeTemplate(title: "Maritime Customs Enforcement Surge", desc: "Naval patrol cutters intercept contraband and protect exclusive economic zones.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventFashodaCrisis", importance: .minor),
         EventThemeTemplate(title: "Banking Capital Reserve Overhaul", desc: "Central bank authorities raise capital adequacy ratios to deter speculative runs.", track: .marketConfidence, tokenA: "⟦MKT⟧", tokenB: "⟦ECO⟧", image: "EventBreadRiots", importance: .major),
         EventThemeTemplate(title: "Judicial Oversight Anti-Graft Commission", desc: "Independent prosecutors target procurement kickbacks across state contractors.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦SEC⟧", image: "EventSovietCoup", importance: .major),
         EventThemeTemplate(title: "Public Telecommunications Modernization", desc: "Fiber backbone links connect regional secondary cities to state networks.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventCyberBlackout", importance: .minor),
         EventThemeTemplate(title: "Strategic Grain Storage Facilities", desc: "State food logistics boards construct climate-controlled granaries.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦ECO⟧", image: "EventBreadRiots", importance: .major),
         EventThemeTemplate(title: "Municipal Water Desalination Initiative", desc: "Coastal provinces contract desalination facilities to insulate municipal water grids.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦STB⟧", image: "EventResourceCrisis", importance: .major),
         EventThemeTemplate(title: "Public Hospital Medicine Stockpiling", desc: "Healthcare ministries procure essential antibiotic and vaccine reserves.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦SEC⟧", image: "EventBreadRiots", importance: .minor),
-        EventThemeTemplate(title: "Civil Defense Preparedness Drills", desc: "State emergency agencies conduct nationwide logistical mobilization drills.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventSovietCoup", importance: .minor),
+        EventThemeTemplate(title: "Civil Defense Preparedness Drills", desc: "State emergency agencies conduct nationwide logistical mobilization drills.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventSovietCoup", importance: .minor),
         EventThemeTemplate(title: "Export Trade Diversification Compact", desc: "Commercial envoys ink bilateral tariff reductions with emerging consumer markets.", track: .diplomaticLeverage, tokenA: "⟦DIP⟧", tokenB: "⟦MKT⟧", image: "EventFashodaCrisis", importance: .major),
         EventThemeTemplate(title: "Mineral Extraction Royalty Reforms", desc: "Finance ministries renegotiate sovereign mining contracts to increase public revenue.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventResourceCrisis", importance: .severe),
         EventThemeTemplate(title: "Technical University Apprenticeship Grants", desc: "Vocational polytechnics receive equipment subsidies to train advanced machinists.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦STB⟧", image: "EventBreadRiots", importance: .minor),
@@ -55504,19 +55505,19 @@ public struct NativeCountryEventsCatalog {
         EventThemeTemplate(title: "Cross-Border Security Liaison Summit", desc: "Neighboring states sign joint intelligence and customs liaison protocols.", track: .diplomaticLeverage, tokenA: "⟦DIP⟧", tokenB: "⟦SEC⟧", image: "EventFashodaCrisis", importance: .major),
         EventThemeTemplate(title: "Critical Rare Earth Concessions", desc: "State mineral boards open extraction tenders for battery-grade minerals.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventResourceCrisis", importance: .major),
         EventThemeTemplate(title: "National Telecom 5G Spectrum Auction", desc: "Communications ministries allocate high-frequency bandwidth for industry.", track: .marketConfidence, tokenA: "⟦MKT⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .minor),
-        EventThemeTemplate(title: "Cybersecurity Defense Doctrine", desc: "Military commanders establish a specialized cyber warfare command center.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventCyberBlackout", importance: .severe),
+        EventThemeTemplate(title: "Cybersecurity Defense Doctrine", desc: "Military commanders establish a specialized cyber warfare command center.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventCyberBlackout", importance: .severe),
         EventThemeTemplate(title: "Indigenous Defense Manufacturing Initiative", desc: "Ordnance factories tool up domestic small arms and armored vehicle production.", track: .militaryReadiness, tokenA: "⟦MIL⟧", tokenB: "⟦SEC⟧", image: "EventSovietCoup", importance: .major),
         EventThemeTemplate(title: "Solar Mega-Basin Tenders", desc: "Arid interior lands are leased for utility-scale photovoltaic generation.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventSolarpunkDawn", importance: .major),
         EventThemeTemplate(title: "Central Bank Digital Clearing Trial", desc: "The monetary authority launches pilot sovereign digital payment channels.", track: .marketConfidence, tokenA: "⟦MKT⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .major),
         EventThemeTemplate(title: "Industrial Robotics Capital Subsidies", desc: "Factory automation tax credits accelerate robotic integration on assembly lines.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦STB⟧", image: "EventCyberBlackout", importance: .minor),
         EventThemeTemplate(title: "Regional Free Trade Tariff Reductions", desc: "Cross-border customs harmonizations lower agricultural and component duties.", track: .diplomaticLeverage, tokenA: "⟦DIP⟧", tokenB: "⟦MKT⟧", image: "EventFashodaCrisis", importance: .major),
-        EventThemeTemplate(title: "Exclusive Maritime Zone Patrols", desc: "Offshore patrol vessels monitor foreign fishing fleets and seabed surveys.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventFashodaCrisis", importance: .minor),
+        EventThemeTemplate(title: "Exclusive Maritime Zone Patrols", desc: "Offshore patrol vessels monitor foreign fishing fleets and seabed surveys.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventFashodaCrisis", importance: .minor),
         EventThemeTemplate(title: "National Emergency Fuel Reserve Expansion", desc: "Salt cavern storage facilities are filled with refined distillate reserves.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦SEC⟧", image: "EventResourceCrisis", importance: .severe),
         EventThemeTemplate(title: "Aerospace Precision Component Fabricators", desc: "Specialty alloy foundries produce precision forgings for civil aviation.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventCyberBlackout", importance: .minor),
         EventThemeTemplate(title: "Pharmaceutical Active Ingredient Independence", desc: "Domestic chemical plants produce precursor compounds for critical antibiotics.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦SEC⟧", image: "EventBreadRiots", importance: .major),
-        EventThemeTemplate(title: "Regional Anti-Smuggling Maritime Taskforce", desc: "Coast guard cutters coordinate radar sweeps against maritime illicit transit.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦DIP⟧", image: "EventFashodaCrisis", importance: .minor),
+        EventThemeTemplate(title: "Regional Anti-Smuggling Maritime Taskforce", desc: "Coast guard cutters coordinate radar sweeps against maritime illicit transit.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦DIP⟧", image: "EventFashodaCrisis", importance: .minor),
         EventThemeTemplate(title: "Container Terminal Automation Systems", desc: "Gantry cranes and container yards install automated sorting systems.", track: .marketConfidence, tokenA: "⟦MKT⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .minor),
-        EventThemeTemplate(title: "Quantum Cryptography Laboratory Grants", desc: "University researchers demonstrate quantum key distribution for defense data.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventCyberBlackout", importance: .severe),
+        EventThemeTemplate(title: "Quantum Cryptography Laboratory Grants", desc: "University researchers demonstrate quantum key distribution for defense data.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventCyberBlackout", importance: .severe),
         EventThemeTemplate(title: "Subsea Fiber Landing Redundancy", desc: "Telecommunications consortiums anchor secondary undersea data cables.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦SEC⟧", image: "EventCyberBlackout", importance: .major),
         EventThemeTemplate(title: "Sovereign Wealth Fund Capitalization", desc: "Export surplus revenue is invested into sovereign diversified asset portfolios.", track: .marketConfidence, tokenA: "⟦MKT⟧", tokenB: "⟦ECO⟧", image: "EventResourceCrisis", importance: .major),
         EventThemeTemplate(title: "Catastrophic Weather Insurance Pool", desc: "State re-insurance facilities underwrite agricultural drought protections.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦MKT⟧", image: "EventResourceCrisis", importance: .minor),
@@ -55530,7 +55531,7 @@ public struct NativeCountryEventsCatalog {
         EventThemeTemplate(title: "Controlled-Environment Vertical Agriculture", desc: "Urban hydroponic towers produce leafy crops near major metropolitan centers.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦ECO⟧", image: "EventSolarpunkDawn", importance: .minor),
         EventThemeTemplate(title: "Automated Heavy Freight Rail Bypass", desc: "Autonomous freight locomotives run on dedicated freight bypasses.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventResourceCrisis", importance: .minor),
         EventThemeTemplate(title: "Autonomous Drone Reconnaissance Doctrine", desc: "Defense forces deploy high-endurance surveillance drone squadrons.", track: .militaryReadiness, tokenA: "⟦MIL⟧", tokenB: "⟦SEC⟧", image: "EventCyberBlackout", importance: .major),
-        EventThemeTemplate(title: "Orbital Earth Observation Constellation", desc: "Low-earth-orbit micro-satellites monitor watershed and soil moisture levels.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦ECO⟧", image: "EventSolarpunkDawn", importance: .minor),
+        EventThemeTemplate(title: "Orbital Earth Observation Constellation", desc: "Low-earth-orbit micro-satellites monitor watershed and soil moisture levels.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦ECO⟧", image: "EventSolarpunkDawn", importance: .minor),
         EventThemeTemplate(title: "Aquifer Replenishment Watershed Compact", desc: "Water boards mandate agricultural runoff recharge into depleted aquifers.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦ECO⟧", image: "EventResourceCrisis", importance: .severe),
         EventThemeTemplate(title: "Rural Broadband Parity Infrastructure", desc: "Satellite uplinks and microwave relays connect isolated rural farming communes.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦STB⟧", image: "EventCyberBlackout", importance: .minor),
         EventThemeTemplate(title: "Biotechnology Agricultural Genome Tenders", desc: "State agronomy institutes release drought-resilient grain cultivars.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦STB⟧", image: "EventSolarpunkDawn", importance: .major),
@@ -55539,14 +55540,14 @@ public struct NativeCountryEventsCatalog {
         EventThemeTemplate(title: "Offshore Wind Mega-Cluster Array", desc: "Deep-water floating wind turbines feed gigawatts into coastal industrial zones.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventSolarpunkDawn", importance: .major),
         EventThemeTemplate(title: "Automated Customs Clearance Portals", desc: "AI-assisted cargo x-ray scanners inspect container shipments in real time.", track: .marketConfidence, tokenA: "⟦MKT⟧", tokenB: "⟦SEC⟧", image: "EventCyberBlackout", importance: .minor),
         EventThemeTemplate(title: "Decentralized Community Microgrids", desc: "Municipalities install islandable microgrids with dedicated battery backups.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦ECO⟧", image: "EventSolarpunkDawn", importance: .minor),
-        EventThemeTemplate(title: "Sovereign Artificial Intelligence Taskforce", desc: "State compute clusters train open foundation models for government operations.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .severe),
+        EventThemeTemplate(title: "Sovereign Artificial Intelligence Taskforce", desc: "State compute clusters train open foundation models for government operations.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .severe),
         EventThemeTemplate(title: "Emergency Antibiotic Synthesis Depots", desc: "Modular biomanufacturing hubs produce pharmaceutical batches on short notice.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦SEC⟧", image: "EventBreadRiots", importance: .minor),
         EventThemeTemplate(title: "Heavy Industrial Alloy Smelting Expansion", desc: "Electric arc furnaces produce specialized titanium and steel alloys.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MIL⟧", image: "EventResourceCrisis", importance: .major),
         EventThemeTemplate(title: "Tidal Surge Geo-Barrier Defense", desc: "Massive hydraulic floodgates protect metropolitan river deltas from sea-level rises.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦ECO⟧", image: "EventResourceCrisis", importance: .severe),
         EventThemeTemplate(title: "Non-Aligned Security Consultation Pact", desc: "Sovereign nations formalize mutual logistics support without foreign military bases.", track: .diplomaticLeverage, tokenA: "⟦DIP⟧", tokenB: "⟦SEC⟧", image: "EventFashodaCrisis", importance: .major),
         EventThemeTemplate(title: "Extreme Heat Agricultural Mitigation", desc: "Shade-canopy solar arrays protect livestock and orchards from heat dome events.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦ECO⟧", image: "EventSolarpunkDawn", importance: .minor),
         EventThemeTemplate(title: "Next-Generation Semiconductor Lithography Lab", desc: "Research consortia assemble advanced ultraviolet lithography prototypes.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦SEC⟧", image: "EventCyberBlackout", importance: .severe),
-        EventThemeTemplate(title: "Post-Quantum Defense Cryptography Rollout", desc: "Military and intelligence communications transition to lattice-based ciphers.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventCyberBlackout", importance: .severe),
+        EventThemeTemplate(title: "Post-Quantum Defense Cryptography Rollout", desc: "Military and intelligence communications transition to lattice-based ciphers.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventCyberBlackout", importance: .severe),
         EventThemeTemplate(title: "Industrial Seawater Desalination Complex", desc: "Thermal desalination plants supply industrial chemical parks with pure water.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventResourceCrisis", importance: .major),
         EventThemeTemplate(title: "Equatorial Spaceport Rocketry Expansion", desc: "Orbital launch facilities expand pad capacity for commercial satellite networks.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦DIP⟧", image: "EventSolarpunkDawn", importance: .minor),
         EventThemeTemplate(title: "Autonomous Port Logistics Shuttles", desc: "Driverless electric trucks shuttle containers between maritime berths and railheads.", track: .marketConfidence, tokenA: "⟦MKT⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .minor),
@@ -55558,8 +55559,8 @@ public struct NativeCountryEventsCatalog {
         EventThemeTemplate(title: "Autonomous Disaster Evacuation Drones", desc: "Heavy-lift electric quadcopters deliver medicine to flood-isolated districts.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦SEC⟧", image: "EventCyberBlackout", importance: .minor),
         EventThemeTemplate(title: "Sovereign Debt Repatriation Initiative", desc: "The treasury retires foreign-denominated sovereign bonds using currency reserves.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventBreadRiots", importance: .severe),
         EventThemeTemplate(title: "Regional Electricity Interconnection Cable", desc: "Subsea high-voltage direct current lines balance peak power across borders.", track: .diplomaticLeverage, tokenA: "⟦DIP⟧", tokenB: "⟦ECO⟧", image: "EventSolarpunkDawn", importance: .major),
-        EventThemeTemplate(title: "Sovereign Cloud Data Sovereign Mandate", desc: "Government departments migrate public records to air-gapped sovereign server vaults.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .severe),
-        EventThemeTemplate(title: "Space Situational Awareness Radar", desc: "Phased-array radar installations track orbital debris and low-orbit satellites.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventSovietCoup", importance: .minor),
+        EventThemeTemplate(title: "Sovereign Cloud Data Sovereign Mandate", desc: "Government departments migrate public records to air-gapped sovereign server vaults.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .severe),
+        EventThemeTemplate(title: "Space Situational Awareness Radar", desc: "Phased-array radar installations track orbital debris and low-orbit satellites.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦MIL⟧", image: "EventSovietCoup", importance: .minor),
         EventThemeTemplate(title: "Advanced Precision Mechatronics Guilds", desc: "Industry guilds establish apprentice standards for advanced robotics mechanics.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦STB⟧", image: "EventCyberBlackout", importance: .minor),
         EventThemeTemplate(title: "Arctic-Maritime Transit Protocol Accord", desc: "Polar states negotiate safe passage lanes and environmental cleanup bonds.", track: .diplomaticLeverage, tokenA: "⟦DIP⟧", tokenB: "⟦TNS⟧", image: "EventFashodaCrisis", importance: .severe),
         EventThemeTemplate(title: "Magnetic Confinement Fusion Pilot Reactor", desc: "Consortium scientists initiate plasma ignition tests on an experimental tokamak.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦MKT⟧", image: "EventSolarpunkDawn", importance: .severe),
@@ -55576,9 +55577,9 @@ public struct NativeCountryEventsCatalog {
         EventThemeTemplate(title: "Robotic Deep-Seam Mineral Extraction", desc: "Remote-controlled robotic boreholes extract copper deposits beneath mountain ranges.", track: .economicResilience, tokenA: "⟦ECO⟧", tokenB: "⟦SEC⟧", image: "EventResourceCrisis", importance: .major),
         EventThemeTemplate(title: "National Civic Service Reconstitution", desc: "Youth cohorts complete civil defense, ecological restoration, and paramedic training.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦SEC⟧", image: "EventSovietCoup", importance: .minor),
         EventThemeTemplate(title: "Autonomous Interlocking Air Defense Shield", desc: "Directed-energy laser batteries and kinetic interceptors guard critical airspace.", track: .militaryReadiness, tokenA: "⟦MIL⟧", tokenB: "⟦SEC⟧", image: "EventSovietCoup", importance: .severe),
-        EventThemeTemplate(title: "National Sovereign Data Repository", desc: "Decentralized cryptographic archives store historical and scientific data permanently.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦STB⟧", image: "EventCyberBlackout", importance: .major),
+        EventThemeTemplate(title: "National Sovereign Data Repository", desc: "Decentralized cryptographic archives store historical and scientific data permanently.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦STB⟧", image: "EventCyberBlackout", importance: .major),
         EventThemeTemplate(title: "Automated Cellular Agriculture Facilities", desc: "Fermentation bioreactors synthesize nutrient-dense proteins for emergency food reserves.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦ECO⟧", image: "EventSolarpunkDawn", importance: .minor),
-        EventThemeTemplate(title: "Technological Sovereignty National Charter", desc: "Parliament passes binding mandates requiring domestic production of critical tech.", track: .securityIndex, tokenA: "⟦SEC⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .severe),
+        EventThemeTemplate(title: "Technological Sovereignty National Charter", desc: "Parliament passes binding mandates requiring domestic production of critical tech.", track: .securityAnxiety, tokenA: "⟦SEC⟧", tokenB: "⟦ECO⟧", image: "EventCyberBlackout", importance: .severe),
         EventThemeTemplate(title: "Trans-Continental Green Energy Superhighway", desc: "Ultra-high-voltage direct current lines transport solar power between continents.", track: .diplomaticLeverage, tokenA: "⟦DIP⟧", tokenB: "⟦ECO⟧", image: "EventSolarpunkDawn", importance: .major),
         EventThemeTemplate(title: "Atmospheric Methane Sequestration Array", desc: "Industrial catalytic oxidizers decompose ambient methane near landfill and oil facilities.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦TNS⟧", image: "EventSolarpunkDawn", importance: .minor),
         EventThemeTemplate(title: "Centennial Sovereign Renaissance Accords", desc: "The nation celebrates a century of resilience, sovereign self-determination, and stability.", track: .internalStability, tokenA: "⟦STB⟧", tokenB: "⟦DIP⟧", image: "EventSolarpunkDawn", importance: .severe)
@@ -55603,29 +55604,8 @@ public struct NativeCountryEventsCatalog {
 
             let event = NativeCampaignEvent(
                 date: date,
-                decisionOptions: [
-                    NativeDecisionOption(
-                        description: "Commit public capital and administrative resources toward state-guided execution.",
-                        effectMagnitude: 10,
-                        effectTrack: theme.track,
-                        id: "\(id)-opt-a",
-                        mechanicToken: theme.tokenA,
-                        nextChainedEventID: chainNext,
-                        title: "National Strategic Initiative"
-                    ),
-                    NativeDecisionOption(
-                        description: "Incentivize commercial investment and multilateral partners to manage delivery risks.",
-                        effectMagnitude: 8,
-                        effectTrack: .marketConfidence,
-                        id: "\(id)-opt-b",
-                        mechanicToken: theme.tokenB,
-                        nextChainedEventID: chainNext,
-                        title: "Market & Multilateral Accord"
-                    )
-                ],
                 description: "\(countryName): \(theme.desc) Executive council directs emergency policy formulation to secure long-term sovereign autonomy.",
                 id: id,
-                imageAssetName: theme.image,
                 importance: theme.importance,
                 kind: .action,
                 linkedActionIDs: [],
@@ -55638,11 +55618,34 @@ public struct NativeCountryEventsCatalog {
                         id: "\(id)-effect",
                         magnitude: 8,
                         summary: "\(countryName) adapts to \(theme.title.lowercased()) with structural policy reforms.",
-                        target: countryName,
+                        target: upper,
                         track: theme.track
                     )
                 ],
-                title: "\(countryName): \(theme.title)"
+                title: "\(countryName): \(theme.title)",
+                hexLeverCode: theme.tokenA,
+                imageAssetName: theme.image,
+                decisionOptions: [
+                    NativeEventDecisionOption(
+                        id: "\(id)-opt-a",
+                        label: "National Strategic Initiative",
+                        detail: "Commit public capital and administrative resources toward state-guided execution. [\(theme.tokenA) +10, \(theme.tokenB) +4]",
+                        effectTrack: theme.track,
+                        effectMagnitude: 10,
+                        nextChainedEventID: chainNext,
+                        setFlag: "flag-\(id)-a"
+                    ),
+                    NativeEventDecisionOption(
+                        id: "\(id)-opt-b",
+                        label: "Market & Multilateral Accord",
+                        detail: "Incentivize commercial investment and multilateral partners to manage delivery risks. [\(theme.tokenB) +8, \(theme.tokenA) +3]",
+                        effectTrack: .marketConfidence,
+                        effectMagnitude: 8,
+                        nextChainedEventID: chainNext,
+                        setFlag: "flag-\(id)-b"
+                    )
+                ],
+                chainedEventID: chainNext
             )
             list.append(event)
         }

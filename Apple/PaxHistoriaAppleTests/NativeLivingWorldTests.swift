@@ -376,8 +376,8 @@ final class LivingWorldEngineTests: XCTestCase {
         let resolved = LivingWorldTick.resolveDecision(world: world, decision: decision, chosenOption: option)
 
         XCTAssertNil(resolved.pendingDecision, "Pending decision must be cleared upon resolution")
-        XCTAssertEqual(resolved.eventFlags["reform_passed"], "opt-reform")
-        XCTAssertEqual(resolved.eventFlags["next_chain"], "next-strike-settlement")
+        XCTAssertTrue(resolved.eventFlags.contains("reform_passed"))
+        XCTAssertTrue(resolved.eventFlags.contains("next-strike-settlement"))
 
         let updatedCountry = try XCTUnwrap(resolved.countries["BRA"])
         XCTAssertEqual(updatedCountry.treasury, max(0, initialTreasury - 8.0), accuracy: 0.001)
@@ -423,7 +423,7 @@ final class LivingWorldEngineTests: XCTestCase {
 
         let resolved = LivingWorldTick.resolveDecision(world: world, decision: decision, chosenOption: chosen)
         XCTAssertNil(resolved.pendingDecision, "AI resolution must not block player")
-        XCTAssertEqual(resolved.eventFlags["ai_defense"], "ai-opt-a")
+        XCTAssertTrue(resolved.eventFlags.contains("ai_defense"))
         let updatedAI = try XCTUnwrap(resolved.countries[aiCountryCode])
         XCTAssertEqual(updatedAI.treasury, max(0, initialTreasury - 4.0), accuracy: 0.001)
     }
@@ -462,7 +462,7 @@ final class LivingWorldEngineTests: XCTestCase {
         // Player makes decision
         session.chooseDecisionOption(option)
         XCTAssertNil(session.world.pendingDecision, "Pending decision must be cleared")
-        XCTAssertEqual(session.world.eventFlags["test_flag"], "opt-1")
+        XCTAssertTrue(session.world.eventFlags.contains("test_flag"))
 
         // Clock can now advance
         session.stepDay()

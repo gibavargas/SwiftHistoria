@@ -5211,6 +5211,89 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         // First candidate should be Brazil's country event due to interleaving
         XCTAssertEqual(candidates.first?.id, "evt-bra-001", "Country events must be interleaved at the start of candidates for immediate engagement")
     }
+
+    func testTerminalChainOptionClearsNextChainFlagAndNeverDeadlocks() throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.eventFlags["next_chain"] = "soviet-ogas-launch"
+        state.eventFlags["soviet_gkchp"] = "gkchp-hardline"
+        state.round = 2
+
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        store.state = state
+
+        let pending = try XCTUnwrap(store.state?.pendingEventDecision)
+        XCTAssertEqual(pending.id, "event-soviet-ogas-1992")
+        let terminalOption = try XCTUnwrap(pending.decisionOptions?.first)
+        XCTAssertNil(terminalOption.nextChainedEventID)
+
+        store.resolvePendingEventDecision(option: terminalOption)
+
+        XCTAssertNil(store.state?.eventFlags["next_chain"], "Resolving a terminal chain option must remove next_chain so subsequent events do not deadlock")
+
+        let nextCandidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: try XCTUnwrap(store.state))
+        XCTAssertFalse(nextCandidates.isEmpty, "Candidate decisions must continue flowing after chain completion")
+    }
+
+    func testCrossCountryNextChainNeverDeadlocksPlayerCandidates() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        // Set next_chain to an event targeting UKR (AI country)
+        state.eventFlags["next_chain"] = "ah-sov-011"
+        state.eventFlags["soviet_gkchp"] = "done"
+
+        let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(candidates.isEmpty, "Cross-country chain IDs must never deadlock player candidate queue")
+
+        // Evaluating alternative history events must resolve the AI chain event onto timeline and still provide a pending decision for the player
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        XCTAssertEqual(state.eventFlags["ah-sov-011"], "ai_resolved")
+        XCTAssertNotNil(state.pendingEventDecision, "Player must still receive their next decision after AI chain step resolves")
+        XCTAssertEqual(state.pendingEventDecision?.date, state.gameDate, "Triggered catalog event must be stamped with current gameDate")
+    }
+
+    func testSecondaryBracketedEffectsAreAppliedOnDecisionResolution() throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.stability = 50
+        let initialGDP = try XCTUnwrap(state.economicLedgers["RUS"]?.nominalGDPTrillions)
+        let initialSec = try XCTUnwrap(state.economicLedgers["RUS"]?.securityIndex)
+
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        store.state = state
+
+        let pending = try XCTUnwrap(store.state?.pendingEventDecision)
+        // First option has primary .internalStability (+10) and bracketed [⟦ECO⟧ +5, ⟦SEC⟧ +10, ⟦MKT⟧ -10]
+        let option = try XCTUnwrap(pending.decisionOptions?.first)
+        store.resolvePendingEventDecision(option: option)
+
+        let updatedState = try XCTUnwrap(store.state)
+        XCTAssertEqual(updatedState.stability, 60)
+        XCTAssertGreaterThan(try XCTUnwrap(updatedState.economicLedgers["RUS"]?.nominalGDPTrillions), initialGDP, "Secondary ⟦ECO⟧ +5 effect must increase GDP")
+        XCTAssertGreaterThan(try XCTUnwrap(updatedState.economicLedgers["RUS"]?.securityIndex), initialSec, "Secondary ⟦SEC⟧ +10 effect must increase securityIndex")
+        XCTAssertGreaterThanOrEqual(updatedState.timeline.first?.strategicEffects.count ?? 0, 3, "Resolution event must record both primary and secondary strategic effects")
+    }
+
+    func testSwitchCountryClearsPendingDecisionAndActiveChain() throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        state.eventFlags["next_chain"] = "soviet-ogas-launch"
+        store.state = state
+
+        XCTAssertNotNil(store.state?.pendingEventDecision)
+        let switched = store.switchCountry(to: PlayerCountry(code: "BRA", name: "Brazil"))
+        XCTAssertTrue(switched)
+        XCTAssertNil(store.state?.pendingEventDecision, "Switching countries must clear any pending decision from the previous country")
+        XCTAssertNil(store.state?.eventFlags["next_chain"], "Switching countries must clear active chain pointer from the previous country")
+    }
 }
 
 @MainActor

@@ -502,14 +502,15 @@ enum LivingWorldTick {
                 let chosenOption = chooseAIOption(for: country, event: event, rng: rng)
                 world = applyDecisionEffects(world: world, countryCode: event.countryCode, decision: event, option: chosenOption)
                 world.completedChainEvents.append(event.id)
-                if let next = chosenOption.nextChainedEventID {
+                world.eventFlags.removeAll { $0 == event.id }
+                if let next = chosenOption.nextChainedEventID, !next.isEmpty {
                     world.eventFlags.append(next)
                 }
-                if let flag = chosenOption.flagSet {
+                if let flag = chosenOption.flagSet, !flag.isEmpty {
                     world.eventFlags.append(flag)
                 }
                 records.append(LWEventRecord(
-                    id: "ai-decision-\(event.id)-\(world.dayIndex)",
+                    id: event.id,
                     day: world.dayIndex,
                     title: "\(country.name): \(event.title)",
                     summary: "\(event.summary) Government response: \(chosenOption.label).",
@@ -1224,14 +1225,44 @@ enum LivingWorldTick {
         return event.options[index]
     }
 
-    /// Applies numerical deltas from a chosen option to the nation's ledger.
+    static func chooseAIOption(_ options: [LWDecisionOption], for country: LWCountry, brain: LWCountryBrain) -> LWDecisionOption {
+        guard !options.isEmpty else {
+            return LWDecisionOption(id: "default", label: "Acknowledge", detail: "Government observes developments.")
+        }
+        if brain is LWExpansionistBrain {
+            if let mil = options.first(where: { $0.mechanicCode == "⟦MIL⟧" || $0.worldTensionDelta > 0 }) {
+                return mil
+            }
+        } else if brain is LWTurtleBrain {
+            if let sec = options.first(where: { $0.mechanicCode == "⟦SEC⟧" || $0.mechanicCode == "⟦STB⟧" || $0.radicalsDelta < 0 }) {
+                return sec
+            }
+        } else if brain is LWOpportunistBrain {
+            if let eco = options.first(where: { $0.treasuryDelta > 0 || $0.mechanicCode == "⟦MKT⟧" }) {
+                return eco
+            }
+        }
+        return options[0]
+    }
+
+    /// Applies numerical deltas from a chosen option to the nation's ledger and international relations.
     static func applyDecisionEffects(world: LivingWorldState, countryCode: String, decision: LWDecisionEvent, option: LWDecisionOption) -> LivingWorldState {
         var world = world
         if var country = world.countries[countryCode] {
             country.treasury = max(0, country.treasury + option.treasuryDelta)
             country.radicals = min(1.0, max(0.0, country.radicals + option.radicalsDelta))
             country.standardOfLiving = max(1.0, country.standardOfLiving + option.stabilityDelta * 2.0)
+            if option.worldTensionDelta != 0 {
+                country.infamy = min(100.0, max(0.0, country.infamy + option.worldTensionDelta * 0.25))
+            }
             world.countries[countryCode] = country
+        }
+        if option.worldTensionDelta != 0 {
+            for otherCode in world.sortedCountryCodes() where otherCode != countryCode {
+                if world.countries[otherCode]?.isGreatPower == true {
+                    world.adjustRelation(from: countryCode, to: otherCode, delta: -option.worldTensionDelta * 0.4)
+                }
+            }
         }
         return world
     }
@@ -1240,16 +1271,17 @@ enum LivingWorldTick {
     static func resolveDecision(world: LivingWorldState, decision: LWDecisionEvent, option: LWDecisionOption) -> LivingWorldState {
         var world = applyDecisionEffects(world: world, countryCode: decision.countryCode, decision: decision, option: option)
         world.completedChainEvents.append(decision.id)
-        if let next = option.nextChainedEventID {
+        world.eventFlags.removeAll { $0 == decision.id }
+        if let next = option.nextChainedEventID, !next.isEmpty {
             world.eventFlags.append(next)
         }
-        if let flag = option.flagSet {
+        if let flag = option.flagSet, !flag.isEmpty {
             world.eventFlags.append(flag)
         }
         world.pendingDecision = nil
         let countryName = world.countries[decision.countryCode]?.name ?? decision.countryCode
         let record = LWEventRecord(
-            id: "resolved-\(decision.id)-\(world.dayIndex)",
+            id: decision.id,
             day: world.dayIndex,
             title: "\(countryName): \(decision.title)",
             summary: "Executive Directive Formed: \(option.label). \(option.detail)",
@@ -1261,6 +1293,10 @@ enum LivingWorldTick {
         )
         world.history.append(record)
         return world
+    }
+
+    static func resolveDecision(world: LivingWorldState, decision: LWDecisionEvent, chosenOption: LWDecisionOption) -> LivingWorldState {
+        resolveDecision(world: world, decision: decision, option: chosenOption)
     }
 }
 

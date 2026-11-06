@@ -710,7 +710,7 @@ struct NativeCampaignState: Codable, Hashable {
 
     // Alternative History event chains and interactive player decisions
     var pendingEventDecision: NativeCampaignEvent?
-    var eventFlags: [String]
+    var eventFlags: [String: String]
 
     init(
         actionMemory: [NativeActionMemory] = [],
@@ -756,7 +756,7 @@ struct NativeCampaignState: Codable, Hashable {
         budgetResearchSlider: Double = 0.15,
         militaryUnits: [String: Int]? = nil,
         pendingEventDecision: NativeCampaignEvent? = nil,
-        eventFlags: [String] = []
+        eventFlags: [String: String] = [:]
     ) {
         self.actionMemory = actionMemory
         self.advisorMessages = advisorMessages
@@ -936,7 +936,13 @@ struct NativeCampaignState: Codable, Hashable {
         let decodedUnits = (try? container.decodeIfPresent([String: Int].self, forKey: .militaryUnits)) ?? [:]
         militaryUnits = decodedUnits.isEmpty ? Self.defaultMilitaryUnits(forCode: country.code) : decodedUnits
         pendingEventDecision = try? container.decodeIfPresent(NativeCampaignEvent.self, forKey: .pendingEventDecision)
-        eventFlags = (try? container.decodeIfPresent([String].self, forKey: .eventFlags)) ?? []
+        if let dictFlags = try? container.decodeIfPresent([String: String].self, forKey: .eventFlags) {
+            eventFlags = dictFlags
+        } else if let arrayFlags = try? container.decodeIfPresent([String].self, forKey: .eventFlags) {
+            eventFlags = Dictionary(uniqueKeysWithValues: arrayFlags.map { ($0, "true") })
+        } else {
+            eventFlags = [:]
+        }
     }
 
     private static func decodeLossyArray<Element: Decodable>(
@@ -1585,6 +1591,10 @@ struct NativeEventDecisionOption: Codable, Hashable, Identifiable {
     var nextChainedEventID: String?
     var setFlag: String?
 
+    var title: String { label }
+    var description: String { detail }
+    var mechanicToken: String { effectTrack.mechanicCode }
+
     init(
         id: String,
         label: String,
@@ -1700,6 +1710,9 @@ enum NativeStrategicTrack: String, Codable, CaseIterable, Hashable, Identifiable
     case militaryReadiness = "military-readiness"
     case securityAnxiety = "security-anxiety"
     case worldTension = "world-tension"
+
+    static let securityIndex: NativeStrategicTrack = .securityAnxiety
+    static let economy: NativeStrategicTrack = .economicResilience
 
     var id: String {
         rawValue

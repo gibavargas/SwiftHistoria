@@ -3229,10 +3229,12 @@ enum NativeStrategyContextDatabase {
                 if isPlayerTarget {
                     state.pendingEventDecision = event
                     state.eventFlags["soviet_ogas_resolved"] = "pending"
+                    state.eventFlags.removeValue(forKey: "next_chain")
                     return
                 } else {
                     state.timeline.insert(event, at: 0)
                     state.eventFlags["soviet_ogas_resolved"] = "ogas-military"
+                    state.eventFlags.removeValue(forKey: "next_chain")
                 }
             }
         }
@@ -3389,7 +3391,7 @@ enum NativeStrategyContextDatabase {
                             id: "cyber-airgap",
                             label: "Air-Gap Sovereign Industrial Grids",
                             detail: "Sever external network bridges and revert critical infrastructure to localized manual protocols. [⟦SEC⟧ +15, ⟦MKT⟧ -12]",
-                            effectTrack: .securityIndex,
+                            effectTrack: .securityAnxiety,
                             effectMagnitude: 15,
                             nextChainedEventID: "cyber-microgrid-secession",
                             setFlag: "cyber_blackout"
@@ -3503,7 +3505,7 @@ enum NativeStrategyContextDatabase {
                         id: "bread-crackdown",
                         label: "Deploy Military Police to Clear Distribution Hubs",
                         detail: "Enforce curfew and arrest strike organizers to resume port logistics. [⟦SEC⟧ +12, ⟦STB⟧ -6]",
-                        effectTrack: .securityIndex,
+                        effectTrack: .securityAnxiety,
                         effectMagnitude: 12,
                         nextChainedEventID: nil,
                         setFlag: "bread_riots"
@@ -3516,11 +3518,42 @@ enum NativeStrategyContextDatabase {
             return
         }
 
-        // 7. Dynamic Catalog Event Integration (500-Event Scenario Catalog)
+        // 7. Dynamic Catalog Event Integration (500-Event Scenario Catalog & 196-Country Event Trees)
         if state.pendingEventDecision == nil {
+            // If an active chain points to an AI-targeted catalog event, resolve it autonomously in the world timeline first
+            if let nextChain = state.eventFlags["next_chain"],
+               !nextChain.isEmpty,
+               state.eventFlags[nextChain] == nil,
+               var aiChained = NativeAlternativeHistoryCatalog.event(byId: nextChain)
+            {
+                let target = aiChained.strategicEffects.first?.target ?? "GLOBAL"
+                let targetsPlayer = (target == state.country.code || target == state.country.name || target == "GLOBAL")
+                if !targetsPlayer {
+                    aiChained.date = state.gameDate
+                    aiChained.playerRelated = false
+                    state.timeline.insert(aiChained, at: 0)
+                    state.eventFlags[aiChained.id] = "ai_resolved"
+                    if let followUp = aiChained.decisionOptions?.first?.nextChainedEventID, !followUp.isEmpty {
+                        state.eventFlags["next_chain"] = followUp
+                    } else {
+                        state.eventFlags.removeValue(forKey: "next_chain")
+                    }
+                }
+            }
+
             let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
-            if let selected = candidates.first {
-                let isPlayerTarget = (selected.strategicEffects.first?.target == state.country.code || selected.strategicEffects.first?.target == "GLOBAL")
+            if var selected = candidates.first {
+                selected.date = state.gameDate
+                selected.strategicEffects = selected.strategicEffects.map { eff in
+                    var copy = eff
+                    copy.date = state.gameDate
+                    return copy
+                }
+                if state.eventFlags["next_chain"] == selected.id {
+                    state.eventFlags.removeValue(forKey: "next_chain")
+                }
+                let target = selected.strategicEffects.first?.target ?? "GLOBAL"
+                let isPlayerTarget = (target == state.country.code || target == state.country.name || target == "GLOBAL")
                 if isPlayerTarget {
                     state.pendingEventDecision = selected
                     state.eventFlags[selected.id] = "pending"
@@ -3528,8 +3561,10 @@ enum NativeStrategyContextDatabase {
                 } else {
                     state.timeline.insert(selected, at: 0)
                     state.eventFlags[selected.id] = "ai_resolved"
-                    if let next = selected.decisionOptions?.first?.nextChainedEventID {
+                    if let next = selected.decisionOptions?.first?.nextChainedEventID, !next.isEmpty {
                         state.eventFlags["next_chain"] = next
+                    } else {
+                        state.eventFlags.removeValue(forKey: "next_chain")
                     }
                 }
             }

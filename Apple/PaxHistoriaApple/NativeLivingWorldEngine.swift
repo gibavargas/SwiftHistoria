@@ -338,9 +338,11 @@ struct LWWar: Codable, Hashable {
 // MARK: Events
 
 enum LWEventRarity: String, Codable {
+    case common
     case daily
     case weekly
     case rare
+    case legendary
 }
 
 struct LWDecisionOption: Codable, Hashable, Identifiable {
@@ -354,6 +356,11 @@ struct LWDecisionOption: Codable, Hashable, Identifiable {
     var nextChainedEventID: String?
     var flagSet: String?
     var mechanicCode: String? // "⟦ECO⟧", "⟦SEC⟧", etc.
+
+    var text: String { label }
+    var consequenceSummary: String { detail }
+    var radicalDelta: Double { radicalsDelta }
+    var setFlag: String? { flagSet }
 
     init(
         id: String,
@@ -378,6 +385,32 @@ struct LWDecisionOption: Codable, Hashable, Identifiable {
         self.flagSet = flagSet
         self.mechanicCode = mechanicCode
     }
+
+    init(
+        id: String,
+        text: String,
+        consequenceSummary: String,
+        radicalDelta: Double = 0,
+        treasuryDelta: Double = 0,
+        stabilityDelta: Double = 0,
+        worldTensionDelta: Double = 0,
+        nextChainedEventID: String? = nil,
+        setFlag: String? = nil,
+        mechanicCode: String? = nil
+    ) {
+        self.init(
+            id: id,
+            label: text,
+            detail: consequenceSummary,
+            treasuryDelta: treasuryDelta,
+            radicalsDelta: radicalDelta,
+            stabilityDelta: stabilityDelta,
+            worldTensionDelta: worldTensionDelta,
+            nextChainedEventID: nextChainedEventID,
+            flagSet: setFlag,
+            mechanicCode: mechanicCode
+        )
+    }
 }
 
 struct LWDecisionEvent: Codable, Hashable, Identifiable {
@@ -391,6 +424,8 @@ struct LWDecisionEvent: Codable, Hashable, Identifiable {
     var imageAssetName: String?
     var chainID: String?
     var options: [LWDecisionOption]
+
+    var targetCountryCode: String { countryCode }
 
     init(
         id: String,
@@ -414,6 +449,32 @@ struct LWDecisionEvent: Codable, Hashable, Identifiable {
         self.imageAssetName = imageAssetName
         self.chainID = chainID
         self.options = options
+    }
+
+    init(
+        id: String,
+        title: String,
+        summary: String,
+        day: Int,
+        targetCountryCode: String,
+        rarity: LWEventRarity = .rare,
+        severity: Double = 0.8,
+        imageAssetName: String? = nil,
+        chainID: String? = nil,
+        options: [LWDecisionOption]
+    ) {
+        self.init(
+            id: id,
+            day: day,
+            title: title,
+            summary: summary,
+            countryCode: targetCountryCode,
+            rarity: rarity,
+            severity: severity,
+            imageAssetName: imageAssetName,
+            chainID: chainID,
+            options: options
+        )
     }
 }
 
