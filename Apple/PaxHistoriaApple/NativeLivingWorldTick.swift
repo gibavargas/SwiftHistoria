@@ -1150,7 +1150,7 @@ enum LivingWorldTick {
             )
         }
 
-        // --- 4. Dynamic Catalog Event Integration (500-Event Living World Sampling) ---
+        // --- 4. Dynamic Catalog Event Integration (Scenario & Country Events Living World Sampling) ---
         for flag in flags {
             if let catalogEvent = NativeAlternativeHistoryCatalog.event(byId: flag),
                !completed.contains(catalogEvent.id) {
@@ -1159,13 +1159,22 @@ enum LivingWorldTick {
             }
         }
 
-        // Periodic milestone sampling from 500-event alternative history catalog
+        // Periodic milestone sampling from alternative history & country-specific catalogs
         if day > 0 && day % 10 == 0 {
             let candidateIndex = (day / 10) % NativeAlternativeHistoryCatalog.events.count
             let candidateEvent = NativeAlternativeHistoryCatalog.events[candidateIndex]
             if !completed.contains(candidateEvent.id) {
                 let target = resolveTarget(preferredCodes: [candidateEvent.strategicEffects.first?.target ?? "GLOBAL"], world: world)
                 return NativeAlternativeHistoryCatalog.livingWorldDecision(from: candidateEvent, day: day, targetCountry: target)
+            }
+        } else if day > 0 && day % 10 == 5, let player = world.playerCountryCode {
+            let countryEvents = NativeCountryEventsCatalog.events(forCountryCode: player)
+            if !countryEvents.isEmpty {
+                let candidateIndex = (day / 5) % countryEvents.count
+                let candidateEvent = countryEvents[candidateIndex]
+                if !completed.contains(candidateEvent.id) {
+                    return NativeAlternativeHistoryCatalog.livingWorldDecision(from: candidateEvent, day: day, targetCountry: player)
+                }
             }
         }
 

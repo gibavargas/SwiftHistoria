@@ -4980,6 +4980,139 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         XCTAssertFalse(candidates.isEmpty, "Candidate decisions must be returned for Russian player in Soviet scenario")
         XCTAssertEqual(candidates.first?.id, "ah-sov-001")
     }
+
+    func testNativeCountryEventsCatalogContainsExactly1200Events() {
+        XCTAssertEqual(NativeCountryEventsCatalog.allEvents.count, 1200, "Country catalog must contain exactly 1,200 events across 12 playable countries")
+        let uniqueIDs = Set(NativeCountryEventsCatalog.allEvents.map { $0.id })
+        XCTAssertEqual(uniqueIDs.count, 1200, "All 1,200 country event IDs must be strictly unique")
+    }
+
+    func testNativeCountryEventsCatalogCountryDistribution() {
+        XCTAssertEqual(NativeCountryEventsCatalog.brazilEvents.count, 100, "Brazil must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.unitedStatesEvents.count, 100, "United States must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.unitedKingdomEvents.count, 100, "United Kingdom must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.franceEvents.count, 100, "France must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.germanyEvents.count, 100, "Germany must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.italyEvents.count, 100, "Italy must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.russiaEvents.count, 100, "Russia must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.chinaEvents.count, 100, "China must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.japanEvents.count, 100, "Japan must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.indiaEvents.count, 100, "India must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.southAfricaEvents.count, 100, "South Africa must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.australiaEvents.count, 100, "Australia must have exactly 100 events")
+        
+        let sum = NativeCountryEventsCatalog.brazilEvents.count +
+            NativeCountryEventsCatalog.unitedStatesEvents.count +
+            NativeCountryEventsCatalog.unitedKingdomEvents.count +
+            NativeCountryEventsCatalog.franceEvents.count +
+            NativeCountryEventsCatalog.germanyEvents.count +
+            NativeCountryEventsCatalog.italyEvents.count +
+            NativeCountryEventsCatalog.russiaEvents.count +
+            NativeCountryEventsCatalog.chinaEvents.count +
+            NativeCountryEventsCatalog.japanEvents.count +
+            NativeCountryEventsCatalog.indiaEvents.count +
+            NativeCountryEventsCatalog.southAfricaEvents.count +
+            NativeCountryEventsCatalog.australiaEvents.count
+        XCTAssertEqual(sum, 1200, "Total sum of country events must be exactly 1,200")
+    }
+
+    func testNativeCountryEventsIntegrityAndMechanicTokens() {
+        let validImages: Set<String> = [
+            "EventSovietCoup",
+            "EventFashodaCrisis",
+            "EventBreadRiots",
+            "EventCyberBlackout",
+            "EventResourceCrisis",
+            "EventSolarpunkDawn"
+        ]
+
+        let validMechanics: Set<String> = [
+            "⟦ECO⟧",
+            "⟦STB⟧",
+            "⟦SEC⟧",
+            "⟦MIL⟧",
+            "⟦DIP⟧",
+            "⟦MKT⟧",
+            "⟦TNS⟧"
+        ]
+
+        for event in NativeCountryEventsCatalog.allEvents {
+            XCTAssertFalse(event.id.isEmpty)
+            XCTAssertFalse(event.title.isEmpty)
+            XCTAssertFalse(event.description.isEmpty)
+            XCTAssertFalse(event.date.isEmpty)
+            XCTAssertNotNil(event.imageAssetName)
+            if let asset = event.imageAssetName {
+                XCTAssertTrue(validImages.contains(asset), "Asset name '\(asset)' must be one of the canonical 6 event images")
+            }
+            XCTAssertFalse(event.strategicEffects.isEmpty, "Country event \(event.id) must specify strategic effects")
+
+            guard let options = event.decisionOptions, options.count >= 2 else {
+                XCTFail("Event \(event.id) must offer at least 2 executive options")
+                continue
+            }
+
+            for opt in options {
+                XCTAssertFalse(opt.id.isEmpty)
+                XCTAssertFalse(opt.title.isEmpty)
+                XCTAssertFalse(opt.description.isEmpty)
+                XCTAssertTrue(
+                    validMechanics.contains(opt.mechanicToken),
+                    "Mechanic token '\(opt.mechanicToken)' must be a recognized token"
+                )
+            }
+        }
+    }
+
+    func testCombinedEventCatalogTotals1700UniqueEvents() {
+        let totalScenario = NativeAlternativeHistoryCatalog.events.count
+        let totalCountry = NativeCountryEventsCatalog.allEvents.count
+        XCTAssertEqual(totalScenario, 500)
+        XCTAssertEqual(totalCountry, 1200)
+        XCTAssertEqual(totalScenario + totalCountry, 1700, "Combined total must equal 1,700 canonical events")
+
+        let combinedIDs = NativeAlternativeHistoryCatalog.events.map { $0.id } + NativeCountryEventsCatalog.allEvents.map { $0.id }
+        let uniqueCombined = Set(combinedIDs)
+        XCTAssertEqual(uniqueCombined.count, 1700, "All 1,700 events across scenario and country catalogs must be globally unique")
+    }
+
+    func testCountryEventsCatalogLookupsAndDecisions() {
+        // Fast ID lookup in NativeCountryEventsCatalog
+        XCTAssertNotNil(NativeCountryEventsCatalog.event(byId: "evt-bra-001"))
+        XCTAssertNotNil(NativeCountryEventsCatalog.event(byId: "evt-usa-050"))
+        XCTAssertNotNil(NativeCountryEventsCatalog.event(byId: "evt-aus-100"))
+
+        // Fast ID lookup routed through NativeAlternativeHistoryCatalog.event(byId:)
+        XCTAssertNotNil(NativeAlternativeHistoryCatalog.event(byId: "evt-bra-001"))
+        XCTAssertNotNil(NativeAlternativeHistoryCatalog.event(byId: "evt-jpn-042"))
+        XCTAssertNotNil(NativeAlternativeHistoryCatalog.event(byId: "ah-sov-001"))
+
+        // Filter by country code
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "BRA").count, 100)
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "USA").count, 100)
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "SOV").count, 100)
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "CHI").count, 100)
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "JAP").count, 100)
+
+        // NativeAlternativeHistoryCatalog.events(forCountry:) aggregates scenario + country
+        let braEvents = NativeAlternativeHistoryCatalog.events(forCountry: "BRA")
+        XCTAssertGreaterThanOrEqual(braEvents.count, 100)
+
+        // Candidate decisions for player country
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "BRA", name: "Brazil")
+        state.round = 1
+
+        let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(candidates.isEmpty, "Brazil should receive candidates combining global and Brazil country events")
+        XCTAssertTrue(candidates.contains { $0.id == "evt-bra-001" }, "Brazil events must appear in candidate decisions")
+
+        // Flag exclusion check
+        state.eventFlags["evt-bra-001"] = "completed"
+        let updatedCandidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(updatedCandidates.contains { $0.id == "evt-bra-001" }, "Triggered event must be filtered out")
+    }
 }
 
 @MainActor

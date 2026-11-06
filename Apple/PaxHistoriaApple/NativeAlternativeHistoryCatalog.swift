@@ -22990,9 +22990,12 @@ public struct NativeAlternativeHistoryCatalog {
 
     // MARK: - Query & Lookup Helpers
 
-    /// Fast O(1) lookup of any event by its unique canonical ID.
+    /// Fast O(1) lookup of any event by its unique canonical ID, checking scenario arcs and country trees.
     public static func event(byId id: String) -> NativeCampaignEvent? {
-        eventsByIDLookup[id]
+        if let event = eventsByIDLookup[id] {
+            return event
+        }
+        return NativeCountryEventsCatalog.event(byId: id)
     }
 
     /// Retrieve all events belonging to a specific alternative history scenario.
@@ -23015,20 +23018,24 @@ public struct NativeAlternativeHistoryCatalog {
         }
     }
 
-    /// Retrieve all events targeting a specific country code or GLOBAL events.
+    /// Retrieve all events targeting a specific country code or GLOBAL events,
+    /// combining scenario-wide arcs with country-specific event trees.
     public static func events(forCountry country: String) -> [NativeCampaignEvent] {
-        events.filter { event in
+        let scenarioEvents = events.filter { event in
             event.strategicEffects.contains { $0.target == country || $0.target == "GLOBAL" }
         }
+        let countryEvents = NativeCountryEventsCatalog.events(forCountryCode: country)
+        return scenarioEvents + countryEvents
     }
 
     /// Evaluates candidate decision events for the current campaign state.
-    /// Filters out events already completed and checks chain prerequisites.
+    /// Combines scenario candidates with country-specific candidates,
+    /// filters out events already completed, and checks chain prerequisites.
     public static func candidateDecisions(state: NativeCampaignState) -> [NativeCampaignEvent] {
         let scenarioEvents = events(forScenario: state.scenarioID)
         let playerCountry = state.country.code
         
-        return scenarioEvents.filter { event in
+        let filteredScenario = scenarioEvents.filter { event in
             // Must target player or be global
             let isTarget = event.strategicEffects.contains { $0.target == playerCountry || $0.target == "GLOBAL" }
             guard isTarget else { return false }
@@ -23043,6 +23050,9 @@ public struct NativeAlternativeHistoryCatalog {
             
             return true
         }
+
+        let countryCandidates = NativeCountryEventsCatalog.candidateDecisions(forCountry: playerCountry, state: state)
+        return filteredScenario + countryCandidates
     }
 
     /// Bridges a NativeCampaignEvent into a NativeLivingWorldEngine LWDecisionEvent
