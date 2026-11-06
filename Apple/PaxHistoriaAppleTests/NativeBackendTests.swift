@@ -4891,6 +4891,95 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         let coupEvent = state.timeline.first { $0.id == "event-soviet-coup-1991" }
         XCTAssertNotNil(coupEvent, "Autonomous world event must be added to timeline")
     }
+
+    func testNativeAlternativeHistoryCatalogContainsExactly500Events() {
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.events.count, 500, "Catalog must contain exactly 500 events")
+        let uniqueIDs = Set(NativeAlternativeHistoryCatalog.events.map { $0.id })
+        XCTAssertEqual(uniqueIDs.count, 500, "All 500 event IDs must be strictly unique")
+    }
+
+    func testNativeAlternativeHistoryCatalogScenarioArcCounts() {
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.sovietTriumphEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.dividedSovereigntyEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.doomsday1983Events.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.resourceCrucibleEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.paxCyberneticaEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.solarpunkDawnEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.victoria3SystemicEvents.count, 50)
+        XCTAssertEqual(
+            NativeAlternativeHistoryCatalog.sovietTriumphEvents.count +
+            NativeAlternativeHistoryCatalog.dividedSovereigntyEvents.count +
+            NativeAlternativeHistoryCatalog.doomsday1983Events.count +
+            NativeAlternativeHistoryCatalog.resourceCrucibleEvents.count +
+            NativeAlternativeHistoryCatalog.paxCyberneticaEvents.count +
+            NativeAlternativeHistoryCatalog.solarpunkDawnEvents.count +
+            NativeAlternativeHistoryCatalog.victoria3SystemicEvents.count,
+            500
+        )
+    }
+
+    func testCatalogEventIntegrityAndMechanicTokens() {
+        let validTokens: Set<String> = ["⟦ECO⟧", "⟦STB⟧", "⟦SEC⟧", "⟦MIL⟧", "⟦DIP⟧", "⟦MKT⟧", "⟦TNS⟧"]
+        let validImages: Set<String> = [
+            "EventSovietCoup",
+            "EventFashodaCrisis",
+            "EventBreadRiots",
+            "EventCyberBlackout",
+            "EventResourceCrisis",
+            "EventSolarpunkDawn"
+        ]
+
+        for event in NativeAlternativeHistoryCatalog.events {
+            XCTAssertFalse(event.id.isEmpty)
+            XCTAssertFalse(event.title.isEmpty)
+            XCTAssertFalse(event.description.isEmpty)
+            XCTAssertFalse(event.date.isEmpty)
+            XCTAssertNotNil(event.imageAssetName)
+            XCTAssertTrue(validImages.contains(event.imageAssetName ?? ""))
+
+            if let token = event.hexLeverCode {
+                XCTAssertTrue(validTokens.contains(token), "Token \(token) must be one of the 7 valid mechanic codes")
+            }
+
+            guard let options = event.decisionOptions else {
+                XCTFail("Event \(event.id) must contain decision options")
+                continue
+            }
+            XCTAssertGreaterThanOrEqual(options.count, 2, "Event \(event.id) must offer at least 2 executive options")
+            for option in options {
+                XCTAssertFalse(option.id.isEmpty)
+                XCTAssertFalse(option.label.isEmpty)
+                XCTAssertFalse(option.detail.isEmpty)
+            }
+        }
+    }
+
+    func testLivingWorldBridgeConversionFromCatalog() {
+        guard let firstSevere = NativeAlternativeHistoryCatalog.events.first(where: { $0.importance == .severe }) else {
+            XCTFail("Must find at least one severe event in catalog")
+            return
+        }
+
+        let lwEvent = NativeAlternativeHistoryCatalog.livingWorldDecision(from: firstSevere, day: 42, targetCountry: "RUS")
+        XCTAssertEqual(lwEvent.id, firstSevere.id)
+        XCTAssertEqual(lwEvent.day, 42)
+        XCTAssertEqual(lwEvent.countryCode, "RUS")
+        XCTAssertEqual(lwEvent.rarity, .legendary)
+        XCTAssertEqual(lwEvent.options.count, firstSevere.decisionOptions?.count ?? 0)
+        XCTAssertEqual(lwEvent.imageAssetName, firstSevere.imageAssetName)
+        XCTAssertGreaterThan(lwEvent.severity, 0.8)
+    }
+
+    func testCandidateDecisionsFilteringForPlayerCountry() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.round = 1
+
+        let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(candidates.isEmpty, "Candidate decisions must be returned for Russian player in Soviet scenario")
+        XCTAssertEqual(candidates.first?.id, "ah-sov-001")
+    }
 }
 
 @MainActor

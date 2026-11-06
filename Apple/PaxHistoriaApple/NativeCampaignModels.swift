@@ -1583,6 +1583,7 @@ struct NativeEventDecisionOption: Codable, Hashable, Identifiable {
     var effectTrack: NativeStrategicTrack
     var effectMagnitude: Int
     var nextChainedEventID: String?
+    var setFlag: String?
 
     init(
         id: String,
@@ -1590,7 +1591,8 @@ struct NativeEventDecisionOption: Codable, Hashable, Identifiable {
         detail: String,
         effectTrack: NativeStrategicTrack,
         effectMagnitude: Int,
-        nextChainedEventID: String? = nil
+        nextChainedEventID: String? = nil,
+        setFlag: String? = nil
     ) {
         self.id = id
         self.label = label
@@ -1598,6 +1600,7 @@ struct NativeEventDecisionOption: Codable, Hashable, Identifiable {
         self.effectTrack = effectTrack
         self.effectMagnitude = effectMagnitude
         self.nextChainedEventID = nextChainedEventID
+        self.setFlag = setFlag
     }
 }
 

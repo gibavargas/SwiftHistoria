@@ -701,3 +701,21 @@ To integrate these event chains into SwiftHistoria's native architecture:
    - For Living World loops (E6.1–E6.4), the state condition thresholds directly bind to `LWMarket.goods["grain"].price`, `country.radicals / country.population`, and `country.treasury`.
 3. **Foundation Model & Decision Matrix Synergy (`NativeWorldSimulator.swift`)**:
    - When consequence events fire, `validatedPlayerMatrix` ensures the 2–3 interactive options are generated with distinct primary/secondary mechanic tokens (`⟦ECO⟧`, `⟦SEC⟧`, etc.), feeding into subsequent turn reports.
+
+---
+
+## 9. 500-Event Master Catalog Schema & Scenario Distribution
+
+The PR deliverable bundles `NativeAlternativeHistoryCatalog.swift` containing exactly **500 canonical, strongly-typed alternative history events** across 7 thematic arcs, each with curated executive decisions, causal chaining, and bundled asset artwork:
+
+| Scenario / Thematic Arc | Prefix | Event Count | Date Range | Primary Focus | Bundled Artwork |
+|---|---|---|---|---|---|
+| **1. Soviet Triumph / Red Cybernetic Bloc** | `ah-sov-001` .. `075` | **75** | 1991–1996 | GKChP Coup survival, OGAS-2 computerized economy, Comecon barter clearing, Comecon electronics | `EventSovietCoup`, `EventCyberBlackout`, `EventBreadRiots` |
+| **2. Divided Sovereignty / Belle Époque Hegemony** | `ah-div-001` .. `075` | **75** | 1898–1904 | Fashoda crisis escalation, Continental League of Berlin, Dreadnought naval panic, Yangtze concessions | `EventFashodaCrisis`, `EventBreadRiots` |
+| **3. 1983 Doomsday / Nuclear Escalation** | `ah-dd-001` .. `075` | **75** | 1983–1988 | Able Archer 83 misinterpretation, Serpukhov-15 radar glitch, Fulda gap tactical warheads, EMP winter triage | `EventResourceCrisis`, `EventCyberBlackout`, `EventSovietCoup` |
+| **4. Resource Crucible & Fragmented Markets** | `ah-res-001` .. `075` | **75** | 2032–2038 | Indus-Ganges aquifer depletion, rare earth export embargoes, global nitrogen deficits, wet-bulb migration | `EventResourceCrisis`, `EventBreadRiots` |
+| **5. Pax Cybernetica & Algorithmic Order** | `ah-cyb-001` .. `075` | **75** | 2035–2041 | Subsea transatlantic fiber severed, automated clearing flash-crashes, smart grid secessions, quantum cryptanalysis | `EventCyberBlackout`, `EventSolarpunkDawn` |
+| **6. Solarpunk Dawn & Bioregional Commons** | `ah-sol-001` .. `075` | **75** | 2040–2048 | Bioregional watershed treaties, community solar microgrids, atmospheric carbon turnaround, Amazon preservation | `EventSolarpunkDawn`, `EventResourceCrisis` |
+| **7. Victoria 3 Systemic Feedback & Revolts** | `ah-vic-001` .. `050` | **50** | 1910–1914 | Bread price spikes, general strikes, debt moratoriums, barracks defections, constitutional conventions | `EventBreadRiots`, `EventSovietCoup` |
+| **TOTAL** | — | **500** | — | — | — |
+

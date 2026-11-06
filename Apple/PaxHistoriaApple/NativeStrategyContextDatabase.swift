@@ -3476,6 +3476,25 @@ enum NativeStrategyContextDatabase {
             state.eventFlags["bread_riots"] = "pending"
             return
         }
+
+        // 7. Dynamic Catalog Event Integration (500-Event Scenario Catalog)
+        if state.pendingEventDecision == nil {
+            let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+            if let selected = candidates.first {
+                let isPlayerTarget = (selected.strategicEffects.first?.target == state.country.code || selected.strategicEffects.first?.target == "GLOBAL")
+                if isPlayerTarget {
+                    state.pendingEventDecision = selected
+                    state.eventFlags[selected.id] = "pending"
+                    return
+                } else {
+                    state.timeline.insert(selected, at: 0)
+                    state.eventFlags[selected.id] = "ai_resolved"
+                    if let next = selected.decisionOptions?.first?.nextChainedEventID {
+                        state.eventFlags["next_chain"] = next
+                    }
+                }
+            }
+        }
     }
 
     /// Earned rival-campaign progress, capped by current scenario readiness.

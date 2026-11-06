@@ -1150,6 +1150,25 @@ enum LivingWorldTick {
             )
         }
 
+        // --- 4. Dynamic Catalog Event Integration (500-Event Living World Sampling) ---
+        for flag in flags {
+            if let catalogEvent = NativeAlternativeHistoryCatalog.event(byId: flag),
+               !completed.contains(catalogEvent.id) {
+                let target = resolveTarget(preferredCodes: [catalogEvent.strategicEffects.first?.target ?? "GLOBAL"], world: world)
+                return NativeAlternativeHistoryCatalog.livingWorldDecision(from: catalogEvent, day: day, targetCountry: target)
+            }
+        }
+
+        // Periodic milestone sampling from 500-event alternative history catalog
+        if day > 0 && day % 10 == 0 {
+            let candidateIndex = (day / 10) % NativeAlternativeHistoryCatalog.events.count
+            let candidateEvent = NativeAlternativeHistoryCatalog.events[candidateIndex]
+            if !completed.contains(candidateEvent.id) {
+                let target = resolveTarget(preferredCodes: [candidateEvent.strategicEffects.first?.target ?? "GLOBAL"], world: world)
+                return NativeAlternativeHistoryCatalog.livingWorldDecision(from: candidateEvent, day: day, targetCountry: target)
+            }
+        }
+
         return nil
     }
 
