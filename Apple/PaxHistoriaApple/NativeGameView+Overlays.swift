@@ -56,11 +56,30 @@ struct VictoryDefeatOverlay: View {
             Color.black.opacity(0.85)
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
-                Image(systemName: status == .won ? "trophy.fill" : "exclamationmark.octagon.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(status == .won ? Color.neonTeal : Color.softRed)
-                    .shadow(color: status == .won ? Color.neonTeal.opacity(0.4) : Color.softRed.opacity(0.4), radius: 10)
+            VStack(spacing: 16) {
+                Image(status == .won ? "VictoryTriumph" : "DefeatCollapse")
+                    .resizable()
+                    .aspectRatio(16 / 9, contentMode: .fill)
+                    .frame(height: 160)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(status == .won ? Color.neonTeal.opacity(0.4) : Color.softRed.opacity(0.4), lineWidth: 1.5)
+                    }
+                    .shadow(color: status == .won ? Color.neonTeal.opacity(0.3) : Color.softRed.opacity(0.3), radius: 10)
+
+                HStack(spacing: 8) {
+                    Image(systemName: status == .won ? "trophy.fill" : "exclamationmark.octagon.fill")
+                        .font(.headline)
+                        .foregroundStyle(status == .won ? Color.neonTeal : Color.softRed)
+                    Text(status == .won ? "STRATEGIC TRIUMPH" : "CRISIS CONCLUSION")
+                        .font(.system(.caption, design: .monospaced).weight(.bold))
+                        .foregroundStyle(status == .won ? Color.neonTeal : Color.softRed)
+                        .tracking(1.5)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background((status == .won ? Color.neonTeal : Color.softRed).opacity(0.12), in: Capsule())
 
                 VStack(spacing: 8) {
                     Text(status == .won

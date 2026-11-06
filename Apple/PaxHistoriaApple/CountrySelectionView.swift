@@ -458,7 +458,7 @@ struct CountrySelectionView: View {
                                 scenario: scenario,
                                 selected: scenario.id == selectedScenarioID
                             )
-                            .frame(width: 210)
+                            .frame(width: 230)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("\(scenario.name), \(scenario.subtitle)")
@@ -723,28 +723,49 @@ private struct ScenarioSelectionCard: View {
 
     var body: some View {
         let accent = Color(hex: scenario.accentColor)
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(scenario.name)
-                    .font(NativeWarRoomTheme.labelFont(.subheadline))
-                    .foregroundStyle(selected ? NativeWarRoomTheme.ink : NativeWarRoomTheme.mutedInk)
-                    .lineLimit(1)
-                Spacer()
-                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                    .font(.subheadline)
-                    .foregroundStyle(selected ? accent : .secondary)
+        VStack(alignment: .leading, spacing: 0) {
+            ZStack(alignment: .bottomLeading) {
+                Image(scenario.assetImageName)
+                    .resizable()
+                    .aspectRatio(16 / 9, contentMode: .fill)
+                    .frame(height: 105)
+                    .clipped()
+
+                LinearGradient(
+                    colors: [Color.clear, Color.black.opacity(0.8)],
+                    startPoint: .center,
+                    endPoint: .bottom
+                )
+
+                HStack(alignment: .firstTextBaseline) {
+                    Text(scenario.name)
+                        .font(NativeWarRoomTheme.labelFont(.subheadline))
+                        .foregroundStyle(NativeWarRoomTheme.ink)
+                        .lineLimit(1)
+                    Spacer()
+                    Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                        .font(.subheadline)
+                        .foregroundStyle(selected ? accent : .white.opacity(0.7))
+                }
+                .padding(.horizontal, 10)
+                .padding(.bottom, 8)
             }
-            Text(scenario.subtitle)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(selected ? accent.opacity(0.8) : .secondary)
-                .lineLimit(2)
-            Text(scenario.heroSubtitle)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(3)
+            .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 10))
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(scenario.subtitle)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(selected ? accent.opacity(0.9) : .secondary)
+                    .lineLimit(2)
+                Text(scenario.heroSubtitle)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 200, alignment: .topLeading)
         .warRoomDossier(
             borderColor: selected ? accent.opacity(0.7) : NativeWarRoomTheme.brass.opacity(0.18),
             cornerRadius: 10
