@@ -148,7 +148,16 @@ enum Native2010WorldModel {
         "IND": Native2010CountryProfile(code: "IND", nominalGDPTrillions: 1.71, gdpGrowthPercent: 8.5, stability: 60, influence: 55, techLevel: 3.5, energySecurity: 48, foodSecurity: 67, nuclearStatus: "Nuclear outside NPT", publicSupport: 62, neutralOpinion: 23, inflationPercent: 9.5, tradeBalancePercent: -2.8, energyDependencePercent: 44, sanctionsExposurePercent: 5, historicalBrief: "India begins 2010 with fast growth, inflation pressure, rising technology capacity, and a complex security and diplomacy environment across South Asia.", militarySpendingPercent: 2.7, corruptionIndex: 67),
         "RUS": Native2010CountryProfile(code: "RUS", nominalGDPTrillions: 1.52, gdpGrowthPercent: 4.5, stability: 62, influence: 63, techLevel: 3.9, energySecurity: 86, foodSecurity: 70, nuclearStatus: "NPT nuclear", publicSupport: 60, neutralOpinion: 24, inflationPercent: 6.9, tradeBalancePercent: 4.8, energyDependencePercent: 12, sanctionsExposurePercent: 8, historicalBrief: "Russia opens 2010 with energy-export leverage, nuclear parity, cautious reset diplomacy with the United States, and regional-security influence.", militarySpendingPercent: 3.7, corruptionIndex: 78),
         "ZAF": Native2010CountryProfile(code: "ZAF", nominalGDPTrillions: 0.42, gdpGrowthPercent: 3.0, stability: 54, influence: 42, techLevel: 3.0, energySecurity: 50, foodSecurity: 64, nuclearStatus: "No arsenal", publicSupport: 57, neutralOpinion: 25, inflationPercent: 4.3, tradeBalancePercent: -2.0, energyDependencePercent: 35, sanctionsExposurePercent: 3, historicalBrief: "South Africa begins 2010 with World Cup visibility, regional influence, infrastructure strain, and post-crisis employment pressure.", militarySpendingPercent: 1.2, corruptionIndex: 55),
-        "AUS": Native2010CountryProfile(code: "AUS", nominalGDPTrillions: 1.15, gdpGrowthPercent: 2.1, stability: 76, influence: 44, techLevel: 4.0, energySecurity: 78, foodSecurity: 88, nuclearStatus: "No arsenal", publicSupport: 60, neutralOpinion: 27, inflationPercent: 2.9, tradeBalancePercent: -2.6, energyDependencePercent: 18, sanctionsExposurePercent: 3, historicalBrief: "Australia enters 2010 with stable institutions, commodity demand from Asia, alliance ties with the United States, and climate-policy tension.", militarySpendingPercent: 1.8, corruptionIndex: 12)
+        "AUS": Native2010CountryProfile(code: "AUS", nominalGDPTrillions: 1.15, gdpGrowthPercent: 2.1, stability: 76, influence: 44, techLevel: 4.0, energySecurity: 78, foodSecurity: 88, nuclearStatus: "No arsenal", publicSupport: 60, neutralOpinion: 27, inflationPercent: 2.9, tradeBalancePercent: -2.6, energyDependencePercent: 18, sanctionsExposurePercent: 3, historicalBrief: "Australia enters 2010 with stable institutions, commodity demand from Asia, alliance ties with the United States, and climate-policy tension.", militarySpendingPercent: 1.8, corruptionIndex: 12),
+        "ITA": Native2010CountryProfile(code: "ITA", nominalGDPTrillions: 2.13, gdpGrowthPercent: 1.7, stability: 62, influence: 58, techLevel: 4.3, energySecurity: 45, foodSecurity: 82, nuclearStatus: "No arsenal", publicSupport: 52, neutralOpinion: 26, inflationPercent: 1.6, tradeBalancePercent: -1.9, energyDependencePercent: 82, sanctionsExposurePercent: 4, historicalBrief: "Italy enters 2010 managing sovereign debt constraints, Eurozone integration, industrial capacity in the north, and regional Mediterranean diplomacy.", militarySpendingPercent: 1.4, corruptionIndex: 45),
+        "CAN": Native2010CountryProfile(code: "CAN", nominalGDPTrillions: 1.61, gdpGrowthPercent: 3.1, stability: 80, influence: 50, techLevel: 4.4, energySecurity: 88, foodSecurity: 92, nuclearStatus: "No arsenal", publicSupport: 62, neutralOpinion: 24, inflationPercent: 1.8, tradeBalancePercent: -1.5, energyDependencePercent: 10, sanctionsExposurePercent: 2, historicalBrief: "Canada begins 2010 with resilient financial institutions, high commodity exports, Arctic sovereignty discussions, and close integration with North American supply chains.", militarySpendingPercent: 1.4, corruptionIndex: 11),
+        "MEX": Native2010CountryProfile(code: "MEX", nominalGDPTrillions: 1.05, gdpGrowthPercent: 5.1, stability: 56, influence: 42, techLevel: 3.1, energySecurity: 70, foodSecurity: 75, nuclearStatus: "No arsenal", publicSupport: 55, neutralOpinion: 25, inflationPercent: 4.2, tradeBalancePercent: -0.8, energyDependencePercent: 22, sanctionsExposurePercent: 3, historicalBrief: "Mexico enters 2010 rebounding strongly from the global trade contraction, expanding manufacturing exports, managing internal security challenges, and deepening regional trade ties.", militarySpendingPercent: 0.5, corruptionIndex: 69),
+        "KOR": Native2010CountryProfile(code: "KOR", nominalGDPTrillions: 1.14, gdpGrowthPercent: 6.8, stability: 72, influence: 54, techLevel: 4.7, energySecurity: 32, foodSecurity: 65, nuclearStatus: "No arsenal", publicSupport: 58, neutralOpinion: 22, inflationPercent: 2.9, tradeBalancePercent: 4.0, energyDependencePercent: 86, sanctionsExposurePercent: 6, historicalBrief: "South Korea opens 2010 with vigorous export recovery led by electronics and shipbuilding, high technology capacity, and active security vigilance across the Korean Peninsula.", militarySpendingPercent: 2.6, corruptionIndex: 29),
+        "ESP": Native2010CountryProfile(code: "ESP", nominalGDPTrillions: 1.42, gdpGrowthPercent: -0.2, stability: 60, influence: 48, techLevel: 4.1, energySecurity: 42, foodSecurity: 80, nuclearStatus: "No arsenal", publicSupport: 48, neutralOpinion: 28, inflationPercent: 1.8, tradeBalancePercent: -4.5, energyDependencePercent: 78, sanctionsExposurePercent: 3, historicalBrief: "Spain enters 2010 working through the aftermath of the property contraction, restructuring banking networks, and expanding renewable energy capacity across the peninsula.", militarySpendingPercent: 1.2, corruptionIndex: 30),
+        "TUR": Native2010CountryProfile(code: "TUR", nominalGDPTrillions: 0.77, gdpGrowthPercent: 8.5, stability: 58, influence: 52, techLevel: 3.4, energySecurity: 40, foodSecurity: 74, nuclearStatus: "No arsenal", publicSupport: 60, neutralOpinion: 22, inflationPercent: 8.6, tradeBalancePercent: -5.8, energyDependencePercent: 72, sanctionsExposurePercent: 4, historicalBrief: "Turkey begins 2010 with rapid industrial growth, transit corridor leverage connecting Europe and the Middle East, active regional diplomacy, and inflation management.", militarySpendingPercent: 2.3, corruptionIndex: 56),
+        "SAU": Native2010CountryProfile(code: "SAU", nominalGDPTrillions: 0.53, gdpGrowthPercent: 5.0, stability: 68, influence: 58, techLevel: 3.3, energySecurity: 98, foodSecurity: 35, nuclearStatus: "No arsenal", publicSupport: 65, neutralOpinion: 20, inflationPercent: 5.3, tradeBalancePercent: 18.2, energyDependencePercent: 0, sanctionsExposurePercent: 4, historicalBrief: "Saudi Arabia opens 2010 with dominant hydrocarbon export capacity, strong fiscal reserves, active Gulf diplomacy, and early industrial diversification initiatives.", militarySpendingPercent: 8.6, corruptionIndex: 53),
+        "ARG": Native2010CountryProfile(code: "ARG", nominalGDPTrillions: 0.46, gdpGrowthPercent: 10.1, stability: 55, influence: 40, techLevel: 3.2, energySecurity: 68, foodSecurity: 88, nuclearStatus: "No arsenal", publicSupport: 54, neutralOpinion: 25, inflationPercent: 10.5, tradeBalancePercent: 2.5, energyDependencePercent: 14, sanctionsExposurePercent: 5, historicalBrief: "Argentina enters 2010 with strong agricultural commodity export demand, industrial expansion, active Mercosur coordination, and fiscal debt negotiations.", militarySpendingPercent: 0.8, corruptionIndex: 71),
+        "POL": Native2010CountryProfile(code: "POL", nominalGDPTrillions: 0.48, gdpGrowthPercent: 3.6, stability: 69, influence: 44, techLevel: 3.8, energySecurity: 65, foodSecurity: 78, nuclearStatus: "No arsenal", publicSupport: 56, neutralOpinion: 26, inflationPercent: 2.6, tradeBalancePercent: -1.8, energyDependencePercent: 32, sanctionsExposurePercent: 4, historicalBrief: "Poland opens 2010 as one of the few European economies avoiding outright recession, expanding domestic manufacturing, and strengthening regional Eastern European integration.", militarySpendingPercent: 1.8, corruptionIndex: 47)
     ]
 
     static func isReal2010Scenario(_ scenario: NativeScenario) -> Bool {
@@ -160,7 +169,47 @@ enum Native2010WorldModel {
     }
 
     static func profile(for country: PlayerCountry) -> Native2010CountryProfile {
-        profiles[country.code] ?? fallbackProfile
+        if let existing = profiles[country.code] {
+            return existing
+        }
+        return generateDynamicProfile(for: country)
+    }
+
+    private static func generateDynamicProfile(for country: PlayerCountry) -> Native2010CountryProfile {
+        let code = country.code.uppercased()
+        let hash = NativeGameEngine.fnv1aHash("2010-profile-\(code)")
+        let gdpSeed = Double((hash >> 16) & 0xFF) / 255.0
+        let stabilitySeed = Double((hash >> 8) & 0xFF) / 255.0
+        let techSeed = Double(hash & 0xFF) / 255.0
+
+        let nominalGDP = max(0.04, Double(round((0.08 + gdpSeed * 0.45) * 100) / 100))
+        let growth = Double(round((1.5 + gdpSeed * 4.5) * 10) / 10)
+        let stability = clamp(48 + Int(stabilitySeed * 30), 40, 82)
+        let influence = clamp(25 + Int(gdpSeed * 25), 20, 60)
+        let techLevel = Double(round((2.4 + techSeed * 1.8) * 10) / 10)
+        let energySec = clamp(40 + Int(gdpSeed * 40), 20, 85)
+        let foodSec = clamp(45 + Int(stabilitySeed * 38), 25, 90)
+
+        return Native2010CountryProfile(
+            code: code,
+            nominalGDPTrillions: nominalGDP,
+            gdpGrowthPercent: growth,
+            stability: stability,
+            influence: influence,
+            techLevel: techLevel,
+            energySecurity: energySec,
+            foodSecurity: foodSec,
+            nuclearStatus: "No arsenal",
+            publicSupport: clamp(50 + Int((stabilitySeed - 0.5) * 20), 40, 75),
+            neutralOpinion: 25,
+            inflationPercent: Double(round((2.0 + (1.0 - stabilitySeed) * 5.0) * 10) / 10),
+            tradeBalancePercent: Double(round(((gdpSeed - 0.5) * 6.0) * 10) / 10),
+            energyDependencePercent: clamp(30 + Int((1.0 - gdpSeed) * 50), 10, 85),
+            sanctionsExposurePercent: clamp(Int((1.0 - stabilitySeed) * 8), 1, 10),
+            historicalBrief: "\(country.name) opens 2010 balancing internal development priorities, regional diplomatic engagements, and international economic recovery.",
+            militarySpendingPercent: Double(round((1.0 + gdpSeed * 1.5) * 10) / 10),
+            corruptionIndex: clamp(30 + Int((1.0 - stabilitySeed) * 45), 15, 80)
+        )
     }
 
     static func stability(for country: PlayerCountry, scenario: NativeScenario) -> Int {

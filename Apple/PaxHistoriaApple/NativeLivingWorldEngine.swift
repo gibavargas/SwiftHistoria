@@ -597,7 +597,9 @@ enum LivingWorldFactory {
         ("ITA", "Italy", 0.55, 44),
         ("BRA", "Brazil", 0.3, 38),
         ("IND", "British India", 0.25, 340),
-        ("CHI", "China", 0.2, 480)
+        ("CHI", "China", 0.2, 480),
+        ("ZAF", "South Africa", 0.4, 48),
+        ("AUS", "Australia", 0.65, 22)
     ]
 
     static let minorNamePartsA = ["New", "Upper", "Lower", "Coastal", "Highland", "Northern", "Southern", "Eastern", "Western", "Free"]
@@ -631,6 +633,22 @@ enum LivingWorldFactory {
                 pop: core.pop,
                 rng: rng,
                 stream: "gen-\(core.code)"
+            )
+        }
+
+        // Ensure the player's chosen country always exists in the world simulation
+        if let player = playerCode, countries[player] == nil {
+            let name = CountryCatalog.all.first { $0.code == player }?.name ?? player
+            let profile = Native2010WorldModel.profile(for: PlayerCountry(code: player, name: name))
+            let industrial = max(0.15, min(0.95, Double(profile.techLevel) / 5.0))
+            let pop = max(5.0, min(300.0, Double(profile.nominalGDPTrillions * 30.0) + 12.0))
+            countries[player] = makeCountry(
+                code: player,
+                name: name,
+                industrial: industrial,
+                pop: pop,
+                rng: rng,
+                stream: "gen-\(player)"
             )
         }
 

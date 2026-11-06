@@ -23052,7 +23052,30 @@ public struct NativeAlternativeHistoryCatalog {
         }
 
         let countryCandidates = NativeCountryEventsCatalog.candidateDecisions(forCountry: playerCountry, state: state)
-        return filteredScenario + countryCandidates
+
+        // If an explicit chain requirement is active, return that specific event
+        if let requiredChain = state.eventFlags["next_chain"], !requiredChain.isEmpty {
+            if let matchedCountry = countryCandidates.first(where: { $0.id == requiredChain }) {
+                return [matchedCountry]
+            }
+            if let matchedScenario = filteredScenario.first(where: { $0.id == requiredChain }) {
+                return [matchedScenario]
+            }
+        }
+
+        // Interleave country events with scenario events so the player experiences
+        // their country's unique event tree starting from turn 1 alongside global crises
+        var combined: [NativeCampaignEvent] = []
+        let maxCount = max(countryCandidates.count, filteredScenario.count)
+        for i in 0 ..< maxCount {
+            if i < countryCandidates.count {
+                combined.append(countryCandidates[i])
+            }
+            if i < filteredScenario.count {
+                combined.append(filteredScenario[i])
+            }
+        }
+        return combined
     }
 
     /// Bridges a NativeCampaignEvent into a NativeLivingWorldEngine LWDecisionEvent

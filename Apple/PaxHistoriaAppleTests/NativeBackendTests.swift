@@ -5113,6 +5113,104 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         let updatedCandidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
         XCTAssertFalse(updatedCandidates.contains { $0.id == "evt-bra-001" }, "Triggered event must be filtered out")
     }
+
+    func testAllCountriesPlayableAndCompleteWithEvents() {
+        let countries = CountryCatalog.all
+        XCTAssertGreaterThanOrEqual(countries.count, 190, "Must have comprehensive sovereign nation coverage")
+
+        // Spot-check diverse world nations across continents
+        let testCodes = ["CAN", "MEX", "ARG", "KOR", "ESP", "TUR", "SAU", "POL", "EGY", "NLD", "SWE", "CHL", "COL", "NGA", "KEN", "VNM"]
+        for code in testCodes {
+            guard let country = countries.first(where: { $0.code == code }) else {
+                XCTFail("Country \(code) must exist in CountryCatalog.all")
+                continue
+            }
+
+            // Verify complete profile
+            let profile = Native2010WorldModel.profile(for: country)
+            XCTAssertGreaterThan(profile.nominalGDPTrillions, 0, "\(code) must have positive GDP")
+            XCTAssertGreaterThan(profile.stability, 0, "\(code) must have positive stability")
+            XCTAssertFalse(profile.historicalBrief.isEmpty, "\(code) must have non-empty brief")
+
+            // Verify 100 events
+            let events = NativeCountryEventsCatalog.events(forCountryCode: code)
+            XCTAssertEqual(events.count, 100, "\(code) must have exactly 100 country-specific events")
+            let uniqueIDs = Set(events.map { $0.id })
+            XCTAssertEqual(uniqueIDs.count, 100, "\(code) must have 100 unique event IDs")
+
+            // Verify first event has country name and valid structure
+            if let firstEvent = events.first {
+                XCTAssertTrue(firstEvent.id.hasPrefix("evt-\(code.lowercased())-001"))
+                XCTAssertTrue(firstEvent.title.contains(country.name) || firstEvent.title.contains(code))
+                XCTAssertNotNil(firstEvent.decisionOptions)
+                XCTAssertGreaterThanOrEqual(firstEvent.decisionOptions?.count ?? 0, 2)
+            }
+        }
+    }
+
+    func testFlagshipCountriesStatus() {
+        let flagshipCodes = ["BRA", "USA", "GBR", "FRA", "DEU", "ITA", "RUS", "CHN", "JPN", "IND", "ZAF", "AUS"]
+        for code in flagshipCodes {
+            XCTAssertTrue(NativeCountryEventsCatalog.isFlagshipCountry(code), "\(code) must be identified as a flagship nation")
+        }
+
+        XCTAssertFalse(NativeCountryEventsCatalog.isFlagshipCountry("CAN"), "CAN should be identified as sovereign dynamic nation")
+        XCTAssertFalse(NativeCountryEventsCatalog.isFlagshipCountry("MEX"), "MEX should be identified as sovereign dynamic nation")
+    }
+
+    func testDynamicCountryEventsIntegrityAndTokens() {
+        let validMechanics: Set<String> = ["⟦ECO⟧", "⟦STB⟧", "⟦SEC⟧", "⟦MIL⟧", "⟦DIP⟧", "⟦MKT⟧", "⟦TNS⟧"]
+        let canEvents = NativeCountryEventsCatalog.events(forCountryCode: "CAN")
+        XCTAssertEqual(canEvents.count, 100)
+
+        for event in canEvents {
+            XCTAssertFalse(event.id.isEmpty)
+            XCTAssertFalse(event.title.isEmpty)
+            XCTAssertFalse(event.description.isEmpty)
+            XCTAssertFalse(event.date.isEmpty)
+            XCTAssertNotNil(event.imageAssetName)
+            XCTAssertFalse(event.strategicEffects.isEmpty)
+
+            guard let options = event.decisionOptions, options.count >= 2 else {
+                XCTFail("Event \(event.id) must offer at least 2 executive options")
+                continue
+            }
+
+            for opt in options {
+                XCTAssertFalse(opt.id.isEmpty)
+                XCTAssertFalse(opt.title.isEmpty)
+                XCTAssertFalse(opt.description.isEmpty)
+                XCTAssertTrue(validMechanics.contains(opt.mechanicToken), "Token \(opt.mechanicToken) must be recognized")
+            }
+        }
+    }
+
+    func testLivingWorldFactorySupportsAnyCountry() {
+        // Test Flagship countries
+        let zafWorld = LivingWorldFactory.makeWorld(seed: 42, playerCode: "ZAF")
+        XCTAssertNotNil(zafWorld.countries["ZAF"], "South Africa must exist in Living World")
+
+        let ausWorld = LivingWorldFactory.makeWorld(seed: 42, playerCode: "AUS")
+        XCTAssertNotNil(ausWorld.countries["AUS"], "Australia must exist in Living World")
+
+        // Test non-flagship sovereign country
+        let canWorld = LivingWorldFactory.makeWorld(seed: 42, playerCode: "CAN")
+        XCTAssertNotNil(canWorld.countries["CAN"], "Canada must be dynamically created in Living World")
+        XCTAssertEqual(canWorld.playerCountryCode, "CAN")
+        XCTAssertGreaterThan(canWorld.countries["CAN"]?.population ?? 0, 0)
+    }
+
+    func testCandidateDecisionsInterleavingForImmediateCountryPlay() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "BRA", name: "Brazil")
+        state.round = 1
+
+        let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(candidates.isEmpty)
+        // First candidate should be Brazil's country event due to interleaving
+        XCTAssertEqual(candidates.first?.id, "evt-bra-001", "Country events must be interleaved at the start of candidates for immediate engagement")
+    }
 }
 
 @MainActor

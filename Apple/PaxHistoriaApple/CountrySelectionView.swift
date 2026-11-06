@@ -52,6 +52,14 @@ struct CountrySelectionView: View {
         }
     }
 
+    private var flagshipCountries: [PlayerCountry] {
+        filteredCountries.filter { NativeCountryEventsCatalog.isFlagshipCountry($0.code) }
+    }
+
+    private var nonFlagshipCountries: [PlayerCountry] {
+        filteredCountries.filter { !NativeCountryEventsCatalog.isFlagshipCountry($0.code) }
+    }
+
     private var selectedScenarioAccentColor: Color {
         if let scenario = scenarios.first(where: { $0.id == selectedScenarioID }) {
             return Color(hex: scenario.accentColor)
@@ -321,8 +329,8 @@ struct CountrySelectionView: View {
 
     private var countryList: some View {
         List {
-            Section {
-                if filteredCountries.isEmpty {
+            if filteredCountries.isEmpty {
+                Section {
                     ContentUnavailableView(
                         "No country matched that search.",
                         systemImage: "magnifyingglass",
@@ -330,41 +338,83 @@ struct CountrySelectionView: View {
                     )
                     .listRowBackground(Color.clear)
                     .accessibilityIdentifier("native-country-empty")
-                } else {
+                }
+            } else if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Section {
                     if !canProceedFromProviderStep, NativeSimulationMode.current() != .livingWorld {
-                        Label(
-                            "Enter the selected provider API key before starting.",
-                            systemImage: "exclamationmark.triangle"
-                        )
-                        .font(.caption)
-                        .foregroundStyle(Color.alertGold)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .listRowBackground(Color.clear)
-                        .accessibilityIdentifier("native-provider-start-warning")
+                        providerWarning
                     }
-
                     ForEach(filteredCountries) { country in
-                        Button {
-                            onSelect(country)
-                        } label: {
-                            CountryRow(country: country)
-                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(!canProceedFromProviderStep && NativeSimulationMode.current() != .livingWorld)
-                        .accessibilityLabel("\(country.name), ISO code \(country.code)")
-                        .accessibilityHint("Starts a campaign as \(country.name).")
-                        .accessibilityIdentifier("native-country-option-\(country.code)")
+                        countryButton(country)
+                    }
+                } header: {
+                    Text("Matching Nations (\(filteredCountries.count))")
+                }
+            } else {
+                Section {
+                    if !canProceedFromProviderStep, NativeSimulationMode.current() != .livingWorld {
+                        providerWarning
+                    }
+                    ForEach(flagshipCountries) { country in
+                        countryButton(country)
+                    }
+                } header: {
+                    HStack {
+                        Text("Flagship Complete Powers (12 Nations)")
+                        Spacer()
+                        Text("100 Bespoke Events Each")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Color.alertGold)
                     }
                 }
-            } header: {
-                Text("Countries")
+
+                Section {
+                    ForEach(nonFlagshipCountries) { country in
+                        countryButton(country)
+                    }
+                } header: {
+                    HStack {
+                        Text("All Sovereign Nations (\(nonFlagshipCountries.count) Nations)")
+                        Spacer()
+                        Text("100 Events Each")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Color.glowingCyan)
+                    }
+                }
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color.black.opacity(0.25))
         .accessibilityIdentifier("native-country-list")
+    }
+
+    @ViewBuilder
+    private var providerWarning: some View {
+        Label(
+            "Enter the selected provider API key before starting.",
+            systemImage: "exclamationmark.triangle"
+        )
+        .font(.caption)
+        .foregroundStyle(Color.alertGold)
+        .fixedSize(horizontal: false, vertical: true)
+        .listRowBackground(Color.clear)
+        .accessibilityIdentifier("native-provider-start-warning")
+    }
+
+    @ViewBuilder
+    private func countryButton(_ country: PlayerCountry) -> some View {
+        Button {
+            onSelect(country)
+        } label: {
+            CountryRow(country: country)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .disabled(!canProceedFromProviderStep && NativeSimulationMode.current() != .livingWorld)
+        .accessibilityLabel("\(country.name), ISO code \(country.code)")
+        .accessibilityHint("Starts a campaign as \(country.name).")
+        .accessibilityIdentifier("native-country-option-\(country.code)")
     }
 
     private var header: some View {
@@ -681,11 +731,51 @@ private struct CountryRow: View {
     @State private var isHovered = false
 
     var body: some View {
+        let profile = Native2010WorldModel.profile(for: country)
+        let flag = CountryCatalog.flagEmoji(forAlpha3: country.code) ?? "🌐"
+        let isFlagship = NativeCountryEventsCatalog.isFlagshipCountry(country.code)
+
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(country.name)
-                    .font(NativeWarRoomTheme.bodyFont(.body, weight: .semibold))
-                    .foregroundStyle(isHovered ? Color.accentColor : Color.primary)
+            Text(flag)
+                .font(.title3)
+
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(country.name)
+                        .font(NativeWarRoomTheme.bodyFont(.body, weight: .semibold))
+                        .foregroundStyle(isHovered ? Color.accentColor : Color.primary)
+
+                    if isFlagship {
+                        Text("FLAGSHIP")
+                            .font(.system(size: 8, weight: .black, design: .monospaced))
+                            .foregroundStyle(Color.alertGold)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1.5)
+                            .background(Color.alertGold.opacity(0.16), in: Capsule())
+                    }
+                }
+
+                HStack(spacing: 6) {
+                    Text(String(format: "$%.2fT GDP", profile.nominalGDPTrillions))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+
+                    Text("•")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+
+                    Text("\(profile.stability)% STB")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(profile.stability >= 65 ? Color.brightGreen : (profile.stability >= 50 ? Color.alertGold : Color.alertRed))
+
+                    Text("•")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+
+                    Text("100 Events")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(Color.glowingCyan)
+                }
             }
 
             Spacer()

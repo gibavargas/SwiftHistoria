@@ -368,24 +368,33 @@ enum NativeStrategyContextDatabase {
 
     static func adjacentCountryCodes(for countryCode: String) -> [String] {
         switch countryCode {
-        case "USA": ["CHN", "RUS", "GBR", "FRA"]
-        case "CHN": ["RUS", "IND", "JPN"]
-        case "BRA": ["USA", "ZAF"]
-        case "DEU": ["FRA", "GBR", "RUS"]
-        case "JPN": ["CHN", "RUS", "AUS"]
-        case "GBR": ["FRA", "DEU", "USA"]
-        case "FRA": ["DEU", "GBR", "ZAF"]
-        case "IND": ["CHN", "RUS", "ZAF"]
-        case "RUS": ["CHN", "DEU", "JPN", "USA"]
-        case "ZAF": ["BRA", "IND", "FRA"]
-        case "AUS": ["JPN", "IND", "USA"]
-        default: []
+        case "USA": ["CHN", "RUS", "GBR", "FRA", "CAN", "MEX"]
+        case "CHN": ["RUS", "IND", "JPN", "KOR"]
+        case "BRA": ["USA", "ZAF", "ARG"]
+        case "DEU": ["FRA", "GBR", "RUS", "ITA", "POL"]
+        case "JPN": ["CHN", "RUS", "AUS", "KOR", "USA"]
+        case "GBR": ["FRA", "DEU", "USA", "CAN"]
+        case "FRA": ["DEU", "GBR", "ZAF", "ITA", "ESP"]
+        case "IND": ["CHN", "RUS", "ZAF", "GBR"]
+        case "RUS": ["CHN", "DEU", "JPN", "USA", "POL"]
+        case "ZAF": ["BRA", "IND", "FRA", "GBR"]
+        case "AUS": ["JPN", "IND", "USA", "GBR"]
+        case "ITA": ["FRA", "DEU", "GBR", "ESP"]
+        case "CAN": ["USA", "GBR", "FRA"]
+        case "MEX": ["USA", "BRA", "ESP"]
+        case "KOR": ["JPN", "USA", "CHN"]
+        case "ESP": ["FRA", "GBR", "ITA", "DEU"]
+        case "TUR": ["RUS", "DEU", "FRA", "SAU"]
+        case "SAU": ["USA", "TUR", "FRA", "GBR"]
+        case "ARG": ["BRA", "USA", "ESP"]
+        case "POL": ["DEU", "RUS", "FRA", "GBR"]
+        default: ["USA", "GBR", "DEU", "CHN"]
         }
     }
 
     static func startingGovernmentType(for code: String) -> String {
         switch code {
-        case "CHN": "autocracy"
+        case "CHN", "SAU": "autocracy"
         case "RUS": "hybrid"
         default: "democracy"
         }
@@ -399,7 +408,7 @@ enum NativeStrategyContextDatabase {
 
     static func democraticSubtype(for code: String) -> DemocraticSubtype {
         switch code {
-        case "GBR", "DEU", "ZAF", "IND", "JPN", "AUS":
+        case "GBR", "DEU", "ZAF", "IND", "JPN", "AUS", "ITA", "CAN", "ESP", "TUR", "POL":
             .parliamentary
         case "FRA":
             .semiPresidential
@@ -435,6 +444,16 @@ enum NativeStrategyContextDatabase {
             ElectionProfile(startingRound: 8, cycleLength: 36) // August 2010 (3 years)
         case "RUS":
             ElectionProfile(startingRound: 27, cycleLength: 72) // March 2012 (6 years)
+        case "ITA":
+            ElectionProfile(startingRound: 37, cycleLength: 60) // February 2013 (5 years)
+        case "CAN":
+            ElectionProfile(startingRound: 16, cycleLength: 48) // May 2011 (4 years)
+        case "MEX":
+            ElectionProfile(startingRound: 30, cycleLength: 72) // July 2012 (6 years)
+        case "ESP":
+            ElectionProfile(startingRound: 23, cycleLength: 48) // November 2011 (4 years)
+        case "KOR":
+            ElectionProfile(startingRound: 36, cycleLength: 60) // December 2012 (5 years)
         default:
             ElectionProfile(startingRound: 48, cycleLength: 48)
         }
@@ -442,7 +461,7 @@ enum NativeStrategyContextDatabase {
 
     static func startingEconomicLedger(for country: PlayerCountry, scenario _: NativeScenario) -> NativeEconomicLedger {
         let profile = Native2010WorldModel.profile(for: country)
-        let supplement = economicSupplements[country.code] ?? economicSupplements["GLOBAL"]!
+        let supplement = economicSupplement(for: country.code, profile: profile)
         let openingSecurity = clampDouble(Double(profile.stability) + 18.0 - Double(profile.sanctionsExposurePercent) * 0.35, 35, 92)
         let openingRebelPressure = clampDouble(
             Double(100 - profile.stability) * 0.16 + Double(supplement.unemployment) * 0.22 - Double(supplement.fiscalSpace) * 0.04,
@@ -946,8 +965,28 @@ enum NativeStrategyContextDatabase {
         "RUS": (-3.4, 12.0, 7.3, 62),
         "ZAF": (-4.8, 34.0, 24.7, 36),
         "AUS": (-4.2, 20.0, 5.2, 69),
+        "ITA": (-5.3, 115.0, 8.4, 40),
+        "CAN": (-4.8, 81.0, 8.0, 60),
+        "MEX": (-2.8, 42.0, 5.3, 58),
+        "KOR": (-1.1, 30.0, 3.7, 72),
+        "ESP": (-9.4, 60.0, 19.9, 32),
+        "TUR": (-3.0, 40.0, 10.7, 52),
+        "SAU": (6.8, 8.0, 5.5, 85),
+        "ARG": (-1.8, 43.0, 7.7, 45),
+        "POL": (-7.3, 53.0, 9.7, 50),
         "GLOBAL": (-3.5, 58.0, 8.0, 48)
     ]
+
+    static func economicSupplement(for code: String, profile: Native2010CountryProfile) -> (budgetBalance: Double, publicDebt: Double, unemployment: Double, fiscalSpace: Int) {
+        if let exact = economicSupplements[code] {
+            return exact
+        }
+        let debt = clampDouble(Double(100 - profile.stability) * 0.75 + Double(profile.sanctionsExposurePercent) * 2.0 + 38.0, 18, 120)
+        let unemp = clampDouble(Double(100 - profile.stability) * 0.16 + 4.8, 3.5, 24.0)
+        let balance = clampDouble(profile.tradeBalancePercent * 0.45 - 3.4, -9.0, 4.0)
+        let fiscalSpace = clamp(Int(100 - debt * 0.55 + Double(profile.energySecurity) * 0.2), 18, 82)
+        return (balance, debt, unemp, fiscalSpace)
+    }
 
     private static let factRecords: [NativeFactRecord] = [
         NativeFactRecord(countryCodes: ["GLOBAL"], detail: "The opening economy is still absorbing the 2008-2009 financial shock, with fiscal stimulus unwinding unevenly.", id: "GLOBAL_2010_POST_CRISIS_RECOVERY", startDate: "2010-01-01", tags: ["budget", "growth", "market", "fiscal"], title: "Post-crisis recovery"),
