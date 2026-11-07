@@ -1289,7 +1289,9 @@ enum NativeGameEngine {
             techEra: state.techEra,
             researchPoints: state.researchPoints,
             budgetResearchSlider: state.budgetResearchSlider,
-            militaryUnits: nextMilitaryUnits
+            militaryUnits: nextMilitaryUnits,
+            pendingEventDecision: state.pendingEventDecision,
+            eventFlags: state.eventFlags
         )
 
         NativeStrategyContextDatabase.simulateAIDrift(state: &finalState, months: months)

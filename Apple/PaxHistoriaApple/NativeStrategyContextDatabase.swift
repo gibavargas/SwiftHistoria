@@ -2618,8 +2618,10 @@ enum NativeStrategyContextDatabase {
         // cascade into chaos.
         simulateRivalGeopolitics(state: &state, months: months)
 
-        // Evaluate alternative history scenario event chains
-        evaluateAlternativeHistoryEvents(state: &state)
+        // Evaluate alternative history scenario event chains when active
+        if !state.eventFlags.isEmpty {
+            evaluateAlternativeHistoryEvents(state: &state)
+        }
 
         // Sync player's main ledger
         if let playerLedger = state.economicLedgers[state.country.code] {

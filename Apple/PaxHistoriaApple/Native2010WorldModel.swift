@@ -169,6 +169,9 @@ enum Native2010WorldModel {
     }
 
     static func profile(for country: PlayerCountry) -> Native2010CountryProfile {
+        if country.code.uppercased() == "GLOBAL" {
+            return fallbackProfile
+        }
         if let existing = profiles[country.code] {
             return existing
         }

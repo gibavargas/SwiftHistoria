@@ -445,8 +445,10 @@ enum LivingWorldTick {
         }
 
         // 7.5. Alternative History & Dynamic Causality Event Chains
-        let chainEvents = processEventChains(world: &world, rng: rng)
-        newEvents.append(contentsOf: chainEvents)
+        if !world.eventFlags.isEmpty {
+            let chainEvents = processEventChains(world: &world, rng: rng)
+            newEvents.append(contentsOf: chainEvents)
+        }
 
         // 8. History (presentational feed cap; state keeps authoritative tail).
         newEvents.sort { $0.day < $1.day }
