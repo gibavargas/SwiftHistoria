@@ -766,7 +766,7 @@ private struct CountryRow: View {
 
                     Text("\(profile.stability)% STB")
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(profile.stability >= 65 ? Color.brightGreen : (profile.stability >= 50 ? Color.alertGold : Color.alertRed))
+                        .foregroundStyle(profile.stability >= 65 ? Color.neonTeal : (profile.stability >= 50 ? Color.alertGold : Color.softRed))
 
                     Text("•")
                         .font(.caption2)

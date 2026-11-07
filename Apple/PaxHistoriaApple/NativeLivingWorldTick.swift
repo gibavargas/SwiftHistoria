@@ -1115,7 +1115,7 @@ enum LivingWorldTick {
                 id: "cyber-fiber-blackout",
                 day: day,
                 title: "The Subsea Fiber Fracture: Algorithmic Flash Crash",
-                summary: "Simultaneous fiber cuts across oceanic trunks blind international clearing corridors. Autonomous high-frequency DAOs trigger \$4T in cascade liquidations.",
+                summary: "Simultaneous fiber cuts across oceanic trunks blind international clearing corridors. Autonomous high-frequency DAOs trigger $4T in cascade liquidations.",
                 countryCode: target,
                 rarity: .rare,
                 severity: 0.9,

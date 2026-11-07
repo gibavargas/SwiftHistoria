@@ -150,7 +150,7 @@ struct LivingWorldGameView: View {
             .accessibilityIdentifier("living-world-game")
 
             if let pending = session.world.pendingDecision {
-                LivingWorldDecisionModalView(decision: pending) { option in
+                LivingWorldDecisionModalView(decision: pending, language: session.world.language) { option in
                     session.chooseDecisionOption(option)
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
@@ -173,7 +173,7 @@ struct LivingWorldGameView: View {
             .accessibilityIdentifier("lw-play-pause")
 
             if session.world.pendingDecision != nil {
-                Text("DECISION REQUIRED")
+                Text(LWProse.string(.uiDecisionRequired, language: session.world.language))
                     .font(.system(size: 9, weight: .bold, design: .monospaced))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
@@ -358,7 +358,7 @@ struct LivingWorldGameView: View {
                                 .cornerRadius(3)
                         }
                     }
-                    Text(event.title).font(.caption.weight(.semibold))
+                    Text(LWProse.localizedTitle(event.title, language: session.world.language)).font(.caption.weight(.semibold))
                     Text(event.summary).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                 }
                 .padding(.vertical, 3)
@@ -468,6 +468,7 @@ struct HashBridgeCard: View {
 
 struct LivingWorldDecisionModalView: View {
     let decision: LWDecisionEvent
+    var language: NativeGameLanguage = .english
     let onChoose: (LWDecisionOption) -> Void
 
     var body: some View {
@@ -478,7 +479,7 @@ struct LivingWorldDecisionModalView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
-                        Label("EXECUTIVE DECISION REQUIRED", systemImage: "exclamationmark.triangle.fill")
+                        Label(LWProse.string(.uiExecutiveDecisionRequired, language: language), systemImage: "exclamationmark.triangle.fill")
                             .font(.system(.caption, design: .monospaced).weight(.bold))
                             .foregroundStyle(Color.softRed)
                         Spacer()
@@ -492,7 +493,7 @@ struct LivingWorldDecisionModalView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(decision.title)
+                        Text(LWProse.localizedTitle(decision.title, language: language))
                             .font(.title2.weight(.bold))
                             .foregroundStyle(Color.iceBlue)
 
@@ -504,7 +505,7 @@ struct LivingWorldDecisionModalView: View {
 
                     Divider()
 
-                    Text("POLICY DIRECTIVES")
+                    Text(LWProse.string(.uiPolicyDirectives, language: language))
                         .font(.system(size: 11, weight: .bold, design: .monospaced))
                         .foregroundStyle(Color.neonTeal)
 

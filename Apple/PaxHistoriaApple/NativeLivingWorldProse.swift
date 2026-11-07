@@ -56,6 +56,10 @@ enum LWProseKey: String, CaseIterable {
     // HUD situation line (NativeLivingWorldUI.swift, date-first variant)
     case uiSituationWar
     case uiSituationPeace
+    // Decision event UI & prose
+    case uiDecisionRequired
+    case uiExecutiveDecisionRequired
+    case uiPolicyDirectives
 }
 
 enum LWProse {
@@ -244,6 +248,53 @@ enum LWProse {
             .english: "{date} — an uneasy peace holds",
             .portuguese: "{date} — uma paz instável persiste",
             .spanish: "{date} — una paz inquieta se mantiene"
+        ],
+        .uiDecisionRequired: [
+            .english: "DECISION REQUIRED",
+            .portuguese: "DECISÃO NECESSÁRIA",
+            .spanish: "DECISIÓN REQUERIDA"
+        ],
+        .uiExecutiveDecisionRequired: [
+            .english: "EXECUTIVE DECISION REQUIRED",
+            .portuguese: "DECISÃO EXECUTIVA NECESSÁRIA",
+            .spanish: "DECISIÓN EJECUTIVA REQUERIDA"
+        ],
+        .uiPolicyDirectives: [
+            .english: "POLICY DIRECTIVES",
+            .portuguese: "DIRETRIZES DE POLÍTICA",
+            .spanish: "DIRECTIVAS DE POLÍTICA"
         ]
     ]
+
+    /// Resolves localized event title framing.
+    /// Canonical historical event trees are authored in English; this provides localized
+    /// prefixes and translation bridges for Portuguese and Spanish game sessions.
+    static func localizedTitle(_ title: String, language: NativeGameLanguage) -> String {
+        guard language != .english else { return title }
+        switch language {
+        case .portuguese:
+            if title.hasPrefix("Crisis in ") {
+                return title.replacingOccurrences(of: "Crisis in ", with: "Crise em ")
+            }
+            if title.hasPrefix("Peace: ") {
+                return title.replacingOccurrences(of: "Peace: ", with: "Paz: ")
+            }
+            if title.hasPrefix("Alliance signed") {
+                return "Aliança assinada"
+            }
+        case .spanish:
+            if title.hasPrefix("Crisis in ") {
+                return title.replacingOccurrences(of: "Crisis in ", with: "Crisis en ")
+            }
+            if title.hasPrefix("Peace: ") {
+                return title.replacingOccurrences(of: "Peace: ", with: "Paz: ")
+            }
+            if title.hasPrefix("Alliance signed") {
+                return "Alianza firmada"
+            }
+        case .english:
+            break
+        }
+        return title
+    }
 }

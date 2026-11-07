@@ -470,6 +470,10 @@ enum Native2010WorldModel {
         max(0, min(100, value))
     }
 
+    private static func clamp(_ value: Int, _ minVal: Int, _ maxVal: Int) -> Int {
+        max(minVal, min(maxVal, value))
+    }
+
     private static func formatPercent(_ value: Double) -> String {
         String(format: "%+.1f%%", value)
     }

@@ -10,7 +10,7 @@
 
 import Foundation
 
-public struct NativeAlternativeHistoryCatalog {
+struct NativeAlternativeHistoryCatalog {
     // MARK: - Batch: batch_ah_sov_1 (25 events)
     private static let batch_ah_sov_1: [NativeCampaignEvent] = [
         NativeCampaignEvent(
@@ -39,8 +39,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-001-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Direct Sovereign Executive Action on GKChP State Emergency Committee",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of gkchp state emergency committee. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sov-002",
@@ -48,8 +48,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-001-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Devolve Operational Execution for GKChP State Emergency Committee",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of gkchp state emergency committee. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-003",
@@ -57,8 +57,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-001-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for GKChP State Emergency Committee",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for gkchp state emergency committee. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sov-003",
@@ -93,8 +93,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-002-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for Moscow Military District Armor Curfew",
+                    detail: "Position frontline military detachments to secure vital perimeters during moscow military district armor curfew. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-003",
@@ -102,8 +102,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-002-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on Moscow Military District Armor Curfew",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding moscow military district armor curfew. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-004",
@@ -138,8 +138,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-003-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Accelerate High-Throughput Works on RSFSR White House Barricade Negotiation",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in rsfsr white house barricade negotiation. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-004",
@@ -147,8 +147,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-003-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Auction Terminal Operating Franchises in RSFSR White House Barricade Negotiation",
+                    detail: "Invite competitive international container operators to modernize facilities for rsfsr white house barricade negotiation. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-005",
@@ -183,8 +183,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-004-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Leningrad Military District Logistics Securitization",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for leningrad military district logistics securitization. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-005",
@@ -192,8 +192,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-004-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Leningrad Military District Logistics Securitization",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for leningrad military district logistics securitization. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-006",
@@ -228,8 +228,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-005-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Arrest of Cooperative Commodity Speculators",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in arrest of cooperative commodity speculators. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-006",
@@ -237,8 +237,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-005-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Arrest of Cooperative Commodity Speculators",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for arrest of cooperative commodity speculators. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-007",
@@ -273,8 +273,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-006-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Direct Sovereign Executive Action on State Television Centralized Broadcast Directive",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of state television centralized broadcast directive. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-007",
@@ -282,8 +282,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-006-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Devolve Operational Execution for State Television Centralized Broadcast Directive",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of state television centralized broadcast directive. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-008",
@@ -318,8 +318,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-007-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Air-Gap Sovereign Networks for New Union Treaty Federal Council Compromise",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for new union treaty federal council compromise. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-008",
@@ -327,8 +327,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-007-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Incentivize Venture Capital in New Union Treaty Federal Council Compromise",
+                    detail: "Create state matching venture funds for domestic startups commercializing new union treaty federal council compromise. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-009",
@@ -363,8 +363,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-008-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for KGB 9th Directorate Electronic Signals Reorganization",
+                    detail: "Channel public technological subsidies into domestic foundries to support kgb 9th directorate electronic signals reorganization. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-009",
@@ -372,8 +372,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-008-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for KGB 9th Directorate Electronic Signals Reorganization",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in kgb 9th directorate electronic signals reorganization. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-010",
@@ -408,8 +408,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-009-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for West Siberian Gas Pipeline Protection",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of west siberian gas pipeline protection. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-010",
@@ -417,8 +417,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-009-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for West Siberian Gas Pipeline Protection",
+                    detail: "Incentivize private utility operators and international consortiums to fund west siberian gas pipeline protection. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-011",
@@ -453,8 +453,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-010-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Finance Strategic Water Reservoirs in Baltic Maritime Customs Patrol Surge",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in baltic maritime customs patrol surge. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-011",
@@ -462,8 +462,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-010-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Public-Private Partnerships on Baltic Maritime Customs Patrol Surge",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain baltic maritime customs patrol surge. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-012",
@@ -498,8 +498,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-011-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over Ukrainian Black Earth Grain Quota",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for ukrainian black earth grain quota. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-012",
@@ -507,8 +507,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-011-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on Ukrainian Black Earth Grain Quota",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for ukrainian black earth grain quota. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-013",
@@ -543,8 +543,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-012-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over Transcaucasian Railway Electrification Corridor",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of transcaucasian railway electrification corridor. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-013",
@@ -552,8 +552,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-012-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for Transcaucasian Railway Electrification Corridor",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in transcaucasian railway electrification corridor. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-014",
@@ -588,8 +588,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-013-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on Baikonur Cosmodrome Defense Readiness Alert",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for baikonur cosmodrome defense readiness alert. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-014",
@@ -597,8 +597,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-013-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in Baikonur Cosmodrome Defense Readiness Alert",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for baikonur cosmodrome defense readiness alert. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-015",
@@ -633,8 +633,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-014-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Deploy Defensive Cyber Shields for Gosplan Emergency Session on Price Controls",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during gosplan emergency session on price controls. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-015",
@@ -642,8 +642,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-014-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Deregulate Commercial Innovation in Gosplan Emergency Session on Price Controls",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for gosplan emergency session on price controls. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-016",
@@ -678,8 +678,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-015-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Commission State Ordnance Surge for Warsaw Pact Supreme Command Emergency Review",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for warsaw pact supreme command emergency review. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sov-016",
@@ -687,8 +687,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-015-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Outsource Component Production for Warsaw Pact Supreme Command Emergency Review",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for warsaw pact supreme command emergency review. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-017",
@@ -696,8 +696,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-015-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Ratify Constitutional Framework for Warsaw Pact Supreme Command Emergency Review",
+                    detail: "Enact binding constitutional amendments guaranteeing long-term sovereign governance over warsaw pact supreme command emergency review. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sov-017",
@@ -732,8 +732,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-016-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
+                    label: "Nationalize OGAS-2 Cybernetic Planning Network Activation Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over ogas-2 cybernetic planning network activation. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sov-017",
@@ -741,8 +741,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-016-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Deregulate Merchant Generation in OGAS-2 Cybernetic Planning Network Activation",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for ogas-2 cybernetic planning network activation. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-018",
@@ -750,8 +750,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-016-opt-c",
-                    label: "Proclaim Landmark International Convention",
-                    detail: "Codify universal guidelines governing planetary infrastructure, peace, and collective security. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
+                    label: "Inaugurate Federal Reorganization Authority for OGAS-2 Cybernetic Planning Network Activation",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for ogas-2 cybernetic planning network activation. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
                     effectTrack: .worldTension,
                     effectMagnitude: -3,
                     nextChainedEventID: "ah-sov-018",
@@ -786,8 +786,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-017-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Air-Gap Sovereign Networks for Minsk Cybernetics Institute Computer Integration",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for minsk cybernetics institute computer integration. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-018",
@@ -795,8 +795,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-017-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Venture Capital in Minsk Cybernetics Institute Computer Integration",
+                    detail: "Create state matching venture funds for domestic startups commercializing minsk cybernetics institute computer integration. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-019",
@@ -831,8 +831,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-018-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate High-Throughput Works on Automated Magnitogorsk Steel Rolling Quota",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in automated magnitogorsk steel rolling quota. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-019",
@@ -840,8 +840,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-018-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Terminal Operating Franchises in Automated Magnitogorsk Steel Rolling Quota",
+                    detail: "Invite competitive international container operators to modernize facilities for automated magnitogorsk steel rolling quota. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-020",
@@ -876,8 +876,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-019-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Establish Non-Dollar Settlement for Comecon Barter Clearing Unit Settlement",
+                    detail: "Conclude bilateral sovereign clearing protocols to insulate domestic trade during comecon barter clearing unit settlement. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-020",
@@ -885,8 +885,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-019-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Negotiate Market Syndication for Comecon Barter Clearing Unit Settlement",
+                    detail: "Partner with commercial banking consortia and multilateral lenders to refinance comecon barter clearing unit settlement. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-021",
@@ -921,8 +921,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-020-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Kiev Cybernetics Academy Economic Algorithm Test",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for kiev cybernetics academy economic algorithm test. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-021",
@@ -930,8 +930,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-020-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Kiev Cybernetics Academy Economic Algorithm Test",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for kiev cybernetics academy economic algorithm test. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-022",
@@ -966,8 +966,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-021-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Synthetic Rubber Automated Production Quota",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of synthetic rubber automated production quota. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-022",
@@ -975,8 +975,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-021-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Synthetic Rubber Automated Production Quota",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of synthetic rubber automated production quota. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-023",
@@ -1011,8 +1011,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-022-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Chelyabinsk Tractor Factory Robotic Assembly Cell",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of chelyabinsk tractor factory robotic assembly cell. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-023",
@@ -1020,8 +1020,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-022-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Chelyabinsk Tractor Factory Robotic Assembly Cell",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding chelyabinsk tractor factory robotic assembly cell. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-024",
@@ -1056,8 +1056,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-023-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Uralmash Automated Heavy Forging Press",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for uralmash automated heavy forging press. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-024",
@@ -1065,8 +1065,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-023-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Uralmash Automated Heavy Forging Press",
+                    detail: "Consult international technical specialists and economic panels to optimize uralmash automated heavy forging press. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-025",
@@ -1101,8 +1101,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-024-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Kuzbass Rail Freight Dispatch Automation",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for kuzbass rail freight dispatch automation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-025",
@@ -1110,8 +1110,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-024-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Kuzbass Rail Freight Dispatch Automation",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for kuzbass rail freight dispatch automation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-026",
@@ -1146,8 +1146,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-025-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Angarsk Oil Refinery Automated Cracking Grid",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for angarsk oil refinery automated cracking grid. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-026",
@@ -1155,8 +1155,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-025-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Angarsk Oil Refinery Automated Cracking Grid",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on angarsk oil refinery automated cracking grid. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-027",
@@ -1195,8 +1195,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-026-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Tula Chemical Fertilizer Allocation Algorithm Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over tula chemical fertilizer allocation algorithm. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-027",
@@ -1204,8 +1204,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-026-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in Tula Chemical Fertilizer Allocation Algorithm",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for tula chemical fertilizer allocation algorithm. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-028",
@@ -1240,8 +1240,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-027-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Air-Gap Sovereign Networks for Ivanovo Textile Combine Synthetic Fiber Quota",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for ivanovo textile combine synthetic fiber quota. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-028",
@@ -1249,8 +1249,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-027-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Venture Capital in Ivanovo Textile Combine Synthetic Fiber Quota",
+                    detail: "Create state matching venture funds for domestic startups commercializing ivanovo textile combine synthetic fiber quota. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-029",
@@ -1285,8 +1285,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-028-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for All-Union Optical Telecom Multiplexing Project",
+                    detail: "Channel public technological subsidies into domestic foundries to support all-union optical telecom multiplexing project. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-029",
@@ -1294,8 +1294,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-028-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for All-Union Optical Telecom Multiplexing Project",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in all-union optical telecom multiplexing project. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-030",
@@ -1330,8 +1330,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-029-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Sverdlovsk Metallurgical Computer Center",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for sverdlovsk metallurgical computer center. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-030",
@@ -1339,8 +1339,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-029-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Sverdlovsk Metallurgical Computer Center",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of sverdlovsk metallurgical computer center. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-031",
@@ -1375,8 +1375,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-030-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Mandate Algorithmic Sovereignty in Socialist Cybernetic Planning World Congress",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for socialist cybernetic planning world congress. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-031",
@@ -1384,8 +1384,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-030-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Sponsor Open-Standard Consortia for Socialist Cybernetic Planning World Congress",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for socialist cybernetic planning world congress. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-032",
@@ -1420,8 +1420,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-031-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Enact Emergency Security Decree on Donbass Coal Miners' Wage Dispute Conciliation",
+                    detail: "Mobilize territorial defense and interior security forces to pacify donbass coal miners' wage dispute conciliation. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-032",
@@ -1429,8 +1429,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-031-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Implement Mediation & Concession Plan for Donbass Coal Miners' Wage Dispute Conciliation",
+                    detail: "Offer targeted cost-of-living adjustments and factory co-determination to settle donbass coal miners' wage dispute conciliation. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-033",
@@ -1465,8 +1465,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-032-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Vorkuta Polar Coal Basin Logistics Bonus",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of vorkuta polar coal basin logistics bonus. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-033",
@@ -1474,8 +1474,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-032-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Vorkuta Polar Coal Basin Logistics Bonus",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding vorkuta polar coal basin logistics bonus. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-034",
@@ -1510,8 +1510,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-033-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Accelerate High-Throughput Works on Kuzbass Rail Junction Worker Standoff",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in kuzbass rail junction worker standoff. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-034",
@@ -1519,8 +1519,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-033-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Auction Terminal Operating Franchises in Kuzbass Rail Junction Worker Standoff",
+                    detail: "Invite competitive international container operators to modernize facilities for kuzbass rail junction worker standoff. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-035",
@@ -1555,8 +1555,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-034-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Deploy State Mediators & Security in Gdansk Shipyard Solidarity Delegation in Moscow",
+                    detail: "Combine firm public order enforcement with targeted economic relief to resolve gdansk shipyard solidarity delegation in moscow. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-035",
@@ -1564,8 +1564,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-034-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Convene Tripartite Accord on Gdansk Shipyard Solidarity Delegation in Moscow",
+                    detail: "Negotiate wage compromises and regional labor compacts with worker syndicates on gdansk shipyard solidarity delegation in moscow. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-036",
@@ -1600,8 +1600,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-035-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Enforce Comprehensive State Policy on Estonian Language and Economic Self-Accounting Charter",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in estonian language and economic self-accounting charter. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-036",
@@ -1609,8 +1609,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-035-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Charter Public-Private Partnership on Estonian Language and Economic Self-Accounting Charter",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for estonian language and economic self-accounting charter. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-037",
@@ -1645,8 +1645,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-036-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Hydraulic Defenses for Georgian Hydroelectric Dam Construction Dispute",
+                    detail: "Deploy civil engineering brigades and municipal boards to construct defenses for georgian hydroelectric dam construction dispute. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-037",
@@ -1654,8 +1654,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-036-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Agronomic Water Efficiency for Georgian Hydroelectric Dam Construction Dispute",
+                    detail: "Provide tax deductions for micro-drip irrigation and localized storage to adapt to georgian hydroelectric dam construction dispute. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-038",
@@ -1690,8 +1690,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-037-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for Leningrad Bakery Fleet Emergency Overhaul",
+                    detail: "Position frontline military detachments to secure vital perimeters during leningrad bakery fleet emergency overhaul. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-038",
@@ -1699,8 +1699,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-037-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on Leningrad Bakery Fleet Emergency Overhaul",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding leningrad bakery fleet emergency overhaul. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-039",
@@ -1735,8 +1735,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-038-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission Automated Barrier Sluices for Tashkent Cotton Production Quota Realignment",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for tashkent cotton production quota realignment. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-039",
@@ -1744,8 +1744,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-038-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Create Tradable Watershed Credits for Tashkent Cotton Production Quota Realignment",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in tashkent cotton production quota realignment. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-040",
@@ -1780,8 +1780,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-039-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Baku Offshore Petroleum Worker Safety Compact",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of baku offshore petroleum worker safety compact. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-040",
@@ -1789,8 +1789,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-039-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Baku Offshore Petroleum Worker Safety Compact",
+                    detail: "Incentivize private utility operators and international consortiums to fund baku offshore petroleum worker safety compact. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-041",
@@ -1825,8 +1825,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-040-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Moscow State University Faculty Governance Assembly",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for moscow state university faculty governance assembly. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-041",
@@ -1834,8 +1834,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-040-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Moscow State University Faculty Governance Assembly",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for moscow state university faculty governance assembly. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-042",
@@ -1870,8 +1870,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-041-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Direct Sovereign Executive Action on Pravda and Izvestia Editorial Board Debate",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of pravda and izvestia editorial board debate. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-042",
@@ -1879,8 +1879,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-041-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Devolve Operational Execution for Pravda and Izvestia Editorial Board Debate",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of pravda and izvestia editorial board debate. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-043",
@@ -1915,8 +1915,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-042-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for Red Army Junior Officer Housing",
+                    detail: "Position frontline military detachments to secure vital perimeters during red army junior officer housing. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-043",
@@ -1924,8 +1924,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-042-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on Red Army Junior Officer Housing",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding red army junior officer housing. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-044",
@@ -1960,8 +1960,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-043-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for All-Union Komsomol Virgin Lands Youth Brigade",
+                    detail: "Channel public technological subsidies into domestic foundries to support all-union komsomol virgin lands youth brigade. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-044",
@@ -1969,8 +1969,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-043-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for All-Union Komsomol Virgin Lands Youth Brigade",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in all-union komsomol virgin lands youth brigade. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-045",
@@ -2005,8 +2005,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-044-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Defensive Cyber Shields for Veteran Pensioner Ration Supplement Proclamation",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during veteran pensioner ration supplement proclamation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-045",
@@ -2014,8 +2014,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-044-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Commercial Innovation in Veteran Pensioner Ration Supplement Proclamation",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for veteran pensioner ration supplement proclamation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-046",
@@ -2050,8 +2050,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-045-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in All-Union Cooperative Consumer Market Expansion",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for all-union cooperative consumer market expansion. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-046",
@@ -2059,8 +2059,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-045-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for All-Union Cooperative Consumer Market Expansion",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for all-union cooperative consumer market expansion. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-047",
@@ -2095,8 +2095,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-046-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Warsaw Pact 'Zapad-93' Combined Arms Maneuvers",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of warsaw pact 'zapad-93' combined arms maneuvers. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-047",
@@ -2104,8 +2104,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-046-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Warsaw Pact 'Zapad-93' Combined Arms Maneuvers",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of warsaw pact 'zapad-93' combined arms maneuvers. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-048",
@@ -2140,8 +2140,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-047-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Centralize Water Protection in Kola Bastion Anti-Submarine Sonar Barrier",
+                    detail: "Assert ministerial watershed jurisdiction to guarantee supply during kola bastion anti-submarine sonar barrier. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-048",
@@ -2149,8 +2149,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-047-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Floodplain Restoration for Kola Bastion Anti-Submarine Sonar Barrier",
+                    detail: "Empower local provincial authorities to negotiate ecological easements regarding kola bastion anti-submarine sonar barrier. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-049",
@@ -2185,8 +2185,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-048-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Accelerate High-Throughput Works on Black Sea Strait Neutrality Patrol Convention",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in black sea strait neutrality patrol convention. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-049",
@@ -2194,8 +2194,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-048-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Auction Terminal Operating Franchises in Black Sea Strait Neutrality Patrol Convention",
+                    detail: "Invite competitive international container operators to modernize facilities for black sea strait neutrality patrol convention. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-050",
@@ -2230,8 +2230,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-049-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mandate Integrated Defense Doctrine on Kuril Islands Pacific Missile Garrison Upgrade",
+                    detail: "Unify joint force commands and strategic deterrents to resolve kuril islands pacific missile garrison upgrade. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-050",
@@ -2239,8 +2239,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-049-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Seek Allied Defense Cooperation on Kuril Islands Pacific Missile Garrison Upgrade",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on kuril islands pacific missile garrison upgrade. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-051",
@@ -2275,8 +2275,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-050-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Finance Strategic Water Reservoirs in Cam Ranh Bay Deepwater Logistics Expansion",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in cam ranh bay deepwater logistics expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-051",
@@ -2284,8 +2284,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-050-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Public-Private Partnerships on Cam Ranh Bay Deepwater Logistics Expansion",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain cam ranh bay deepwater logistics expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-052",
@@ -2324,8 +2324,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-051-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Nationalize Cuban Sugar and Nickel Guaranteed Trade Pact Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over cuban sugar and nickel guaranteed trade pact. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-052",
@@ -2333,8 +2333,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-051-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Deregulate Merchant Generation in Cuban Sugar and Nickel Guaranteed Trade Pact",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for cuban sugar and nickel guaranteed trade pact. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-053",
@@ -2369,8 +2369,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-052-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over Angolan Petroleum Exploration Technical Mission",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of angolan petroleum exploration technical mission. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-053",
@@ -2378,8 +2378,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-052-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for Angolan Petroleum Exploration Technical Mission",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in angolan petroleum exploration technical mission. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-054",
@@ -2414,8 +2414,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-053-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate High-Throughput Works on Tartus Naval Maintenance Facility Modernization",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in tartus naval maintenance facility modernization. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-054",
@@ -2423,8 +2423,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-053-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Terminal Operating Franchises in Tartus Naval Maintenance Facility Modernization",
+                    detail: "Invite competitive international container operators to modernize facilities for tartus naval maintenance facility modernization. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-055",
@@ -2459,8 +2459,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-054-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Accelerate Strategic Mandate on Afghan Border Demarcation and Trade",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for afghan border demarcation and trade. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-055",
@@ -2468,8 +2468,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-054-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Adopt Decentralized Market Approach to Afghan Border Demarcation and Trade",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of afghan border demarcation and trade. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-056",
@@ -2504,8 +2504,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-055-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on North Korean Heavy Mining Equipment Exchange",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in north korean heavy mining equipment exchange. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-056",
@@ -2513,8 +2513,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-055-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on North Korean Heavy Mining Equipment Exchange",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for north korean heavy mining equipment exchange. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-057",
@@ -2549,8 +2549,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-056-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Nationalize Iraqi Post-Sanctions Oil Settlement Resumption Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over iraqi post-sanctions oil settlement resumption. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-057",
@@ -2558,8 +2558,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-056-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Deregulate Merchant Generation in Iraqi Post-Sanctions Oil Settlement Resumption",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for iraqi post-sanctions oil settlement resumption. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-058",
@@ -2594,8 +2594,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-057-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Underwrite Sovereign Bond Buyback in Finnish Bilateral Trade Protocol Reaffirmation",
+                    detail: "Use central treasury balances to retire foreign-held sovereign paper for finnish bilateral trade protocol reaffirmation. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-058",
@@ -2603,8 +2603,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-057-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Conclude Multilateral Swap Lines for Finnish Bilateral Trade Protocol Reaffirmation",
+                    detail: "Arrange foreign central bank currency facilities to backstop liquidity during finnish bilateral trade protocol reaffirmation. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-059",
@@ -2639,8 +2639,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-058-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Accelerate High-Throughput Works on Austrian Neutrality Transit Corridor Review",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in austrian neutrality transit corridor review. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-059",
@@ -2648,8 +2648,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-058-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Auction Terminal Operating Franchises in Austrian Neutrality Transit Corridor Review",
+                    detail: "Invite competitive international container operators to modernize facilities for austrian neutrality transit corridor review. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-060",
@@ -2684,8 +2684,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-059-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Mongolian Steppe Copper Smelter Expansion",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for mongolian steppe copper smelter expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-060",
@@ -2693,8 +2693,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-059-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Mongolian Steppe Copper Smelter Expansion",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of mongolian steppe copper smelter expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-061",
@@ -2729,8 +2729,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-060-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Czechoslovak Nuclear Reactor Pressure Vessel",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for czechoslovak nuclear reactor pressure vessel. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-061",
@@ -2738,8 +2738,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-060-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Czechoslovak Nuclear Reactor Pressure Vessel",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on czechoslovak nuclear reactor pressure vessel. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-062",
@@ -2774,8 +2774,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-061-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Enact Emergency Security Decree on Space Station Mir-2 Core Science Module Orbiting",
+                    detail: "Mobilize territorial defense and interior security forces to pacify space station mir-2 core science module orbiting. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-062",
@@ -2783,8 +2783,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-061-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Implement Mediation & Concession Plan for Space Station Mir-2 Core Science Module Orbiting",
+                    detail: "Offer targeted cost-of-living adjustments and factory co-determination to settle space station mir-2 core science module orbiting. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-063",
@@ -2819,8 +2819,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-062-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Air-Gap Sovereign Networks for Buran Shuttle Orbital Cargo Mission",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for buran shuttle orbital cargo mission. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-063",
@@ -2828,8 +2828,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-062-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Incentivize Venture Capital in Buran Shuttle Orbital Cargo Mission",
+                    detail: "Create state matching venture funds for domestic startups commercializing buran shuttle orbital cargo mission. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-064",
@@ -2864,8 +2864,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-063-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Commission Strategic Facilities for T-15 Tokamak Fusion Plasma Breakthrough",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission t-15 tokamak fusion plasma breakthrough. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-064",
@@ -2873,8 +2873,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-063-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Introduce Market Carbon Pricing in T-15 Tokamak Fusion Plasma Breakthrough",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of t-15 tokamak fusion plasma breakthrough. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-065",
@@ -2909,8 +2909,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-064-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Tu-244 Supersonic Commercial Transport Test",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for tu-244 supersonic commercial transport test. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-065",
@@ -2918,8 +2918,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-064-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Tu-244 Supersonic Commercial Transport Test",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for tu-244 supersonic commercial transport test. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-066",
@@ -2954,8 +2954,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-065-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Nuclear Icebreaker 'Ural' Polar Route Commissioning",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for nuclear icebreaker 'ural' polar route commissioning. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-066",
@@ -2963,8 +2963,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-065-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Nuclear Icebreaker 'Ural' Polar Route Commissioning",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on nuclear icebreaker 'ural' polar route commissioning. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-067",
@@ -2999,8 +2999,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-066-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Enforce Operational Readiness for Elbrus-3 Supercomputer Parallel Processing Array",
+                    detail: "Authorize armed forces deployment and defense production directives for elbrus-3 supercomputer parallel processing array. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-067",
@@ -3008,8 +3008,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-066-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Adopt Defensive Asymmetric Model for Elbrus-3 Supercomputer Parallel Processing Array",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in elbrus-3 supercomputer parallel processing array. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-068",
@@ -3044,8 +3044,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-067-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for Caspian Sea 'Lun' Ekranoplan Coastal Defense Trials",
+                    detail: "Position frontline military detachments to secure vital perimeters during caspian sea 'lun' ekranoplan coastal defense trials. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-068",
@@ -3053,8 +3053,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-067-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on Caspian Sea 'Lun' Ekranoplan Coastal Defense Trials",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding caspian sea 'lun' ekranoplan coastal defense trials. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-069",
@@ -3089,8 +3089,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-068-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Mirny Kimberlite Pipe Superdeep Diamond Extraction",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for mirny kimberlite pipe superdeep diamond extraction. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-069",
@@ -3098,8 +3098,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-068-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Mirny Kimberlite Pipe Superdeep Diamond Extraction",
+                    detail: "Consult international technical specialists and economic panels to optimize mirny kimberlite pipe superdeep diamond extraction. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-070",
@@ -3134,8 +3134,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-069-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Mangyshlak BN-350 Fast Breeder Desalination Expansion",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of mangyshlak bn-350 fast breeder desalination expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-070",
@@ -3143,8 +3143,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-069-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Mangyshlak BN-350 Fast Breeder Desalination Expansion",
+                    detail: "Incentivize private utility operators and international consortiums to fund mangyshlak bn-350 fast breeder desalination expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-071",
@@ -3179,8 +3179,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-070-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in All-Union Automated Health Record Registry Pilot",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for all-union automated health record registry pilot. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-071",
@@ -3188,8 +3188,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-070-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for All-Union Automated Health Record Registry Pilot",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for all-union automated health record registry pilot. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-072",
@@ -3224,8 +3224,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-071-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Enforce Operational Readiness for S-300PMU2 Air Defense Perimeter Deployment",
+                    detail: "Authorize armed forces deployment and defense production directives for s-300pmu2 air defense perimeter deployment. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-072",
@@ -3233,8 +3233,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-071-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Adopt Defensive Asymmetric Model for S-300PMU2 Air Defense Perimeter Deployment",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in s-300pmu2 air defense perimeter deployment. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-073",
@@ -3269,8 +3269,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-072-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Scramjet Hypersonic Propulsion Test Flight",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of scramjet hypersonic propulsion test flight. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-073",
@@ -3278,8 +3278,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-072-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Scramjet Hypersonic Propulsion Test Flight",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding scramjet hypersonic propulsion test flight. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-074",
@@ -3314,8 +3314,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-073-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on Baltic Fiber-Optic Coastal Perimeter Completion",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for baltic fiber-optic coastal perimeter completion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-074",
@@ -3323,8 +3323,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-073-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in Baltic Fiber-Optic Coastal Perimeter Completion",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for baltic fiber-optic coastal perimeter completion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sov-075",
@@ -3359,8 +3359,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-074-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mandate Integrated Defense Doctrine on Zelenograd Microelectronics Foundry Modernization",
+                    detail: "Unify joint force commands and strategic deterrents to resolve zelenograd microelectronics foundry modernization. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-075",
@@ -3368,8 +3368,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-074-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Seek Allied Defense Cooperation on Zelenograd Microelectronics Foundry Modernization",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on zelenograd microelectronics foundry modernization. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sov-075",
@@ -3404,8 +3404,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sov-075-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
+                    label: "Underwrite Sovereign Energy Reserves in 21st-Century Soviet Economic Manifesto Ratification",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for 21st-century soviet economic manifesto ratification. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: nil,
@@ -3413,8 +3413,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-075-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "License Independent Energy Producers for 21st-Century Soviet Economic Manifesto Ratification",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on 21st-century soviet economic manifesto ratification. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: nil,
@@ -3422,8 +3422,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sov-075-opt-c",
-                    label: "Proclaim Landmark International Convention",
-                    detail: "Codify universal guidelines governing planetary infrastructure, peace, and collective security. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
+                    label: "Ratify Constitutional Framework for 21st-Century Soviet Economic Manifesto Ratification",
+                    detail: "Enact binding constitutional amendments guaranteeing long-term sovereign governance over 21st-century soviet economic manifesto ratification. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
                     effectTrack: .worldTension,
                     effectMagnitude: -3,
                     nextChainedEventID: nil,
@@ -3462,8 +3462,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-001-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Direct Sovereign Executive Action on Fashoda Upper Nile Standoff",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of fashoda upper nile standoff. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-002",
@@ -3471,8 +3471,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-001-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Devolve Operational Execution for Fashoda Upper Nile Standoff",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of fashoda upper nile standoff. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-003",
@@ -3480,8 +3480,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-001-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Fashoda Upper Nile Standoff",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for fashoda upper nile standoff. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-003",
@@ -3516,8 +3516,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-002-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Marchand Refusal to Lower the Tricolor",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of marchand refusal to lower the tricolor. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-003",
@@ -3525,8 +3525,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-002-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Marchand Refusal to Lower the Tricolor",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding marchand refusal to lower the tricolor. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-004",
@@ -3561,8 +3561,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-003-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for Kitchener Anglo-Egyptian Flotilla Gunboat Encirclement",
+                    detail: "Channel public technological subsidies into domestic foundries to support kitchener anglo-egyptian flotilla gunboat encirclement. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-004",
@@ -3570,8 +3570,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-003-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for Kitchener Anglo-Egyptian Flotilla Gunboat Encirclement",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in kitchener anglo-egyptian flotilla gunboat encirclement. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-005",
@@ -3606,8 +3606,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-004-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Accelerate Strategic Mandate on Sudan Telegraph Line Severance at Omdurman",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for sudan telegraph line severance at omdurman. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-005",
@@ -3615,8 +3615,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-004-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Adopt Decentralized Market Approach to Sudan Telegraph Line Severance at Omdurman",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of sudan telegraph line severance at omdurman. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-006",
@@ -3651,8 +3651,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-005-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for French Admiralty Channel Squadron Alert",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for french admiralty channel squadron alert. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-006",
@@ -3660,8 +3660,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-005-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for French Admiralty Channel Squadron Alert",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for french admiralty channel squadron alert. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-007",
@@ -3696,8 +3696,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-006-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +4, ⟦ECO⟧ -1]",
+                    label: "Mobilize State Works on British Channel Fleet High Readiness Mobilization",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for british channel fleet high readiness mobilization. [⟦MIL⟧ +4, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-007",
@@ -3705,8 +3705,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-006-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Freight Venture for British Channel Fleet High Readiness Mobilization",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for british channel fleet high readiness mobilization. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-008",
@@ -3714,8 +3714,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-006-opt-c",
-                    label: "Establish Unified National Directorate",
-                    detail: "Consolidate inter-agency authority into an autonomous executive commission with statutory power. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for British Channel Fleet High Readiness Mobilization",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for british channel fleet high readiness mobilization. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-008",
@@ -3750,8 +3750,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-007-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Deploy Sovereign Battalions for Paris Press Outcry and Nationalist Rallies",
+                    detail: "Position frontline military detachments to secure vital perimeters during paris press outcry and nationalist rallies. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-008",
@@ -3759,8 +3759,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-007-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Convene Regional Security Liaison on Paris Press Outcry and Nationalist Rallies",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding paris press outcry and nationalist rallies. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-009",
@@ -3795,8 +3795,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-008-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Mobilize Defense Formations on Fleet Street Editorial War Drum Declarations",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for fleet street editorial war drum declarations. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-009",
@@ -3804,8 +3804,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-008-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Negotiate Mutual Logistics Sharing in Fleet Street Editorial War Drum Declarations",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for fleet street editorial war drum declarations. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-010",
@@ -3840,8 +3840,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-009-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Deploy Defensive Cyber Shields for Kaiser Wilhelm Imperial Mediterranean Tour",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during kaiser wilhelm imperial mediterranean tour. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-010",
@@ -3849,8 +3849,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-009-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Deregulate Commercial Innovation in Kaiser Wilhelm Imperial Mediterranean Tour",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for kaiser wilhelm imperial mediterranean tour. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-011",
@@ -3885,8 +3885,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-010-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Finance Strategic Water Reservoirs in Dual-Sovereignty Nile Condominium Proposal",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in dual-sovereignty nile condominium proposal. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-011",
@@ -3894,8 +3894,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-010-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Tender Public-Private Partnerships on Dual-Sovereignty Nile Condominium Proposal",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain dual-sovereignty nile condominium proposal. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-012",
@@ -3930,8 +3930,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-011-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Bahr-el-Ghazal Border Demarcation Commission",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of bahr-el-ghazal border demarcation commission. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-012",
@@ -3939,8 +3939,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-011-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Bahr-el-Ghazal Border Demarcation Commission",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of bahr-el-ghazal border demarcation commission. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-013",
@@ -3975,8 +3975,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-012-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Air-Gap Sovereign Networks for Cairo Sirdar Proclamation of Khedivial Rights",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for cairo sirdar proclamation of khedivial rights. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-013",
@@ -3984,8 +3984,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-012-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Incentivize Venture Capital in Cairo Sirdar Proclamation of Khedivial Rights",
+                    detail: "Create state matching venture funds for domestic startups commercializing cairo sirdar proclamation of khedivial rights. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-014",
@@ -4020,8 +4020,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-013-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on French Colonial Lobby Parliamentary Caucus",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for french colonial lobby parliamentary caucus. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-014",
@@ -4029,8 +4029,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-013-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in French Colonial Lobby Parliamentary Caucus",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for french colonial lobby parliamentary caucus. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-015",
@@ -4065,8 +4065,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-014-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Integrated Defense Doctrine on Gibraltar Coaling Station Bunker Reservation",
+                    detail: "Unify joint force commands and strategic deterrents to resolve gibraltar coaling station bunker reservation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-015",
@@ -4074,8 +4074,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-014-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Seek Allied Defense Cooperation on Gibraltar Coaling Station Bunker Reservation",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on gibraltar coaling station bunker reservation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-016",
@@ -4110,8 +4110,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-015-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Public Terminal Priority for Cape-to-Cairo Railway Survey Standoff",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during cape-to-cairo railway survey standoff. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-016",
@@ -4119,8 +4119,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-015-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Regional Transit Authority for Cape-to-Cairo Railway Survey Standoff",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for cape-to-cairo railway survey standoff. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-017",
@@ -4155,8 +4155,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-016-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Direct Sovereign Executive Action on Continental League of Berlin Rapprochement Talks",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of continental league of berlin rapprochement talks. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-017",
@@ -4164,8 +4164,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-016-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Devolve Operational Execution for Continental League of Berlin Rapprochement Talks",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of continental league of berlin rapprochement talks. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-018",
@@ -4173,8 +4173,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-016-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Continental League of Berlin Rapprochement Talks",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for continental league of berlin rapprochement talks. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-018",
@@ -4209,8 +4209,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-017-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Nationalize Strategic Corridors for Quai d'Orsay Secret Colonial",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for quai d'orsay secret colonial. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-018",
@@ -4218,8 +4218,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-017-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Incentivize Autonomous Shuttles for Quai d'Orsay Secret Colonial",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in quai d'orsay secret colonial. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-019",
@@ -4254,8 +4254,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-018-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Establish State Guidance Authority for Wilhelmstrasse Colonial Compensation Demands",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for wilhelmstrasse colonial compensation demands. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-019",
@@ -4263,8 +4263,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-018-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Sponsor Multilateral Advisory Review on Wilhelmstrasse Colonial Compensation Demands",
+                    detail: "Consult international technical specialists and economic panels to optimize wilhelmstrasse colonial compensation demands. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-020",
@@ -4299,8 +4299,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-019-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Mandate Integrated Defense Doctrine on Saint Petersburg Imperial Mediation Offer",
+                    detail: "Unify joint force commands and strategic deterrents to resolve saint petersburg imperial mediation offer. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-020",
@@ -4308,8 +4308,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-019-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Seek Allied Defense Cooperation on Saint Petersburg Imperial Mediation Offer",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on saint petersburg imperial mediation offer. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-021",
@@ -4344,8 +4344,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-020-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for Franco-Russian Naval Accord Reassessment",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for franco-russian naval accord reassessment. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-021",
@@ -4353,8 +4353,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-020-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for Franco-Russian Naval Accord Reassessment",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for franco-russian naval accord reassessment. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-022",
@@ -4389,8 +4389,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-021-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Enforce Operational Readiness for Triple Alliance Friction over Adriatic Naval Budgets",
+                    detail: "Authorize armed forces deployment and defense production directives for triple alliance friction over adriatic naval budgets. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-022",
@@ -4398,8 +4398,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-021-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Adopt Defensive Asymmetric Model for Triple Alliance Friction over Adriatic Naval Budgets",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in triple alliance friction over adriatic naval budgets. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-023",
@@ -4434,8 +4434,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-022-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Deploy Sovereign Battalions for British Splendid Isolation Cabinet Debate",
+                    detail: "Position frontline military detachments to secure vital perimeters during british splendid isolation cabinet debate. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-023",
@@ -4443,8 +4443,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-022-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Convene Regional Security Liaison on British Splendid Isolation Cabinet Debate",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding british splendid isolation cabinet debate. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-024",
@@ -4479,8 +4479,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-023-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on Royal Navy Two-Power Standard Recalculation",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for royal navy two-power standard recalculation. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-024",
@@ -4488,8 +4488,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-023-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in Royal Navy Two-Power Standard Recalculation",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for royal navy two-power standard recalculation. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-025",
@@ -4524,8 +4524,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-024-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +4, ⟦ECO⟧ -1]",
+                    label: "Mandate Integrated Defense Doctrine on German High Seas Fleet Second Naval Bill Expansion",
+                    detail: "Unify joint force commands and strategic deterrents to resolve german high seas fleet second naval bill expansion. [⟦MIL⟧ +4, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-025",
@@ -4533,8 +4533,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-024-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Seek Allied Defense Cooperation on German High Seas Fleet Second Naval Bill Expansion",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on german high seas fleet second naval bill expansion. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-026",
@@ -4542,8 +4542,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-024-opt-c",
-                    label: "Establish Unified National Directorate",
-                    detail: "Consolidate inter-agency authority into an autonomous executive commission with statutory power. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Proclaim Comprehensive Structural Overhaul for German High Seas Fleet Second Naval Bill Expansion",
+                    detail: "Restructure federal resource allocations, industrial subsidies, and fiscal revenue splits for german high seas fleet second naval bill expansion. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-026",
@@ -4578,8 +4578,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-025-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for Jeune École Torpedo Boat Doctrine Reassessment",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for jeune école torpedo boat doctrine reassessment. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-026",
@@ -4587,8 +4587,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-025-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for Jeune École Torpedo Boat Doctrine Reassessment",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for jeune école torpedo boat doctrine reassessment. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-027",
@@ -4627,8 +4627,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-026-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Assert Unilateral Sovereign Stance on Belgian Neutrality Guarantee Reaffirmation",
+                    detail: "Instruct diplomatic chancelleries and armed patrols to maintain an uncompromising posture on belgian neutrality guarantee reaffirmation. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-027",
@@ -4636,8 +4636,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-026-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Sponsor Neutral Conciliation Summit for Belgian Neutrality Guarantee Reaffirmation",
+                    detail: "Invite non-aligned mediator states to host constructive negotiations on belgian neutrality guarantee reaffirmation. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-028",
@@ -4672,8 +4672,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-027-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Nationalize Strategic Corridors for Swiss Alpine Rail Tunnel Neutrality Convention",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for swiss alpine rail tunnel neutrality convention. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-028",
@@ -4681,8 +4681,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-027-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Incentivize Autonomous Shuttles for Swiss Alpine Rail Tunnel Neutrality Convention",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in swiss alpine rail tunnel neutrality convention. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-029",
@@ -4717,8 +4717,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-028-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on Dutch East Indies Colonial Security Pact",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for dutch east indies colonial security pact. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-029",
@@ -4726,8 +4726,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-028-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in Dutch East Indies Colonial Security Pact",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for dutch east indies colonial security pact. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-030",
@@ -4762,8 +4762,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-029-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Commission State Logistics Fleet for Portuguese African Colony Mortgage Rumors",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for portuguese african colony mortgage rumors. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-030",
@@ -4771,8 +4771,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-029-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Tender Private Logistics Concessions for Portuguese African Colony Mortgage Rumors",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for portuguese african colony mortgage rumors. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-031",
@@ -4807,8 +4807,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-030-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Spanish North African Fortress Strengthening",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for spanish north african fortress strengthening. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-031",
@@ -4816,8 +4816,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-030-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Spanish North African Fortress Strengthening",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for spanish north african fortress strengthening. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-032",
@@ -4852,8 +4852,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-031-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Impose Sovereign Capital Controls for Transvaal Gold Concession Tariff Dispute",
+                    detail: "Direct monetary and fiscal reserves to guarantee state solvency and regulate transvaal gold concession tariff dispute. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-032",
@@ -4861,8 +4861,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-031-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Issue Tax-Exempt Municipal Bonds for Transvaal Gold Concession Tariff Dispute",
+                    detail: "Encourage regional governments and institutional investors to fund transvaal gold concession tariff dispute. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-033",
@@ -4897,8 +4897,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-032-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Delagoa Bay Railway Freight War",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for delagoa bay railway freight war. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-033",
@@ -4906,8 +4906,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-032-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Delagoa Bay Railway Freight War",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in delagoa bay railway freight war. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-034",
@@ -4942,8 +4942,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-033-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Fund National Cleanrooms for Jameson Raid Aftermath Reparations Conference",
+                    detail: "Channel public technological subsidies into domestic foundries to support jameson raid aftermath reparations conference. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-034",
@@ -4951,8 +4951,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-033-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for Jameson Raid Aftermath Reparations Conference",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in jameson raid aftermath reparations conference. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-035",
@@ -4987,8 +4987,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-034-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Deploy State Mediators & Security in Ashanti Golden Stool Protectorate Dispute",
+                    detail: "Combine firm public order enforcement with targeted economic relief to resolve ashanti golden stool protectorate dispute. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-035",
@@ -4996,8 +4996,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-034-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Convene Tripartite Accord on Ashanti Golden Stool Protectorate Dispute",
+                    detail: "Negotiate wage compromises and regional labor compacts with worker syndicates on ashanti golden stool protectorate dispute. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-036",
@@ -5032,8 +5032,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-035-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Zanzibar Sultanate Succession Standoff",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in zanzibar sultanate succession standoff. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-036",
@@ -5041,8 +5041,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-035-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Zanzibar Sultanate Succession Standoff",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for zanzibar sultanate succession standoff. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-037",
@@ -5077,8 +5077,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-036-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize State Works on Royal Niger Company Charter Revocation Debate",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for royal niger company charter revocation debate. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-037",
@@ -5086,8 +5086,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-036-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Freight Venture for Royal Niger Company Charter Revocation Debate",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for royal niger company charter revocation debate. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-038",
@@ -5122,8 +5122,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-037-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over Madagascar French Pacification Expedition",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of madagascar french pacification expedition. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-038",
@@ -5131,8 +5131,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-037-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for Madagascar French Pacification Expedition",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in madagascar french pacification expedition. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-039",
@@ -5167,8 +5167,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-038-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Fund National Cleanrooms for Siam Menam Valley Neutral Buffer Convention",
+                    detail: "Channel public technological subsidies into domestic foundries to support siam menam valley neutral buffer convention. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-039",
@@ -5176,8 +5176,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-038-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for Siam Menam Valley Neutral Buffer Convention",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in siam menam valley neutral buffer convention. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-040",
@@ -5212,8 +5212,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-039-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Upper Burma Teak Concession Arbitrations",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for upper burma teak concession arbitrations. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-040",
@@ -5221,8 +5221,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-039-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Upper Burma Teak Concession Arbitrations",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of upper burma teak concession arbitrations. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-041",
@@ -5257,8 +5257,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-040-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Tibet Chumbi Valley Frontier Trade Mission",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for tibet chumbi valley frontier trade mission. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-041",
@@ -5266,8 +5266,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-040-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Tibet Chumbi Valley Frontier Trade Mission",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for tibet chumbi valley frontier trade mission. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-042",
@@ -5302,8 +5302,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-041-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Operational Readiness for Durand Line Northwest Frontier Boundary Patrol",
+                    detail: "Authorize armed forces deployment and defense production directives for durand line northwest frontier boundary patrol. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-042",
@@ -5311,8 +5311,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-041-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Defensive Asymmetric Model for Durand Line Northwest Frontier Boundary Patrol",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in durand line northwest frontier boundary patrol. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-043",
@@ -5347,8 +5347,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-042-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for Persian Gulf Trucial Coast Pearl Fleet Protection",
+                    detail: "Position frontline military detachments to secure vital perimeters during persian gulf trucial coast pearl fleet protection. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-043",
@@ -5356,8 +5356,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-042-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on Persian Gulf Trucial Coast Pearl Fleet Protection",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding persian gulf trucial coast pearl fleet protection. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-044",
@@ -5392,8 +5392,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-043-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Mobilize Defense Formations on Muscat French Coaling Station Lease Controversy",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for muscat french coaling station lease controversy. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-044",
@@ -5401,8 +5401,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-043-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Negotiate Mutual Logistics Sharing in Muscat French Coaling Station Lease Controversy",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for muscat french coaling station lease controversy. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-045",
@@ -5437,8 +5437,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-044-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Integrated Defense Doctrine on Perim Island Red Sea Artillery Fortification",
+                    detail: "Unify joint force commands and strategic deterrents to resolve perim island red sea artillery fortification. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-045",
@@ -5446,8 +5446,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-044-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Seek Allied Defense Cooperation on Perim Island Red Sea Artillery Fortification",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on perim island red sea artillery fortification. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-046",
@@ -5482,8 +5482,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-045-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Progressive Revenue Surcharges for Somaliland Camel Corps Boundary Expedition",
+                    detail: "Levy targeted statutory surtaxes on windfall profits to fund state stabilization of somaliland camel corps boundary expedition. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-046",
@@ -5491,8 +5491,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-045-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Authorize Regulated Commercial Clearing for Somaliland Camel Corps Boundary Expedition",
+                    detail: "Permit non-dollar clearing balances and commercial merchant autonomy to stimulate liquidity in somaliland camel corps boundary expedition. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-047",
@@ -5527,8 +5527,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-046-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Mobilize State Works on Boxer Protocol Alternate Settlement Demands",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for boxer protocol alternate settlement demands. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-047",
@@ -5536,8 +5536,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-046-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Charter Public-Private Freight Venture for Boxer Protocol Alternate Settlement Demands",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for boxer protocol alternate settlement demands. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-048",
@@ -5545,8 +5545,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-046-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Boxer Protocol Alternate Settlement Demands",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for boxer protocol alternate settlement demands. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-048",
@@ -5581,8 +5581,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-047-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for Weihaiwei British Naval Base Lease Fortification",
+                    detail: "Position frontline military detachments to secure vital perimeters during weihaiwei british naval base lease fortification. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-048",
@@ -5590,8 +5590,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-047-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on Weihaiwei British Naval Base Lease Fortification",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding weihaiwei british naval base lease fortification. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-049",
@@ -5626,8 +5626,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-048-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Automated Barrier Sluices for Kiautschou German Colonial Model Port Construction",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for kiautschou german colonial model port construction. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-049",
@@ -5635,8 +5635,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-048-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Create Tradable Watershed Credits for Kiautschou German Colonial Model Port Construction",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in kiautschou german colonial model port construction. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-050",
@@ -5671,8 +5671,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-049-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Port Arthur Russian Rail Spur and Drydock Expansion",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for port arthur russian rail spur and drydock expansion. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-050",
@@ -5680,8 +5680,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-049-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Port Arthur Russian Rail Spur and Drydock Expansion",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for port arthur russian rail spur and drydock expansion. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-051",
@@ -5716,8 +5716,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-050-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Kwangchow Wan French Maritime Anchorage Expansion",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in kwangchow wan french maritime anchorage expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-051",
@@ -5725,8 +5725,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-050-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Kwangchow Wan French Maritime Anchorage Expansion",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for kwangchow wan french maritime anchorage expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-052",
@@ -5765,8 +5765,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-051-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over Shanghai International Settlement Municipal Expansion",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for shanghai international settlement municipal expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-052",
@@ -5774,8 +5774,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-051-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on Shanghai International Settlement Municipal Expansion",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for shanghai international settlement municipal expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-053",
@@ -5810,8 +5810,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-052-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Air-Gap Sovereign Networks for Yangtze River Patrol Gunboat Flotilla Convention",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for yangtze river patrol gunboat flotilla convention. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-053",
@@ -5819,8 +5819,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-052-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Venture Capital in Yangtze River Patrol Gunboat Flotilla Convention",
+                    detail: "Create state matching venture funds for domestic startups commercializing yangtze river patrol gunboat flotilla convention. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-054",
@@ -5855,8 +5855,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-053-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Mobilize Defense Formations on Meiji Japanese Naval Modernization Loan",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for meiji japanese naval modernization loan. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-054",
@@ -5864,8 +5864,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-053-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Negotiate Mutual Logistics Sharing in Meiji Japanese Naval Modernization Loan",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for meiji japanese naval modernization loan. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-055",
@@ -5900,8 +5900,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-054-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Accelerate Strategic Mandate on Korean Peninsula Telegraph Concession Contest",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for korean peninsula telegraph concession contest. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-055",
@@ -5909,8 +5909,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-054-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Adopt Decentralized Market Approach to Korean Peninsula Telegraph Concession Contest",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of korean peninsula telegraph concession contest. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-056",
@@ -5945,8 +5945,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-055-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Public Terminal Priority for Vladivostok Icebreaker Fleet Winter Transit Trial",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during vladivostok icebreaker fleet winter transit trial. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-056",
@@ -5954,8 +5954,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-055-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Regional Transit Authority for Vladivostok Icebreaker Fleet Winter Transit Trial",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for vladivostok icebreaker fleet winter transit trial. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-057",
@@ -5990,8 +5990,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-056-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over Formosa Strait Japanese Maritime Surveillance",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for formosa strait japanese maritime surveillance. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-057",
@@ -5999,8 +5999,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-056-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on Formosa Strait Japanese Maritime Surveillance",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for formosa strait japanese maritime surveillance. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-058",
@@ -6035,8 +6035,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-057-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Canton Customs Tea Export Surcharge Protest",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for canton customs tea export surcharge protest. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-058",
@@ -6044,8 +6044,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-057-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Canton Customs Tea Export Surcharge Protest",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in canton customs tea export surcharge protest. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-059",
@@ -6080,8 +6080,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-058-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate High-Throughput Works on Trans-Siberian Lake Baikal Ice Track Construction",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in trans-siberian lake baikal ice track construction. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-059",
@@ -6089,8 +6089,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-058-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Terminal Operating Franchises in Trans-Siberian Lake Baikal Ice Track Construction",
+                    detail: "Invite competitive international container operators to modernize facilities for trans-siberian lake baikal ice track construction. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-060",
@@ -6125,8 +6125,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-059-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Outer Mongolia Urga Russian Consulate Guard",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for outer mongolia urga russian consulate guard. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-060",
@@ -6134,8 +6134,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-059-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Outer Mongolia Urga Russian Consulate Guard",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of outer mongolia urga russian consulate guard. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-061",
@@ -6170,8 +6170,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-060-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Public Terminal Priority for Harbin Chinese Eastern Railway Junction Hub",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during harbin chinese eastern railway junction hub. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-061",
@@ -6179,8 +6179,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-060-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Regional Transit Authority for Harbin Chinese Eastern Railway Junction Hub",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for harbin chinese eastern railway junction hub. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-062",
@@ -6215,8 +6215,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-061-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
+                    label: "Mobilize State Works on HMS Dreadnought Keel Laying and Turbine Trial",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for hms dreadnought keel laying and turbine trial. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-div-062",
@@ -6224,8 +6224,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-061-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Charter Public-Private Freight Venture for HMS Dreadnought Keel Laying and Turbine Trial",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for hms dreadnought keel laying and turbine trial. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-063",
@@ -6233,8 +6233,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-061-opt-c",
-                    label: "Proclaim Landmark International Convention",
-                    detail: "Codify universal guidelines governing planetary infrastructure, peace, and collective security. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
+                    label: "Inaugurate Federal Reorganization Authority for HMS Dreadnought Keel Laying and Turbine Trial",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for hms dreadnought keel laying and turbine trial. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
                     effectTrack: .worldTension,
                     effectMagnitude: -3,
                     nextChainedEventID: "ah-div-063",
@@ -6269,8 +6269,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-062-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for Krupp Cemented Armor Plate Breakthrough",
+                    detail: "Position frontline military detachments to secure vital perimeters during krupp cemented armor plate breakthrough. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-063",
@@ -6278,8 +6278,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-062-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on Krupp Cemented Armor Plate Breakthrough",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding krupp cemented armor plate breakthrough. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-064",
@@ -6314,8 +6314,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-063-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Belleville Water-Tube Boiler Royal Navy Debate",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission belleville water-tube boiler royal navy debate. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-064",
@@ -6323,8 +6323,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-063-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Belleville Water-Tube Boiler Royal Navy Debate",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of belleville water-tube boiler royal navy debate. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-065",
@@ -6359,8 +6359,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-064-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Parsons Marine Steam Turbine Adoption",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of parsons marine steam turbine adoption. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-065",
@@ -6368,8 +6368,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-064-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Parsons Marine Steam Turbine Adoption",
+                    detail: "Incentivize private utility operators and international consortiums to fund parsons marine steam turbine adoption. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-066",
@@ -6404,8 +6404,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-065-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for 12-Inch Naval Gun Wire-Wound Barrel Production",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for 12-inch naval gun wire-wound barrel production. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-066",
@@ -6413,8 +6413,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-065-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for 12-Inch Naval Gun Wire-Wound Barrel Production",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for 12-inch naval gun wire-wound barrel production. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-067",
@@ -6449,8 +6449,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-066-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Operational Readiness for Torpedo Boat Destroyer Flotilla Screen Doctrine",
+                    detail: "Authorize armed forces deployment and defense production directives for torpedo boat destroyer flotilla screen doctrine. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-067",
@@ -6458,8 +6458,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-066-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Defensive Asymmetric Model for Torpedo Boat Destroyer Flotilla Screen Doctrine",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in torpedo boat destroyer flotilla screen doctrine. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-068",
@@ -6494,8 +6494,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-067-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for Marconi Wireless Naval Telegraphy Field Trials",
+                    detail: "Position frontline military detachments to secure vital perimeters during marconi wireless naval telegraphy field trials. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-068",
@@ -6503,8 +6503,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-067-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on Marconi Wireless Naval Telegraphy Field Trials",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding marconi wireless naval telegraphy field trials. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-069",
@@ -6539,8 +6539,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-068-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Naval Fuel Oil Conversion from Welsh Steam Coal",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission naval fuel oil conversion from welsh steam coal. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-069",
@@ -6548,8 +6548,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-068-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Naval Fuel Oil Conversion from Welsh Steam Coal",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of naval fuel oil conversion from welsh steam coal. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-070",
@@ -6584,8 +6584,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-069-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Integrated Defense Doctrine on Rosyth Firth of Forth Naval Base Keel Construction",
+                    detail: "Unify joint force commands and strategic deterrents to resolve rosyth firth of forth naval base keel construction. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-070",
@@ -6593,8 +6593,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-069-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Seek Allied Defense Cooperation on Rosyth Firth of Forth Naval Base Keel Construction",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on rosyth firth of forth naval base keel construction. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-071",
@@ -6629,8 +6629,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-070-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Heligoland Island Fortress Battery Construction",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in heligoland island fortress battery construction. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-071",
@@ -6638,8 +6638,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-070-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Heligoland Island Fortress Battery Construction",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for heligoland island fortress battery construction. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-072",
@@ -6674,8 +6674,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-071-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Gibraltar No. 1 Graving Drydock Expansion",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of gibraltar no. 1 graving drydock expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-072",
@@ -6683,8 +6683,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-071-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Gibraltar No. 1 Graving Drydock Expansion",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of gibraltar no. 1 graving drydock expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-073",
@@ -6719,8 +6719,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-072-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Deploy Sovereign Battalions for Malta Fleet Repair Yard Dockworker Strike",
+                    detail: "Position frontline military detachments to secure vital perimeters during malta fleet repair yard dockworker strike. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-073",
@@ -6728,8 +6728,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-072-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Convene Regional Security Liaison on Malta Fleet Repair Yard Dockworker Strike",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding malta fleet repair yard dockworker strike. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-div-074",
@@ -6764,8 +6764,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-073-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Accelerate High-Throughput Works on Suez Canal Neutrality and Tolls Convention",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in suez canal neutrality and tolls convention. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-074",
@@ -6773,8 +6773,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-073-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Auction Terminal Operating Franchises in Suez Canal Neutrality and Tolls Convention",
+                    detail: "Invite competitive international container operators to modernize facilities for suez canal neutrality and tolls convention. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-075",
@@ -6809,8 +6809,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-074-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Kaiser Wilhelm Canal Widening and Deepening",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for kaiser wilhelm canal widening and deepening. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-075",
@@ -6818,8 +6818,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-074-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Kaiser Wilhelm Canal Widening and Deepening",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for kaiser wilhelm canal widening and deepening. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-div-075",
@@ -6854,8 +6854,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-div-075-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Commission State Ordnance Surge for Hague International Peace Conference Naval Stalemate",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for hague international peace conference naval stalemate. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: nil,
@@ -6863,8 +6863,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-075-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Outsource Component Production for Hague International Peace Conference Naval Stalemate",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for hague international peace conference naval stalemate. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: nil,
@@ -6872,8 +6872,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-div-075-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Ratify Constitutional Framework for Hague International Peace Conference Naval Stalemate",
+                    detail: "Enact binding constitutional amendments guaranteeing long-term sovereign governance over hague international peace conference naval stalemate. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: nil,
@@ -6912,8 +6912,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-001-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Nationalize Able Archer 83 Command Post Exercise Escalation Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over able archer 83 command post exercise escalation. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-002",
@@ -6921,8 +6921,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-001-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Deregulate Merchant Generation in Able Archer 83 Command Post Exercise Escalation",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for able archer 83 command post exercise escalation. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-003",
@@ -6930,8 +6930,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-001-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Able Archer 83 Command Post Exercise Escalation",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for able archer 83 command post exercise escalation. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-003",
@@ -6966,8 +6966,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-002-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Deploy Sovereign Battalions for Soviet Oko Early-Warning False Satellite Signal",
+                    detail: "Position frontline military detachments to secure vital perimeters during soviet oko early-warning false satellite signal. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-003",
@@ -6975,8 +6975,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-002-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Convene Regional Security Liaison on Soviet Oko Early-Warning False Satellite Signal",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding soviet oko early-warning false satellite signal. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-004",
@@ -6984,8 +6984,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-002-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Charter Supreme National Directorate for Soviet Oko Early-Warning False Satellite Signal",
+                    detail: "Promulgate comprehensive constitutional and economic transformation to permanently institutionalize soviet oko early-warning false satellite signal. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-004",
@@ -7020,8 +7020,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-003-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for GDR Air Base Nuclear-Capable Backfire Alert",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission gdr air base nuclear-capable backfire alert. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-004",
@@ -7029,8 +7029,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-003-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in GDR Air Base Nuclear-Capable Backfire Alert",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of gdr air base nuclear-capable backfire alert. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-005",
@@ -7065,8 +7065,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-004-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Schwäbisch Gmünd Pershing II Battery Dispersal",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for schwäbisch gmünd pershing ii battery dispersal. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-005",
@@ -7074,8 +7074,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-004-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Schwäbisch Gmünd Pershing II Battery Dispersal",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of schwäbisch gmünd pershing ii battery dispersal. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-006",
@@ -7110,8 +7110,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-005-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for SS-20 Saber Mobile Missile Forest Dispersal",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for ss-20 saber mobile missile forest dispersal. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-006",
@@ -7119,8 +7119,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-005-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for SS-20 Saber Mobile Missile Forest Dispersal",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for ss-20 saber mobile missile forest dispersal. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-007",
@@ -7155,8 +7155,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-006-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize State Works on Berlin Air Corridor Radar Jamming Standoff",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for berlin air corridor radar jamming standoff. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-007",
@@ -7164,8 +7164,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-006-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Freight Venture for Berlin Air Corridor Radar Jamming Standoff",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for berlin air corridor radar jamming standoff. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-008",
@@ -7200,8 +7200,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-007-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Nationalize Strategic Corridors for Checkpoint Charlie Armor Engine Idling Standoff",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for checkpoint charlie armor engine idling standoff. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-008",
@@ -7209,8 +7209,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-007-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Incentivize Autonomous Shuttles for Checkpoint Charlie Armor Engine Idling Standoff",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in checkpoint charlie armor engine idling standoff. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-009",
@@ -7245,8 +7245,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-008-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for GIUK Gap Nuclear Submarine Acoustic Search",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission giuk gap nuclear submarine acoustic search. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-009",
@@ -7254,8 +7254,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-008-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in GIUK Gap Nuclear Submarine Acoustic Search",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of giuk gap nuclear submarine acoustic search. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-010",
@@ -7290,8 +7290,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-009-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Barents Sea Bastion Perimeter Depth-Charge Contact",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for barents sea bastion perimeter depth-charge contact. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-010",
@@ -7299,8 +7299,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-009-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Barents Sea Bastion Perimeter Depth-Charge Contact",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for barents sea bastion perimeter depth-charge contact. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-011",
@@ -7335,8 +7335,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-010-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on SAC DEFCON 2 Strategic Bomber Runway Alert",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in sac defcon 2 strategic bomber runway alert. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-011",
@@ -7344,8 +7344,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-010-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on SAC DEFCON 2 Strategic Bomber Runway Alert",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for sac defcon 2 strategic bomber runway alert. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-012",
@@ -7380,8 +7380,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-011-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Operational Readiness for EC-135 Looking Glass Airborne Command Scramble",
+                    detail: "Authorize armed forces deployment and defense production directives for ec-135 looking glass airborne command scramble. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-012",
@@ -7389,8 +7389,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-011-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Defensive Asymmetric Model for EC-135 Looking Glass Airborne Command Scramble",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in ec-135 looking glass airborne command scramble. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-013",
@@ -7425,8 +7425,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-012-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Moscow Underground Metro Civil Defense Seal",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for moscow underground metro civil defense seal. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-013",
@@ -7434,8 +7434,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-012-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Moscow Underground Metro Civil Defense Seal",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in moscow underground metro civil defense seal. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-014",
@@ -7470,8 +7470,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-013-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on Warsaw Pact Forward Hardened Bunker Activation",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for warsaw pact forward hardened bunker activation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-014",
@@ -7479,8 +7479,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-013-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in Warsaw Pact Forward Hardened Bunker Activation",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for warsaw pact forward hardened bunker activation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-015",
@@ -7515,8 +7515,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-014-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Mandate Public Grid Integration for NATO Nuclear Planning Group Emergency Brussels Meeting",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of nato nuclear planning group emergency brussels meeting. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-015",
@@ -7524,8 +7524,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-014-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Auction Commercial Concessions for NATO Nuclear Planning Group Emergency Brussels Meeting",
+                    detail: "Incentivize private utility operators and international consortiums to fund nato nuclear planning group emergency brussels meeting. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-016",
@@ -7533,8 +7533,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-014-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Proclaim Comprehensive Structural Overhaul for NATO Nuclear Planning Group Emergency Brussels Meeting",
+                    detail: "Restructure federal resource allocations, industrial subsidies, and fiscal revenue splits for nato nuclear planning group emergency brussels meeting. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-016",
@@ -7569,8 +7569,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-015-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Underwrite Sovereign Energy Reserves in Bonn Emergency Cabinet Nuclear Consultation",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for bonn emergency cabinet nuclear consultation. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-016",
@@ -7578,8 +7578,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-015-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "License Independent Energy Producers for Bonn Emergency Cabinet Nuclear Consultation",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on bonn emergency cabinet nuclear consultation. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-017",
@@ -7614,8 +7614,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-016-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Mobilize State Works on Fulda Gap Tactical Atomic Demolition Standoff",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for fulda gap tactical atomic demolition standoff. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-017",
@@ -7623,8 +7623,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-016-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Charter Public-Private Freight Venture for Fulda Gap Tactical Atomic Demolition Standoff",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for fulda gap tactical atomic demolition standoff. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-018",
@@ -7632,8 +7632,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-016-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Fulda Gap Tactical Atomic Demolition Standoff",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for fulda gap tactical atomic demolition standoff. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-018",
@@ -7668,8 +7668,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-017-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Establish Sovereign Command Over High-Altitude EMP Grid Disruption over Hesse",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of high-altitude emp grid disruption over hesse. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-018",
@@ -7677,8 +7677,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-017-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Attract Joint Venture Capital for High-Altitude EMP Grid Disruption over Hesse",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in high-altitude emp grid disruption over hesse. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-019",
@@ -7713,8 +7713,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-018-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate High-Throughput Works on Rhine River Bridge Strategic Demolition Pre-Mining",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in rhine river bridge strategic demolition pre-mining. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-019",
@@ -7722,8 +7722,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-018-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Terminal Operating Franchises in Rhine River Bridge Strategic Demolition Pre-Mining",
+                    detail: "Invite competitive international container operators to modernize facilities for rhine river bridge strategic demolition pre-mining. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-020",
@@ -7758,8 +7758,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-019-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Integrated Defense Doctrine on Baltic Sea Coastal Mining and Convoy Interdiction",
+                    detail: "Unify joint force commands and strategic deterrents to resolve baltic sea coastal mining and convoy interdiction. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-020",
@@ -7767,8 +7767,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-019-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Seek Allied Defense Cooperation on Baltic Sea Coastal Mining and Convoy Interdiction",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on baltic sea coastal mining and convoy interdiction. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-021",
@@ -7803,8 +7803,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-020-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in North Sea Ekofisk Oil Platform Emergency Evacuation",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for north sea ekofisk oil platform emergency evacuation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-021",
@@ -7812,8 +7812,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-020-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for North Sea Ekofisk Oil Platform Emergency Evacuation",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on north sea ekofisk oil platform emergency evacuation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-022",
@@ -7848,8 +7848,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-021-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Enforce Operational Readiness for SDI 'Brilliant Pebbles' Space Kinetic Interceptor Test",
+                    detail: "Authorize armed forces deployment and defense production directives for sdi 'brilliant pebbles' space kinetic interceptor test. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-022",
@@ -7857,8 +7857,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-021-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Adopt Defensive Asymmetric Model for SDI 'Brilliant Pebbles' Space Kinetic Interceptor Test",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in sdi 'brilliant pebbles' space kinetic interceptor test. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-023",
@@ -7893,8 +7893,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-022-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Establish Sovereign Command Over Chernobyl Graphite Core Reactor Containment Breach",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of chernobyl graphite core reactor containment breach. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-023",
@@ -7902,8 +7902,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-022-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Attract Joint Venture Capital for Chernobyl Graphite Core Reactor Containment Breach",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in chernobyl graphite core reactor containment breach. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-024",
@@ -7911,8 +7911,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-022-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Charter Supreme National Directorate for Chernobyl Graphite Core Reactor Containment Breach",
+                    detail: "Promulgate comprehensive constitutional and economic transformation to permanently institutionalize chernobyl graphite core reactor containment breach. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-024",
@@ -7947,8 +7947,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-023-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Pripyat 30-Kilometer Emergency Exclusion Zone",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission pripyat 30-kilometer emergency exclusion zone. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-024",
@@ -7956,8 +7956,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-023-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Pripyat 30-Kilometer Emergency Exclusion Zone",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of pripyat 30-kilometer emergency exclusion zone. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-025",
@@ -7992,8 +7992,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-024-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Mandate Integrated Defense Doctrine on KAL-007 Black Box International Investigation Dispute",
+                    detail: "Unify joint force commands and strategic deterrents to resolve kal-007 black box international investigation dispute. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-025",
@@ -8001,8 +8001,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-024-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Seek Allied Defense Cooperation on KAL-007 Black Box International Investigation Dispute",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on kal-007 black box international investigation dispute. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-026",
@@ -8037,8 +8037,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-025-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Sea of Okhotsk Naval Exclusion Perimeter",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for sea of okhotsk naval exclusion perimeter. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-026",
@@ -8046,8 +8046,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-025-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Sea of Okhotsk Naval Exclusion Perimeter",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on sea of okhotsk naval exclusion perimeter. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-027",
@@ -8086,8 +8086,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-026-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Enforce Operational Readiness for Strait of Hormuz Silkworm Anti-Ship Missile Strike",
+                    detail: "Authorize armed forces deployment and defense production directives for strait of hormuz silkworm anti-ship missile strike. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-027",
@@ -8095,8 +8095,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-026-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Adopt Defensive Asymmetric Model for Strait of Hormuz Silkworm Anti-Ship Missile Strike",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in strait of hormuz silkworm anti-ship missile strike. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-028",
@@ -8131,8 +8131,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-027-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for USS Stark Frigate Exocet Missile Damage",
+                    detail: "Position frontline military detachments to secure vital perimeters during uss stark frigate exocet missile damage. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-028",
@@ -8140,8 +8140,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-027-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on USS Stark Frigate Exocet Missile Damage",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding uss stark frigate exocet missile damage. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-029",
@@ -8176,8 +8176,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-028-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate High-Throughput Works on Beirut International Airport Barracks Security Fallout",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in beirut international airport barracks security fallout. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-029",
@@ -8185,8 +8185,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-028-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Terminal Operating Franchises in Beirut International Airport Barracks Security Fallout",
+                    detail: "Invite competitive international container operators to modernize facilities for beirut international airport barracks security fallout. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-030",
@@ -8221,8 +8221,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-029-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Defensive Cyber Shields for Grenada Point Salines Airfield Combat Landing",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during grenada point salines airfield combat landing. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-030",
@@ -8230,8 +8230,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-029-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Commercial Innovation in Grenada Point Salines Airfield Combat Landing",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for grenada point salines airfield combat landing. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-031",
@@ -8266,8 +8266,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-030-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Finance Strategic Water Reservoirs in Gulf of Sidra 'Line of Death' Naval Air Skirmish",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in gulf of sidra 'line of death' naval air skirmish. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-031",
@@ -8275,8 +8275,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-030-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Public-Private Partnerships on Gulf of Sidra 'Line of Death' Naval Air Skirmish",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain gulf of sidra 'line of death' naval air skirmish. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-032",
@@ -8311,8 +8311,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-031-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
+                    label: "Nationalize European Nuclear Winter Crop Temperature Deficit Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over european nuclear winter crop temperature deficit. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-032",
@@ -8320,8 +8320,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-031-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Deregulate Merchant Generation in European Nuclear Winter Crop Temperature Deficit",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for european nuclear winter crop temperature deficit. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-033",
@@ -8329,8 +8329,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-031-opt-c",
-                    label: "Proclaim Landmark International Convention",
-                    detail: "Codify universal guidelines governing planetary infrastructure, peace, and collective security. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
+                    label: "Inaugurate Federal Reorganization Authority for European Nuclear Winter Crop Temperature Deficit",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for european nuclear winter crop temperature deficit. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
                     effectTrack: .worldTension,
                     effectMagnitude: -3,
                     nextChainedEventID: "ah-dd-033",
@@ -8365,8 +8365,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-032-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Air-Gap Sovereign Networks for Scandinavian Strategic Grain Reserve Rationing",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for scandinavian strategic grain reserve rationing. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-033",
@@ -8374,8 +8374,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-032-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Incentivize Venture Capital in Scandinavian Strategic Grain Reserve Rationing",
+                    detail: "Create state matching venture funds for domestic startups commercializing scandinavian strategic grain reserve rationing. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-034",
@@ -8410,8 +8410,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-033-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Mediterranean Maritime Humanitarian Supply Convoy",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission mediterranean maritime humanitarian supply convoy. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-034",
@@ -8419,8 +8419,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-033-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Mediterranean Maritime Humanitarian Supply Convoy",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of mediterranean maritime humanitarian supply convoy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-035",
@@ -8455,8 +8455,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-034-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Mandate Aquifer Replenishment for Pyrenees Fallout Atmospheric Shielding Barrier",
+                    detail: "Enforce binding municipal water recharge and conservation decrees for pyrenees fallout atmospheric shielding barrier. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-035",
@@ -8464,8 +8464,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-034-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Support Decentralized Water Boards for Pyrenees Fallout Atmospheric Shielding Barrier",
+                    detail: "Subsidize municipal water utilities and regional farming compacts to manage pyrenees fallout atmospheric shielding barrier. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-036",
@@ -8500,8 +8500,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-035-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in British Isles Emergency National Power Rationing",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for british isles emergency national power rationing. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-036",
@@ -8509,8 +8509,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-035-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for British Isles Emergency National Power Rationing",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on british isles emergency national power rationing. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-037",
@@ -8545,8 +8545,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-036-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Swiss Alpine Civilian Bunker Capacity Audit",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of swiss alpine civilian bunker capacity audit. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-037",
@@ -8554,8 +8554,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-036-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Swiss Alpine Civilian Bunker Capacity Audit",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of swiss alpine civilian bunker capacity audit. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-038",
@@ -8590,8 +8590,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-037-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Centralize Water Protection in Rhine Water Filtration Chemical Monitoring",
+                    detail: "Assert ministerial watershed jurisdiction to guarantee supply during rhine water filtration chemical monitoring. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-038",
@@ -8599,8 +8599,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-037-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Floodplain Restoration for Rhine Water Filtration Chemical Monitoring",
+                    detail: "Empower local provincial authorities to negotiate ecological easements regarding rhine water filtration chemical monitoring. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-039",
@@ -8635,8 +8635,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-038-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate High-Throughput Works on Danube Agricultural Barge Convoy Escort",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in danube agricultural barge convoy escort. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-039",
@@ -8644,8 +8644,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-038-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Terminal Operating Franchises in Danube Agricultural Barge Convoy Escort",
+                    detail: "Invite competitive international container operators to modernize facilities for danube agricultural barge convoy escort. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-040",
@@ -8680,8 +8680,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-039-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Iberian Displaced Person Resettlement Quotas",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for iberian displaced person resettlement quotas. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-040",
@@ -8689,8 +8689,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-039-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Iberian Displaced Person Resettlement Quotas",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of iberian displaced person resettlement quotas. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-041",
@@ -8725,8 +8725,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-040-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Enforce Comprehensive State Policy on Moroccan Phosphate Supply Line Guarantee",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in moroccan phosphate supply line guarantee. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-041",
@@ -8734,8 +8734,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-040-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Charter Public-Private Partnership on Moroccan Phosphate Supply Line Guarantee",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for moroccan phosphate supply line guarantee. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-042",
@@ -8770,8 +8770,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-041-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Po Valley Industrial Facility Relocation Plan",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of po valley industrial facility relocation plan. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-042",
@@ -8779,8 +8779,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-041-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Po Valley Industrial Facility Relocation Plan",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of po valley industrial facility relocation plan. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-043",
@@ -8815,8 +8815,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-042-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for Aegean Archipelago Island Mutual Aid Federation",
+                    detail: "Position frontline military detachments to secure vital perimeters during aegean archipelago island mutual aid federation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-043",
@@ -8824,8 +8824,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-042-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on Aegean Archipelago Island Mutual Aid Federation",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding aegean archipelago island mutual aid federation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-044",
@@ -8860,8 +8860,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-043-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on Turkish Straits Naval Quarantine Inspection",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for turkish straits naval quarantine inspection. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-044",
@@ -8869,8 +8869,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-043-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in Turkish Straits Naval Quarantine Inspection",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for turkish straits naval quarantine inspection. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-045",
@@ -8905,8 +8905,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-044-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Shannon Airport Transatlantic Humanitarian Bridge",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for shannon airport transatlantic humanitarian bridge. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-045",
@@ -8914,8 +8914,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-044-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Shannon Airport Transatlantic Humanitarian Bridge",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for shannon airport transatlantic humanitarian bridge. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-046",
@@ -8950,8 +8950,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-045-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for Keflavik Subsea Fiber and Cable Perimeter Security",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for keflavik subsea fiber and cable perimeter security. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-046",
@@ -8959,8 +8959,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-045-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for Keflavik Subsea Fiber and Cable Perimeter Security",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for keflavik subsea fiber and cable perimeter security. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-047",
@@ -8995,8 +8995,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-046-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Operational Readiness for Enhanced Radiation Weaponry Tactical Reserve Review",
+                    detail: "Authorize armed forces deployment and defense production directives for enhanced radiation weaponry tactical reserve review. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-047",
@@ -9004,8 +9004,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-046-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Defensive Asymmetric Model for Enhanced Radiation Weaponry Tactical Reserve Review",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in enhanced radiation weaponry tactical reserve review. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-048",
@@ -9040,8 +9040,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-047-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for M1 Abrams Chobham Armor Depleted Uranium Upgrade",
+                    detail: "Position frontline military detachments to secure vital perimeters during m1 abrams chobham armor depleted uranium upgrade. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-048",
@@ -9049,8 +9049,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-047-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on M1 Abrams Chobham Armor Depleted Uranium Upgrade",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding m1 abrams chobham armor depleted uranium upgrade. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-049",
@@ -9085,8 +9085,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-048-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on T-80U Explosive Reactive Armor Mass Fitting",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for t-80u explosive reactive armor mass fitting. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-049",
@@ -9094,8 +9094,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-048-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in T-80U Explosive Reactive Armor Mass Fitting",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for t-80u explosive reactive armor mass fitting. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-050",
@@ -9130,8 +9130,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-049-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Integrated Defense Doctrine on MIM-104 Patriot Surface-to-Air Battery Deployment",
+                    detail: "Unify joint force commands and strategic deterrents to resolve mim-104 patriot surface-to-air battery deployment. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-050",
@@ -9139,8 +9139,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-049-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Seek Allied Defense Cooperation on MIM-104 Patriot Surface-to-Air Battery Deployment",
+                    detail: "Coordinate joint doctrine and cost-sharing logistics with international partner states on mim-104 patriot surface-to-air battery deployment. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-051",
@@ -9175,8 +9175,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-050-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for Tor-M1 Low-Altitude Mobile Air Defense System",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for tor-m1 low-altitude mobile air defense system. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-051",
@@ -9184,8 +9184,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-050-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for Tor-M1 Low-Altitude Mobile Air Defense System",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for tor-m1 low-altitude mobile air defense system. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-052",
@@ -9224,8 +9224,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-051-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over F-117A Nighthawk Stealth Reconnaissance Mission",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for f-117a nighthawk stealth reconnaissance mission. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-052",
@@ -9233,8 +9233,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-051-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on F-117A Nighthawk Stealth Reconnaissance Mission",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for f-117a nighthawk stealth reconnaissance mission. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-053",
@@ -9269,8 +9269,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-052-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Sovereign Battalions for MiG-31 Foxhound Zaslon Phased-Array Radar Patrol",
+                    detail: "Position frontline military detachments to secure vital perimeters during mig-31 foxhound zaslon phased-array radar patrol. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-053",
@@ -9278,8 +9278,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-052-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Regional Security Liaison on MiG-31 Foxhound Zaslon Phased-Array Radar Patrol",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding mig-31 foxhound zaslon phased-array radar patrol. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-054",
@@ -9314,8 +9314,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-053-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on Trident II D5 Submarine Missile Flight Test",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for trident ii d5 submarine missile flight test. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-054",
@@ -9323,8 +9323,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-053-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in Trident II D5 Submarine Missile Flight Test",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for trident ii d5 submarine missile flight test. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-055",
@@ -9359,8 +9359,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-054-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Aquifer Replenishment for Typhoon SSBN Anechoic Acoustic Masking Trial",
+                    detail: "Enforce binding municipal water recharge and conservation decrees for typhoon ssbn anechoic acoustic masking trial. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-055",
@@ -9368,8 +9368,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-054-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Support Decentralized Water Boards for Typhoon SSBN Anechoic Acoustic Masking Trial",
+                    detail: "Subsidize municipal water utilities and regional farming compacts to manage typhoon ssbn anechoic acoustic masking trial. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-056",
@@ -9404,8 +9404,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-055-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for Mil Mi-28 Havoc All-Weather Attack Helicopter Test",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for mil mi-28 havoc all-weather attack helicopter test. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-056",
@@ -9413,8 +9413,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-055-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for Mil Mi-28 Havoc All-Weather Attack Helicopter Test",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for mil mi-28 havoc all-weather attack helicopter test. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-057",
@@ -9449,8 +9449,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-056-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize State Works on AH-64 Apache Forward Arming and Refueling Pad",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for ah-64 apache forward arming and refueling pad. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-057",
@@ -9458,8 +9458,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-056-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Freight Venture for AH-64 Apache Forward Arming and Refueling Pad",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for ah-64 apache forward arming and refueling pad. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-058",
@@ -9494,8 +9494,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-057-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Mil Mi-26 Halo Heavy Transport Logistical Lift",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for mil mi-26 halo heavy transport logistical lift. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-058",
@@ -9503,8 +9503,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-057-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Mil Mi-26 Halo Heavy Transport Logistical Lift",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in mil mi-26 halo heavy transport logistical lift. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-059",
@@ -9539,8 +9539,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-058-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for All-Union Chemical Protective Suit Factory Surge",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission all-union chemical protective suit factory surge. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-059",
@@ -9548,8 +9548,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-058-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in All-Union Chemical Protective Suit Factory Surge",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of all-union chemical protective suit factory surge. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-060",
@@ -9584,8 +9584,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-059-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Armored Hospital Train Fleet Mobilization",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for armored hospital train fleet mobilization. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-060",
@@ -9593,8 +9593,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-059-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Armored Hospital Train Fleet Mobilization",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for armored hospital train fleet mobilization. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-061",
@@ -9629,8 +9629,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-060-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for Hardened Subterranean Fiber-Optic Command Mesh",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for hardened subterranean fiber-optic command mesh. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-061",
@@ -9638,8 +9638,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-060-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for Hardened Subterranean Fiber-Optic Command Mesh",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for hardened subterranean fiber-optic command mesh. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-062",
@@ -9674,8 +9674,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-061-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Enforce Operational Readiness for Reykjavik Summit Arms Control Stalemate",
+                    detail: "Authorize armed forces deployment and defense production directives for reykjavik summit arms control stalemate. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-062",
@@ -9683,8 +9683,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-061-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Adopt Defensive Asymmetric Model for Reykjavik Summit Arms Control Stalemate",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in reykjavik summit arms control stalemate. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-063",
@@ -9692,8 +9692,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-061-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Reykjavik Summit Arms Control Stalemate",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for reykjavik summit arms control stalemate. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-dd-063",
@@ -9728,8 +9728,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-062-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Deploy Sovereign Battalions for Geneva Intermediate-Range Missile Verification Dispute",
+                    detail: "Position frontline military detachments to secure vital perimeters during geneva intermediate-range missile verification dispute. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-063",
@@ -9737,8 +9737,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-062-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Convene Regional Security Liaison on Geneva Intermediate-Range Missile Verification Dispute",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding geneva intermediate-range missile verification dispute. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-064",
@@ -9773,8 +9773,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-063-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Formalize Sovereign Alignment on Vienna Mutual and Balanced Force Reduction Walkout",
+                    detail: "Consolidate exclusive strategic pacts and reject foreign interference regarding vienna mutual and balanced force reduction walkout. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-064",
@@ -9782,8 +9782,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-063-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Adopt Phased Diplomatic Roadmap on Vienna Mutual and Balanced Force Reduction Walkout",
+                    detail: "Establish confidence-building milestones and joint observation teams to de-escalate vienna mutual and balanced force reduction walkout. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-065",
@@ -9818,8 +9818,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-064-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Accelerate Strategic Mandate on Helsinki Final Act Compliance Standoff",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for helsinki final act compliance standoff. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-065",
@@ -9827,8 +9827,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-064-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Adopt Decentralized Market Approach to Helsinki Final Act Compliance Standoff",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of helsinki final act compliance standoff. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-066",
@@ -9863,8 +9863,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-065-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for Polish Martial Law Continuance and Factory Councils",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for polish martial law continuance and factory councils. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-066",
@@ -9872,8 +9872,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-065-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for Polish Martial Law Continuance and Factory Councils",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for polish martial law continuance and factory councils. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-067",
@@ -9908,8 +9908,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-066-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on East German Border Fence Electrification Upgrade",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of east german border fence electrification upgrade. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-067",
@@ -9917,8 +9917,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-066-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for East German Border Fence Electrification Upgrade",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of east german border fence electrification upgrade. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-068",
@@ -9953,8 +9953,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-067-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Authorize National Priority Directive for Hungarian Frontier Fence Wire Dismantling Dispute",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of hungarian frontier fence wire dismantling dispute. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-068",
@@ -9962,8 +9962,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-067-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Offer Competitive Concessions in Hungarian Frontier Fence Wire Dismantling Dispute",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding hungarian frontier fence wire dismantling dispute. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-069",
@@ -9998,8 +9998,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-068-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Automated Barrier Sluices for Danube-Black Sea Canal Labor Brigade Mobilization",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for danube-black sea canal labor brigade mobilization. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-069",
@@ -10007,8 +10007,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-068-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Create Tradable Watershed Credits for Danube-Black Sea Canal Labor Brigade Mobilization",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in danube-black sea canal labor brigade mobilization. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-070",
@@ -10043,8 +10043,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-069-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Establish Non-Dollar Settlement for Yugoslav Collective Presidency Federal",
+                    detail: "Conclude bilateral sovereign clearing protocols to insulate domestic trade during yugoslav collective presidency federal. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-070",
@@ -10052,8 +10052,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-069-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Negotiate Market Syndication for Yugoslav Collective Presidency Federal",
+                    detail: "Partner with commercial banking consortia and multilateral lenders to refinance yugoslav collective presidency federal. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-071",
@@ -10088,8 +10088,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-070-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Comecon Petroleum Barter Price Recalculation",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for comecon petroleum barter price recalculation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-071",
@@ -10097,8 +10097,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-070-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Comecon Petroleum Barter Price Recalculation",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on comecon petroleum barter price recalculation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-072",
@@ -10133,8 +10133,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-071-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over NATO Dual-Track Deployment Final Ratification",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for nato dual-track deployment final ratification. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-072",
@@ -10142,8 +10142,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-071-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on NATO Dual-Track Deployment Final Ratification",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for nato dual-track deployment final ratification. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-dd-073",
@@ -10178,8 +10178,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-072-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Deploy Sovereign Battalions for Western European Union Defense Revitalization",
+                    detail: "Position frontline military detachments to secure vital perimeters during western european union defense revitalization. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-073",
@@ -10187,8 +10187,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-072-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Convene Regional Security Liaison on Western European Union Defense Revitalization",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding western european union defense revitalization. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-074",
@@ -10223,8 +10223,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-073-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate High-Throughput Works on EEC Common Agricultural Policy Grain Emergency Fund",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in eec common agricultural policy grain emergency fund. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-074",
@@ -10232,8 +10232,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-073-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Terminal Operating Franchises in EEC Common Agricultural Policy Grain Emergency Fund",
+                    detail: "Invite competitive international container operators to modernize facilities for eec common agricultural policy grain emergency fund. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-075",
@@ -10268,8 +10268,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-074-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Accelerate Strategic Mandate on Vatican Papal Mediation Encyclical on Peace",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for vatican papal mediation encyclical on peace. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-075",
@@ -10277,8 +10277,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-074-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Adopt Decentralized Market Approach to Vatican Papal Mediation Encyclical on Peace",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of vatican papal mediation encyclical on peace. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-dd-075",
@@ -10313,8 +10313,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-dd-075-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Enforce Comprehensive State Policy on UN General Assembly Emergency Ceasefire",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in un general assembly emergency ceasefire. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: nil,
@@ -10322,8 +10322,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-075-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Charter Public-Private Partnership on UN General Assembly Emergency Ceasefire",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for un general assembly emergency ceasefire. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: nil,
@@ -10331,8 +10331,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-dd-075-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Ratify Constitutional Framework for UN General Assembly Emergency Ceasefire",
+                    detail: "Enact binding constitutional amendments guaranteeing long-term sovereign governance over un general assembly emergency ceasefire. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: nil,
@@ -10371,8 +10371,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-001-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Direct Hydraulic Defenses for Indus Basin Aquifer Critical Reserve Threshold",
+                    detail: "Deploy civil engineering brigades and municipal boards to construct defenses for indus basin aquifer critical reserve threshold. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-002",
@@ -10380,8 +10380,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-001-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Incentivize Agronomic Water Efficiency for Indus Basin Aquifer Critical Reserve Threshold",
+                    detail: "Provide tax deductions for micro-drip irrigation and localized storage to adapt to indus basin aquifer critical reserve threshold. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-003",
@@ -10389,8 +10389,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-001-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Indus Basin Aquifer Critical Reserve Threshold",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for indus basin aquifer critical reserve threshold. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-003",
@@ -10425,8 +10425,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-002-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Centralize Water Protection in Ogallala Aquifer Emergency Irrigation Rationing",
+                    detail: "Assert ministerial watershed jurisdiction to guarantee supply during ogallala aquifer emergency irrigation rationing. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-003",
@@ -10434,8 +10434,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-002-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Devolve Floodplain Restoration for Ogallala Aquifer Emergency Irrigation Rationing",
+                    detail: "Empower local provincial authorities to negotiate ecological easements regarding ogallala aquifer emergency irrigation rationing. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-004",
@@ -10470,8 +10470,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-003-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Commission Automated Barrier Sluices for California Central Valley Water Rights Seizure",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for california central valley water rights seizure. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-004",
@@ -10479,8 +10479,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-003-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Create Tradable Watershed Credits for California Central Valley Water Rights Seizure",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in california central valley water rights seizure. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-005",
@@ -10515,8 +10515,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-004-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Accelerate Strategic Mandate on Colorado River Compact Emergency Tier 3 Curvilinear Cuts",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for colorado river compact emergency tier 3 curvilinear cuts. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-005",
@@ -10524,8 +10524,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-004-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Adopt Decentralized Market Approach to Colorado River Compact Emergency Tier 3 Curvilinear Cuts",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of colorado river compact emergency tier 3 curvilinear cuts. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-006",
@@ -10533,8 +10533,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-004-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Proclaim Comprehensive Structural Overhaul for Colorado River Compact Emergency Tier 3 Curvilinear Cuts",
+                    detail: "Restructure federal resource allocations, industrial subsidies, and fiscal revenue splits for colorado river compact emergency tier 3 curvilinear cuts. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-006",
@@ -10569,8 +10569,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-005-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Finance Strategic Water Reservoirs in Murray-Darling Basin Salinity Emergency Surcharge",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in murray-darling basin salinity emergency surcharge. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-006",
@@ -10578,8 +10578,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-005-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Public-Private Partnerships on Murray-Darling Basin Salinity Emergency Surcharge",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain murray-darling basin salinity emergency surcharge. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-007",
@@ -10614,8 +10614,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-006-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Direct Hydraulic Defenses for Yellow River Water Allocation Provincial Quotas",
+                    detail: "Deploy civil engineering brigades and municipal boards to construct defenses for yellow river water allocation provincial quotas. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-007",
@@ -10623,8 +10623,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-006-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Incentivize Agronomic Water Efficiency for Yellow River Water Allocation Provincial Quotas",
+                    detail: "Provide tax deductions for micro-drip irrigation and localized storage to adapt to yellow river water allocation provincial quotas. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-008",
@@ -10659,8 +10659,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-007-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Air-Gap Sovereign Networks for Grand Ethiopian Renaissance Dam Reservoir Standoff",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for grand ethiopian renaissance dam reservoir standoff. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-008",
@@ -10668,8 +10668,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-007-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Incentivize Venture Capital in Grand Ethiopian Renaissance Dam Reservoir Standoff",
+                    detail: "Create state matching venture funds for domestic startups commercializing grand ethiopian renaissance dam reservoir standoff. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-009",
@@ -10677,8 +10677,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-007-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Charter Supreme National Directorate for Grand Ethiopian Renaissance Dam Reservoir Standoff",
+                    detail: "Promulgate comprehensive constitutional and economic transformation to permanently institutionalize grand ethiopian renaissance dam reservoir standoff. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-009",
@@ -10713,8 +10713,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-008-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Commission Automated Barrier Sluices for Tigris-Euphrates Headwaters Flow Curtailment",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for tigris-euphrates headwaters flow curtailment. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-009",
@@ -10722,8 +10722,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-008-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Create Tradable Watershed Credits for Tigris-Euphrates Headwaters Flow Curtailment",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in tigris-euphrates headwaters flow curtailment. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-010",
@@ -10758,8 +10758,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-009-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Mandate Public Grid Integration for Jordan River Basin Desalination Exchange",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of jordan river basin desalination exchange. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-010",
@@ -10767,8 +10767,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-009-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Auction Commercial Concessions for Jordan River Basin Desalination Exchange",
+                    detail: "Incentivize private utility operators and international consortiums to fund jordan river basin desalination exchange. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-011",
@@ -10803,8 +10803,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-010-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Public Terminal Priority for São Francisco River Transposition Tariff Standoff",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during são francisco river transposition tariff standoff. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-011",
@@ -10812,8 +10812,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-010-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Regional Transit Authority for São Francisco River Transposition Tariff Standoff",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for são francisco river transposition tariff standoff. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-012",
@@ -10848,8 +10848,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-011-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Direct Hydraulic Defenses for Rhine River Low-Water Cargo Barge Grounding",
+                    detail: "Deploy civil engineering brigades and municipal boards to construct defenses for rhine river low-water cargo barge grounding. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-012",
@@ -10857,8 +10857,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-011-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Incentivize Agronomic Water Efficiency for Rhine River Low-Water Cargo Barge Grounding",
+                    detail: "Provide tax deductions for micro-drip irrigation and localized storage to adapt to rhine river low-water cargo barge grounding. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-013",
@@ -10893,8 +10893,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-012-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Centralize Water Protection in Danube Grain Shipping Low-Water Bottleneck",
+                    detail: "Assert ministerial watershed jurisdiction to guarantee supply during danube grain shipping low-water bottleneck. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-013",
@@ -10902,8 +10902,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-012-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Floodplain Restoration for Danube Grain Shipping Low-Water Bottleneck",
+                    detail: "Empower local provincial authorities to negotiate ecological easements regarding danube grain shipping low-water bottleneck. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-014",
@@ -10938,8 +10938,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-013-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Automated Barrier Sluices for Mekong Delta Saltwater Intrusion Canal Barrier",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for mekong delta saltwater intrusion canal barrier. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-014",
@@ -10947,8 +10947,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-013-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Create Tradable Watershed Credits for Mekong Delta Saltwater Intrusion Canal Barrier",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in mekong delta saltwater intrusion canal barrier. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-015",
@@ -10983,8 +10983,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-014-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Mandate Aquifer Replenishment for Lake Chad Inter-Basin Water Transfer Impasse",
+                    detail: "Enforce binding municipal water recharge and conservation decrees for lake chad inter-basin water transfer impasse. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-015",
@@ -10992,8 +10992,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-014-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Support Decentralized Water Boards for Lake Chad Inter-Basin Water Transfer Impasse",
+                    detail: "Subsidize municipal water utilities and regional farming compacts to manage lake chad inter-basin water transfer impasse. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-016",
@@ -11028,8 +11028,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-015-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Aral Sea Remnant Basin Toxic Dust Mitigation",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in aral sea remnant basin toxic dust mitigation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-016",
@@ -11037,8 +11037,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-015-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Aral Sea Remnant Basin Toxic Dust Mitigation",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for aral sea remnant basin toxic dust mitigation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-017",
@@ -11073,8 +11073,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-016-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Direct Sovereign Executive Action on Atacama Lithium Triangle Nationalization Compact",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of atacama lithium triangle nationalization compact. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-017",
@@ -11082,8 +11082,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-016-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Devolve Operational Execution for Atacama Lithium Triangle Nationalization Compact",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of atacama lithium triangle nationalization compact. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-018",
@@ -11091,8 +11091,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-016-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Atacama Lithium Triangle Nationalization Compact",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for atacama lithium triangle nationalization compact. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-018",
@@ -11127,8 +11127,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-017-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Nationalize Strategic Corridors for Katanga Copper-Cobalt Export Minimum Cartel",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for katanga copper-cobalt export minimum cartel. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-018",
@@ -11136,8 +11136,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-017-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Incentivize Autonomous Shuttles for Katanga Copper-Cobalt Export Minimum Cartel",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in katanga copper-cobalt export minimum cartel. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-019",
@@ -11172,8 +11172,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-018-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Accelerate High-Throughput Works on Indonesian Nickel Pig Iron Smelter Export Ban",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in indonesian nickel pig iron smelter export ban. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-019",
@@ -11181,8 +11181,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-018-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Auction Terminal Operating Franchises in Indonesian Nickel Pig Iron Smelter Export Ban",
+                    detail: "Invite competitive international container operators to modernize facilities for indonesian nickel pig iron smelter export ban. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-020",
@@ -11217,8 +11217,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-019-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Mandate Aquifer Replenishment for Escondida Copper Mine Desalination Water Strike",
+                    detail: "Enforce binding municipal water recharge and conservation decrees for escondida copper mine desalination water strike. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-020",
@@ -11226,8 +11226,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-019-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Support Decentralized Water Boards for Escondida Copper Mine Desalination Water Strike",
+                    detail: "Subsidize municipal water utilities and regional farming compacts to manage escondida copper mine desalination water strike. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-021",
@@ -11262,8 +11262,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-020-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Public Terminal Priority for Pilbara Spodumene Port Hedland Export Levy",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during pilbara spodumene port hedland export levy. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-021",
@@ -11271,8 +11271,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-020-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Regional Transit Authority for Pilbara Spodumene Port Hedland Export Levy",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for pilbara spodumene port hedland export levy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-022",
@@ -11307,8 +11307,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-021-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mobilize State Works on Bayan Obo Rare Earth Neodymium Separation Monopoly",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for bayan obo rare earth neodymium separation monopoly. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-022",
@@ -11316,8 +11316,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-021-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Freight Venture for Bayan Obo Rare Earth Neodymium Separation Monopoly",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for bayan obo rare earth neodymium separation monopoly. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-023",
@@ -11352,8 +11352,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-022-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Authorize National Priority Directive for Greenland Kvanefjeld Mining Environmental Referendum",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of greenland kvanefjeld mining environmental referendum. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-023",
@@ -11361,8 +11361,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-022-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Offer Competitive Concessions in Greenland Kvanefjeld Mining Environmental Referendum",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding greenland kvanefjeld mining environmental referendum. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-024",
@@ -11397,8 +11397,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-023-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Establish Judicial Taskforce for Clarion-Clipperton Zone Deep-Sea Nodule Race",
+                    detail: "Empower special public prosecutors to audit procurement corruption and restore stability in clarion-clipperton zone deep-sea nodule race. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-024",
@@ -11406,8 +11406,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-023-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Grant Municipal Labor Autonomy in Clarion-Clipperton Zone Deep-Sea Nodule Race",
+                    detail: "Allow localized collective bargaining to accommodate varying regional conditions in clarion-clipperton zone deep-sea nodule race. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-025",
@@ -11442,8 +11442,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-024-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Canadian Lac Knife Natural Graphite Export Registry",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for canadian lac knife natural graphite export registry. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-025",
@@ -11451,8 +11451,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-024-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Canadian Lac Knife Natural Graphite Export Registry",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for canadian lac knife natural graphite export registry. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-026",
@@ -11487,8 +11487,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-025-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Bushveld Complex Platinum Mine Load-Shedding Shut-in",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in bushveld complex platinum mine load-shedding shut-in. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-026",
@@ -11496,8 +11496,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-025-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Bushveld Complex Platinum Mine Load-Shedding Shut-in",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for bushveld complex platinum mine load-shedding shut-in. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-027",
@@ -11536,8 +11536,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-026-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Salar de Uyuni Direct Lithium Extraction Pilot",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of salar de uyuni direct lithium extraction pilot. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-027",
@@ -11545,8 +11545,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-026-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Salar de Uyuni Direct Lithium Extraction Pilot",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of salar de uyuni direct lithium extraction pilot. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-028",
@@ -11581,8 +11581,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-027-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for European Critical Raw Materials Strategic Reserves",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of european critical raw materials strategic reserves. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-028",
@@ -11590,8 +11590,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-027-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in European Critical Raw Materials Strategic Reserves",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding european critical raw materials strategic reserves. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-029",
@@ -11626,8 +11626,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-028-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Automated Barrier Sluices for US Defense Production Act Titanium Stockpile Surge",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for us defense production act titanium stockpile surge. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-029",
@@ -11635,8 +11635,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-028-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Create Tradable Watershed Credits for US Defense Production Act Titanium Stockpile Surge",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in us defense production act titanium stockpile surge. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-030",
@@ -11671,8 +11671,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-029-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on South American Lithium Battery Gigafactory Charter",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for south american lithium battery gigafactory charter. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-030",
@@ -11680,8 +11680,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-029-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to South American Lithium Battery Gigafactory Charter",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of south american lithium battery gigafactory charter. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-031",
@@ -11716,8 +11716,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-030-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Minami-Torishima Deep-Sea Rare Earth Extraction Trial",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in minami-torishima deep-sea rare earth extraction trial. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-031",
@@ -11725,8 +11725,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-030-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Minami-Torishima Deep-Sea Rare Earth Extraction Trial",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for minami-torishima deep-sea rare earth extraction trial. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-032",
@@ -11761,8 +11761,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-031-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Direct Hydraulic Defenses for Panama Canal Low-Water Draft Transit Auction",
+                    detail: "Deploy civil engineering brigades and municipal boards to construct defenses for panama canal low-water draft transit auction. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-032",
@@ -11770,8 +11770,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-031-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Incentivize Agronomic Water Efficiency for Panama Canal Low-Water Draft Transit Auction",
+                    detail: "Provide tax deductions for micro-drip irrigation and localized storage to adapt to panama canal low-water draft transit auction. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-033",
@@ -11806,8 +11806,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-032-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Suez Canal Southbound Transit Priority Bidding",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for suez canal southbound transit priority bidding. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-033",
@@ -11815,8 +11815,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-032-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Suez Canal Southbound Transit Priority Bidding",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in suez canal southbound transit priority bidding. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-034",
@@ -11851,8 +11851,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-033-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Strait of Hormuz Autonomous Escort Security Surcharge",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission strait of hormuz autonomous escort security surcharge. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-034",
@@ -11860,8 +11860,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-033-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Strait of Hormuz Autonomous Escort Security Surcharge",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of strait of hormuz autonomous escort security surcharge. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-035",
@@ -11896,8 +11896,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-034-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Aquifer Replenishment for Malacca Strait Shallow-Water Draft Congestion",
+                    detail: "Enforce binding municipal water recharge and conservation decrees for malacca strait shallow-water draft congestion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-035",
@@ -11905,8 +11905,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-034-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Support Decentralized Water Boards for Malacca Strait Shallow-Water Draft Congestion",
+                    detail: "Subsidize municipal water utilities and regional farming compacts to manage malacca strait shallow-water draft congestion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-036",
@@ -11941,8 +11941,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-035-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Northern Sea Route Commercial Arctic Tariff Dispute",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for northern sea route commercial arctic tariff dispute. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-036",
@@ -11950,8 +11950,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-035-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Northern Sea Route Commercial Arctic Tariff Dispute",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on northern sea route commercial arctic tariff dispute. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-037",
@@ -11986,8 +11986,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-036-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize State Works on Bosphorus Tanker Transit Daylight-Only Regulation",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for bosphorus tanker transit daylight-only regulation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-037",
@@ -11995,8 +11995,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-036-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Freight Venture for Bosphorus Tanker Transit Daylight-Only Regulation",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for bosphorus tanker transit daylight-only regulation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-038",
@@ -12031,8 +12031,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-037-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Establish Sovereign Command Over Trans-Saharan Gas Pipeline Security Checkpoint Clash",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of trans-saharan gas pipeline security checkpoint clash. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-038",
@@ -12040,8 +12040,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-037-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Attract Joint Venture Capital for Trans-Saharan Gas Pipeline Security Checkpoint Clash",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in trans-saharan gas pipeline security checkpoint clash. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-039",
@@ -12076,8 +12076,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-038-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Commission Strategic Facilities for Baltic Subsea HVDC Power Interconnect Sabotage",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission baltic subsea hvdc power interconnect sabotage. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-039",
@@ -12085,8 +12085,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-038-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Introduce Market Carbon Pricing in Baltic Subsea HVDC Power Interconnect Sabotage",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of baltic subsea hvdc power interconnect sabotage. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-040",
@@ -12121,8 +12121,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-039-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for North Sea Offshore Wind Subsea Export Cable Severance",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for north sea offshore wind subsea export cable severance. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-040",
@@ -12130,8 +12130,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-039-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for North Sea Offshore Wind Subsea Export Cable Severance",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for north sea offshore wind subsea export cable severance. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-041",
@@ -12166,8 +12166,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-040-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Underwrite Sovereign Energy Reserves in Texas ERCOT Grid Winter Peak Demand Curtailment",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for texas ercot grid winter peak demand curtailment. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-041",
@@ -12175,8 +12175,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-040-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "License Independent Energy Producers for Texas ERCOT Grid Winter Peak Demand Curtailment",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on texas ercot grid winter peak demand curtailment. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-042",
@@ -12211,8 +12211,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-041-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize German Heavy Industry Energy Price Cap Subsidy Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over german heavy industry energy price cap subsidy. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-042",
@@ -12220,8 +12220,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-041-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in German Heavy Industry Energy Price Cap Subsidy",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for german heavy industry energy price cap subsidy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-043",
@@ -12256,8 +12256,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-042-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over French Nuclear River Cooling Thermal Curtailment",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of french nuclear river cooling thermal curtailment. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-043",
@@ -12265,8 +12265,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-042-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for French Nuclear River Cooling Thermal Curtailment",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in french nuclear river cooling thermal curtailment. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-044",
@@ -12301,8 +12301,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-043-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Gulf Cooperation Council Desalinated Water Grid Integration",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission gulf cooperation council desalinated water grid integration. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-044",
@@ -12310,8 +12310,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-043-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Gulf Cooperation Council Desalinated Water Grid Integration",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of gulf cooperation council desalinated water grid integration. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-045",
@@ -12346,8 +12346,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-044-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Australian Pilbara Solar-Hydrogen Export Delay",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of australian pilbara solar-hydrogen export delay. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-045",
@@ -12355,8 +12355,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-044-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Australian Pilbara Solar-Hydrogen Export Delay",
+                    detail: "Incentivize private utility operators and international consortiums to fund australian pilbara solar-hydrogen export delay. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-046",
@@ -12391,8 +12391,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-045-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Public Terminal Priority for Chilean Magallanes Green Ammonia Bunkering Port",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during chilean magallanes green ammonia bunkering port. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-046",
@@ -12400,8 +12400,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-045-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Regional Transit Authority for Chilean Magallanes Green Ammonia Bunkering Port",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for chilean magallanes green ammonia bunkering port. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-047",
@@ -12436,8 +12436,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-046-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Nationalize Global Synthetic Nitrogen Fertilizer Shortage Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over global synthetic nitrogen fertilizer shortage. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-047",
@@ -12445,8 +12445,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-046-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Deregulate Merchant Generation in Global Synthetic Nitrogen Fertilizer Shortage",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for global synthetic nitrogen fertilizer shortage. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-048",
@@ -12454,8 +12454,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-046-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Global Synthetic Nitrogen Fertilizer Shortage",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for global synthetic nitrogen fertilizer shortage. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-048",
@@ -12490,8 +12490,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-047-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Morocco Bou Craa Phosphate Export Price Revision",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for morocco bou craa phosphate export price revision. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-048",
@@ -12499,8 +12499,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-047-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Morocco Bou Craa Phosphate Export Price Revision",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in morocco bou craa phosphate export price revision. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-049",
@@ -12535,8 +12535,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-048-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Accelerate High-Throughput Works on Odessa Black Sea Grain Elevator Export Blockade",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in odessa black sea grain elevator export blockade. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-049",
@@ -12544,8 +12544,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-048-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Auction Terminal Operating Franchises in Odessa Black Sea Grain Elevator Export Blockade",
+                    detail: "Invite competitive international container operators to modernize facilities for odessa black sea grain elevator export blockade. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-050",
@@ -12580,8 +12580,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-049-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Indian Non-Basmati Rice Export Prohibition",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for indian non-basmati rice export prohibition. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-050",
@@ -12589,8 +12589,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-049-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Indian Non-Basmati Rice Export Prohibition",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for indian non-basmati rice export prohibition. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-051",
@@ -12625,8 +12625,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-050-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Finance Strategic Water Reservoirs in Brazilian Cerrado Soybean Drought Yield Loss",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in brazilian cerrado soybean drought yield loss. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-051",
@@ -12634,8 +12634,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-050-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Public-Private Partnerships on Brazilian Cerrado Soybean Drought Yield Loss",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain brazilian cerrado soybean drought yield loss. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-052",
@@ -12674,8 +12674,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-051-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Midwestern Corn Belt Heat Dome Pollination Blight",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of midwestern corn belt heat dome pollination blight. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-052",
@@ -12683,8 +12683,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-051-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Midwestern Corn Belt Heat Dome Pollination Blight",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of midwestern corn belt heat dome pollination blight. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-053",
@@ -12719,8 +12719,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-052-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over Indonesian Palm Oil Domestic Market Obligation",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of indonesian palm oil domestic market obligation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-053",
@@ -12728,8 +12728,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-052-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for Indonesian Palm Oil Domestic Market Obligation",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in indonesian palm oil domestic market obligation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-054",
@@ -12764,8 +12764,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-053-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for Egyptian Wheat Subsidy Emergency Budget Supplement",
+                    detail: "Channel public technological subsidies into domestic foundries to support egyptian wheat subsidy emergency budget supplement. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-054",
@@ -12773,8 +12773,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-053-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for Egyptian Wheat Subsidy Emergency Budget Supplement",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in egyptian wheat subsidy emergency budget supplement. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-055",
@@ -12809,8 +12809,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-054-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Commission State Logistics Fleet for European Common Agricultural Policy Pesticide Strike",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for european common agricultural policy pesticide strike. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-055",
@@ -12818,8 +12818,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-054-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Tender Private Logistics Concessions for European Common Agricultural Policy Pesticide Strike",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for european common agricultural policy pesticide strike. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-056",
@@ -12854,8 +12854,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-055-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Public Terminal Priority for Argentine Soy Export Currency Surcharge Evasion",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during argentine soy export currency surcharge evasion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-056",
@@ -12863,8 +12863,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-055-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Regional Transit Authority for Argentine Soy Export Currency Surcharge Evasion",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for argentine soy export currency surcharge evasion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-057",
@@ -12899,8 +12899,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-056-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize State Works on Australian Livestock Ocean Transport Heat Moratorium",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for australian livestock ocean transport heat moratorium. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-057",
@@ -12908,8 +12908,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-056-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Freight Venture for Australian Livestock Ocean Transport Heat Moratorium",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for australian livestock ocean transport heat moratorium. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-058",
@@ -12944,8 +12944,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-057-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Bond Buyback in Global Swine Herd Epidemic Culling Price Shock",
+                    detail: "Use central treasury balances to retire foreign-held sovereign paper for global swine herd epidemic culling price shock. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-058",
@@ -12953,8 +12953,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-057-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Conclude Multilateral Swap Lines for Global Swine Herd Epidemic Culling Price Shock",
+                    detail: "Arrange foreign central bank currency facilities to backstop liquidity during global swine herd epidemic culling price shock. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-059",
@@ -12989,8 +12989,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-058-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Commission Strategic Facilities for Vertical Farming Energy Bankruptcy Wave",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission vertical farming energy bankruptcy wave. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-059",
@@ -12998,8 +12998,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-058-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Introduce Market Carbon Pricing in Vertical Farming Energy Bankruptcy Wave",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of vertical farming energy bankruptcy wave. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-060",
@@ -13034,8 +13034,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-059-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Mandate Public Grid Integration for Lab-Grown Cultivated Meat Consumer Labeling Fight",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of lab-grown cultivated meat consumer labeling fight. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-060",
@@ -13043,8 +13043,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-059-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Auction Commercial Concessions for Lab-Grown Cultivated Meat Consumer Labeling Fight",
+                    detail: "Incentivize private utility operators and international consortiums to fund lab-grown cultivated meat consumer labeling fight. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-061",
@@ -13079,8 +13079,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-060-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Finance Strategic Water Reservoirs in Drought-Resistant GMO Wheat Patent Cross-Licensing",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in drought-resistant gmo wheat patent cross-licensing. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-061",
@@ -13088,8 +13088,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-060-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Tender Public-Private Partnerships on Drought-Resistant GMO Wheat Patent Cross-Licensing",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain drought-resistant gmo wheat patent cross-licensing. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-062",
@@ -13124,8 +13124,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-061-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Mobilize State Works on European Carbon Border Adjustment Tariff Enforcement",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for european carbon border adjustment tariff enforcement. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-062",
@@ -13133,8 +13133,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-061-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Charter Public-Private Freight Venture for European Carbon Border Adjustment Tariff Enforcement",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for european carbon border adjustment tariff enforcement. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-063",
@@ -13169,8 +13169,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-062-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Air-Gap Sovereign Networks for US IRA Clean Manufacturing Domestic Subsidy Dispute",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for us ira clean manufacturing domestic subsidy dispute. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-063",
@@ -13178,8 +13178,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-062-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Incentivize Venture Capital in US IRA Clean Manufacturing Domestic Subsidy Dispute",
+                    detail: "Create state matching venture funds for domestic startups commercializing us ira clean manufacturing domestic subsidy dispute. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-064",
@@ -13214,8 +13214,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-063-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Fund National Cleanrooms for BRICS Commodity Settlement Unit Clearing Pilot",
+                    detail: "Channel public technological subsidies into domestic foundries to support brics commodity settlement unit clearing pilot. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-064",
@@ -13223,8 +13223,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-063-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for BRICS Commodity Settlement Unit Clearing Pilot",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in brics commodity settlement unit clearing pilot. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-065",
@@ -13259,8 +13259,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-064-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Petro-Yuan Bilateral Energy Clearing Expansion",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of petro-yuan bilateral energy clearing expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-065",
@@ -13268,8 +13268,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-064-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Petro-Yuan Bilateral Energy Clearing Expansion",
+                    detail: "Incentivize private utility operators and international consortiums to fund petro-yuan bilateral energy clearing expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-066",
@@ -13304,8 +13304,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-065-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Enforce Comprehensive State Policy on African Continental Free Trade Area Tariff Dispute",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in african continental free trade area tariff dispute. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-066",
@@ -13313,8 +13313,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-065-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Charter Public-Private Partnership on African Continental Free Trade Area Tariff Dispute",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for african continental free trade area tariff dispute. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-067",
@@ -13349,8 +13349,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-066-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Assert Unilateral Sovereign Stance on Mercosur-EU Trade Agreement Final Deadlock",
+                    detail: "Instruct diplomatic chancelleries and armed patrols to maintain an uncompromising posture on mercosur-eu trade agreement final deadlock. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-067",
@@ -13358,8 +13358,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-066-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Sponsor Neutral Conciliation Summit for Mercosur-EU Trade Agreement Final Deadlock",
+                    detail: "Invite non-aligned mediator states to host constructive negotiations on mercosur-eu trade agreement final deadlock. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-068",
@@ -13394,8 +13394,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-067-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for London Metal Exchange Nickel Trading Circuit Breaker",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of london metal exchange nickel trading circuit breaker. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-068",
@@ -13403,8 +13403,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-067-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in London Metal Exchange Nickel Trading Circuit Breaker",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding london metal exchange nickel trading circuit breaker. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-069",
@@ -13439,8 +13439,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-068-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Fund National Cleanrooms for Emerging Market Sovereign Debt Restructuring Stalemate",
+                    detail: "Channel public technological subsidies into domestic foundries to support emerging market sovereign debt restructuring stalemate. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-069",
@@ -13448,8 +13448,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-068-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for Emerging Market Sovereign Debt Restructuring Stalemate",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in emerging market sovereign debt restructuring stalemate. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-070",
@@ -13484,8 +13484,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-069-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Mandate Public Grid Integration for South Asian Urban Food Inflation Bread Riots",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of south asian urban food inflation bread riots. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-070",
@@ -13493,8 +13493,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-069-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Auction Commercial Concessions for South Asian Urban Food Inflation Bread Riots",
+                    detail: "Incentivize private utility operators and international consortiums to fund south asian urban food inflation bread riots. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-071",
@@ -13502,8 +13502,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-069-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Proclaim Comprehensive Structural Overhaul for South Asian Urban Food Inflation Bread Riots",
+                    detail: "Restructure federal resource allocations, industrial subsidies, and fiscal revenue splits for south asian urban food inflation bread riots. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-res-071",
@@ -13538,8 +13538,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-070-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Progressive Revenue Surcharges for mBridge Multi-Central Bank Digital Currency Network",
+                    detail: "Levy targeted statutory surtaxes on windfall profits to fund state stabilization of mbridge multi-central bank digital currency network. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-071",
@@ -13547,8 +13547,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-070-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Authorize Regulated Commercial Clearing for mBridge Multi-Central Bank Digital Currency Network",
+                    detail: "Permit non-dollar clearing balances and commercial merchant autonomy to stimulate liquidity in mbridge multi-central bank digital currency network. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-072",
@@ -13583,8 +13583,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-071-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Nationalize IEA Coordinated Strategic Petroleum Reserve Release Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over iea coordinated strategic petroleum reserve release. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-072",
@@ -13592,8 +13592,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-071-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in IEA Coordinated Strategic Petroleum Reserve Release",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for iea coordinated strategic petroleum reserve release. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-res-073",
@@ -13628,8 +13628,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-072-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for National Critical Mineral Strategic Stockpile Act",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of national critical mineral strategic stockpile act. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-073",
@@ -13637,8 +13637,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-072-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in National Critical Mineral Strategic Stockpile Act",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding national critical mineral strategic stockpile act. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-074",
@@ -13673,8 +13673,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-073-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for Semiconductor Reshoring Capital Subsidy Allocation",
+                    detail: "Channel public technological subsidies into domestic foundries to support semiconductor reshoring capital subsidy allocation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-074",
@@ -13682,8 +13682,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-073-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for Semiconductor Reshoring Capital Subsidy Allocation",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in semiconductor reshoring capital subsidy allocation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-075",
@@ -13718,8 +13718,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-074-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Automated Container Crane Cybersecurity Investigation",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for automated container crane cybersecurity investigation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-075",
@@ -13727,8 +13727,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-074-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Automated Container Crane Cybersecurity Investigation",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for automated container crane cybersecurity investigation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-res-075",
@@ -13763,8 +13763,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-res-075-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Enforce Bilateral Protocol on Pacific Trade Corridor Supply Resilience Treaty",
+                    detail: "Ratify binding state directives requiring strict compliance with sovereign terms on pacific trade corridor supply resilience treaty. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: nil,
@@ -13772,8 +13772,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-res-075-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Engage Multilateral Advisory Working Groups in Pacific Trade Corridor Supply Resilience Treaty",
+                    detail: "Submit controversial border, tariff, and maritime questions to international arbitration regarding pacific trade corridor supply resilience treaty. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: nil,
@@ -13812,8 +13812,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-001-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Enforce Operational Readiness for Transatlantic Subsea Fiber Zero-Day Severance",
+                    detail: "Authorize armed forces deployment and defense production directives for transatlantic subsea fiber zero-day severance. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-002",
@@ -13821,8 +13821,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-001-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Adopt Defensive Asymmetric Model for Transatlantic Subsea Fiber Zero-Day Severance",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in transatlantic subsea fiber zero-day severance. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-003",
@@ -13830,8 +13830,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-001-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Transatlantic Subsea Fiber Zero-Day Severance",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for transatlantic subsea fiber zero-day severance. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-003",
@@ -13866,8 +13866,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-002-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Deploy Sovereign Battalions for Pacific Subsea Data Consortium Landing Dispute",
+                    detail: "Position frontline military detachments to secure vital perimeters during pacific subsea data consortium landing dispute. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-003",
@@ -13875,8 +13875,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-002-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Convene Regional Security Liaison on Pacific Subsea Data Consortium Landing Dispute",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding pacific subsea data consortium landing dispute. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-004",
@@ -13911,8 +13911,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-003-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for Arctic Polar Fiber Route Landing Rights Contest",
+                    detail: "Channel public technological subsidies into domestic foundries to support arctic polar fiber route landing rights contest. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-004",
@@ -13920,8 +13920,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-003-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for Arctic Polar Fiber Route Landing Rights Contest",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in arctic polar fiber route landing rights contest. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-005",
@@ -13956,8 +13956,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-004-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Accelerate Strategic Mandate on Autonomous Algorithmic High-Frequency Flash Freeze",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for autonomous algorithmic high-frequency flash freeze. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-005",
@@ -13965,8 +13965,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-004-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Adopt Decentralized Market Approach to Autonomous Algorithmic High-Frequency Flash Freeze",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of autonomous algorithmic high-frequency flash freeze. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-006",
@@ -14001,8 +14001,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-005-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Enforce Progressive Revenue Surcharges for Decentralized Autonomous Clearing House Liquidity Halt",
+                    detail: "Levy targeted statutory surtaxes on windfall profits to fund state stabilization of decentralized autonomous clearing house liquidity halt. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-006",
@@ -14010,8 +14010,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-005-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Authorize Regulated Commercial Clearing for Decentralized Autonomous Clearing House Liquidity Halt",
+                    detail: "Permit non-dollar clearing balances and commercial merchant autonomy to stimulate liquidity in decentralized autonomous clearing house liquidity halt. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-007",
@@ -14046,8 +14046,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-006-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over Sovereign Cloud Data Residency Mandate Enforcement",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for sovereign cloud data residency mandate enforcement. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-007",
@@ -14055,8 +14055,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-006-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on Sovereign Cloud Data Residency Mandate Enforcement",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for sovereign cloud data residency mandate enforcement. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-008",
@@ -14091,8 +14091,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-007-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Advanced Compute Accelerator Export Containment Ring",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for advanced compute accelerator export containment ring. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-008",
@@ -14100,8 +14100,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-007-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Advanced Compute Accelerator Export Containment Ring",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in advanced compute accelerator export containment ring. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-009",
@@ -14136,8 +14136,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-008-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for High-NA Extreme Ultraviolet Lithography Patent Dispute",
+                    detail: "Channel public technological subsidies into domestic foundries to support high-na extreme ultraviolet lithography patent dispute. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-009",
@@ -14145,8 +14145,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-008-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for High-NA Extreme Ultraviolet Lithography Patent Dispute",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in high-na extreme ultraviolet lithography patent dispute. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-010",
@@ -14181,8 +14181,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-009-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Deploy Defensive Cyber Shields for Frontier AI Model Weight Cryptographic Exfiltration",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during frontier ai model weight cryptographic exfiltration. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-010",
@@ -14190,8 +14190,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-009-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Deregulate Commercial Innovation in Frontier AI Model Weight Cryptographic Exfiltration",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for frontier ai model weight cryptographic exfiltration. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-011",
@@ -14226,8 +14226,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-010-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Mandate Algorithmic Sovereignty in Post-Quantum RSA Decryption Financial Run Panic",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for post-quantum rsa decryption financial run panic. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-011",
@@ -14235,8 +14235,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-010-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Sponsor Open-Standard Consortia for Post-Quantum RSA Decryption Financial Run Panic",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for post-quantum rsa decryption financial run panic. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-012",
@@ -14244,8 +14244,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-010-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Ratify Constitutional Framework for Post-Quantum RSA Decryption Financial Run Panic",
+                    detail: "Enact binding constitutional amendments guaranteeing long-term sovereign governance over post-quantum rsa decryption financial run panic. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-012",
@@ -14280,8 +14280,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-011-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over Algorithmic Tax Audit Civil Disobedience Strike",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for algorithmic tax audit civil disobedience strike. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-012",
@@ -14289,8 +14289,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-011-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on Algorithmic Tax Audit Civil Disobedience Strike",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for algorithmic tax audit civil disobedience strike. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-013",
@@ -14325,8 +14325,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-012-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Air-Gap Sovereign Networks for Synthetic Biometric Deepfake Identity Fraud Wave",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for synthetic biometric deepfake identity fraud wave. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-013",
@@ -14334,8 +14334,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-012-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Incentivize Venture Capital in Synthetic Biometric Deepfake Identity Fraud Wave",
+                    detail: "Create state matching venture funds for domestic startups commercializing synthetic biometric deepfake identity fraud wave. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-014",
@@ -14370,8 +14370,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-013-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Establish State Guidance Authority for Corporate DAO Sovereign Charter Registration",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for corporate dao sovereign charter registration. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-014",
@@ -14379,8 +14379,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-013-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Sponsor Multilateral Advisory Review on Corporate DAO Sovereign Charter Registration",
+                    detail: "Consult international technical specialists and economic panels to optimize corporate dao sovereign charter registration. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-015",
@@ -14415,8 +14415,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-014-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Municipal Smart Grid Autonomous Secession",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of municipal smart grid autonomous secession. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-015",
@@ -14424,8 +14424,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-014-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Municipal Smart Grid Autonomous Secession",
+                    detail: "Incentivize private utility operators and international consortiums to fund municipal smart grid autonomous secession. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-016",
@@ -14460,8 +14460,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-015-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Automated Smart Contract Mortgage Foreclosure Standoff",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for automated smart contract mortgage foreclosure standoff. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-016",
@@ -14469,8 +14469,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-015-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Automated Smart Contract Mortgage Foreclosure Standoff",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for automated smart contract mortgage foreclosure standoff. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-017",
@@ -14505,8 +14505,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-016-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Establish Sovereign Authority Over Cognitive Worker Universal Dividend General Strike",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for cognitive worker universal dividend general strike. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-017",
@@ -14514,8 +14514,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-016-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Partner with Private Tech Giants on Cognitive Worker Universal Dividend General Strike",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for cognitive worker universal dividend general strike. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-018",
@@ -14523,8 +14523,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-016-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Cognitive Worker Universal Dividend General Strike",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for cognitive worker universal dividend general strike. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-018",
@@ -14559,8 +14559,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-017-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Automated Medical Diagnostic Triage Dispute",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of automated medical diagnostic triage dispute. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-018",
@@ -14568,8 +14568,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-017-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Automated Medical Diagnostic Triage Dispute",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding automated medical diagnostic triage dispute. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-019",
@@ -14604,8 +14604,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-018-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Accelerate High-Throughput Works on Autonomous Freight Drone Convoy Highway Blockade",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in autonomous freight drone convoy highway blockade. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-019",
@@ -14613,8 +14613,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-018-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Auction Terminal Operating Franchises in Autonomous Freight Drone Convoy Highway Blockade",
+                    detail: "Invite competitive international container operators to modernize facilities for autonomous freight drone convoy highway blockade. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-020",
@@ -14649,8 +14649,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-019-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Commission State Logistics Fleet for Automated Container Port Crane Dockworker Lockout",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for automated container port crane dockworker lockout. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-020",
@@ -14658,8 +14658,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-019-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Tender Private Logistics Concessions for Automated Container Port Crane Dockworker Lockout",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for automated container port crane dockworker lockout. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-021",
@@ -14694,8 +14694,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-020-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Mandate Algorithmic Sovereignty in Generative Media Copyright Class Action Settlement",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for generative media copyright class action settlement. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-021",
@@ -14703,8 +14703,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-020-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Sponsor Open-Standard Consortia for Generative Media Copyright Class Action Settlement",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for generative media copyright class action settlement. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-022",
@@ -14739,8 +14739,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-021-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Automated Software Code Synthesis Compliance Audit",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of automated software code synthesis compliance audit. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-022",
@@ -14748,8 +14748,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-021-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Automated Software Code Synthesis Compliance Audit",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of automated software code synthesis compliance audit. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-023",
@@ -14784,8 +14784,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-022-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Authorize National Priority Directive for Generative Architectural Design Urban Zoning Revolt",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of generative architectural design urban zoning revolt. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-023",
@@ -14793,8 +14793,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-022-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Offer Competitive Concessions in Generative Architectural Design Urban Zoning Revolt",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding generative architectural design urban zoning revolt. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-024",
@@ -14829,8 +14829,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-023-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Establish State Guidance Authority for Customer Service Human Authentication",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for customer service human authentication. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-024",
@@ -14838,8 +14838,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-023-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Sponsor Multilateral Advisory Review on Customer Service Human Authentication",
+                    detail: "Consult international technical specialists and economic panels to optimize customer service human authentication. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-025",
@@ -14874,8 +14874,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-024-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Defensive Cyber Shields for National AI Educational Tutor Accreditation Walkout",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during national ai educational tutor accreditation walkout. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-025",
@@ -14883,8 +14883,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-024-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Commercial Innovation in National AI Educational Tutor Accreditation Walkout",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for national ai educational tutor accreditation walkout. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-026",
@@ -14919,8 +14919,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-025-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Finance Strategic Water Reservoirs in Digital Watermarking Neural Audio Copyright Trial",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in digital watermarking neural audio copyright trial. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-026",
@@ -14928,8 +14928,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-025-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Tender Public-Private Partnerships on Digital Watermarking Neural Audio Copyright Trial",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain digital watermarking neural audio copyright trial. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-027",
@@ -14968,8 +14968,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-026-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Direct Sovereign Executive Action on Automated Construction Site Robotic Injury Liability",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of automated construction site robotic injury liability. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-027",
@@ -14977,8 +14977,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-026-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Devolve Operational Execution for Automated Construction Site Robotic Injury Liability",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of automated construction site robotic injury liability. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-028",
@@ -15013,8 +15013,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-027-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over High-Speed Rail Autonomous Dispatch Collision Near-Miss",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of high-speed rail autonomous dispatch collision near-miss. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-028",
@@ -15022,8 +15022,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-027-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for High-Speed Rail Autonomous Dispatch Collision Near-Miss",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in high-speed rail autonomous dispatch collision near-miss. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-029",
@@ -15058,8 +15058,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-028-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Agricultural Drone Swarm Autonomous Herbicide Misapplication",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for agricultural drone swarm autonomous herbicide misapplication. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-029",
@@ -15067,8 +15067,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-028-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Agricultural Drone Swarm Autonomous Herbicide Misapplication",
+                    detail: "Consult international technical specialists and economic panels to optimize agricultural drone swarm autonomous herbicide misapplication. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-030",
@@ -15103,8 +15103,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-029-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Mandate Aquifer Replenishment for Automated Cashierless Supermarket Scanning Boycott",
+                    detail: "Enforce binding municipal water recharge and conservation decrees for automated cashierless supermarket scanning boycott. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-030",
@@ -15112,8 +15112,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-029-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Support Decentralized Water Boards for Automated Cashierless Supermarket Scanning Boycott",
+                    detail: "Subsidize municipal water utilities and regional farming compacts to manage automated cashierless supermarket scanning boycott. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-031",
@@ -15148,8 +15148,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-030-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Mandate Algorithmic Sovereignty in Municipal Delivery Drone Airspace Noise Referendum",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for municipal delivery drone airspace noise referendum. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-031",
@@ -15157,8 +15157,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-030-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Sponsor Open-Standard Consortia for Municipal Delivery Drone Airspace Noise Referendum",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for municipal delivery drone airspace noise referendum. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-032",
@@ -15193,8 +15193,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-031-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mobilize State Works on Defense Migration to Lattice-Based Post-Quantum Cryptography",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for defense migration to lattice-based post-quantum cryptography. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-032",
@@ -15202,8 +15202,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-031-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Freight Venture for Defense Migration to Lattice-Based Post-Quantum Cryptography",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for defense migration to lattice-based post-quantum cryptography. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-033",
@@ -15238,8 +15238,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-032-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Air-Gap Sovereign Networks for Quantum Key Distribution Low-Earth Orbit Satellite Mesh",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for quantum key distribution low-earth orbit satellite mesh. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-033",
@@ -15247,8 +15247,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-032-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Incentivize Venture Capital in Quantum Key Distribution Low-Earth Orbit Satellite Mesh",
+                    detail: "Create state matching venture funds for domestic startups commercializing quantum key distribution low-earth orbit satellite mesh. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-034",
@@ -15283,8 +15283,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-033-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Fund National Cleanrooms for Commercial Quantum Annealing Air Traffic Routing",
+                    detail: "Channel public technological subsidies into domestic foundries to support commercial quantum annealing air traffic routing. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-034",
@@ -15292,8 +15292,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-033-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for Commercial Quantum Annealing Air Traffic Routing",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in commercial quantum annealing air traffic routing. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-035",
@@ -15328,8 +15328,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-034-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Solid-State Lithium-Sulfur Battery Serial Production",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of solid-state lithium-sulfur battery serial production. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-035",
@@ -15337,8 +15337,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-034-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Solid-State Lithium-Sulfur Battery Serial Production",
+                    detail: "Incentivize private utility operators and international consortiums to fund solid-state lithium-sulfur battery serial production. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-036",
@@ -15373,8 +15373,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-035-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Trans-Continental High-Voltage DC Supergrid Activation",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for trans-continental high-voltage dc supergrid activation. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-036",
@@ -15382,8 +15382,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-035-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Trans-Continental High-Voltage DC Supergrid Activation",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on trans-continental high-voltage dc supergrid activation. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-037",
@@ -15418,8 +15418,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-036-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Nationalize Small Modular Reactor Data Center Co-Location Hub Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over small modular reactor data center co-location hub. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-037",
@@ -15427,8 +15427,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-036-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in Small Modular Reactor Data Center Co-Location Hub",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for small modular reactor data center co-location hub. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-038",
@@ -15463,8 +15463,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-037-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Centralize Water Protection in Liquid Immersion Server Cooling Municipal Water Contest",
+                    detail: "Assert ministerial watershed jurisdiction to guarantee supply during liquid immersion server cooling municipal water contest. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-038",
@@ -15472,8 +15472,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-037-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Floodplain Restoration for Liquid Immersion Server Cooling Municipal Water Contest",
+                    detail: "Empower local provincial authorities to negotiate ecological easements regarding liquid immersion server cooling municipal water contest. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-039",
@@ -15508,8 +15508,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-038-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Orbital Edge-Compute Data Center Space Deployment",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission orbital edge-compute data center space deployment. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-039",
@@ -15517,8 +15517,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-038-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Orbital Edge-Compute Data Center Space Deployment",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of orbital edge-compute data center space deployment. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-040",
@@ -15553,8 +15553,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-039-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Neuromorphic Visual Sensor Surveillance Backlash",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for neuromorphic visual sensor surveillance backlash. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-040",
@@ -15562,8 +15562,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-039-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Neuromorphic Visual Sensor Surveillance Backlash",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for neuromorphic visual sensor surveillance backlash. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-041",
@@ -15598,8 +15598,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-040-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Mandate Algorithmic Sovereignty in Neural Privacy and Cognitive Liberty Bill of Rights",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for neural privacy and cognitive liberty bill of rights. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-041",
@@ -15607,8 +15607,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-040-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Sponsor Open-Standard Consortia for Neural Privacy and Cognitive Liberty Bill of Rights",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for neural privacy and cognitive liberty bill of rights. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-042",
@@ -15643,8 +15643,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-041-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Impose Sovereign Capital Controls for Voice-Cloned Cabinet Minister Financial Fraud Scandal",
+                    detail: "Direct monetary and fiscal reserves to guarantee state solvency and regulate voice-cloned cabinet minister financial fraud scandal. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-042",
@@ -15652,8 +15652,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-041-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Issue Tax-Exempt Municipal Bonds for Voice-Cloned Cabinet Minister Financial Fraud Scandal",
+                    detail: "Encourage regional governments and institutional investors to fund voice-cloned cabinet minister financial fraud scandal. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-043",
@@ -15688,8 +15688,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-042-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Air-Gap Sovereign Networks for Deepfake Head of State Video Blackmail Scandal",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for deepfake head of state video blackmail scandal. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-043",
@@ -15697,8 +15697,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-042-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Incentivize Venture Capital in Deepfake Head of State Video Blackmail Scandal",
+                    detail: "Create state matching venture funds for domestic startups commercializing deepfake head of state video blackmail scandal. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-044",
@@ -15733,8 +15733,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-043-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for Autonomous Cybersecurity Agent Infinite Remediation Loop",
+                    detail: "Channel public technological subsidies into domestic foundries to support autonomous cybersecurity agent infinite remediation loop. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-044",
@@ -15742,8 +15742,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-043-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for Autonomous Cybersecurity Agent Infinite Remediation Loop",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in autonomous cybersecurity agent infinite remediation loop. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-045",
@@ -15778,8 +15778,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-044-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy Defensive Cyber Shields for Satellite Mega-Constellation Orbital Collision Cascade Risk",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during satellite mega-constellation orbital collision cascade risk. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-045",
@@ -15787,8 +15787,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-044-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Commercial Innovation in Satellite Mega-Constellation Orbital Collision Cascade Risk",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for satellite mega-constellation orbital collision cascade risk. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-046",
@@ -15823,8 +15823,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-045-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Enforce Bilateral Protocol on Orbital Space Debris Automated Laser Ablation",
+                    detail: "Ratify binding state directives requiring strict compliance with sovereign terms on orbital space debris automated laser ablation. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-046",
@@ -15832,8 +15832,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-045-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Engage Multilateral Advisory Working Groups in Orbital Space Debris Automated Laser Ablation",
+                    detail: "Submit controversial border, tariff, and maritime questions to international arbitration regarding orbital space debris automated laser ablation. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-047",
@@ -15868,8 +15868,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-046-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over Synthetic Biology Automated Vaccine Synthesis Foundry",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for synthetic biology automated vaccine synthesis foundry. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-047",
@@ -15877,8 +15877,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-046-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on Synthetic Biology Automated Vaccine Synthesis Foundry",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for synthetic biology automated vaccine synthesis foundry. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-048",
@@ -15913,8 +15913,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-047-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Air-Gap Sovereign Networks for CRISPR Gene-Edited Crop Biodiversity Licensing Pact",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for crispr gene-edited crop biodiversity licensing pact. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-048",
@@ -15922,8 +15922,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-047-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Incentivize Venture Capital in CRISPR Gene-Edited Crop Biodiversity Licensing Pact",
+                    detail: "Create state matching venture funds for domestic startups commercializing crispr gene-edited crop biodiversity licensing pact. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-049",
@@ -15958,8 +15958,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-048-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Fund National Cleanrooms for Automated Atmospheric Pathogen Sensor Network Alert",
+                    detail: "Channel public technological subsidies into domestic foundries to support automated atmospheric pathogen sensor network alert. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-049",
@@ -15967,8 +15967,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-048-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for Automated Atmospheric Pathogen Sensor Network Alert",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in automated atmospheric pathogen sensor network alert. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-050",
@@ -15976,8 +15976,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-048-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Endow Intergenerational Sovereign Trust for Automated Atmospheric Pathogen Sensor Network Alert",
+                    detail: "Dedicate sovereign commodity royalties and asset revenues to a permanent national wealth fund for automated atmospheric pathogen sensor network alert. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-050",
@@ -16012,8 +16012,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-049-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Personalized mRNA Oncology Therapy Pricing Dispute",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for personalized mrna oncology therapy pricing dispute. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-050",
@@ -16021,8 +16021,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-049-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Personalized mRNA Oncology Therapy Pricing Dispute",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of personalized mrna oncology therapy pricing dispute. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-051",
@@ -16057,8 +16057,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-050-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Underwrite Sovereign Energy Reserves in Open-Source Bioreactor Insulin Production Cooperative",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for open-source bioreactor insulin production cooperative. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-051",
@@ -16066,8 +16066,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-050-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "License Independent Energy Producers for Open-Source Bioreactor Insulin Production Cooperative",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on open-source bioreactor insulin production cooperative. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-052",
@@ -16106,8 +16106,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-051-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over Cross-Border Genomic Health Database Sovereign Seizure",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for cross-border genomic health database sovereign seizure. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-052",
@@ -16115,8 +16115,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-051-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on Cross-Border Genomic Health Database Sovereign Seizure",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for cross-border genomic health database sovereign seizure. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-053",
@@ -16151,8 +16151,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-052-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Curfew & Administrative Order for Workplace Cognitive Enhancement Smart Drug Regulation",
+                    detail: "Authorize gendarmerie detachments to clear blockades and maintain vital logistics during workplace cognitive enhancement smart drug regulation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-053",
@@ -16160,8 +16160,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-052-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Independent Citizen Panel on Workplace Cognitive Enhancement Smart Drug Regulation",
+                    detail: "Appoint non-partisan community arbiters to de-escalate grievances regarding workplace cognitive enhancement smart drug regulation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-054",
@@ -16196,8 +16196,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-053-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for 3D Bioprinted Vascularized Organ Allocation Queue",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for 3d bioprinted vascularized organ allocation queue. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-054",
@@ -16205,8 +16205,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-053-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on 3D Bioprinted Vascularized Organ Allocation Queue",
+                    detail: "Consult international technical specialists and economic panels to optimize 3d bioprinted vascularized organ allocation queue. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-055",
@@ -16241,8 +16241,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-054-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Accelerate Strategic Mandate on Cellular Longevity Therapy Public Healthcare Exclusion",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for cellular longevity therapy public healthcare exclusion. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-055",
@@ -16250,8 +16250,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-054-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Adopt Decentralized Market Approach to Cellular Longevity Therapy Public Healthcare Exclusion",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of cellular longevity therapy public healthcare exclusion. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-056",
@@ -16286,8 +16286,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-055-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Engineered Microplastic-Degrading Bacteria Ocean Release",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for engineered microplastic-degrading bacteria ocean release. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-056",
@@ -16295,8 +16295,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-055-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Engineered Microplastic-Degrading Bacteria Ocean Release",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for engineered microplastic-degrading bacteria ocean release. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-057",
@@ -16331,8 +16331,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-056-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Authority Over Precision Fermentation Dairy Protein Facility Commissioning",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for precision fermentation dairy protein facility commissioning. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-057",
@@ -16340,8 +16340,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-056-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Partner with Private Tech Giants on Precision Fermentation Dairy Protein Facility Commissioning",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for precision fermentation dairy protein facility commissioning. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-058",
@@ -16376,8 +16376,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-057-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Automated In-Silico Clinical Trial Validity Challenge",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of automated in-silico clinical trial validity challenge. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-058",
@@ -16385,8 +16385,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-057-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Automated In-Silico Clinical Trial Validity Challenge",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding automated in-silico clinical trial validity challenge. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-059",
@@ -16421,8 +16421,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-058-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for Robotic BSL-4 High-Containment Pathogen Lab Protocols",
+                    detail: "Channel public technological subsidies into domestic foundries to support robotic bsl-4 high-containment pathogen lab protocols. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-059",
@@ -16430,8 +16430,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-058-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for Robotic BSL-4 High-Containment Pathogen Lab Protocols",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in robotic bsl-4 high-containment pathogen lab protocols. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-060",
@@ -16466,8 +16466,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-059-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Deploy Defensive Cyber Shields for DNA Archival Data Storage Commercial Facility Launch",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during dna archival data storage commercial facility launch. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-060",
@@ -16475,8 +16475,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-059-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Deregulate Commercial Innovation in DNA Archival Data Storage Commercial Facility Launch",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for dna archival data storage commercial facility launch. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-061",
@@ -16511,8 +16511,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-060-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Enforce Comprehensive State Policy on Neural Prosthetic Memory Interface Commercial Dispute",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in neural prosthetic memory interface commercial dispute. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-061",
@@ -16520,8 +16520,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-060-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Charter Public-Private Partnership on Neural Prosthetic Memory Interface Commercial Dispute",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for neural prosthetic memory interface commercial dispute. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-062",
@@ -16556,8 +16556,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-061-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Assert Unilateral Sovereign Stance on International Artificial Intelligence Safety Treaty Ratification",
+                    detail: "Instruct diplomatic chancelleries and armed patrols to maintain an uncompromising posture on international artificial intelligence safety treaty ratification. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-062",
@@ -16565,8 +16565,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-061-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Sponsor Neutral Conciliation Summit for International Artificial Intelligence Safety Treaty Ratification",
+                    detail: "Invite non-aligned mediator states to host constructive negotiations on international artificial intelligence safety treaty ratification. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-063",
@@ -16574,8 +16574,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-061-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for International Artificial Intelligence Safety Treaty Ratification",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for international artificial intelligence safety treaty ratification. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-cyb-063",
@@ -16610,8 +16610,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-062-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Deploy Sovereign Battalions for Lethal Autonomous Weapons Ban Treaty Impasse",
+                    detail: "Position frontline military detachments to secure vital perimeters during lethal autonomous weapons ban treaty impasse. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-063",
@@ -16619,8 +16619,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-062-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Convene Regional Security Liaison on Lethal Autonomous Weapons Ban Treaty Impasse",
+                    detail: "Establish multilateral consultative mechanisms with non-aligned neighbors regarding lethal autonomous weapons ban treaty impasse. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-064",
@@ -16655,8 +16655,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-063-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Fund National Cleanrooms for Algorithmic Sovereign Wealth Fund Investment Compact",
+                    detail: "Channel public technological subsidies into domestic foundries to support algorithmic sovereign wealth fund investment compact. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-064",
@@ -16664,8 +16664,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-063-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for Algorithmic Sovereign Wealth Fund Investment Compact",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in algorithmic sovereign wealth fund investment compact. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-065",
@@ -16700,8 +16700,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-064-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Establish Non-Dollar Settlement for Digital Currency Cross-Border Interoperability",
+                    detail: "Conclude bilateral sovereign clearing protocols to insulate domestic trade during digital currency cross-border interoperability. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-065",
@@ -16709,8 +16709,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-064-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Negotiate Market Syndication for Digital Currency Cross-Border Interoperability",
+                    detail: "Partner with commercial banking consortia and multilateral lenders to refinance digital currency cross-border interoperability. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-066",
@@ -16745,8 +16745,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-065-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Orbital Solar Power Microwave Beaming Territorial License",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for orbital solar power microwave beaming territorial license. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-066",
@@ -16754,8 +16754,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-065-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Orbital Solar Power Microwave Beaming Territorial License",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on orbital solar power microwave beaming territorial license. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-067",
@@ -16790,8 +16790,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-066-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Assert Unilateral Sovereign Stance on Lunar South Pole Radio Telescope Radio-Quiet Exclusion",
+                    detail: "Instruct diplomatic chancelleries and armed patrols to maintain an uncompromising posture on lunar south pole radio telescope radio-quiet exclusion. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-067",
@@ -16799,8 +16799,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-066-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Sponsor Neutral Conciliation Summit for Lunar South Pole Radio Telescope Radio-Quiet Exclusion",
+                    detail: "Invite non-aligned mediator states to host constructive negotiations on lunar south pole radio telescope radio-quiet exclusion. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-068",
@@ -16835,8 +16835,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-067-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Mars Sample Return Biosphere Quarantine",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of mars sample return biosphere quarantine. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-068",
@@ -16844,8 +16844,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-067-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Mars Sample Return Biosphere Quarantine",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding mars sample return biosphere quarantine. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-069",
@@ -16880,8 +16880,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-068-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Fund National Cleanrooms for Low-Earth Orbit Satellite Internet Sovereignty Dispute",
+                    detail: "Channel public technological subsidies into domestic foundries to support low-earth orbit satellite internet sovereignty dispute. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-069",
@@ -16889,8 +16889,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-068-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for Low-Earth Orbit Satellite Internet Sovereignty Dispute",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in low-earth orbit satellite internet sovereignty dispute. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-070",
@@ -16925,8 +16925,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-069-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
+                    label: "Issue Sovereign Ultimatum Regarding International Biometric Surveillance Extradition Treaty",
+                    detail: "Set binding red lines and mobilize border customs inspections for international biometric surveillance extradition treaty. [⟦DIP⟧ +2, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-070",
@@ -16934,8 +16934,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-069-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
+                    label: "Ratify Bilateral Strategic Accord on International Biometric Surveillance Extradition Treaty",
+                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual access for international biometric surveillance extradition treaty. [⟦MIL⟧ +2, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-071",
@@ -16970,8 +16970,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-070-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Commission State Ordnance Surge for Global Cyber Warfare Attribution Council Deadlock",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for global cyber warfare attribution council deadlock. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-071",
@@ -16979,8 +16979,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-070-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Outsource Component Production for Global Cyber Warfare Attribution Council Deadlock",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for global cyber warfare attribution council deadlock. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-072",
@@ -17015,8 +17015,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-071-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Enforce Operational Readiness for Autonomous Drone Swarm Naval Defense Trial",
+                    detail: "Authorize armed forces deployment and defense production directives for autonomous drone swarm naval defense trial. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-072",
@@ -17024,8 +17024,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-071-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Adopt Defensive Asymmetric Model for Autonomous Drone Swarm Naval Defense Trial",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in autonomous drone swarm naval defense trial. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-073",
@@ -17060,8 +17060,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-072-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Air-Gap Sovereign Networks for Transatlantic Quantum Internet Core Node Activation",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for transatlantic quantum internet core node activation. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-073",
@@ -17069,8 +17069,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-072-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Incentivize Venture Capital in Transatlantic Quantum Internet Core Node Activation",
+                    detail: "Create state matching venture funds for domestic startups commercializing transatlantic quantum internet core node activation. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-074",
@@ -17105,8 +17105,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-073-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for Cloud Hyperscaler Digital Sovereign Antitrust Decree",
+                    detail: "Channel public technological subsidies into domestic foundries to support cloud hyperscaler digital sovereign antitrust decree. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-074",
@@ -17114,8 +17114,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-073-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for Cloud Hyperscaler Digital Sovereign Antitrust Decree",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in cloud hyperscaler digital sovereign antitrust decree. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-cyb-075",
@@ -17150,8 +17150,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-074-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Non-Dollar Settlement for Digital Capital Flight Smart Contract Restitution Act",
+                    detail: "Conclude bilateral sovereign clearing protocols to insulate domestic trade during digital capital flight smart contract restitution act. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-075",
@@ -17159,8 +17159,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-074-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Negotiate Market Syndication for Digital Capital Flight Smart Contract Restitution Act",
+                    detail: "Partner with commercial banking consortia and multilateral lenders to refinance digital capital flight smart contract restitution act. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-cyb-075",
@@ -17195,8 +17195,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-cyb-075-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
+                    label: "Mandate Algorithmic Sovereignty in The Pax Cybernetica Global Digital Accord Ratification",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for the pax cybernetica global digital accord ratification. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: nil,
@@ -17204,8 +17204,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-075-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Sponsor Open-Standard Consortia for The Pax Cybernetica Global Digital Accord Ratification",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for the pax cybernetica global digital accord ratification. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: nil,
@@ -17213,8 +17213,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-cyb-075-opt-c",
-                    label: "Proclaim Landmark International Convention",
-                    detail: "Codify universal guidelines governing planetary infrastructure, peace, and collective security. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
+                    label: "Ratify Constitutional Framework for The Pax Cybernetica Global Digital Accord Ratification",
+                    detail: "Enact binding constitutional amendments guaranteeing long-term sovereign governance over the pax cybernetica global digital accord ratification. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
                     effectTrack: .worldTension,
                     effectMagnitude: -3,
                     nextChainedEventID: nil,
@@ -17253,8 +17253,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-001-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Direct Hydraulic Defenses for Bioregional Watershed Governance Charter Ratification",
+                    detail: "Deploy civil engineering brigades and municipal boards to construct defenses for bioregional watershed governance charter ratification. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-002",
@@ -17262,8 +17262,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-001-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Incentivize Agronomic Water Efficiency for Bioregional Watershed Governance Charter Ratification",
+                    detail: "Provide tax deductions for micro-drip irrigation and localized storage to adapt to bioregional watershed governance charter ratification. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-003",
@@ -17298,8 +17298,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-002-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over Municipal Solar Microgrid Commons Activation",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of municipal solar microgrid commons activation. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-003",
@@ -17307,8 +17307,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-002-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for Municipal Solar Microgrid Commons Activation",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in municipal solar microgrid commons activation. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-004",
@@ -17343,8 +17343,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-003-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Urban Rooftop Permaculture Zoning",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for urban rooftop permaculture zoning. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-004",
@@ -17352,8 +17352,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-003-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Urban Rooftop Permaculture Zoning",
+                    detail: "Consult international technical specialists and economic panels to optimize urban rooftop permaculture zoning. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-005",
@@ -17388,8 +17388,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-004-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Mandate Aquifer Replenishment for Rainwater Harvesting Universal Legal Right Codification",
+                    detail: "Enforce binding municipal water recharge and conservation decrees for rainwater harvesting universal legal right codification. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-005",
@@ -17397,8 +17397,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-004-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Support Decentralized Water Boards for Rainwater Harvesting Universal Legal Right Codification",
+                    detail: "Subsidize municipal water utilities and regional farming compacts to manage rainwater harvesting universal legal right codification. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-006",
@@ -17433,8 +17433,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-005-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Community Composting Municipal Soil Restoration",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for community composting municipal soil restoration. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-006",
@@ -17442,8 +17442,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-005-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Community Composting Municipal Soil Restoration",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on community composting municipal soil restoration. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-007",
@@ -17478,8 +17478,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-006-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize State Works on Suburban Highway Lane Greenway Conversion",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for suburban highway lane greenway conversion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-007",
@@ -17487,8 +17487,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-006-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Freight Venture for Suburban Highway Lane Greenway Conversion",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for suburban highway lane greenway conversion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-008",
@@ -17523,8 +17523,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-007-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Air-Gap Sovereign Networks for Mass Timber Residential High-Rise Completion",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for mass timber residential high-rise completion. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-008",
@@ -17532,8 +17532,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-007-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Incentivize Venture Capital in Mass Timber Residential High-Rise Completion",
+                    detail: "Create state matching venture funds for domestic startups commercializing mass timber residential high-rise completion. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-009",
@@ -17568,8 +17568,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-008-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Automated Barrier Sluices for Urban River Daylighting Engineering Project",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for urban river daylighting engineering project. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-009",
@@ -17577,8 +17577,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-008-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Create Tradable Watershed Credits for Urban River Daylighting Engineering Project",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in urban river daylighting engineering project. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-010",
@@ -17613,8 +17613,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-009-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Aquifer Replenishment for Coastal Mangrove Restoration Bioshield Expansion",
+                    detail: "Enforce binding municipal water recharge and conservation decrees for coastal mangrove restoration bioshield expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-010",
@@ -17622,8 +17622,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-009-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Support Decentralized Water Boards for Coastal Mangrove Restoration Bioshield Expansion",
+                    detail: "Subsidize municipal water utilities and regional farming compacts to manage coastal mangrove restoration bioshield expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-011",
@@ -17658,8 +17658,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-010-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Apex Predator Rewilding Migration Corridor",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in apex predator rewilding migration corridor. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-011",
@@ -17667,8 +17667,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-010-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Apex Predator Rewilding Migration Corridor",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for apex predator rewilding migration corridor. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-012",
@@ -17703,8 +17703,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-011-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Hydraulic Defenses for Beaver Re-Introduction Watershed Hydrology Restoration",
+                    detail: "Deploy civil engineering brigades and municipal boards to construct defenses for beaver re-introduction watershed hydrology restoration. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-012",
@@ -17712,8 +17712,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-011-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Agronomic Water Efficiency for Beaver Re-Introduction Watershed Hydrology Restoration",
+                    detail: "Provide tax deductions for micro-drip irrigation and localized storage to adapt to beaver re-introduction watershed hydrology restoration. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-013",
@@ -17748,8 +17748,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-012-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Native Wildflower Pollinator Highway Median Network",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for native wildflower pollinator highway median network. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-013",
@@ -17757,8 +17757,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-012-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Native Wildflower Pollinator Highway Median Network",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in native wildflower pollinator highway median network. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-014",
@@ -17793,8 +17793,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-013-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Urban Tree Canopy Cooling Equity",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for urban tree canopy cooling equity. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-014",
@@ -17802,8 +17802,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-013-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Urban Tree Canopy Cooling Equity",
+                    detail: "Consult international technical specialists and economic panels to optimize urban tree canopy cooling equity. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-015",
@@ -17838,8 +17838,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-014-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Municipal Geothermal District Cooling Network",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for municipal geothermal district cooling network. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-015",
@@ -17847,8 +17847,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-014-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Municipal Geothermal District Cooling Network",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of municipal geothermal district cooling network. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-016",
@@ -17883,8 +17883,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-015-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Ancient Terraced Farmland Stone Wall Restoration",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for ancient terraced farmland stone wall restoration. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-016",
@@ -17892,8 +17892,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-015-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Ancient Terraced Farmland Stone Wall Restoration",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for ancient terraced farmland stone wall restoration. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-017",
@@ -17928,8 +17928,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-016-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Establish Sovereign Authority Over Open-Hardware Right to Repair Universal Act",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for open-hardware right to repair universal act. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-017",
@@ -17937,8 +17937,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-016-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Partner with Private Tech Giants on Open-Hardware Right to Repair Universal Act",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for open-hardware right to repair universal act. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-018",
@@ -17973,8 +17973,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-017-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Modular Consumer Electronics Standard",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for modular consumer electronics standard. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-018",
@@ -17982,8 +17982,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-017-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Modular Consumer Electronics Standard",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in modular consumer electronics standard. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-019",
@@ -18018,8 +18018,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-018-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for Zero-Waste Standardized Packaging Refill Network",
+                    detail: "Channel public technological subsidies into domestic foundries to support zero-waste standardized packaging refill network. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-019",
@@ -18027,8 +18027,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-018-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for Zero-Waste Standardized Packaging Refill Network",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in zero-waste standardized packaging refill network. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-020",
@@ -18063,8 +18063,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-019-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Municipal Tool Library Cooperative Network Launch",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for municipal tool library cooperative network launch. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-020",
@@ -18072,8 +18072,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-019-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Municipal Tool Library Cooperative Network Launch",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of municipal tool library cooperative network launch. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-021",
@@ -18108,8 +18108,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-020-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Automated Textile Sorting and Fiber Recycling Facility",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for automated textile sorting and fiber recycling facility. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-021",
@@ -18117,8 +18117,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-020-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Automated Textile Sorting and Fiber Recycling Facility",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for automated textile sorting and fiber recycling facility. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-022",
@@ -18153,8 +18153,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-021-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Remanufactured EV Battery Stationary Storage Exchange Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over remanufactured ev battery stationary storage exchange. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-022",
@@ -18162,8 +18162,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-021-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in Remanufactured EV Battery Stationary Storage Exchange",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for remanufactured ev battery stationary storage exchange. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-023",
@@ -18198,8 +18198,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-022-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Centralize Water Protection in Industrial Byproduct Symbiosis Eco-Industrial Park",
+                    detail: "Assert ministerial watershed jurisdiction to guarantee supply during industrial byproduct symbiosis eco-industrial park. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-023",
@@ -18207,8 +18207,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-022-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Floodplain Restoration for Industrial Byproduct Symbiosis Eco-Industrial Park",
+                    detail: "Empower local provincial authorities to negotiate ecological easements regarding industrial byproduct symbiosis eco-industrial park. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-024",
@@ -18243,8 +18243,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-023-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Municipal Wastewater Biogas Methane Digester",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission municipal wastewater biogas methane digester. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-024",
@@ -18252,8 +18252,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-023-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Municipal Wastewater Biogas Methane Digester",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of municipal wastewater biogas methane digester. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-025",
@@ -18288,8 +18288,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-024-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Building Material Passport Deconstruction",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for building material passport deconstruction. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-025",
@@ -18297,8 +18297,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-024-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Building Material Passport Deconstruction",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for building material passport deconstruction. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-026",
@@ -18333,8 +18333,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-025-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Plastic Depolymerization Enzyme Recycling Facility",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in plastic depolymerization enzyme recycling facility. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-026",
@@ -18342,8 +18342,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-025-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Plastic Depolymerization Enzyme Recycling Facility",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for plastic depolymerization enzyme recycling facility. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-027",
@@ -18382,8 +18382,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-026-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Worker-Owned Solar Installation Guild Expansion Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over worker-owned solar installation guild expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-027",
@@ -18391,8 +18391,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-026-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in Worker-Owned Solar Installation Guild Expansion",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for worker-owned solar installation guild expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-028",
@@ -18427,8 +18427,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-027-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Bond Buyback in Local Mutual Credit Complementary Currency Network",
+                    detail: "Use central treasury balances to retire foreign-held sovereign paper for local mutual credit complementary currency network. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-028",
@@ -18436,8 +18436,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-027-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Conclude Multilateral Swap Lines for Local Mutual Credit Complementary Currency Network",
+                    detail: "Arrange foreign central bank currency facilities to backstop liquidity during local mutual credit complementary currency network. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-029",
@@ -18472,8 +18472,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-028-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Fund National Cleanrooms for Intergenerational Time-Banking Eldercare Exchange",
+                    detail: "Channel public technological subsidies into domestic foundries to support intergenerational time-banking eldercare exchange. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-029",
@@ -18481,8 +18481,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-028-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Establish Multilateral Data Corridors for Intergenerational Time-Banking Eldercare Exchange",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in intergenerational time-banking eldercare exchange. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-030",
@@ -18517,8 +18517,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-029-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on Community Kitchen Seasonal Harvest Canning Center",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for community kitchen seasonal harvest canning center. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-030",
@@ -18526,8 +18526,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-029-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to Community Kitchen Seasonal Harvest Canning Center",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of community kitchen seasonal harvest canning center. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-031",
@@ -18562,8 +18562,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-030-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Open-Source Agricultural Machinery Design Collective",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for open-source agricultural machinery design collective. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-031",
@@ -18571,8 +18571,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-030-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Open-Source Agricultural Machinery Design Collective",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for open-source agricultural machinery design collective. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-032",
@@ -18607,8 +18607,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-031-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Nationalize Basalt Dust Enhanced Rock Weathering Field Trial Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over basalt dust enhanced rock weathering field trial. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-032",
@@ -18616,8 +18616,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-031-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in Basalt Dust Enhanced Rock Weathering Field Trial",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for basalt dust enhanced rock weathering field trial. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-033",
@@ -18652,8 +18652,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-032-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Air-Gap Sovereign Networks for Direct-Air Carbon Mineralization Geothermal Facility",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for direct-air carbon mineralization geothermal facility. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-033",
@@ -18661,8 +18661,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-032-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Incentivize Venture Capital in Direct-Air Carbon Mineralization Geothermal Facility",
+                    detail: "Create state matching venture funds for domestic startups commercializing direct-air carbon mineralization geothermal facility. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-034",
@@ -18697,8 +18697,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-033-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Offshore Kelp Forest Carbon Sink Seeding Array",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for offshore kelp forest carbon sink seeding array. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-034",
@@ -18706,8 +18706,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-033-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Offshore Kelp Forest Carbon Sink Seeding Array",
+                    detail: "Consult international technical specialists and economic panels to optimize offshore kelp forest carbon sink seeding array. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-035",
@@ -18742,8 +18742,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-034-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Agricultural Biochar Pyrolysis Carbon Sequestration",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of agricultural biochar pyrolysis carbon sequestration. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-035",
@@ -18751,8 +18751,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-034-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Agricultural Biochar Pyrolysis Carbon Sequestration",
+                    detail: "Incentivize private utility operators and international consortiums to fund agricultural biochar pyrolysis carbon sequestration. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-036",
@@ -18787,8 +18787,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-035-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Community-Owned Floating Offshore Wind Cooperative",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in community-owned floating offshore wind cooperative. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-036",
@@ -18796,8 +18796,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-035-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Community-Owned Floating Offshore Wind Cooperative",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for community-owned floating offshore wind cooperative. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-037",
@@ -18832,8 +18832,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-036-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Tidal Lagoon Estuary Renewable Energy Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over tidal lagoon estuary renewable energy. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-037",
@@ -18841,8 +18841,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-036-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in Tidal Lagoon Estuary Renewable Energy",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for tidal lagoon estuary renewable energy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-038",
@@ -18877,8 +18877,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-037-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over Agrivoltaic Crop Shade and Solar Dual-Use Farm",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of agrivoltaic crop shade and solar dual-use farm. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-038",
@@ -18886,8 +18886,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-037-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for Agrivoltaic Crop Shade and Solar Dual-Use Farm",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in agrivoltaic crop shade and solar dual-use farm. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-039",
@@ -18922,8 +18922,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-038-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Green Hydrogen Fuel-Cell Municipal Ferry Fleet",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission green hydrogen fuel-cell municipal ferry fleet. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-039",
@@ -18931,8 +18931,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-038-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Green Hydrogen Fuel-Cell Municipal Ferry Fleet",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of green hydrogen fuel-cell municipal ferry fleet. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-040",
@@ -18967,8 +18967,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-039-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Passive House Zero-Energy Building Code Adoption",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of passive house zero-energy building code adoption. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-040",
@@ -18976,8 +18976,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-039-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Passive House Zero-Energy Building Code Adoption",
+                    detail: "Incentivize private utility operators and international consortiums to fund passive house zero-energy building code adoption. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-041",
@@ -19012,8 +19012,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-040-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Aquifer Thermal Energy Seasonal Heat Storage",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for aquifer thermal energy seasonal heat storage. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-041",
@@ -19021,8 +19021,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-040-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Aquifer Thermal Energy Seasonal Heat Storage",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on aquifer thermal energy seasonal heat storage. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-042",
@@ -19057,8 +19057,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-041-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Solar Thermal Parabolic Trough District Steam Plant Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over solar thermal parabolic trough district steam plant. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-042",
@@ -19066,8 +19066,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-041-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in Solar Thermal Parabolic Trough District Steam Plant",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for solar thermal parabolic trough district steam plant. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-043",
@@ -19102,8 +19102,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-042-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over Perennial Kernza Grain Commercial Harvest",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of perennial kernza grain commercial harvest. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-043",
@@ -19111,8 +19111,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-042-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for Perennial Kernza Grain Commercial Harvest",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in perennial kernza grain commercial harvest. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-044",
@@ -19147,8 +19147,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-043-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Mycelium-Based Packaging and Insulation Foundry",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for mycelium-based packaging and insulation foundry. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-044",
@@ -19156,8 +19156,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-043-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Mycelium-Based Packaging and Insulation Foundry",
+                    detail: "Consult international technical specialists and economic panels to optimize mycelium-based packaging and insulation foundry. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-045",
@@ -19192,8 +19192,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-044-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Closed-Loop Halophyte Saltwater Greenhouse Farm",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of closed-loop halophyte saltwater greenhouse farm. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-045",
@@ -19201,8 +19201,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-044-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Closed-Loop Halophyte Saltwater Greenhouse Farm",
+                    detail: "Incentivize private utility operators and international consortiums to fund closed-loop halophyte saltwater greenhouse farm. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-046",
@@ -19237,8 +19237,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-045-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Finance Strategic Water Reservoirs in Indigenous Wild Rice Watershed Restoration",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in indigenous wild rice watershed restoration. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-046",
@@ -19246,8 +19246,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-045-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Public-Private Partnerships on Indigenous Wild Rice Watershed Restoration",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain indigenous wild rice watershed restoration. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-047",
@@ -19282,8 +19282,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-046-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Direct Hydraulic Defenses for Trans-Boundary River Basin Bioregional Council",
+                    detail: "Deploy civil engineering brigades and municipal boards to construct defenses for trans-boundary river basin bioregional council. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-047",
@@ -19291,8 +19291,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-046-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Incentivize Agronomic Water Efficiency for Trans-Boundary River Basin Bioregional Council",
+                    detail: "Provide tax deductions for micro-drip irrigation and localized storage to adapt to trans-boundary river basin bioregional council. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-048",
@@ -19327,8 +19327,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-047-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Demand Reciprocal Guarantees in Indigenous Land Stewardship Co-Management",
+                    detail: "Condition diplomatic concessions upon immediate naval and border security verification in indigenous land stewardship co-management. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-048",
@@ -19336,8 +19336,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-047-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Promote Regional Free Commerce Agreement in Indigenous Land Stewardship Co-Management",
+                    detail: "Negotiate reciprocal tariff exemptions and simplified customs transit protocols for indigenous land stewardship co-management. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-049",
@@ -19372,8 +19372,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-048-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Strategic Facilities for Floating Modular Eco-Village Lagoon Community",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission floating modular eco-village lagoon community. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-049",
@@ -19381,8 +19381,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-048-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Introduce Market Carbon Pricing in Floating Modular Eco-Village Lagoon Community",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of floating modular eco-village lagoon community. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-050",
@@ -19417,8 +19417,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-049-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Megacity De-Densification and Small-Town Revival",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for megacity de-densification and small-town revival. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-050",
@@ -19426,8 +19426,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-049-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Megacity De-Densification and Small-Town Revival",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for megacity de-densification and small-town revival. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-051",
@@ -19462,8 +19462,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-050-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Underwrite Sovereign Energy Reserves in Inter-City Electric High-Speed Maglev Rail Line",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for inter-city electric high-speed maglev rail line. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-051",
@@ -19471,8 +19471,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-050-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "License Independent Energy Producers for Inter-City Electric High-Speed Maglev Rail Line",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on inter-city electric high-speed maglev rail line. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-052",
@@ -19511,8 +19511,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-051-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Nationalize Trans-Continental Solar Night Train Network Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over trans-continental solar night train network. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-052",
@@ -19520,8 +19520,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-051-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in Trans-Continental Solar Night Train Network",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for trans-continental solar night train network. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-053",
@@ -19556,8 +19556,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-052-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Air-Gap Sovereign Networks for Automated Wind-Assisted Cargo Sailing Vessel Launch",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for automated wind-assisted cargo sailing vessel launch. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-053",
@@ -19565,8 +19565,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-052-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Venture Capital in Automated Wind-Assisted Cargo Sailing Vessel Launch",
+                    detail: "Create state matching venture funds for domestic startups commercializing automated wind-assisted cargo sailing vessel launch. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-054",
@@ -19601,8 +19601,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-053-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate High-Throughput Works on Electric Autonomous Freight Barge Canal Network",
+                    detail: "Prioritize statutory budget allocations to eliminate transit bottlenecks in electric autonomous freight barge canal network. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-054",
@@ -19610,8 +19610,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-053-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Terminal Operating Franchises in Electric Autonomous Freight Barge Canal Network",
+                    detail: "Invite competitive international container operators to modernize facilities for electric autonomous freight barge canal network. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-055",
@@ -19646,8 +19646,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-054-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Inter-Island Renewable Battery Catamaran Service",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for inter-island renewable battery catamaran service. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-055",
@@ -19655,8 +19655,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-054-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Inter-Island Renewable Battery Catamaran Service",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for inter-island renewable battery catamaran service. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-056",
@@ -19691,8 +19691,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-055-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Comprehensive State Policy on Regenerative Agriculture Young Farmer Fellowship",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in regenerative agriculture young farmer fellowship. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-056",
@@ -19700,8 +19700,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-055-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Charter Public-Private Partnership on Regenerative Agriculture Young Farmer Fellowship",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for regenerative agriculture young farmer fellowship. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-057",
@@ -19736,8 +19736,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-056-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Community Land Trust Acquisition of Disused Estates",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of community land trust acquisition of disused estates. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-057",
@@ -19745,8 +19745,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-056-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Community Land Trust Acquisition of Disused Estates",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of community land trust acquisition of disused estates. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-058",
@@ -19781,8 +19781,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-057-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Air-Gap Sovereign Networks for Sustainable Forest Stewardship Selective Timber Harvest",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for sustainable forest stewardship selective timber harvest. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-058",
@@ -19790,8 +19790,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-057-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Incentivize Venture Capital in Sustainable Forest Stewardship Selective Timber Harvest",
+                    detail: "Create state matching venture funds for domestic startups commercializing sustainable forest stewardship selective timber harvest. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-059",
@@ -19826,8 +19826,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-058-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Automated Barrier Sluices for Municipal Public Water Fountain Network Revival",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for municipal public water fountain network revival. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-059",
@@ -19835,8 +19835,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-058-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Create Tradable Watershed Credits for Municipal Public Water Fountain Network Revival",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in municipal public water fountain network revival. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-060",
@@ -19871,8 +19871,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-059-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Public Grid Integration for Neighborhood Mutual Aid Heatwave Resilience Hubs",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of neighborhood mutual aid heatwave resilience hubs. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-060",
@@ -19880,8 +19880,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-059-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Auction Commercial Concessions for Neighborhood Mutual Aid Heatwave Resilience Hubs",
+                    detail: "Incentivize private utility operators and international consortiums to fund neighborhood mutual aid heatwave resilience hubs. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-061",
@@ -19916,8 +19916,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-060-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Underwrite Sovereign Energy Reserves in Solarpunk Architecture and Ecological Design Triennial",
+                    detail: "Fill strategic state storage facilities and secure emergency feedstock for solarpunk architecture and ecological design triennial. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-061",
@@ -19925,8 +19925,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-060-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "License Independent Energy Producers for Solarpunk Architecture and Ecological Design Triennial",
+                    detail: "Concede exploration rights to competitive enterprise consortia while collecting royalties on solarpunk architecture and ecological design triennial. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-062",
@@ -19961,8 +19961,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-061-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
+                    label: "Direct Sovereign Executive Action on Global Atmospheric Carbon Downward Inflection Milestone",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of global atmospheric carbon downward inflection milestone. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sol-062",
@@ -19970,8 +19970,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-061-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Devolve Operational Execution for Global Atmospheric Carbon Downward Inflection Milestone",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of global atmospheric carbon downward inflection milestone. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-063",
@@ -19979,8 +19979,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-061-opt-c",
-                    label: "Proclaim Landmark International Convention",
-                    detail: "Codify universal guidelines governing planetary infrastructure, peace, and collective security. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
+                    label: "Inaugurate Federal Reorganization Authority for Global Atmospheric Carbon Downward Inflection Milestone",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for global atmospheric carbon downward inflection milestone. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
                     effectTrack: .worldTension,
                     effectMagnitude: -3,
                     nextChainedEventID: "ah-sol-063",
@@ -20015,8 +20015,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-062-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Authorize National Priority Directive for Ocean Acidification Reversal Indicator in Coral Seas",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of ocean acidification reversal indicator in coral seas. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-063",
@@ -20024,8 +20024,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-062-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Offer Competitive Concessions in Ocean Acidification Reversal Indicator in Coral Seas",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding ocean acidification reversal indicator in coral seas. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-064",
@@ -20060,8 +20060,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-063-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Fund National Cleanrooms for Arctic Summer Sea Ice Regeneration Benchmark",
+                    detail: "Channel public technological subsidies into domestic foundries to support arctic summer sea ice regeneration benchmark. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-064",
@@ -20069,8 +20069,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-063-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for Arctic Summer Sea Ice Regeneration Benchmark",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in arctic summer sea ice regeneration benchmark. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-065",
@@ -20105,8 +20105,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-064-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Deploy Defensive Cyber Shields for Amazon Rainforest Ecological Recovery Treaty",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during amazon rainforest ecological recovery treaty. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sol-065",
@@ -20114,8 +20114,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-064-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Deregulate Commercial Innovation in Amazon Rainforest Ecological Recovery Treaty",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for amazon rainforest ecological recovery treaty. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-066",
@@ -20123,8 +20123,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-064-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Proclaim Comprehensive Structural Overhaul for Amazon Rainforest Ecological Recovery Treaty",
+                    detail: "Restructure federal resource allocations, industrial subsidies, and fiscal revenue splits for amazon rainforest ecological recovery treaty. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sol-066",
@@ -20159,8 +20159,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-065-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Finance Strategic Water Reservoirs in Great Barrier Reef Cryo-Preserved Coral Larvae Resettlement",
+                    detail: "Underwrite public water infrastructure to withstand long-term shocks in great barrier reef cryo-preserved coral larvae resettlement. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-066",
@@ -20168,8 +20168,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-065-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Public-Private Partnerships on Great Barrier Reef Cryo-Preserved Coral Larvae Resettlement",
+                    detail: "Contract private hydrological engineering consortiums to build and maintain great barrier reef cryo-preserved coral larvae resettlement. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-067",
@@ -20204,8 +20204,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-066-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Nationalize Sahara Solar-Desalination Afforestation Corridor Assets",
+                    detail: "Assert state monopoly and deploy public treasury capital to secure sovereign control over sahara solar-desalination afforestation corridor. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-067",
@@ -20213,8 +20213,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-066-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Deregulate Merchant Generation in Sahara Solar-Desalination Afforestation Corridor",
+                    detail: "Remove statutory barriers to allow private capital to finance grid links for sahara solar-desalination afforestation corridor. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-068",
@@ -20249,8 +20249,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-067-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Aral Sea Ecological Lake Restoration Project",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of aral sea ecological lake restoration project. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-068",
@@ -20258,8 +20258,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-067-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Aral Sea Ecological Lake Restoration Project",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding aral sea ecological lake restoration project. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-069",
@@ -20294,8 +20294,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-068-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission Automated Barrier Sluices for Himalayan Glacier Melt Monitoring and Lake Siphon Array",
+                    detail: "Authorize state emergency capital to build automated control infrastructure for himalayan glacier melt monitoring and lake siphon array. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-069",
@@ -20303,8 +20303,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-068-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Create Tradable Watershed Credits for Himalayan Glacier Melt Monitoring and Lake Siphon Array",
+                    detail: "Establish regional market-clearing mechanisms for sustainable consumption in himalayan glacier melt monitoring and lake siphon array. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-070",
@@ -20339,8 +20339,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-069-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Aquifer Replenishment for Global Heritage Crop Seed Vault Arctic Expansion",
+                    detail: "Enforce binding municipal water recharge and conservation decrees for global heritage crop seed vault arctic expansion. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-070",
@@ -20348,8 +20348,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-069-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Support Decentralized Water Boards for Global Heritage Crop Seed Vault Arctic Expansion",
+                    detail: "Subsidize municipal water utilities and regional farming compacts to manage global heritage crop seed vault arctic expansion. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-sol-071",
@@ -20384,8 +20384,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-070-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Enforce Comprehensive State Policy on Planetary Boundary Biocapacity Accounting Standard",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in planetary boundary biocapacity accounting standard. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-071",
@@ -20393,8 +20393,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-070-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Charter Public-Private Partnership on Planetary Boundary Biocapacity Accounting Standard",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for planetary boundary biocapacity accounting standard. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-072",
@@ -20429,8 +20429,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-071-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Assert Unilateral Sovereign Stance on Earth System Stewardship Global Treaty Ratification",
+                    detail: "Instruct diplomatic chancelleries and armed patrols to maintain an uncompromising posture on earth system stewardship global treaty ratification. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sol-072",
@@ -20438,8 +20438,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-071-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Sponsor Neutral Conciliation Summit for Earth System Stewardship Global Treaty Ratification",
+                    detail: "Invite non-aligned mediator states to host constructive negotiations on earth system stewardship global treaty ratification. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-073",
@@ -20447,8 +20447,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-071-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Earth System Stewardship Global Treaty Ratification",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for earth system stewardship global treaty ratification. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sol-073",
@@ -20483,8 +20483,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-072-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Nationalize Strategic Corridors for Global Youth Ecological Restoration Corps Mobilization",
+                    detail: "Bring key arterial lines and logistics networks under direct ministerial command for global youth ecological restoration corps mobilization. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-073",
@@ -20492,8 +20492,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-072-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Incentivize Autonomous Shuttles for Global Youth Ecological Restoration Corps Mobilization",
+                    detail: "Offer research grants and port rebates for automated freight handling systems in global youth ecological restoration corps mobilization. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-074",
@@ -20528,8 +20528,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-073-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Planetary Ecological Dividend Universal Disbursement",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for planetary ecological dividend universal disbursement. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-074",
@@ -20537,8 +20537,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-073-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Planetary Ecological Dividend Universal Disbursement",
+                    detail: "Consult international technical specialists and economic panels to optimize planetary ecological dividend universal disbursement. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-075",
@@ -20573,8 +20573,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-074-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
+                    label: "Mandate Public Grid Integration for Inaugural Solarpunk World Assembly in Belém",
+                    detail: "Direct statutory energy authorities to prioritize baseload transmission of inaugural solarpunk world assembly in belém. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-sol-075",
@@ -20582,8 +20582,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-074-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Auction Commercial Concessions for Inaugural Solarpunk World Assembly in Belém",
+                    detail: "Incentivize private utility operators and international consortiums to fund inaugural solarpunk world assembly in belém. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-sol-075",
@@ -20591,8 +20591,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-074-opt-c",
-                    label: "Proclaim Landmark International Convention",
-                    detail: "Codify universal guidelines governing planetary infrastructure, peace, and collective security. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
+                    label: "Proclaim Comprehensive Structural Overhaul for Inaugural Solarpunk World Assembly in Belém",
+                    detail: "Restructure federal resource allocations, industrial subsidies, and fiscal revenue splits for inaugural solarpunk world assembly in belém. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
                     effectTrack: .worldTension,
                     effectMagnitude: -3,
                     nextChainedEventID: nil,
@@ -20627,8 +20627,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-sol-075-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
+                    label: "Enforce Public Terminal Priority for The Planetary Regeneration Declaration",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during the planetary regeneration declaration. [⟦MKT⟧ +4, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: nil,
@@ -20636,8 +20636,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-075-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Devolve Regional Transit Authority for The Planetary Regeneration Declaration",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for the planetary regeneration declaration. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: nil,
@@ -20645,8 +20645,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-sol-075-opt-c",
-                    label: "Proclaim Landmark International Convention",
-                    detail: "Codify universal guidelines governing planetary infrastructure, peace, and collective security. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
+                    label: "Ratify Constitutional Framework for The Planetary Regeneration Declaration",
+                    detail: "Enact binding constitutional amendments guaranteeing long-term sovereign governance over the planetary regeneration declaration. [⟦TNS⟧ -3, ⟦DIP⟧ +3]",
                     effectTrack: .worldTension,
                     effectMagnitude: -3,
                     nextChainedEventID: nil,
@@ -20685,8 +20685,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-001-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Establish Sovereign Authority Over Capital City Urban Bread Riots",
+                    detail: "Classify critical technical infrastructure and mandate state encryption standards for capital city urban bread riots. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-002",
@@ -20694,8 +20694,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-001-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Partner with Private Tech Giants on Capital City Urban Bread Riots",
+                    detail: "Offer R&D tax credits to encourage multinational tech firms to build facilities for capital city urban bread riots. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-003",
@@ -20703,8 +20703,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-001-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Capital City Urban Bread Riots",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for capital city urban bread riots. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-003",
@@ -20739,8 +20739,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-002-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Enforce Curfew & Administrative Order for Industrial Textile Basin General Strike",
+                    detail: "Authorize gendarmerie detachments to clear blockades and maintain vital logistics during industrial textile basin general strike. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-003",
@@ -20748,8 +20748,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-002-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Establish Independent Citizen Panel on Industrial Textile Basin General Strike",
+                    detail: "Appoint non-partisan community arbiters to de-escalate grievances regarding industrial textile basin general strike. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-004",
@@ -20784,8 +20784,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-003-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Establish State Guidance Authority for Underground Coal Mine Barricade Standoff",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for underground coal mine barricade standoff. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-004",
@@ -20793,8 +20793,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-003-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Sponsor Multilateral Advisory Review on Underground Coal Mine Barricade Standoff",
+                    detail: "Consult international technical specialists and economic panels to optimize underground coal mine barricade standoff. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-005",
@@ -20829,8 +20829,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-004-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Logistics Fleet for Maritime Docker Port Embargo Action",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for maritime docker port embargo action. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-005",
@@ -20838,8 +20838,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-004-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Tender Private Logistics Concessions for Maritime Docker Port Embargo Action",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for maritime docker port embargo action. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-006",
@@ -20874,8 +20874,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-005-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Enforce Public Terminal Priority for National Railway Transport Interruption Strike",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during national railway transport interruption strike. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-006",
@@ -20883,8 +20883,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-005-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Devolve Regional Transit Authority for National Railway Transport Interruption Strike",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for national railway transport interruption strike. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-007",
@@ -20919,8 +20919,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-006-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Direct Hydraulic Defenses for Urban Municipal Water Pipeline Rationing Protest",
+                    detail: "Deploy civil engineering brigades and municipal boards to construct defenses for urban municipal water pipeline rationing protest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-007",
@@ -20928,8 +20928,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-006-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Incentivize Agronomic Water Efficiency for Urban Municipal Water Pipeline Rationing Protest",
+                    detail: "Provide tax deductions for micro-drip irrigation and localized storage to adapt to urban municipal water pipeline rationing protest. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-008",
@@ -20964,8 +20964,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-007-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over Salt Monopoly Tax Civil Disobedience Campaign",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of salt monopoly tax civil disobedience campaign. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-008",
@@ -20973,8 +20973,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-007-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for Salt Monopoly Tax Civil Disobedience Campaign",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in salt monopoly tax civil disobedience campaign. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-009",
@@ -21009,8 +21009,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-008-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Establish Judicial Taskforce for Kerosene Heating Fuel Winter Price Protest",
+                    detail: "Empower special public prosecutors to audit procurement corruption and restore stability in kerosene heating fuel winter price protest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-009",
@@ -21018,8 +21018,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-008-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Grant Municipal Labor Autonomy in Kerosene Heating Fuel Winter Price Protest",
+                    detail: "Allow localized collective bargaining to accommodate varying regional conditions in kerosene heating fuel winter price protest. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-010",
@@ -21054,8 +21054,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-009-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Deploy State Mediators & Security in Slaughterhouse Meat Inspection Labor Boycott",
+                    detail: "Combine firm public order enforcement with targeted economic relief to resolve slaughterhouse meat inspection labor boycott. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-010",
@@ -21063,8 +21063,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-009-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Convene Tripartite Accord on Slaughterhouse Meat Inspection Labor Boycott",
+                    detail: "Negotiate wage compromises and regional labor compacts with worker syndicates on slaughterhouse meat inspection labor boycott. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-011",
@@ -21099,8 +21099,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-010-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Institute Direct Executive Oversight Over Farm Laborer Mechanized Harvester Machine-Breaking",
+                    detail: "Assume temporary direct ministerial control over disputed municipal institutions in farm laborer mechanized harvester machine-breaking. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-011",
@@ -21108,8 +21108,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-010-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Devolve Civic Dialogue on Farm Laborer Mechanized Harvester Machine-Breaking",
+                    detail: "Permit regional administrative councils and trade assemblies to resolve disputes in farm laborer mechanized harvester machine-breaking. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-012",
@@ -21144,8 +21144,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-011-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Impose Sovereign Capital Controls for Sovereign Currency Devaluation and Run on Silver",
+                    detail: "Direct monetary and fiscal reserves to guarantee state solvency and regulate sovereign currency devaluation and run on silver. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-012",
@@ -21153,8 +21153,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-011-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Issue Tax-Exempt Municipal Bonds for Sovereign Currency Devaluation and Run on Silver",
+                    detail: "Encourage regional governments and institutional investors to fund sovereign currency devaluation and run on silver. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-013",
@@ -21162,8 +21162,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-011-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Sovereign Currency Devaluation and Run on Silver",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for sovereign currency devaluation and run on silver. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-013",
@@ -21198,8 +21198,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-012-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Underwrite Sovereign Bond Buyback in Sovereign Foreign Bond Default",
+                    detail: "Use central treasury balances to retire foreign-held sovereign paper for sovereign foreign bond default. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-013",
@@ -21207,8 +21207,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-012-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Conclude Multilateral Swap Lines for Sovereign Foreign Bond Default",
+                    detail: "Arrange foreign central bank currency facilities to backstop liquidity during sovereign foreign bond default. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-014",
@@ -21216,8 +21216,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-012-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Charter Supreme National Directorate for Sovereign Foreign Bond Default",
+                    detail: "Promulgate comprehensive constitutional and economic transformation to permanently institutionalize sovereign foreign bond default. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-014",
@@ -21252,8 +21252,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-013-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Fund National Cleanrooms for Central Bank Bullion Vault Depletion Alarm",
+                    detail: "Channel public technological subsidies into domestic foundries to support central bank bullion vault depletion alarm. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-014",
@@ -21261,8 +21261,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-013-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Establish Multilateral Data Corridors for Central Bank Bullion Vault Depletion Alarm",
+                    detail: "Harmonize international privacy and data-sharing standards to ease commerce in central bank bullion vault depletion alarm. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-015",
@@ -21297,8 +21297,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-014-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Establish Non-Dollar Settlement for Commercial Bank Credit Freeze and Discount Halt",
+                    detail: "Conclude bilateral sovereign clearing protocols to insulate domestic trade during commercial bank credit freeze and discount halt. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-015",
@@ -21306,8 +21306,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-014-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Negotiate Market Syndication for Commercial Bank Credit Freeze and Discount Halt",
+                    detail: "Partner with commercial banking consortia and multilateral lenders to refinance commercial bank credit freeze and discount halt. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-016",
@@ -21342,8 +21342,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-015-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Enforce Comprehensive State Policy on Bourse Stock Exchange Panic Circuit Breaker",
+                    detail: "Promulgate binding executive regulations to achieve immediate stabilization in bourse stock exchange panic circuit breaker. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-016",
@@ -21351,8 +21351,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-015-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Charter Public-Private Partnership on Bourse Stock Exchange Panic Circuit Breaker",
+                    detail: "Share delivery risks and capital costs with vetted enterprise consortia for bourse stock exchange panic circuit breaker. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-017",
@@ -21387,8 +21387,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-016-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Direct Sovereign Executive Action on Retaliatory Protective Tariff Escalation War",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of retaliatory protective tariff escalation war. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-017",
@@ -21396,8 +21396,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-016-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Devolve Operational Execution for Retaliatory Protective Tariff Escalation War",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of retaliatory protective tariff escalation war. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-018",
@@ -21432,8 +21432,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-017-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Air-Gap Sovereign Networks for Landed Estate Mortgage Foreclosure Revolt",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for landed estate mortgage foreclosure revolt. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-018",
@@ -21441,8 +21441,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-017-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Incentivize Venture Capital in Landed Estate Mortgage Foreclosure Revolt",
+                    detail: "Create state matching venture funds for domestic startups commercializing landed estate mortgage foreclosure revolt. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-019",
@@ -21477,8 +21477,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-018-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Mobilize Defense Formations on Maritime Insurance Syndicate Liquidity Collapse",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for maritime insurance syndicate liquidity collapse. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-019",
@@ -21486,8 +21486,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-018-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Negotiate Mutual Logistics Sharing in Maritime Insurance Syndicate Liquidity Collapse",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for maritime insurance syndicate liquidity collapse. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-020",
@@ -21522,8 +21522,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-019-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Establish Non-Dollar Settlement for Postal Savings Bank Depositor Panic Queue",
+                    detail: "Conclude bilateral sovereign clearing protocols to insulate domestic trade during postal savings bank depositor panic queue. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-020",
@@ -21531,8 +21531,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-019-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Negotiate Market Syndication for Postal Savings Bank Depositor Panic Queue",
+                    detail: "Partner with commercial banking consortia and multilateral lenders to refinance postal savings bank depositor panic queue. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-021",
@@ -21567,8 +21567,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-020-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Public Terminal Priority for National Railway Bond Construction Default",
+                    detail: "Guarantee domestic freight priority across state-managed hubs during national railway bond construction default. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-021",
@@ -21576,8 +21576,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-020-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Regional Transit Authority for National Railway Bond Construction Default",
+                    detail: "Empower regional provincial authorities to finance and operate decentralized links for national railway bond construction default. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-022",
@@ -21612,8 +21612,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-021-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
+                    label: "Enforce Operational Readiness for Military Junta Ultimatum over Defense Appropriations",
+                    detail: "Authorize armed forces deployment and defense production directives for military junta ultimatum over defense appropriations. [⟦STB⟧ +4, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-022",
@@ -21621,8 +21621,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-021-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Adopt Defensive Asymmetric Model for Military Junta Ultimatum over Defense Appropriations",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in military junta ultimatum over defense appropriations. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-023",
@@ -21630,8 +21630,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-021-opt-c",
-                    label: "Proclaim Comprehensive Structural Overhaul",
-                    detail: "Completely restructure local resource allocations, industrial subsidies, and fiscal revenue splits. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Military Junta Ultimatum over Defense Appropriations",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for military junta ultimatum over defense appropriations. [⟦ECO⟧ +4, ⟦STB⟧ +2]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-023",
@@ -21666,8 +21666,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-022-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Air-Gap Sovereign Networks for Metropolitan Police Constabulary Wage Strike",
+                    detail: "Migrate sensitive administrative databases to secure, disconnected server facilities for metropolitan police constabulary wage strike. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-023",
@@ -21675,8 +21675,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-022-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Incentivize Venture Capital in Metropolitan Police Constabulary Wage Strike",
+                    detail: "Create state matching venture funds for domestic startups commercializing metropolitan police constabulary wage strike. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-024",
@@ -21711,8 +21711,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-023-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Commission Strategic Facilities for Naval Squadron Stoker Coal Ration Mutiny",
+                    detail: "Deploy central capital and engineering bureaus to rapidly commission naval squadron stoker coal ration mutiny. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-024",
@@ -21720,8 +21720,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-023-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Introduce Market Carbon Pricing in Naval Squadron Stoker Coal Ration Mutiny",
+                    detail: "Establish tradable emissions quotas to incentivize private decarbonization of naval squadron stoker coal ration mutiny. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-025",
@@ -21756,8 +21756,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-024-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Deploy Defensive Cyber Shields for Gendarmerie Barracks Disaffection Incident",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during gendarmerie barracks disaffection incident. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-025",
@@ -21765,8 +21765,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-024-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Deregulate Commercial Innovation in Gendarmerie Barracks Disaffection Incident",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for gendarmerie barracks disaffection incident. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-026",
@@ -21801,8 +21801,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-025-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Commission State Ordnance Surge for Veterans' Pension March on the Legislature",
+                    detail: "Expand military factory shifts to supply domestic weapon systems for veterans' pension march on the legislature. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-026",
@@ -21810,8 +21810,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-025-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Outsource Component Production for Veterans' Pension March on the Legislature",
+                    detail: "Contract private aerospace and precision mechanics suppliers to deliver systems for veterans' pension march on the legislature. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-027",
@@ -21850,8 +21850,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-026-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Enforce Operational Readiness for Palace Guard Loyalty Test and Officer Reshuffle",
+                    detail: "Authorize armed forces deployment and defense production directives for palace guard loyalty test and officer reshuffle. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-027",
@@ -21859,8 +21859,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-026-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Defensive Asymmetric Model for Palace Guard Loyalty Test and Officer Reshuffle",
+                    detail: "Procure decentralized sensor networks and smart munitions to counter threats in palace guard loyalty test and officer reshuffle. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-028",
@@ -21895,8 +21895,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-027-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Border Customs Bribery and Contraband Scandal",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of border customs bribery and contraband scandal. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-028",
@@ -21904,8 +21904,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-027-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Border Customs Bribery and Contraband Scandal",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding border customs bribery and contraband scandal. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-029",
@@ -21940,8 +21940,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-028-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mobilize Defense Formations on Military Court-Martial Civil Jurisdiction Dispute",
+                    detail: "Alert military district commands and accelerate ammunition stockpiling for military court-martial civil jurisdiction dispute. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-029",
@@ -21949,8 +21949,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-028-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Negotiate Mutual Logistics Sharing in Military Court-Martial Civil Jurisdiction Dispute",
+                    detail: "Sign multilateral basing and maintenance treaties to reduce solitary costs for military court-martial civil jurisdiction dispute. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-030",
@@ -21985,8 +21985,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-029-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Deploy Defensive Cyber Shields for Secret Police Black Bureau Archive Leak",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during secret police black bureau archive leak. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-030",
@@ -21994,8 +21994,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-029-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Deregulate Commercial Innovation in Secret Police Black Bureau Archive Leak",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for secret police black bureau archive leak. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-031",
@@ -22030,8 +22030,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-030-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Institute Direct Executive Oversight Over Provincial Conscription Ballot Ballot-Box Riot",
+                    detail: "Assume temporary direct ministerial control over disputed municipal institutions in provincial conscription ballot ballot-box riot. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-031",
@@ -22039,8 +22039,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-030-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Devolve Civic Dialogue on Provincial Conscription Ballot Ballot-Box Riot",
+                    detail: "Permit regional administrative councils and trade assemblies to resolve disputes in provincial conscription ballot ballot-box riot. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-032",
@@ -22075,8 +22075,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-031-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
+                    label: "Assert Unilateral Sovereign Stance on Constitutional Convention Popular Demand Movement",
+                    detail: "Instruct diplomatic chancelleries and armed patrols to maintain an uncompromising posture on constitutional convention popular demand movement. [⟦DIP⟧ +4, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-032",
@@ -22084,8 +22084,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-031-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Sponsor Neutral Conciliation Summit for Constitutional Convention Popular Demand Movement",
+                    detail: "Invite non-aligned mediator states to host constructive negotiations on constitutional convention popular demand movement. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-033",
@@ -22093,8 +22093,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-031-opt-c",
-                    label: "Establish Multilateral Economic Clearing Union",
-                    detail: "Form a non-aligned international clearinghouse for commodity exchanges and credit settlements. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
+                    label: "Inaugurate Federal Reorganization Authority for Constitutional Convention Popular Demand Movement",
+                    detail: "Merge overlapping regional and ministerial jurisdictions into a single streamlined agency for constitutional convention popular demand movement. [⟦MKT⟧ +4, ⟦DIP⟧ +2]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 4,
                     nextChainedEventID: "ah-vic-033",
@@ -22129,8 +22129,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-032-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Authorize National Priority Directive for Universal Adult Suffrage Monster Demonstration",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of universal adult suffrage monster demonstration. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-033",
@@ -22138,8 +22138,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-032-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Offer Competitive Concessions in Universal Adult Suffrage Monster Demonstration",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding universal adult suffrage monster demonstration. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-034",
@@ -22174,8 +22174,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-033-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Upper Chamber Legislative Veto Power",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for upper chamber legislative veto power. [⟦MIL⟧ +3, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-034",
@@ -22183,8 +22183,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-033-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Upper Chamber Legislative Veto Power",
+                    detail: "Consult international technical specialists and economic panels to optimize upper chamber legislative veto power. [⟦MKT⟧ +3, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-035",
@@ -22219,8 +22219,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-034-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Deploy Defensive Cyber Shields for Secret Ballot Electoral Reform Law Passage",
+                    detail: "Direct national cyber defense units to monitor trunk lines and repel intrusions during secret ballot electoral reform law passage. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-035",
@@ -22228,8 +22228,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-034-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Deregulate Commercial Innovation in Secret Ballot Electoral Reform Law Passage",
+                    detail: "Stimulate independent research labs and private tech enterprise integration for secret ballot electoral reform law passage. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-036",
@@ -22264,8 +22264,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-035-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Institute Direct Executive Oversight Over Public Assembly and Free Speech Street Clash",
+                    detail: "Assume temporary direct ministerial control over disputed municipal institutions in public assembly and free speech street clash. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-036",
@@ -22273,8 +22273,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-035-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Devolve Civic Dialogue on Public Assembly and Free Speech Street Clash",
+                    detail: "Permit regional administrative councils and trade assemblies to resolve disputes in public assembly and free speech street clash. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-037",
@@ -22309,8 +22309,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-036-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on State Church Compulsory Tithe Abolition Crusade",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of state church compulsory tithe abolition crusade. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-037",
@@ -22318,8 +22318,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-036-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for State Church Compulsory Tithe Abolition Crusade",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of state church compulsory tithe abolition crusade. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-038",
@@ -22354,8 +22354,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-037-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Minority Language School Instruction Boycott",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of minority language school instruction boycott. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-038",
@@ -22363,8 +22363,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-037-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Minority Language School Instruction Boycott",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding minority language school instruction boycott. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-039",
@@ -22399,8 +22399,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-038-opt-a",
-                    label: "Ratify Bilateral Strategic Accord",
-                    detail: "Conclude formal pact with dispute arbitration clauses, consular rights, and mutual commercial access. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
+                    label: "Establish Judicial Taskforce for Provincial Home Rule Federalization Standoff",
+                    detail: "Empower special public prosecutors to audit procurement corruption and restore stability in provincial home rule federalization standoff. [⟦DIP⟧ +3, ⟦TNS⟧ -2]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-039",
@@ -22408,8 +22408,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-038-opt-b",
-                    label: "Demand Unilateral Strategic Guarantees",
-                    detail: "Condition diplomatic concessions upon immediate naval and border security verification protocols. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
+                    label: "Grant Municipal Labor Autonomy in Provincial Home Rule Federalization Standoff",
+                    detail: "Allow localized collective bargaining to accommodate varying regional conditions in provincial home rule federalization standoff. [⟦MIL⟧ +3, ⟦DIP⟧ -1]",
                     effectTrack: .militaryReadiness,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-040",
@@ -22444,8 +22444,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-039-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
+                    label: "Deploy State Mediators & Security in Trade Union Legal Incorporation Charter",
+                    detail: "Combine firm public order enforcement with targeted economic relief to resolve trade union legal incorporation charter. [⟦MKT⟧ +3, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-040",
@@ -22453,8 +22453,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-039-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Convene Tripartite Accord on Trade Union Legal Incorporation Charter",
+                    detail: "Negotiate wage compromises and regional labor compacts with worker syndicates on trade union legal incorporation charter. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-041",
@@ -22489,8 +22489,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-040-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Mandate Algorithmic Sovereignty in Free Press Underground Printing Press Raids",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for free press underground printing press raids. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-041",
@@ -22498,8 +22498,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-040-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Open-Standard Consortia for Free Press Underground Printing Press Raids",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for free press underground printing press raids. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-042",
@@ -22534,8 +22534,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-041-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Mobilize State Works on Port City Quarantine Hospital Riot",
+                    detail: "Direct central engineering authorities to accelerate heavy infrastructure execution for port city quarantine hospital riot. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-042",
@@ -22543,8 +22543,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-041-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Charter Public-Private Freight Venture for Port City Quarantine Hospital Riot",
+                    detail: "Partner with domestic freight consortiums to co-fund locomotives and sidings for port city quarantine hospital riot. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-043",
@@ -22579,8 +22579,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-042-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Sovereign Command Over Factory Safety and Boiler Explosion Inquest",
+                    detail: "Mandate state operating licenses and strategic quotas for domestic extraction of factory safety and boiler explosion inquest. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-043",
@@ -22588,8 +22588,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-042-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Attract Joint Venture Capital for Factory Safety and Boiler Explosion Inquest",
+                    detail: "Partner with global energy engineering firms to co-develop cutting-edge technology in factory safety and boiler explosion inquest. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-044",
@@ -22624,8 +22624,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-043-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish Judicial Taskforce for Child Labor Ten-Hour Limitation Bill Deadlock",
+                    detail: "Empower special public prosecutors to audit procurement corruption and restore stability in child labor ten-hour limitation bill deadlock. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-044",
@@ -22633,8 +22633,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-043-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Grant Municipal Labor Autonomy in Child Labor Ten-Hour Limitation Bill Deadlock",
+                    detail: "Allow localized collective bargaining to accommodate varying regional conditions in child labor ten-hour limitation bill deadlock. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-045",
@@ -22669,8 +22669,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-044-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Accelerate Strategic Mandate on City Sanitation and Sewage Tunnel Funding Standoff",
+                    detail: "Channel central treasury credits into core productive corridors and hubs for city sanitation and sewage tunnel funding standoff. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-045",
@@ -22678,8 +22678,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-044-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Adopt Decentralized Market Approach to City Sanitation and Sewage Tunnel Funding Standoff",
+                    detail: "Incentivize commercial investment and regional civic partners to manage delivery of city sanitation and sewage tunnel funding standoff. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-046",
@@ -22714,8 +22714,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-045-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
+                    label: "Mandate Algorithmic Sovereignty in Tenant Farmer Rack-Rent Eviction Resistance",
+                    detail: "Enact statutory oversight requiring domestic foundation models and hardware for tenant farmer rack-rent eviction resistance. [⟦STB⟧ +3, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-046",
@@ -22723,8 +22723,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-045-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
+                    label: "Sponsor Open-Standard Consortia for Tenant Farmer Rack-Rent Eviction Resistance",
+                    detail: "Foster open-source software libraries and interoperable hardware designs for tenant farmer rack-rent eviction resistance. [⟦DIP⟧ +3, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 3,
                     nextChainedEventID: "ah-vic-047",
@@ -22759,8 +22759,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-046-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Direct Sovereign Executive Action on Common Pasture Enclosure Fence Tearing Action",
+                    detail: "Commit public capital and administrative resources toward state-guided execution of common pasture enclosure fence tearing action. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-047",
@@ -22768,8 +22768,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-046-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Devolve Operational Execution for Common Pasture Enclosure Fence Tearing Action",
+                    detail: "Empower provincial assemblies and local authorities to tailor implementation of common pasture enclosure fence tearing action. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-048",
@@ -22804,8 +22804,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-047-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Authorize National Priority Directive for Royal Forest Timber Poaching Ranger Gunfight",
+                    detail: "Mobilize ministerial councils and public agencies to guarantee swift delivery of royal forest timber poaching ranger gunfight. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-048",
@@ -22813,8 +22813,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-047-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Offer Competitive Concessions in Royal Forest Timber Poaching Ranger Gunfight",
+                    detail: "Open public procurement to commercial bids with performance guarantees regarding royal forest timber poaching ranger gunfight. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-049",
@@ -22849,8 +22849,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-048-opt-a",
-                    label: "Mobilize Strategic Operational Resources",
-                    detail: "Direct state engineering bureaus, material reserves, and elite personnel to fulfill the directive immediately. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
+                    label: "Establish State Guidance Authority for Coastal Smuggling Flotilla Revenue Cutter Skirmish",
+                    detail: "Appoint an executive high commissioner to centralize decision-making for coastal smuggling flotilla revenue cutter skirmish. [⟦MIL⟧ +2, ⟦ECO⟧ -1]",
                     effectTrack: .economicResilience,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-049",
@@ -22858,8 +22858,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-048-opt-b",
-                    label: "Decentralize Regional Implementation",
-                    detail: "License regional cooperatives and municipal syndicates with production incentives and autonomy. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
+                    label: "Sponsor Multilateral Advisory Review on Coastal Smuggling Flotilla Revenue Cutter Skirmish",
+                    detail: "Consult international technical specialists and economic panels to optimize coastal smuggling flotilla revenue cutter skirmish. [⟦MKT⟧ +2, ⟦STB⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-050",
@@ -22894,8 +22894,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-049-opt-a",
-                    label: "Enact Emergency Security Decrees",
-                    detail: "Authorize emergency intervention protocols to stabilize administrative districts and quell unrest. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
+                    label: "Commission State Logistics Fleet for Epidemic Quarantine Perimeter Breakthrough",
+                    detail: "Equip state transport enterprises with modern rolling stock and gantry systems for epidemic quarantine perimeter breakthrough. [⟦STB⟧ +2, ⟦SEC⟧ +2]",
                     effectTrack: .internalStability,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-050",
@@ -22903,8 +22903,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-049-opt-b",
-                    label: "Convene Mediated Compromise Assembly",
-                    detail: "Meet with regional leaders, enterprise delegates, and worker councils to negotiate a pacification pact. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Tender Private Logistics Concessions for Epidemic Quarantine Perimeter Breakthrough",
+                    detail: "Offer commercial operating leases and attract foreign logistics investment for epidemic quarantine perimeter breakthrough. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: "ah-vic-050",
@@ -22939,8 +22939,8 @@ public struct NativeAlternativeHistoryCatalog {
             decisionOptions: [
                 NativeEventDecisionOption(
                     id: "ah-vic-050-opt-a",
-                    label: "Assert Sovereign Doctrine in World Forum",
-                    detail: "Issue an executive manifesto defining technological standards and jurisdictional sovereignty. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
+                    label: "Institute Direct Executive Oversight Over National Imperial Jubilee Celebration General Boycott",
+                    detail: "Assume temporary direct ministerial control over disputed municipal institutions in national imperial jubilee celebration general boycott. [⟦MKT⟧ +2, ⟦TNS⟧ +1]",
                     effectTrack: .marketConfidence,
                     effectMagnitude: 2,
                     nextChainedEventID: nil,
@@ -22948,8 +22948,8 @@ public struct NativeAlternativeHistoryCatalog {
                 ),
                 NativeEventDecisionOption(
                     id: "ah-vic-050-opt-b",
-                    label: "Sponsor Multilateral Scientific Panel",
-                    detail: "Collaborate with international research academies to establish neutral global verification protocols. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
+                    label: "Devolve Civic Dialogue on National Imperial Jubilee Celebration General Boycott",
+                    detail: "Permit regional administrative councils and trade assemblies to resolve disputes in national imperial jubilee celebration general boycott. [⟦DIP⟧ +2, ⟦TNS⟧ -1]",
                     effectTrack: .diplomaticLeverage,
                     effectMagnitude: 2,
                     nextChainedEventID: nil,
@@ -22960,17 +22960,17 @@ public struct NativeAlternativeHistoryCatalog {
         )
     ]
 
-    // MARK: - Public Scenario Arc Catalogs
-    public static let sovietTriumphEvents: [NativeCampaignEvent] = batch_ah_sov_1 + batch_ah_sov_2 + batch_ah_sov_3
-    public static let dividedSovereigntyEvents: [NativeCampaignEvent] = batch_ah_div_1 + batch_ah_div_2 + batch_ah_div_3
-    public static let doomsday1983Events: [NativeCampaignEvent] = batch_ah_dd_1 + batch_ah_dd_2 + batch_ah_dd_3
-    public static let resourceCrucibleEvents: [NativeCampaignEvent] = batch_ah_res_1 + batch_ah_res_2 + batch_ah_res_3
-    public static let paxCyberneticaEvents: [NativeCampaignEvent] = batch_ah_cyb_1 + batch_ah_cyb_2 + batch_ah_cyb_3
-    public static let solarpunkDawnEvents: [NativeCampaignEvent] = batch_ah_sol_1 + batch_ah_sol_2 + batch_ah_sol_3
-    public static let victoria3SystemicEvents: [NativeCampaignEvent] = batch_ah_vic_1 + batch_ah_vic_2
+    // MARK: - Scenario Arc Catalogs
+    static let sovietTriumphEvents: [NativeCampaignEvent] = batch_ah_sov_1 + batch_ah_sov_2 + batch_ah_sov_3
+    static let dividedSovereigntyEvents: [NativeCampaignEvent] = batch_ah_div_1 + batch_ah_div_2 + batch_ah_div_3
+    static let doomsday1983Events: [NativeCampaignEvent] = batch_ah_dd_1 + batch_ah_dd_2 + batch_ah_dd_3
+    static let resourceCrucibleEvents: [NativeCampaignEvent] = batch_ah_res_1 + batch_ah_res_2 + batch_ah_res_3
+    static let paxCyberneticaEvents: [NativeCampaignEvent] = batch_ah_cyb_1 + batch_ah_cyb_2 + batch_ah_cyb_3
+    static let solarpunkDawnEvents: [NativeCampaignEvent] = batch_ah_sol_1 + batch_ah_sol_2 + batch_ah_sol_3
+    static let victoria3SystemicEvents: [NativeCampaignEvent] = batch_ah_vic_1 + batch_ah_vic_2
 
     // MARK: - Master 500-Event Catalog
-    public static let events: [NativeCampaignEvent] = {
+    static let events: [NativeCampaignEvent] = {
         sovietTriumphEvents +
         dividedSovereigntyEvents +
         doomsday1983Events +
@@ -22991,7 +22991,7 @@ public struct NativeAlternativeHistoryCatalog {
     // MARK: - Query & Lookup Helpers
 
     /// Fast O(1) lookup of any event by its unique canonical ID, checking scenario arcs and country trees.
-    public static func event(byId id: String) -> NativeCampaignEvent? {
+    static func event(byId id: String) -> NativeCampaignEvent? {
         if let event = eventsByIDLookup[id] {
             return event
         }
@@ -22999,7 +22999,7 @@ public struct NativeAlternativeHistoryCatalog {
     }
 
     /// Retrieve all events belonging to a specific alternative history scenario.
-    public static func events(forScenario scenario: String) -> [NativeCampaignEvent] {
+    static func events(forScenario scenario: String) -> [NativeCampaignEvent] {
         switch scenario {
         case "soviet-triumph":
             return sovietTriumphEvents
@@ -23020,7 +23020,7 @@ public struct NativeAlternativeHistoryCatalog {
 
     /// Retrieve all events targeting a specific country code or GLOBAL events,
     /// combining scenario-wide arcs with country-specific event trees.
-    public static func events(forCountry country: String) -> [NativeCampaignEvent] {
+    static func events(forCountry country: String) -> [NativeCampaignEvent] {
         let scenarioEvents = events.filter { event in
             event.strategicEffects.contains { $0.target == country || $0.target == "GLOBAL" }
         }
@@ -23031,7 +23031,7 @@ public struct NativeAlternativeHistoryCatalog {
     /// Evaluates candidate decision events for the current campaign state.
     /// Combines scenario candidates with country-specific candidates,
     /// filters out events already completed, and prioritizes active chains without deadlocking.
-    public static func candidateDecisions(state: NativeCampaignState) -> [NativeCampaignEvent] {
+    static func candidateDecisions(state: NativeCampaignState) -> [NativeCampaignEvent] {
         let scenarioEvents = events(forScenario: state.scenarioID)
         let playerCountry = state.country.code
         let playerCountryName = state.country.name
@@ -23086,7 +23086,7 @@ public struct NativeAlternativeHistoryCatalog {
 
     /// Bridges a NativeCampaignEvent into a NativeLivingWorldEngine LWDecisionEvent
     /// allowing full living world simulation mode integration with autonomous executive choices.
-    public static func livingWorldDecision(
+    static func livingWorldDecision(
         from event: NativeCampaignEvent,
         day: Int,
         targetCountry: String? = nil
