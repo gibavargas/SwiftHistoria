@@ -34,6 +34,7 @@
 # Disable line wrapping — the project intentionally uses long lines for
 # SwiftUI chains and OSLog privacy annotations. Re-enable per-file if desired.
 --disable wrap
+--disable wrapIfStatementBodies
 
 # Preserve explicit `self.` — the project uses Swift 6 strict concurrency and
 # requires explicit `self.` inside OSLog autoclosures and escaping closures.

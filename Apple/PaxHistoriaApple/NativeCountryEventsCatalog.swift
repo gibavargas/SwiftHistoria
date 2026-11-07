@@ -55462,7 +55462,7 @@ enum NativeCountryEventsCatalog {
     // MARK: - Query & Lookup Helpers
 
     private nonisolated(unsafe) static var dynamicEventsCache: [String: [NativeCampaignEvent]] = [:]
-    private static let cacheLock = NSLock()
+    private nonisolated(unsafe) static let cacheLock = NSLock()
 
     /// Checks if a country code is one of the 12 handcrafted flagship powers.
     static func isFlagshipCountry(_ code: String) -> Bool {
