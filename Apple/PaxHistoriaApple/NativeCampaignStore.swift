@@ -1098,6 +1098,10 @@ final class NativeCampaignStore: ObservableObject {
         return results
     }
 
+    func chooseDecisionOption(_ option: NativeEventDecisionOption) {
+        resolvePendingEventDecision(option: option)
+    }
+
     func resolvePendingEventDecision(option: NativeEventDecisionOption) {
         guard var currentState = state, let pending = currentState.pendingEventDecision else { return }
 
