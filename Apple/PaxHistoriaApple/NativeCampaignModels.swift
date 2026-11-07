@@ -1158,6 +1158,20 @@ struct NativeScenario: Codable, Hashable, Identifiable {
     var openingSummary: String
     var startDate: String
     var subtitle: String
+
+    var assetImageName: String {
+        switch id {
+        case "default": "ScenarioModernDay"
+        case "fragmented-markets": "ScenarioFragmentedMarkets"
+        case "resilience-decade": "ScenarioResilienceDecade"
+        case "soviet-triumph": "ScenarioSovietTriumph"
+        case "pax-cybernetica": "ScenarioPaxCybernetica"
+        case "solarpunk-dawn": "ScenarioSolarpunkDawn"
+        case "divided-sovereignty": "ScenarioDividedSovereignty"
+        case "resource-crucible": "ScenarioResourceCrucible"
+        default: "ScenarioModernDay"
+        }
+    }
 }
 
 enum NativeScenarioCatalog {

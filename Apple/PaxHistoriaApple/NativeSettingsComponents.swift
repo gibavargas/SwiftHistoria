@@ -532,9 +532,20 @@ struct NativeScenarioPicker: View {
                 Button {
                     store.selectScenario(id: scenario.id)
                 } label: {
-                    HStack(alignment: .center, spacing: 10) {
+                    HStack(alignment: .center, spacing: 12) {
                         Image(systemName: scenario.id == store.selectedScenarioID ? "checkmark.circle.fill" : "circle")
                             .foregroundStyle(scenario.id == store.selectedScenarioID ? Color.neonTeal : Color.iceBlue.opacity(0.4))
+
+                        Image(scenario.assetImageName)
+                            .resizable()
+                            .aspectRatio(16 / 9, contentMode: .fill)
+                            .frame(width: 52, height: 32)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(scenario.id == store.selectedScenarioID ? Color.neonTeal.opacity(0.5) : Color.white.opacity(0.12), lineWidth: 1)
+                            }
+
                         VStack(alignment: .leading, spacing: 2) {
                             Text(scenario.name)
                                 .font(.body.weight(.bold))

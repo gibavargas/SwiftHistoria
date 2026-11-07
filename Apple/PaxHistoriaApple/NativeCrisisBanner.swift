@@ -51,6 +51,19 @@ enum NativeCrisisDetector {
                 case .worldWar: "globe.americas.fill"
                 }
             }
+
+            var assetImageName: String {
+                switch self {
+                case .invasionIncoming, .invasionOutgoing, .attack, .defense:
+                    "CrisisNavalPatrol"
+                case .rebellion, .stability:
+                    "CrisisCivilUnrest"
+                case .nuclearFallout:
+                    "CrisisNuclearFallout"
+                case .worldWar:
+                    "CrisisWorldWar"
+                }
+            }
         }
 
         let id: String
@@ -239,17 +252,28 @@ struct NativeCrisisBanner: View {
     // MARK: – Sub-views
 
     private func crisisHeader(for crisis: NativeCrisisDetector.CrisisAlert) -> some View {
-        HStack(alignment: .center, spacing: 10) {
-            Image(systemName: crisis.kind.systemImage)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(crisis.accentColor)
-                .scaleEffect(pulse && crisis.severity >= .severe ? 1.15 : 1.0)
+        HStack(alignment: .center, spacing: 12) {
+            Image(crisis.kind.assetImageName)
+                .resizable()
+                .aspectRatio(3 / 2, contentMode: .fill)
+                .frame(width: compact ? 48 : 64, height: compact ? 32 : 42)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(crisis.accentColor.opacity(pulse ? 0.8 : 0.35), lineWidth: 1)
+                }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(crisis.kind.displayName.uppercased())
-                    .font(.system(size: 10, weight: .black, design: .monospaced))
-                    .foregroundStyle(crisis.accentColor)
-                    .tracking(1.2)
+                HStack(spacing: 6) {
+                    Image(systemName: crisis.kind.systemImage)
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(crisis.accentColor)
+                        .scaleEffect(pulse && crisis.severity >= .severe ? 1.15 : 1.0)
+                    Text(crisis.kind.displayName.uppercased())
+                        .font(.system(size: 10, weight: .black, design: .monospaced))
+                        .foregroundStyle(crisis.accentColor)
+                        .tracking(1.2)
+                }
                 Text(crisis.title)
                     .font(.system(.subheadline, design: .default).weight(.bold))
                     .foregroundStyle(.white)

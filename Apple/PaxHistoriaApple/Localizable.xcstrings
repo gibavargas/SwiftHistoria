@@ -1,6 +1,38 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "CRISIS CONCLUSION" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONCLUSIÓN DE CRISIS"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONCLUSÃO DE CRISE"
+          }
+        }
+      }
+    },
+    "STRATEGIC TRIUMPH" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRIUNFO ESTRATÉGICO"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRIUNFO ESTRATÉGICO"
+          }
+        }
+      }
+    },
     " " : {
 
     },
