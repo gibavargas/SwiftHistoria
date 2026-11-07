@@ -990,7 +990,7 @@ enum NativeStrategyContextDatabase {
         let debt = clampDouble(Double(100 - profile.stability) * 0.75 + Double(profile.sanctionsExposurePercent) * 2.0 + 38.0, 18, 120)
         let unemp = clampDouble(Double(100 - profile.stability) * 0.16 + 4.8, 3.5, 24.0)
         let balance = clampDouble(profile.tradeBalancePercent * 0.45 - 3.4, -9.0, 4.0)
-        let fiscalSpace = clamp(Int(100 - debt * 0.55 + Double(profile.energySecurity) * 0.2), 18, 82)
+        let fiscalSpace = max(18, min(82, Int(100 - debt * 0.55 + Double(profile.energySecurity) * 0.2)))
         return (balance, debt, unemp, fiscalSpace)
     }
 
