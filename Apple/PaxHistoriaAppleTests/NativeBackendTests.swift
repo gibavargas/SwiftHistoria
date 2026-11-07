@@ -1495,7 +1495,9 @@ final class NativeBackendTests: XCTestCase {
                 decoder: JSONDecoder(),
                 persistenceDirectory: persistenceDirectory
             ).state
-            if slot1State != nil { break }
+            if slot1State != nil {
+                break
+            }
             try await Task.sleep(nanoseconds: 50_000_000)
         }
         let slot2 = NativeCampaignStore.loadCampaignState(
@@ -2097,14 +2099,12 @@ final class NativeBackendTests: XCTestCase {
         var restructuringHappened = false
         for i in 1 ... 50 {
             let targetDate = "2010-04-\(String(format: "%02d", i))"
-            if let result = NativeStrategyContextDatabase.rollStochasticEvent(for: crisisLedger, code: "CHN", targetDate: targetDate) {
-                if result.summary.contains("Debt Restructuring") {
-                    restructuringHappened = true
-                    XCTAssertEqual(result.deltas.debtDelta, -40.0)
-                    XCTAssertEqual(result.deltas.fiscalSpaceDelta, 25)
-                    XCTAssertEqual(result.deltas.growthDelta, -4.5)
-                    break
-                }
+            if let result = NativeStrategyContextDatabase.rollStochasticEvent(for: crisisLedger, code: "CHN", targetDate: targetDate), result.summary.contains("Debt Restructuring") {
+                restructuringHappened = true
+                XCTAssertEqual(result.deltas.debtDelta, -40.0)
+                XCTAssertEqual(result.deltas.fiscalSpaceDelta, 25)
+                XCTAssertEqual(result.deltas.growthDelta, -4.5)
+                break
             }
         }
         XCTAssertTrue(restructuringHappened, "Expected a debt restructuring event to trigger under high debt and zero fiscal space.")
@@ -4894,7 +4894,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
 
     func testNativeAlternativeHistoryCatalogContainsExactly500Events() {
         XCTAssertEqual(NativeAlternativeHistoryCatalog.events.count, 500, "Catalog must contain exactly 500 events")
-        let uniqueIDs = Set(NativeAlternativeHistoryCatalog.events.map { $0.id })
+        let uniqueIDs = Set(NativeAlternativeHistoryCatalog.events.map(\.id))
         XCTAssertEqual(uniqueIDs.count, 500, "All 500 event IDs must be strictly unique")
     }
 
@@ -4908,19 +4908,19 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         XCTAssertEqual(NativeAlternativeHistoryCatalog.victoria3SystemicEvents.count, 50)
         XCTAssertEqual(
             NativeAlternativeHistoryCatalog.sovietTriumphEvents.count +
-            NativeAlternativeHistoryCatalog.dividedSovereigntyEvents.count +
-            NativeAlternativeHistoryCatalog.doomsday1983Events.count +
-            NativeAlternativeHistoryCatalog.resourceCrucibleEvents.count +
-            NativeAlternativeHistoryCatalog.paxCyberneticaEvents.count +
-            NativeAlternativeHistoryCatalog.solarpunkDawnEvents.count +
-            NativeAlternativeHistoryCatalog.victoria3SystemicEvents.count,
+                NativeAlternativeHistoryCatalog.dividedSovereigntyEvents.count +
+                NativeAlternativeHistoryCatalog.doomsday1983Events.count +
+                NativeAlternativeHistoryCatalog.resourceCrucibleEvents.count +
+                NativeAlternativeHistoryCatalog.paxCyberneticaEvents.count +
+                NativeAlternativeHistoryCatalog.solarpunkDawnEvents.count +
+                NativeAlternativeHistoryCatalog.victoria3SystemicEvents.count,
             500
         )
     }
 
     func testCatalogEventIntegrityAndMechanicTokens() {
-        let validTokens: Set<String> = ["⟦ECO⟧", "⟦STB⟧", "⟦SEC⟧", "⟦MIL⟧", "⟦DIP⟧", "⟦MKT⟧", "⟦TNS⟧"]
-        let validImages: Set<String> = [
+        let validTokens: Set = ["⟦ECO⟧", "⟦STB⟧", "⟦SEC⟧", "⟦MIL⟧", "⟦DIP⟧", "⟦MKT⟧", "⟦TNS⟧"]
+        let validImages: Set = [
             "EventSovietCoup",
             "EventFashodaCrisis",
             "EventBreadRiots",
@@ -4983,7 +4983,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
 
     func testNativeCountryEventsCatalogContainsExactly1200Events() {
         XCTAssertEqual(NativeCountryEventsCatalog.allEvents.count, 1200, "Country catalog must contain exactly 1,200 events across 12 playable countries")
-        let uniqueIDs = Set(NativeCountryEventsCatalog.allEvents.map { $0.id })
+        let uniqueIDs = Set(NativeCountryEventsCatalog.allEvents.map(\.id))
         XCTAssertEqual(uniqueIDs.count, 1200, "All 1,200 country event IDs must be strictly unique")
     }
 
@@ -5000,7 +5000,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         XCTAssertEqual(NativeCountryEventsCatalog.indiaEvents.count, 100, "India must have exactly 100 events")
         XCTAssertEqual(NativeCountryEventsCatalog.southAfricaEvents.count, 100, "South Africa must have exactly 100 events")
         XCTAssertEqual(NativeCountryEventsCatalog.australiaEvents.count, 100, "Australia must have exactly 100 events")
-        
+
         let sum = NativeCountryEventsCatalog.brazilEvents.count +
             NativeCountryEventsCatalog.unitedStatesEvents.count +
             NativeCountryEventsCatalog.unitedKingdomEvents.count +
@@ -5017,7 +5017,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
     }
 
     func testNativeCountryEventsIntegrityAndMechanicTokens() {
-        let validImages: Set<String> = [
+        let validImages: Set = [
             "EventSovietCoup",
             "EventFashodaCrisis",
             "EventBreadRiots",
@@ -5026,7 +5026,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
             "EventSolarpunkDawn"
         ]
 
-        let validMechanics: Set<String> = [
+        let validMechanics: Set = [
             "⟦ECO⟧",
             "⟦STB⟧",
             "⟦SEC⟧",
@@ -5071,7 +5071,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         XCTAssertEqual(totalCountry, 1200)
         XCTAssertEqual(totalScenario + totalCountry, 1700, "Combined total must equal 1,700 canonical events")
 
-        let combinedIDs = NativeAlternativeHistoryCatalog.events.map { $0.id } + NativeCountryEventsCatalog.allEvents.map { $0.id }
+        let combinedIDs = NativeAlternativeHistoryCatalog.events.map(\.id) + NativeCountryEventsCatalog.allEvents.map(\.id)
         let uniqueCombined = Set(combinedIDs)
         XCTAssertEqual(uniqueCombined.count, 1700, "All 1,700 events across scenario and country catalogs must be globally unique")
     }
@@ -5135,7 +5135,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
             // Verify 100 events
             let events = NativeCountryEventsCatalog.events(forCountryCode: code)
             XCTAssertEqual(events.count, 100, "\(code) must have exactly 100 country-specific events")
-            let uniqueIDs = Set(events.map { $0.id })
+            let uniqueIDs = Set(events.map(\.id))
             XCTAssertEqual(uniqueIDs.count, 100, "\(code) must have 100 unique event IDs")
 
             // Verify first event has country name and valid structure
@@ -5159,7 +5159,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
     }
 
     func testDynamicCountryEventsIntegrityAndTokens() {
-        let validMechanics: Set<String> = ["⟦ECO⟧", "⟦STB⟧", "⟦SEC⟧", "⟦MIL⟧", "⟦DIP⟧", "⟦MKT⟧", "⟦TNS⟧"]
+        let validMechanics: Set = ["⟦ECO⟧", "⟦STB⟧", "⟦SEC⟧", "⟦MIL⟧", "⟦DIP⟧", "⟦MKT⟧", "⟦TNS⟧"]
         let canEvents = NativeCountryEventsCatalog.events(forCountryCode: "CAN")
         XCTAssertEqual(canEvents.count, 100)
 
@@ -5233,7 +5233,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
 
         XCTAssertNil(store.state?.eventFlags["next_chain"], "Resolving a terminal chain option must remove next_chain so subsequent events do not deadlock")
 
-        let nextCandidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: try XCTUnwrap(store.state))
+        let nextCandidates = try NativeAlternativeHistoryCatalog.candidateDecisions(state: XCTUnwrap(store.state))
         XCTAssertFalse(nextCandidates.isEmpty, "Candidate decisions must continue flowing after chain completion")
     }
 
@@ -5293,6 +5293,17 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         XCTAssertTrue(switched)
         XCTAssertNil(store.state?.pendingEventDecision, "Switching countries must clear any pending decision from the previous country")
         XCTAssertNil(store.state?.eventFlags["next_chain"], "Switching countries must clear active chain pointer from the previous country")
+    }
+
+    func testCatalogDecisionOptionsAreContextualAndNonRepetitive() {
+        let scenarioLabels = NativeAlternativeHistoryCatalog.events.flatMap { $0.decisionOptions ?? [] }.map(\.label)
+        XCTAssertEqual(Set(scenarioLabels).count, scenarioLabels.count, "All 500 scenario events must have unique, event-specific option labels")
+
+        let flagshipLabels = NativeCountryEventsCatalog.allEvents.flatMap { $0.decisionOptions ?? [] }.map(\.label)
+        XCTAssertEqual(Set(flagshipLabels).count, flagshipLabels.count, "All 1,200 flagship country events must have unique, event-specific option labels")
+
+        let dynamicLabels = NativeCountryEventsCatalog.events(forCountryCode: "CAN").flatMap { $0.decisionOptions ?? [] }.map(\.label)
+        XCTAssertEqual(Set(dynamicLabels).count, dynamicLabels.count, "Dynamically synthesized country events must have unique option labels per event")
     }
 }
 
@@ -5371,7 +5382,9 @@ private actor AsyncGate {
     }
 
     func waitUntilEntered() async {
-        if entered { return }
+        if entered {
+            return
+        }
         await withCheckedContinuation { continuation in
             enterContinuations.append(continuation)
         }

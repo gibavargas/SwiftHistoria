@@ -150,7 +150,7 @@ struct LivingWorldGameView: View {
             .accessibilityIdentifier("living-world-game")
 
             if let pending = session.world.pendingDecision {
-                LivingWorldDecisionModalView(decision: pending) { option in
+                LivingWorldDecisionModalView(decision: pending, language: session.world.language) { option in
                     session.chooseDecisionOption(option)
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
@@ -173,7 +173,7 @@ struct LivingWorldGameView: View {
             .accessibilityIdentifier("lw-play-pause")
 
             if session.world.pendingDecision != nil {
-                Text("DECISION REQUIRED")
+                Text(LWProse.string(.uiDecisionRequiredBadge, language: session.world.language))
                     .font(.system(size: 9, weight: .bold, design: .monospaced))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
@@ -468,6 +468,7 @@ struct HashBridgeCard: View {
 
 struct LivingWorldDecisionModalView: View {
     let decision: LWDecisionEvent
+    var language: NativeGameLanguage = .english
     let onChoose: (LWDecisionOption) -> Void
 
     var body: some View {
@@ -478,7 +479,7 @@ struct LivingWorldDecisionModalView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
-                        Label("EXECUTIVE DECISION REQUIRED", systemImage: "exclamationmark.triangle.fill")
+                        Label(LWProse.string(.uiExecutiveDecisionHeader, language: language), systemImage: "exclamationmark.triangle.fill")
                             .font(.system(.caption, design: .monospaced).weight(.bold))
                             .foregroundStyle(Color.softRed)
                         Spacer()
@@ -504,7 +505,7 @@ struct LivingWorldDecisionModalView: View {
 
                     Divider()
 
-                    Text("POLICY DIRECTIVES")
+                    Text(LWProse.string(.uiPolicyDirectivesHeader, language: language))
                         .font(.system(size: 11, weight: .bold, design: .monospaced))
                         .foregroundStyle(Color.neonTeal)
 
@@ -558,7 +559,7 @@ struct LivingWorldDecisionModalView: View {
                                             )
                                         }
                                         if option.nextChainedEventID != nil {
-                                            Text("⟦CHAIN⟧")
+                                            Text(LWProse.string(.uiChainTag, language: language))
                                                 .font(.system(size: 8, weight: .bold, design: .monospaced))
                                                 .foregroundStyle(Color.alertGold)
                                         }
@@ -596,4 +597,3 @@ struct LivingWorldDecisionModalView: View {
             .cornerRadius(4)
     }
 }
-

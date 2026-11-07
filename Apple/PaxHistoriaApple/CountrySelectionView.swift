@@ -389,7 +389,6 @@ struct CountrySelectionView: View {
         .accessibilityIdentifier("native-country-list")
     }
 
-    @ViewBuilder
     private var providerWarning: some View {
         Label(
             "Enter the selected provider API key before starting.",
@@ -402,7 +401,6 @@ struct CountrySelectionView: View {
         .accessibilityIdentifier("native-provider-start-warning")
     }
 
-    @ViewBuilder
     private func countryButton(_ country: PlayerCountry) -> some View {
         Button {
             onSelect(country)
@@ -766,7 +764,7 @@ private struct CountryRow: View {
 
                     Text("\(profile.stability)% STB")
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(profile.stability >= 65 ? Color.brightGreen : (profile.stability >= 50 ? Color.alertGold : Color.alertRed))
+                        .foregroundStyle(profile.stability >= 65 ? Color.neonTeal : (profile.stability >= 50 ? Color.alertGold : Color.softRed))
 
                     Text("•")
                         .font(.caption2)
@@ -921,12 +919,20 @@ enum NativeWarRoomTheme {
 
     static func statusColor(for score: Int, highIsGood: Bool = true) -> Color {
         if highIsGood {
-            if score >= 70 { return fieldGreen }
-            if score >= 40 { return alertAmber }
+            if score >= 70 {
+                return fieldGreen
+            }
+            if score >= 40 {
+                return alertAmber
+            }
             return threatRed
         }
-        if score >= 70 { return threatRed }
-        if score >= 45 { return alertAmber }
+        if score >= 70 {
+            return threatRed
+        }
+        if score >= 45 {
+            return alertAmber
+        }
         return fieldGreen
     }
 

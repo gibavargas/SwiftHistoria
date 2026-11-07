@@ -83,7 +83,9 @@ struct AdvisorMessageRow: View {
     var body: some View {
         let isAdvisor = message.role == .advisor
         HStack {
-            if !isAdvisor { Spacer(minLength: 40) }
+            if !isAdvisor {
+                Spacer(minLength: 40)
+            }
 
             VStack(alignment: isAdvisor ? .leading : .trailing, spacing: 6) {
                 HStack(spacing: 6) {
@@ -124,7 +126,9 @@ struct AdvisorMessageRow: View {
                     .stroke(isAdvisor ? Color.iceBlue.opacity(0.24) : Color.white.opacity(0.08), lineWidth: 1)
             }
 
-            if isAdvisor { Spacer(minLength: 40) }
+            if isAdvisor {
+                Spacer(minLength: 40)
+            }
         }
         .accessibilityIdentifier("native-advisor-message-\(message.id)")
     }
@@ -136,7 +140,9 @@ struct DiplomacyMessageRow: View {
 
     var body: some View {
         HStack {
-            if isPlayer { Spacer(minLength: 40) }
+            if isPlayer {
+                Spacer(minLength: 40)
+            }
 
             VStack(alignment: isPlayer ? .trailing : .leading, spacing: 6) {
                 HStack(spacing: 6) {
@@ -177,7 +183,9 @@ struct DiplomacyMessageRow: View {
                     .stroke(isPlayer ? Color.glowingCyan.opacity(0.2) : Color.neonTeal.opacity(0.2), lineWidth: 1)
             }
 
-            if !isPlayer { Spacer(minLength: 40) }
+            if !isPlayer {
+                Spacer(minLength: 40)
+            }
         }
         .accessibilityIdentifier("native-diplomacy-message-\(message.id)")
     }

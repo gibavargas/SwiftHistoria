@@ -277,10 +277,16 @@ struct NativeGeopoliticalMap: View {
     // MARK: - Accessibility helpers
 
     private func relationWord(for code: String) -> String {
-        if code == playerCountryCode { return "your nation" }
+        if code == playerCountryCode {
+            return "your nation"
+        }
         if let relations = state.aiCountryStates[code]?.relationshipScores[playerCountryCode] {
-            if relations > 50 { return "ally" }
-            if relations < -30 { return "rival" }
+            if relations > 50 {
+                return "ally"
+            }
+            if relations < -30 {
+                return "rival"
+            }
             return "neutral"
         }
         return "neutral"
@@ -288,8 +294,12 @@ struct NativeGeopoliticalMap: View {
 
     private func stabilityWord(for code: String) -> String {
         if let ledger = state.economicLedgers[code] {
-            if ledger.securityIndex >= 80 { return "stable" }
-            if ledger.securityIndex < 40 { return "unstable" }
+            if ledger.securityIndex >= 80 {
+                return "stable"
+            }
+            if ledger.securityIndex < 40 {
+                return "unstable"
+            }
             return "moderate stability"
         }
         return "unknown stability"

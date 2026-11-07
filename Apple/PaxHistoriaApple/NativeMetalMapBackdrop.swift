@@ -236,8 +236,8 @@ private struct NativeMetalMapBackdropRepresentable: PlatformViewRepresentable {
 
         func draw(in view: MTKView) {
             let drawableSize = view.drawableSize
-            guard drawableSize.width > 0, drawableSize.height > 0 else { return }
-            guard let pipelineState,
+            guard drawableSize.width > 0, drawableSize.height > 0,
+                  let pipelineState,
                   let commandQueue,
                   let drawable = view.currentDrawable,
                   let descriptor = view.currentRenderPassDescriptor,

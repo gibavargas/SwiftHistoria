@@ -291,55 +291,53 @@ struct NativeLatestIntelTicker: View {
     @State private var pulse = false
 
     var body: some View {
-        Group {
-            if let event = latestEvent {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(event.importance == .severe ? Color.softRed : Color.alertGold)
-                        .frame(width: 6, height: 6)
-                        .opacity(pulse ? 0.3 : 1.0)
-                        .scaleEffect(pulse ? 1.2 : 1.0)
-                        .onAppear {
-                            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                                pulse = true
-                            }
+        if let event = latestEvent {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(event.importance == .severe ? Color.softRed : Color.alertGold)
+                    .frame(width: 6, height: 6)
+                    .opacity(pulse ? 0.3 : 1.0)
+                    .scaleEffect(pulse ? 1.2 : 1.0)
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                            pulse = true
                         }
-
-                    Text("Latest event")
-                        .font(.system(.caption2, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.glowingCyan)
-
-                    Text(event.title.uppercased())
-                        .font(.system(.caption2, design: .monospaced))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-
-                    Spacer()
-
-                    if let firstEffect = event.strategicEffects.first {
-                        let isPos = firstEffect.magnitude >= 0
-                        Text("\(isPos ? "+" : "")\(firstEffect.magnitude) \(firstEffect.track.displayName.uppercased())")
-                            .font(.system(.caption2, design: .monospaced).weight(.bold))
-                            .foregroundStyle(isPos ? Color.neonTeal : Color.softRed)
                     }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .glassmorphicCard(borderColor: Color.white.opacity(0.1), cornerRadius: 8)
-            } else {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(Color.iceBlue.opacity(0.4))
-                        .frame(width: 6, height: 6)
-                    Text("No events yet")
+
+                Text("Latest event")
+                    .font(.system(.caption2, design: .monospaced).weight(.bold))
+                    .foregroundStyle(Color.glowingCyan)
+
+                Text(event.title.uppercased())
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+
+                Spacer()
+
+                if let firstEffect = event.strategicEffects.first {
+                    let isPos = firstEffect.magnitude >= 0
+                    Text("\(isPos ? "+" : "")\(firstEffect.magnitude) \(firstEffect.track.displayName.uppercased())")
                         .font(.system(.caption2, design: .monospaced).weight(.bold))
-                        .foregroundStyle(.secondary)
-                    Spacer()
+                        .foregroundStyle(isPos ? Color.neonTeal : Color.softRed)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .glassmorphicCard(borderColor: Color.white.opacity(0.08), cornerRadius: 8)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .glassmorphicCard(borderColor: Color.white.opacity(0.1), cornerRadius: 8)
+        } else {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(Color.iceBlue.opacity(0.4))
+                    .frame(width: 6, height: 6)
+                Text("No events yet")
+                    .font(.system(.caption2, design: .monospaced).weight(.bold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .glassmorphicCard(borderColor: Color.white.opacity(0.08), cornerRadius: 8)
         }
     }
 }
@@ -483,4 +481,3 @@ struct EventImageView: View {
         }
     }
 }
-

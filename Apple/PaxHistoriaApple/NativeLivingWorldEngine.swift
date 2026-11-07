@@ -357,10 +357,21 @@ struct LWDecisionOption: Codable, Hashable, Identifiable {
     var flagSet: String?
     var mechanicCode: String? // "⟦ECO⟧", "⟦SEC⟧", etc.
 
-    var text: String { label }
-    var consequenceSummary: String { detail }
-    var radicalDelta: Double { radicalsDelta }
-    var setFlag: String? { flagSet }
+    var text: String {
+        label
+    }
+
+    var consequenceSummary: String {
+        detail
+    }
+
+    var radicalDelta: Double {
+        radicalsDelta
+    }
+
+    var setFlag: String? {
+        flagSet
+    }
 
     init(
         id: String,
@@ -425,7 +436,9 @@ struct LWDecisionEvent: Codable, Hashable, Identifiable {
     var chainID: String?
     var options: [LWDecisionOption]
 
-    var targetCountryCode: String { countryCode }
+    var targetCountryCode: String {
+        countryCode
+    }
 
     init(
         id: String,

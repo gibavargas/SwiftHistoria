@@ -174,13 +174,13 @@ extension NativeCampaignStore {
         }
 
         let backupData: Data = if let previousPrimary = Self.primaryPersistenceData(
-            from: defaults,
-            persistenceDirectory: persistenceDirectory,
-            slotKey: { key in Self.slotKey(key, slot: activeSlot) },
-            slotFileName: { name in Self.slotFileName(name, slot: activeSlot) }
-        ),
-            let previousEnvelope = try? decoder.decode(CampaignStateEnvelope.self, from: previousPrimary),
-            previousEnvelope.schemaVersion == 2
+                                      from: defaults,
+                                      persistenceDirectory: persistenceDirectory,
+                                      slotKey: { key in Self.slotKey(key, slot: activeSlot) },
+                                      slotFileName: { name in Self.slotFileName(name, slot: activeSlot) }
+                                  ),
+                                  let previousEnvelope = try? decoder.decode(CampaignStateEnvelope.self, from: previousPrimary),
+                                  previousEnvelope.schemaVersion == 2
         {
             previousPrimary
         } else {

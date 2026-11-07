@@ -1605,9 +1605,17 @@ struct NativeEventDecisionOption: Codable, Hashable, Identifiable {
     var nextChainedEventID: String?
     var setFlag: String?
 
-    var title: String { label }
-    var description: String { detail }
-    var mechanicToken: String { effectTrack.mechanicCode }
+    var title: String {
+        label
+    }
+
+    var description: String {
+        detail
+    }
+
+    var mechanicToken: String {
+        effectTrack.mechanicCode
+    }
 
     init(
         id: String,

@@ -803,7 +803,9 @@ class NativeExternalAIService: NativeAIService {
                         }
                         continue
                     }
-                    if releaseLane { lane.limiter.exit() }
+                    if releaseLane {
+                        lane.limiter.exit()
+                    }
                     lastError = error
                     logger.error("\(self.providerDisplayName, privacy: .public) [\(lane.displayName, privacy: .public)] request failed limit=\(lane.maxConcurrent) error=\(error.localizedDescription, privacy: .public)")
                     break // move to next lane
@@ -841,10 +843,14 @@ class NativeExternalAIService: NativeAIService {
         var sawChunk = false
 
         for try await line in bytes.lines {
-            if Task.isCancelled { throw CancellationError() }
+            if Task.isCancelled {
+                throw CancellationError()
+            }
             guard line.hasPrefix("data:") else { continue }
             let payloadText = line.dropFirst("data:".count).trimmingCharacters(in: .whitespaces)
-            if payloadText == "[DONE]" { break }
+            if payloadText == "[DONE]" {
+                break
+            }
             guard let chunkData = payloadText.data(using: .utf8),
                   let object = try? JSONSerialization.jsonObject(with: chunkData) as? [String: Any]
             else { continue }
@@ -982,8 +988,7 @@ class NativeExternalAIService: NativeAIService {
 
             var usage: Usage?
         }
-        guard let decoded = try? JSONDecoder().decode(UsageResponse.self, from: data) else { return nil }
-        guard let usage = decoded.usage else { return nil }
+        guard let decoded = try? JSONDecoder().decode(UsageResponse.self, from: data), let usage = decoded.usage else { return nil }
         let prompt = usage.promptTokens ?? 0
         let completion = usage.completionTokens ?? 0
         let total = usage.totalTokens ?? (prompt + completion)
@@ -1154,7 +1159,9 @@ class NativeExternalAIService: NativeAIService {
 
     private func recentContext(for state: NativeCampaignState) -> String {
         let recent = state.timeline.prefix(2)
-        if recent.isEmpty { return "No recent events." }
+        if recent.isEmpty {
+            return "No recent events."
+        }
         return "Recent event context:\n" + recent.map { "- \($0.title): \($0.description)" }.joined(separator: "\n")
     }
 

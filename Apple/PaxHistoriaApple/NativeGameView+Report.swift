@@ -59,7 +59,9 @@ struct NativeEventBriefing {
             case .major: majorCount += 1
             case .minor: break
             }
-            if event.playerRelated { nationCount += 1 }
+            if event.playerRelated {
+                nationCount += 1
+            }
 
             guard candidateLimit > 0 else { continue }
             let insertionIndex = topCandidates.firstIndex { outranks(candidate, $0) } ?? topCandidates.endIndex

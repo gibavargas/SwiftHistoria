@@ -219,10 +219,14 @@ class NativeNVIDIAService: NativeExternalAIService {
 
     static func closestCountryCode(to invalid: String, from valid: [String]) -> String {
         let upper = invalid.uppercased()
-        if valid.contains(upper) { return upper }
+        if valid.contains(upper) {
+            return upper
+        }
 
         let prefixMatches = valid.filter { $0.hasPrefix(String(upper.prefix(2))) }
-        if prefixMatches.count == 1 { return prefixMatches[0] }
+        if prefixMatches.count == 1 {
+            return prefixMatches[0]
+        }
 
         var bestCode = valid.first ?? upper
         var bestDistance = Int.max
@@ -239,8 +243,12 @@ class NativeNVIDIAService: NativeExternalAIService {
     private static func levenshtein(_ a: String, _ b: String) -> Int {
         let aChars = Array(a)
         let bChars = Array(b)
-        if aChars.isEmpty { return bChars.count }
-        if bChars.isEmpty { return aChars.count }
+        if aChars.isEmpty {
+            return bChars.count
+        }
+        if bChars.isEmpty {
+            return aChars.count
+        }
 
         var previousRow = Array(0 ... bChars.count)
         for (i, aChar) in aChars.enumerated() {

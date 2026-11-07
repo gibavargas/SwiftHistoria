@@ -548,9 +548,7 @@ final class NativeCampaignStore: ObservableObject {
 
     @discardableResult
     func switchCountry(to newCountry: PlayerCountry) -> Bool {
-        guard var currentState = state else { return false }
-        guard currentState.gameMode != .ironman else { return false }
-        guard newCountry.code != currentState.country.code else { return false }
+        guard var currentState = state, currentState.gameMode != .ironman, newCountry.code != currentState.country.code else { return false }
 
         let allowedCodes = Set(CountryCatalog.all.map(\.code)).union(currentState.dynamicCountries.keys)
         guard allowedCodes.contains(newCountry.code) else { return false }
@@ -935,8 +933,7 @@ final class NativeCampaignStore: ObservableObject {
 
         do {
             let answer = try await aiService.generateAdvisorBrief(for: currentState, question: question)
-            guard isCurrentStateVersion(requestVersion) else { return }
-            guard var nextState = state else { return }
+            guard isCurrentStateVersion(requestVersion), var nextState = state else { return }
             nextState.advisorMessages.insert(
                 NativeAdvisorMessage(
                     date: nextState.gameDate,
@@ -952,8 +949,7 @@ final class NativeCampaignStore: ObservableObject {
             persistState()
             logger.info("Native advisor response stored round=\(nextState.round, privacy: .public)")
         } catch {
-            guard isCurrentStateVersion(requestVersion) else { return }
-            guard var nextState = state else { return }
+            guard isCurrentStateVersion(requestVersion), var nextState = state else { return }
             nextState.aiReadiness = .failure(error)
             invalidateInFlightWork()
             state = nextState
@@ -994,8 +990,7 @@ final class NativeCampaignStore: ObservableObject {
                 thread: thread,
                 message: message
             )
-            guard isCurrentStateVersion(requestVersion) else { return }
-            guard var nextState = state else { return }
+            guard isCurrentStateVersion(requestVersion), var nextState = state else { return }
             var nextThread = nextState.thread(for: partner)
             nextThread.messages.append(
                 NativeDiplomaticMessage(
@@ -1014,8 +1009,7 @@ final class NativeCampaignStore: ObservableObject {
             persistState()
             logger.info("Native diplomatic response stored partner=\(partner.code, privacy: .public)")
         } catch {
-            guard isCurrentStateVersion(requestVersion) else { return }
-            guard var nextState = state else { return }
+            guard isCurrentStateVersion(requestVersion), var nextState = state else { return }
             nextState.aiReadiness = .failure(error)
             invalidateInFlightWork()
             state = nextState
@@ -1289,8 +1283,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func refreshSuggestedActionsIfNeeded() async {
-        guard !isAdvancing else { return }
-        guard let state, state.suggestedActions.isEmpty else { return }
+        guard !isAdvancing, let state, state.suggestedActions.isEmpty else { return }
         await refreshSuggestedActions(force: false)
     }
 
@@ -1796,7 +1789,9 @@ final class NativeCampaignStore: ObservableObject {
         let explicit = [primary, secondary].compactMap(NativeStrategicTrack.decodeMechanicToken)
         if !explicit.isEmpty {
             return explicit.reduce(into: []) { tracks, track in
-                if !tracks.contains(track) { tracks.append(track) }
+                if !tracks.contains(track) {
+                    tracks.append(track)
+                }
             }
         }
 
@@ -1863,8 +1858,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func acceptDiplomaticOffer(id: String) {
-        guard var state else { return }
-        guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        guard var state, let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
         invalidateInFlightWork()
         var offer = state.activeOffers[idx]
         offer.status = .accepted
@@ -1932,8 +1926,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func rejectDiplomaticOffer(id: String) {
-        guard var state else { return }
-        guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        guard var state, let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
         invalidateInFlightWork()
         var offer = state.activeOffers[idx]
         offer.status = .rejected
@@ -1963,8 +1956,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func counterDiplomaticOffer(id: String) {
-        guard var state else { return }
-        guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        guard var state, let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
         invalidateInFlightWork()
         var offer = state.activeOffers[idx]
 

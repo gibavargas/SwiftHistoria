@@ -448,7 +448,9 @@ enum Native2010WorldModel {
     }
 
     private static func relation(from playerCode: String, to code: String) -> Native2010Relation {
-        if playerCode == code { return .ally }
+        if playerCode == code {
+            return .ally
+        }
         switch (playerCode, code) {
         case ("USA", "DEU"), ("USA", "GBR"), ("USA", "FRA"), ("USA", "JPN"), ("USA", "AUS"),
              ("DEU", "USA"), ("FRA", "USA"), ("GBR", "USA"), ("JPN", "USA"), ("AUS", "USA"):
@@ -466,8 +468,8 @@ enum Native2010WorldModel {
         state.worldEffects.filter { $0.track == track }.map(\.magnitude).reduce(0, +)
     }
 
-    private static func clamp(_ value: Int) -> Int {
-        max(0, min(100, value))
+    private static func clamp(_ value: Int, _ lower: Int = 0, _ upper: Int = 100) -> Int {
+        max(lower, min(upper, value))
     }
 
     private static func formatPercent(_ value: Double) -> String {

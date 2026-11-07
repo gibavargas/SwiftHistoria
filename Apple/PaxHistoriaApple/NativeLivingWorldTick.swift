@@ -462,8 +462,12 @@ enum LivingWorldTick {
         world.pacts
             .filter { $0.kind == .alliance || $0.kind == .defensivePact }
             .map { pact -> String in
-                if pact.a == code { return pact.b }
-                if pact.b == code { return pact.a }
+                if pact.a == code {
+                    return pact.b
+                }
+                if pact.b == code {
+                    return pact.a
+                }
                 return ""
             }
             .filter { !$0.isEmpty && world.countries[$0] != nil }
@@ -477,20 +481,21 @@ enum LivingWorldTick {
     /// to its temperament and logs the dispatch to global history.
     static func processEventChains(world: inout LivingWorldState, rng: LWRNG) -> [LWEventRecord] {
         var records: [LWEventRecord] = []
-        guard world.pendingDecision == nil else { return records }
-
-        guard let event = evaluateNextChainCandidate(world: world, rng: rng) else {
+        guard world.pendingDecision == nil, let rawEvent = evaluateNextChainCandidate(world: world, rng: rng) else {
             return records
         }
+        let event = LWProse.localizeDecision(rawEvent, language: world.language)
 
         if event.countryCode == world.playerCountryCode {
             // Player nation: halt gameplay until decision forms
             world.pendingDecision = event
+            let prefix = LWProse.string(.decisionPendingPrefix, language: world.language)
+            let prompt = LWProse.string(.decisionPendingPrompt, language: world.language)
             records.append(LWEventRecord(
                 id: "decision-pending-\(event.id)",
                 day: world.dayIndex,
-                title: "CRITICAL DECISION: \(event.title)",
-                summary: "\(event.summary) The executive must select a response to proceed.",
+                title: "\(prefix) \(event.title)",
+                summary: "\(event.summary) \(prompt)",
                 countryCode: event.countryCode,
                 rarity: event.rarity,
                 severity: event.severity,
@@ -509,11 +514,12 @@ enum LivingWorldTick {
                 if let flag = chosenOption.flagSet, !flag.isEmpty {
                     world.eventFlags.append(flag)
                 }
+                let responseLabel = LWProse.string(.decisionAIResponseLabel, language: world.language)
                 records.append(LWEventRecord(
                     id: event.id,
                     day: world.dayIndex,
                     title: "\(country.name): \(event.title)",
-                    summary: "\(event.summary) Government response: \(chosenOption.label).",
+                    summary: "\(event.summary) \(responseLabel) \(chosenOption.label).",
                     countryCode: event.countryCode,
                     rarity: event.rarity,
                     severity: event.severity,
@@ -527,7 +533,7 @@ enum LivingWorldTick {
     }
 
     /// Evaluates active event flags, dynamic economic triggers, and historical dates.
-    static func evaluateNextChainCandidate(world: LivingWorldState, rng: LWRNG) -> LWDecisionEvent? {
+    static func evaluateNextChainCandidate(world: LivingWorldState, rng _: LWRNG) -> LWDecisionEvent? {
         let completed = Set(world.completedChainEvents)
         let flags = Set(world.eventFlags)
         let day = world.dayIndex
@@ -536,7 +542,7 @@ enum LivingWorldTick {
         // --- 1. Follow-up chained events triggered by previous decisions ---
 
         // Soviet Coup follow-ups
-        if flags.contains("soviet-miners-strike") && !completed.contains("soviet-miners-strike") {
+        if flags.contains("soviet-miners-strike"), !completed.contains("soviet-miners-strike") {
             let target = resolveTarget(preferredCodes: ["SOV", "RUS"], world: world)
             return LWDecisionEvent(
                 id: "soviet-miners-strike",
@@ -570,7 +576,7 @@ enum LivingWorldTick {
             )
         }
 
-        if flags.contains("soviet-ogas-launch") && !completed.contains("soviet-ogas-launch") {
+        if flags.contains("soviet-ogas-launch"), !completed.contains("soviet-ogas-launch") {
             let target = resolveTarget(preferredCodes: ["SOV", "RUS"], world: world)
             return LWDecisionEvent(
                 id: "soviet-ogas-launch",
@@ -604,7 +610,7 @@ enum LivingWorldTick {
             )
         }
 
-        if flags.contains("soviet-techno-bloc") && !completed.contains("soviet-techno-bloc") {
+        if flags.contains("soviet-techno-bloc"), !completed.contains("soviet-techno-bloc") {
             let target = resolveTarget(preferredCodes: ["SOV", "RUS"], world: world)
             return LWDecisionEvent(
                 id: "soviet-techno-bloc",
@@ -638,7 +644,7 @@ enum LivingWorldTick {
         }
 
         // Fashoda / Imperial Confrontation follow-ups
-        if flags.contains("fashoda-channel-mobilization") && !completed.contains("fashoda-channel-mobilization") {
+        if flags.contains("fashoda-channel-mobilization"), !completed.contains("fashoda-channel-mobilization") {
             let target = resolveTarget(preferredCodes: ["GBR", "FRA"], world: world)
             return LWDecisionEvent(
                 id: "fashoda-channel-mobilization",
@@ -671,7 +677,7 @@ enum LivingWorldTick {
             )
         }
 
-        if flags.contains("fashoda-continental-league") && !completed.contains("fashoda-continental-league") {
+        if flags.contains("fashoda-continental-league"), !completed.contains("fashoda-continental-league") {
             let target = resolveTarget(preferredCodes: ["DEU", "FRA", "RUS"], world: world)
             return LWDecisionEvent(
                 id: "fashoda-continental-league",
@@ -704,7 +710,7 @@ enum LivingWorldTick {
             )
         }
 
-        if flags.contains("fashoda-dreadnought-panic") && !completed.contains("fashoda-dreadnought-panic") {
+        if flags.contains("fashoda-dreadnought-panic"), !completed.contains("fashoda-dreadnought-panic") {
             let target = resolveTarget(preferredCodes: ["GBR", "DEU"], world: world)
             return LWDecisionEvent(
                 id: "fashoda-dreadnought-panic",
@@ -738,7 +744,7 @@ enum LivingWorldTick {
         }
 
         // Cyber & Resource follow-ups
-        if flags.contains("cyber-microgrid-secession") && !completed.contains("cyber-microgrid-secession") {
+        if flags.contains("cyber-microgrid-secession"), !completed.contains("cyber-microgrid-secession") {
             let target = resolveTarget(preferredCodes: ["USA", "DEU", "JPN"], world: world)
             return LWDecisionEvent(
                 id: "cyber-microgrid-secession",
@@ -771,7 +777,7 @@ enum LivingWorldTick {
             )
         }
 
-        if flags.contains("resource-fertilizer-crisis") && !completed.contains("resource-fertilizer-crisis") {
+        if flags.contains("resource-fertilizer-crisis"), !completed.contains("resource-fertilizer-crisis") {
             let target = resolveTarget(preferredCodes: ["IND", "BRA", "EGY"], world: world)
             return LWDecisionEvent(
                 id: "resource-fertilizer-crisis",
@@ -807,7 +813,7 @@ enum LivingWorldTick {
         // --- 2. Dynamic Victoria-style mechanics feedback loops ---
 
         // Staple grain price surge (> +50% over base)
-        if (world.market.prices["grain"] ?? 20) >= 30.0 && !completed.contains("lw-grain-surge") {
+        if (world.market.prices["grain"] ?? 20) >= 30.0, !completed.contains("lw-grain-surge") {
             let target = resolveTargetByRadicalsOrPlayer(world: world)
             return LWDecisionEvent(
                 id: "lw-grain-surge",
@@ -939,7 +945,7 @@ enum LivingWorldTick {
         }
 
         // Barracks rebellion follow-up
-        if flags.contains("lw-barracks-rebellion") && !completed.contains("lw-barracks-rebellion") {
+        if flags.contains("lw-barracks-rebellion"), !completed.contains("lw-barracks-rebellion") {
             let target = resolveTargetByRadicalsOrPlayer(world: world)
             return LWDecisionEvent(
                 id: "lw-barracks-rebellion",
@@ -976,7 +982,7 @@ enum LivingWorldTick {
         // --- 3. Milestone timeline story arcs (Alternative History Timelines) ---
 
         // Day 35: Soviet August Coup (Soviet Triumph POD)
-        if day >= 35 && !completed.contains("soviet-coup-sweep") {
+        if day >= 35, !completed.contains("soviet-coup-sweep") {
             let target = resolveTarget(preferredCodes: ["SOV", "RUS"], world: world)
             return LWDecisionEvent(
                 id: "soviet-coup-sweep",
@@ -1020,7 +1026,7 @@ enum LivingWorldTick {
         }
 
         // Day 50: Fashoda Confrontation (Divided Sovereignty POD)
-        if day >= 50 && !completed.contains("fashoda-confrontation") {
+        if day >= 50, !completed.contains("fashoda-confrontation") {
             let target = resolveTarget(preferredCodes: ["GBR", "FRA"], world: world)
             return LWDecisionEvent(
                 id: "fashoda-confrontation",
@@ -1064,7 +1070,7 @@ enum LivingWorldTick {
         }
 
         // Day 75: Indus-Ganges Aquifer Crisis (Resource Crucible POD)
-        if day >= 75 && !completed.contains("resource-aquifer-crisis") {
+        if day >= 75, !completed.contains("resource-aquifer-crisis") {
             let target = resolveTarget(preferredCodes: ["IND", "BRA", "USA"], world: world)
             return LWDecisionEvent(
                 id: "resource-aquifer-crisis",
@@ -1109,13 +1115,13 @@ enum LivingWorldTick {
         }
 
         // Day 95: Subsea Fiber Fracture (Pax Cybernetica POD)
-        if day >= 95 && !completed.contains("cyber-fiber-blackout") {
+        if day >= 95, !completed.contains("cyber-fiber-blackout") {
             let target = resolveTarget(preferredCodes: ["USA", "GBR", "JPN"], world: world)
             return LWDecisionEvent(
                 id: "cyber-fiber-blackout",
                 day: day,
                 title: "The Subsea Fiber Fracture: Algorithmic Flash Crash",
-                summary: "Simultaneous fiber cuts across oceanic trunks blind international clearing corridors. Autonomous high-frequency DAOs trigger \$4T in cascade liquidations.",
+                summary: "Simultaneous fiber cuts across oceanic trunks blind international clearing corridors. Autonomous high-frequency DAOs trigger $4T in cascade liquidations.",
                 countryCode: target,
                 rarity: .rare,
                 severity: 0.9,
@@ -1154,27 +1160,28 @@ enum LivingWorldTick {
         // --- 4. Dynamic Catalog Event Integration (Scenario & Country Events Living World Sampling) ---
         for flag in flags {
             if let catalogEvent = NativeAlternativeHistoryCatalog.event(byId: flag),
-               !completed.contains(catalogEvent.id) {
+               !completed.contains(catalogEvent.id)
+            {
                 let target = resolveTarget(preferredCodes: [catalogEvent.strategicEffects.first?.target ?? "GLOBAL"], world: world)
-                return NativeAlternativeHistoryCatalog.livingWorldDecision(from: catalogEvent, day: day, targetCountry: target)
+                return NativeAlternativeHistoryCatalog.livingWorldDecision(from: catalogEvent, day: day, targetCountry: target, language: world.language)
             }
         }
 
         // Periodic milestone sampling from alternative history & country-specific catalogs
-        if day > 0 && day % 10 == 0 {
+        if day > 0, day % 10 == 0 {
             let candidateIndex = (day / 10) % NativeAlternativeHistoryCatalog.events.count
             let candidateEvent = NativeAlternativeHistoryCatalog.events[candidateIndex]
             if !completed.contains(candidateEvent.id) {
                 let target = resolveTarget(preferredCodes: [candidateEvent.strategicEffects.first?.target ?? "GLOBAL"], world: world)
-                return NativeAlternativeHistoryCatalog.livingWorldDecision(from: candidateEvent, day: day, targetCountry: target)
+                return NativeAlternativeHistoryCatalog.livingWorldDecision(from: candidateEvent, day: day, targetCountry: target, language: world.language)
             }
-        } else if day > 0 && day % 10 == 5, let player = world.playerCountryCode {
+        } else if day > 0, day % 10 == 5, let player = world.playerCountryCode {
             let countryEvents = NativeCountryEventsCatalog.events(forCountryCode: player)
             if !countryEvents.isEmpty {
                 let candidateIndex = (day / 5) % countryEvents.count
                 let candidateEvent = countryEvents[candidateIndex]
                 if !completed.contains(candidateEvent.id) {
-                    return NativeAlternativeHistoryCatalog.livingWorldDecision(from: candidateEvent, day: day, targetCountry: player)
+                    return NativeAlternativeHistoryCatalog.livingWorldDecision(from: candidateEvent, day: day, targetCountry: player, language: world.language)
                 }
             }
         }
@@ -1191,7 +1198,7 @@ enum LivingWorldTick {
             return code
         }
         // Fall back to player if present, else first available country
-        return world.playerCountryCode ?? (world.countries.keys.sorted().first ?? "USA")
+        return world.playerCountryCode ?? (world.countries.keys.min() ?? "USA")
     }
 
     private static func resolveTargetByRadicalsOrPlayer(world: LivingWorldState) -> String {
@@ -1203,9 +1210,13 @@ enum LivingWorldTick {
     }
 
     /// AI Brain chooses a decision option deterministically according to its archetype.
-    static func chooseAIOption(for country: LWCountry, event: LWDecisionEvent, rng: LWRNG) -> LWDecisionOption {
+    static func chooseAIOption(for country: LWCountry, event: LWDecisionEvent, rng: LWRNG, language: NativeGameLanguage = .english) -> LWDecisionOption {
         guard !event.options.isEmpty else {
-            return LWDecisionOption(id: "default", label: "Acknowledge", detail: "Government observes developments.")
+            return LWDecisionOption(
+                id: "default",
+                label: LWProse.string(.decisionDefaultOptionLabel, language: language),
+                detail: LWProse.string(.decisionDefaultOptionDetail, language: language)
+            )
         }
         let brain = LWBrainFactory.brain(for: country)
         if brain is LWExpansionistBrain {
@@ -1225,9 +1236,13 @@ enum LivingWorldTick {
         return event.options[index]
     }
 
-    static func chooseAIOption(_ options: [LWDecisionOption], for country: LWCountry, brain: LWCountryBrain) -> LWDecisionOption {
+    static func chooseAIOption(_ options: [LWDecisionOption], for _: LWCountry, brain: LWCountryBrain, language: NativeGameLanguage = .english) -> LWDecisionOption {
         guard !options.isEmpty else {
-            return LWDecisionOption(id: "default", label: "Acknowledge", detail: "Government observes developments.")
+            return LWDecisionOption(
+                id: "default",
+                label: LWProse.string(.decisionDefaultOptionLabel, language: language),
+                detail: LWProse.string(.decisionDefaultOptionDetail, language: language)
+            )
         }
         if brain is LWExpansionistBrain {
             if let mil = options.first(where: { $0.mechanicCode == "⟦MIL⟧" || $0.worldTensionDelta > 0 }) {
@@ -1246,7 +1261,7 @@ enum LivingWorldTick {
     }
 
     /// Applies numerical deltas from a chosen option to the nation's ledger and international relations.
-    static func applyDecisionEffects(world: LivingWorldState, countryCode: String, decision: LWDecisionEvent, option: LWDecisionOption) -> LivingWorldState {
+    static func applyDecisionEffects(world: LivingWorldState, countryCode: String, decision _: LWDecisionEvent, option: LWDecisionOption) -> LivingWorldState {
         var world = world
         if var country = world.countries[countryCode] {
             country.treasury = max(0, country.treasury + option.treasuryDelta)
@@ -1280,11 +1295,12 @@ enum LivingWorldTick {
         }
         world.pendingDecision = nil
         let countryName = world.countries[decision.countryCode]?.name ?? decision.countryCode
+        let directivePrefix = LWProse.string(.decisionPlayerDirectiveLabel, language: world.language)
         let record = LWEventRecord(
             id: decision.id,
             day: world.dayIndex,
             title: "\(countryName): \(decision.title)",
-            summary: "Executive Directive Formed: \(option.label). \(option.detail)",
+            summary: "\(directivePrefix) \(option.label). \(option.detail)",
             countryCode: decision.countryCode,
             rarity: decision.rarity,
             severity: decision.severity,
@@ -1299,4 +1315,3 @@ enum LivingWorldTick {
         resolveDecision(world: world, decision: decision, option: chosenOption)
     }
 }
-

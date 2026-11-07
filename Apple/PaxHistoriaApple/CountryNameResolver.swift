@@ -78,9 +78,13 @@ enum CountryNameResolver {
         let resolved = name(forCode: trimmed, dynamicCountries: dynamicCountries)
         let upper = trimmed.uppercased()
         // Don't append the code if it's already the resolved name (unknown code)
-        if resolved == upper { return resolved }
+        if resolved == upper {
+            return resolved
+        }
         // Don't append for special names
-        if specialNames[upper] != nil { return resolved }
+        if specialNames[upper] != nil {
+            return resolved
+        }
         return "\(resolved) (\(upper))"
     }
 

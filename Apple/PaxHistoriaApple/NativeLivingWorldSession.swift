@@ -100,8 +100,12 @@ final class LivingWorldSession: ObservableObject {
     var notableCountries: [LWCountry] {
         world.countries.values
             .sorted { lhs, rhs in
-                if lhs.code == playerCountryCode { return true }
-                if rhs.code == playerCountryCode { return false }
+                if lhs.code == playerCountryCode {
+                    return true
+                }
+                if rhs.code == playerCountryCode {
+                    return false
+                }
                 return lhs.gdpEstimate > rhs.gdpEstimate
             }
             .prefix(12)
@@ -144,7 +148,9 @@ final class LivingWorldSession: ObservableObject {
 
     func advanceOneSecond() {
         guard isRunning, world.pendingDecision == nil else {
-            if world.pendingDecision != nil { pause() }
+            if world.pendingDecision != nil {
+                pause()
+            }
             return
         }
         let days = Self.speedLevels[max(0, min(speed, Self.speedLevels.count - 1))]
@@ -207,8 +213,7 @@ final class LivingWorldSession: ObservableObject {
     }
 
     func declareWar(on target: String) {
-        guard let country = playerCountry, target != playerCountryCode else { return }
-        guard !world.wars.contains(where: { $0.attacker == playerCountryCode && $0.defender == target }) else { return }
+        guard let country = playerCountry, target != playerCountryCode, !world.wars.contains(where: { $0.attacker == playerCountryCode && $0.defender == target }) else { return }
         let warID = "war-\(playerCountryCode)-\(target)-\(world.dayIndex)"
         world.wars.append(LWWar(
             id: warID,
@@ -237,8 +242,7 @@ final class LivingWorldSession: ObservableObject {
     }
 
     func proposeAlliance(with target: String) {
-        guard target != playerCountryCode else { return }
-        guard !world.pacts.contains(where: { $0.kind == .alliance && (($0.a == playerCountryCode && $0.b == target) || ($0.a == target && $0.b == playerCountryCode)) }) else { return }
+        guard target != playerCountryCode, !world.pacts.contains(where: { $0.kind == .alliance && (($0.a == playerCountryCode && $0.b == target) || ($0.a == target && $0.b == playerCountryCode)) }) else { return }
         world.pacts.append(LWPact(kind: .alliance, a: playerCountryCode, b: target, sinceDay: world.dayIndex))
         world.adjustRelation(from: playerCountryCode, to: target, delta: 15)
         persist()

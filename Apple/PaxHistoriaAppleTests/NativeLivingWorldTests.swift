@@ -417,8 +417,8 @@ final class LivingWorldEngineTests: XCTestCase {
         )
 
         // Direct AI option choice
-        let aiBrain = LWBrainFactory.brain(for: try XCTUnwrap(world.countries[aiCountryCode]))
-        let chosen = LivingWorldTick.chooseAIOption(decision.options, for: try XCTUnwrap(world.countries[aiCountryCode]), brain: aiBrain)
+        let aiBrain = try LWBrainFactory.brain(for: XCTUnwrap(world.countries[aiCountryCode]))
+        let chosen = try LivingWorldTick.chooseAIOption(decision.options, for: XCTUnwrap(world.countries[aiCountryCode]), brain: aiBrain)
         XCTAssertEqual(chosen.id, "ai-opt-a")
 
         let resolved = LivingWorldTick.resolveDecision(world: world, decision: decision, chosenOption: chosen)
@@ -467,5 +467,27 @@ final class LivingWorldEngineTests: XCTestCase {
         // Clock can now advance
         session.stepDay()
         XCTAssertEqual(session.world.dayIndex, dayBefore + 1, "Clock must resume advancing after decision is resolved")
+    }
+
+    func testDecisionEventsLocalizePerWorldLanguage() throws {
+        var worldPT = LivingWorldFactory.makeWorld(seed: 104, playerCode: "USA", minorCount: 4)
+        worldPT.language = .portuguese
+        worldPT.dayIndex = 95
+        worldPT.completedChainEvents = ["soviet-coup-sweep", "fashoda-confrontation", "resource-aquifer-crisis"]
+
+        let rng = LWRNG(worldSeed: worldPT.worldSeed, dayIndex: worldPT.dayIndex)
+        let records = LivingWorldTick.processEventChains(world: &worldPT, rng: rng)
+        let pendingPT = try XCTUnwrap(worldPT.pendingDecision)
+        XCTAssertEqual(pendingPT.id, "cyber-fiber-blackout")
+        XCTAssertTrue(pendingPT.title.contains("Fibras Submarinas"), "Portuguese world must localize decision title")
+        XCTAssertTrue(records.first?.title.hasPrefix("DECISÃO CRÍTICA:") == true)
+
+        var worldES = LivingWorldFactory.makeWorld(seed: 104, playerCode: "USA", minorCount: 4)
+        worldES.language = .spanish
+        worldES.dayIndex = 95
+        worldES.completedChainEvents = ["soviet-coup-sweep", "fashoda-confrontation", "resource-aquifer-crisis"]
+        _ = LivingWorldTick.processEventChains(world: &worldES, rng: rng)
+        let pendingES = try XCTUnwrap(worldES.pendingDecision)
+        XCTAssertTrue(pendingES.title.contains("Fibra Submarina"), "Spanish world must localize decision title")
     }
 }

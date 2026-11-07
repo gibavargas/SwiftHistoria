@@ -428,14 +428,22 @@ struct NativeMapHUD: View {
     let state: NativeCampaignState
 
     private var stabilityTint: Color {
-        if state.stability >= 70 { return Color.neonTeal }
-        if state.stability >= 40 { return Color.alertGold }
+        if state.stability >= 70 {
+            return Color.neonTeal
+        }
+        if state.stability >= 40 {
+            return Color.alertGold
+        }
         return Color.softRed
     }
 
     private var tensionTint: Color {
-        if state.worldTension >= 70 { return Color.softRed }
-        if state.worldTension >= 45 { return Color.alertGold }
+        if state.worldTension >= 70 {
+            return Color.softRed
+        }
+        if state.worldTension >= 45 {
+            return Color.alertGold
+        }
         return Color.neonTeal
     }
 
@@ -765,8 +773,12 @@ struct TurnTransitionOverlay: View {
         let tension = Double(state.worldTension) / 100.0
         let stability = Double(state.stability) / 100.0
         let crisis = tension * (1.0 - stability)
-        if crisis > 0.6 { return Color.softRed }
-        if crisis > 0.4 { return Color.alertGold }
+        if crisis > 0.6 {
+            return Color.softRed
+        }
+        if crisis > 0.4 {
+            return Color.alertGold
+        }
         return Color.glowingCyan
     }
 
