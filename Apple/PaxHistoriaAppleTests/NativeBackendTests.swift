@@ -3180,6 +3180,9 @@ final class NativeBackendTests: XCTestCase {
             accuracy: 0.001
         )
 
+        if let pending = store.state?.pendingEventDecision, let option = pending.decisionOptions?.first {
+            store.chooseDecisionOption(option)
+        }
         await store.performAdvance()
         let afterFollowingTurn = try XCTUnwrap(store.state?.aiCountryStates[rivalCode])
         XCTAssertGreaterThan(afterFollowingTurn.agendaProgress, 0)

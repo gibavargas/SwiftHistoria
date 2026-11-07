@@ -238,6 +238,9 @@ final class NativeE2ETests: XCTestCase {
             )
         ]
 
+        if let pending = otherStore.state?.pendingEventDecision, let option = pending.decisionOptions?.first {
+            otherStore.chooseDecisionOption(option)
+        }
         await otherStore.performAdvance()
 
         let finalState = try XCTUnwrap(otherStore.state)

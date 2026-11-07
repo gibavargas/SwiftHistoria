@@ -42,9 +42,15 @@ final class LivingWorldEngineTests: XCTestCase {
         var worldB = b
         for _ in 0 ..< 30 {
             worldA = LivingWorldTick.advanceDay(worldA, playerOrders: nil)
+            if let pending = worldA.pendingDecision, let opt = pending.options.first {
+                worldA = LivingWorldTick.resolveDecision(world: worldA, decision: pending, option: opt)
+            }
         }
         for _ in 0 ..< 30 {
             worldB = LivingWorldTick.advanceDay(worldB, playerOrders: nil)
+            if let pending = worldB.pendingDecision, let opt = pending.options.first {
+                worldB = LivingWorldTick.resolveDecision(world: worldB, decision: pending, option: opt)
+            }
         }
         XCTAssertEqual(fingerprint(worldA), fingerprint(worldB), "Same seed + same ticks must stay identical")
         XCTAssertEqual(worldA.dayIndex, 30)
@@ -107,6 +113,9 @@ final class LivingWorldEngineTests: XCTestCase {
         XCTAssertFalse(session.world.wars.isEmpty, "Declared war must exist")
         let declaredWarID = session.world.wars[0].id
         for _ in 0 ..< 400 {
+            if let pending = session.world.pendingDecision, let opt = pending.options.first {
+                session.chooseDecisionOption(opt)
+            }
             session.stepDay()
         }
         // AI brains may start their own wars during the window (fresh wars have
@@ -170,7 +179,13 @@ final class LivingWorldEngineTests: XCTestCase {
 
         for day in 1 ... 1000 {
             worldA = LivingWorldTick.advanceDay(worldA, playerOrders: nil)
+            if let pending = worldA.pendingDecision, let opt = pending.options.first {
+                worldA = LivingWorldTick.resolveDecision(world: worldA, decision: pending, option: opt)
+            }
             worldB = LivingWorldTick.advanceDay(worldB, playerOrders: nil)
+            if let pending = worldB.pendingDecision, let opt = pending.options.first {
+                worldB = LivingWorldTick.resolveDecision(world: worldB, decision: pending, option: opt)
+            }
             days = day
 
             let currentWarIDs = Set(worldA.wars.map(\.id))

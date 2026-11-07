@@ -172,6 +172,9 @@ enum Native2010WorldModel {
         if let existing = profiles[country.code] {
             return existing
         }
+        if country.code == "GLOBAL" {
+            return fallbackProfile
+        }
         return generateDynamicProfile(for: country)
     }
 
