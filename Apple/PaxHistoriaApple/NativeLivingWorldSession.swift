@@ -42,7 +42,7 @@ enum NativeSimulationMode: String, Codable, CaseIterable, Identifiable {
 /// hash bridge for the optional classic hand-off.
 @MainActor
 final class LivingWorldSession: ObservableObject {
-    @Published private(set) var world: LivingWorldState
+    @Published var world: LivingWorldState
     @Published var isRunning = false
     /// Days advanced per timer tick. Vic3-style speed 1...5.
     @Published var speed: Int = 2

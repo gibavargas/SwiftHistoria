@@ -5197,7 +5197,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         let canWorld = LivingWorldFactory.makeWorld(seed: 42, playerCode: "CAN")
         XCTAssertNotNil(canWorld.countries["CAN"], "Canada must be dynamically created in Living World")
         XCTAssertEqual(canWorld.playerCountryCode, "CAN")
-        XCTAssertGreaterThan(canWorld.countries["CAN"]?.population ?? 0, 0)
+        XCTAssertGreaterThan(canWorld.countries["CAN"]?.treasury ?? 0, 0)
     }
 
     func testCandidateDecisionsInterleavingForImmediateCountryPlay() {

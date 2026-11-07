@@ -390,7 +390,7 @@ final class LivingWorldEngineTests: XCTestCase {
     }
 
     func testAINationAutonomouslyResolvesDecisionEvents() throws {
-        var world = LivingWorldFactory.makeWorld(seed: 103, playerCode: "BRA", minorCount: 4)
+        let world = LivingWorldFactory.makeWorld(seed: 103, playerCode: "BRA", minorCount: 4)
         let aiCountryCode = "USA"
         let initialTreasury = try XCTUnwrap(world.countries[aiCountryCode]?.treasury)
 
