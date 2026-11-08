@@ -1,5 +1,4 @@
 import Foundation
-import SwiftData
 
 enum NativeArmyKind: String, Codable, CaseIterable, Hashable, Identifiable {
     case infantry
@@ -44,56 +43,47 @@ struct NativeArmySnapshot: Codable, Hashable, Identifiable {
         self.targetRegionID = targetRegionID
         self.type = type
     }
-}
 
-/// Representa um exército ativo no mapa, capaz de se mover e combater.
-@Model
-final class NativeArmyModel {
-    @Attribute(.unique) var id: String
-    var countryCode: String
-    var type: String // ex: "infantry", "armor", "air", "naval"
-    var strength: Int
-
-    // Localização
-    var currentRegionID: String?
-    var targetRegionID: String?
-
-    init(
-        id: String = UUID().uuidString,
+    static func militaryUnits(
+        from armies: [NativeArmySnapshot],
         countryCode: String,
-        type: NativeArmyKind,
-        strength: Int,
-        currentRegionID: String? = nil,
-        targetRegionID: String? = nil
-    ) {
-        self.id = id
-        self.countryCode = countryCode
-        self.type = type.rawValue
-        self.strength = max(1, strength)
-        self.currentRegionID = currentRegionID
-        self.targetRegionID = targetRegionID
+        fallback: [String: Int] = [:]
+    ) -> [String: Int] {
+        let countryArmies = armies.filter { $0.countryCode == countryCode }
+        guard !countryArmies.isEmpty else { return fallback }
+        var counts = fallback
+        for kind in NativeArmyKind.allCases {
+            let matching = countryArmies.filter { $0.type == kind }
+            if !matching.isEmpty {
+                counts[kind.rawValue] = matching.reduce(0) { $0 + max(0, $1.strength) }
+            }
+        }
+        return counts
     }
 
-    convenience init(snapshot: NativeArmySnapshot) {
-        self.init(
-            id: snapshot.id,
-            countryCode: snapshot.countryCode,
-            type: snapshot.type,
-            strength: snapshot.strength,
-            currentRegionID: snapshot.currentRegionID,
-            targetRegionID: snapshot.targetRegionID
-        )
-    }
-
-    var snapshot: NativeArmySnapshot? {
-        guard let currentRegionID else { return nil }
-        return NativeArmySnapshot(
-            countryCode: countryCode,
-            currentRegionID: currentRegionID,
-            id: id,
-            strength: strength,
-            targetRegionID: targetRegionID,
-            type: NativeArmyKind(rawValue: type) ?? .infantry
-        )
+    static func synchronizingArmies(
+        _ armies: [NativeArmySnapshot],
+        with units: [String: Int],
+        countryCode: String,
+        homeRegionID: String
+    ) -> [NativeArmySnapshot] {
+        let totalUnits = max(1, units.values.reduce(0, +))
+        let dominantType: NativeArmyKind = (units["armor"] ?? 0) > (units["infantry"] ?? 0) ? .armor : .infantry
+        var updated = armies
+        if let index = updated.firstIndex(where: { $0.countryCode == countryCode }) {
+            updated[index].strength = max(1, min(999, totalUnits))
+            updated[index].type = dominantType
+        } else {
+            updated.append(
+                NativeArmySnapshot(
+                    countryCode: countryCode,
+                    currentRegionID: homeRegionID,
+                    id: "army-\(countryCode)-\(homeRegionID)",
+                    strength: max(1, min(999, totalUnits)),
+                    type: dominantType
+                )
+            )
+        }
+        return updated
     }
 }

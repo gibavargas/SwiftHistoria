@@ -299,7 +299,7 @@ class NativeNVIDIAService: NativeExternalAIService {
         let model = payload["model"] as? String ?? ""
         if model == "deepseek-ai/deepseek-v4-flash" {
             payload["top_p"] = 0.95
-            if payload["temperature"] == nil {
+            if payload["temperature"] == nil || thinkingEnabled {
                 payload["temperature"] = 1.0
             }
             if thinkingEnabled {

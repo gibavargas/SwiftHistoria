@@ -106,8 +106,8 @@ class NativeOpenRouterService: NativeExternalAIService {
 
         progress(NativeTurnProgress(
             completedLanes: 0,
-            detail: "Calling OpenRouter Free with split prompts (consequences + world events).",
-            phase: "Consulting OpenRouter",
+            detail: "Consulting OpenRouter Free unified turn model pass.",
+            phase: "Consulting OpenRouter (unified)",
             totalLanes: totalLanes,
             providerName: providerDisplayName,
             modelName: primaryModelDisplayName,
@@ -115,96 +115,6 @@ class NativeOpenRouterService: NativeExternalAIService {
             reasoningStatus: reasoningStatus,
             reasoningText: reasoningText
         ))
-
-        // ── D3: Try split prompts first ──────────────────────────
-        do {
-            // Call 1: Player action consequences
-            let consequenceResponse = try await executeProviderRequest(
-                prompt: makeConsequenceOnlyPrompt(for: state, months: months, repairInstruction: nil),
-                maxTokens: 1800,
-                temperature: NativeTemperaturePolicy.consequencePass,
-                responseFormat: "json_object",
-                thinkingEnabled: true,
-                onReasoningProgress: { update in
-                    receiveReasoning(
-                        update,
-                        completedLanes: 0,
-                        detail: "Resolving queued orders and their immediate consequences.",
-                        phase: "Reasoning about orders"
-                    )
-                }
-            )
-            let consequenceResult = try OpenRouterTurnParser.turn(from: consequenceResponse, state: state, months: months)
-
-            // Call 2: World events (merge into consequence result)
-            var mergedResult = consequenceResult
-            do {
-                reasoningStatus = .waiting
-                reasoningText = "Starting a second reasoning pass for world events."
-                activeModelIdentifier = primaryModelIdentifier
-                publishProgress(
-                    completedLanes: max(1, totalLanes / 2),
-                    detail: "Player consequences resolved; consulting the world-event model pass.",
-                    phase: "Reasoning about the world"
-                )
-                let worldResponse = try await executeProviderRequest(
-                    prompt: makeWorldEventOnlyPrompt(for: state, months: months),
-                    maxTokens: 1200,
-                    temperature: NativeTemperaturePolicy.consequencePass,
-                    responseFormat: "json_object",
-                    thinkingEnabled: true,
-                    onReasoningProgress: { update in
-                        receiveReasoning(
-                            update,
-                            completedLanes: max(1, totalLanes / 2),
-                            detail: "Simulating world events and external reactions.",
-                            phase: "Reasoning about the world"
-                        )
-                    }
-                )
-                let parsed = try OpenRouterTurnParser.turn(from: worldResponse, state: state, months: months)
-                mergedResult.events.append(contentsOf: parsed.events)
-                mergedResult.stabilityDelta += parsed.stabilityDelta
-                mergedResult.worldTensionDelta += parsed.worldTensionDelta
-            } catch {
-                orLogger.warning("OpenRouter world-event split call failed; continuing with consequence-only events: \(error.localizedDescription, privacy: .public)")
-            }
-
-            let validated = try NativeGameEngine.validated(mergedResult, state: state, months: months)
-            progress(NativeTurnProgress(
-                completedLanes: totalLanes,
-                detail: "OpenRouter split turn validated (events=\(validated.events.count)).",
-                phase: NativeFoundationTurnLane.summary.title,
-                totalLanes: totalLanes,
-                providerName: providerDisplayName,
-                modelName: primaryModelDisplayName,
-                modelIdentifier: activeModelIdentifier,
-                reasoningStatus: reasoningStatus,
-                reasoningText: reasoningText
-            ))
-            orLogger.info("OpenRouter split turn validated events=\(validated.events.count, privacy: .public)")
-            return validated
-
-        } catch is CancellationError {
-            orLogger.warning("OpenRouter split turn cancelled.")
-            throw CancellationError()
-        } catch {
-            if isRateLimitError(error) {
-                orLogger.warning("OpenRouter split turn rate limited; not spending a repair retry.")
-                throw error
-            }
-            orLogger.warning("OpenRouter split turn failed; falling back to unified prompt: \(error.localizedDescription, privacy: .public)")
-        }
-
-        // ── Fallback: unified prompt (existing logic preserved) ──
-        reasoningStatus = .waiting
-        reasoningText = "Restarting with a unified reasoning pass."
-        activeModelIdentifier = primaryModelIdentifier
-        publishProgress(
-            completedLanes: 0,
-            detail: "Falling back to OpenRouter unified prompt.",
-            phase: "Consulting OpenRouter (unified)"
-        )
 
         do {
             let turn = try await generateUnifiedTurn(
@@ -232,7 +142,7 @@ class NativeOpenRouterService: NativeExternalAIService {
                 reasoningStatus: reasoningStatus,
                 reasoningText: reasoningText
             ))
-            orLogger.info("OpenRouter unified fallback validated events=\(validated.events.count, privacy: .public)")
+            orLogger.info("OpenRouter unified turn validated events=\(validated.events.count, privacy: .public)")
             return validated
         } catch is CancellationError {
             orLogger.warning("OpenRouter unified turn cancelled; not retrying repair.")
@@ -437,132 +347,6 @@ class NativeOpenRouterService: NativeExternalAIService {
            {"title":"Port Modernization Phase 1 Begins","description":"The National Infrastructure Authority commenced Phase 1 of the coastal port upgrade, deploying 2,400 workers to expand container capacity by 35%.","kind":"action","importance":"major","notable":true,"playerRelated":true,"linkedActionID":"action-3-1","effectTarget":"BRA","effectTrack":"⟦ECO⟧","effectMagnitude":3,"effectSummary":"Infrastructure investment boosts economic resilience by 3.","hexLeverCode":"0x4D21F4","sovereigntyChange":null}
         2. World event unrelated to the player:
            {"title":"OPEC Announces Supply Restructuring","description":"The Organization of Petroleum Exporting Countries agreed to reduce daily output by 2.1 million barrels, signaling tighter global energy markets.","kind":"world","importance":"major","notable":true,"playerRelated":false,"linkedActionID":null,"effectTarget":"GLOBAL","effectTrack":"⟦MKT⟧","effectMagnitude":-2,"effectSummary":"Energy supply tightening reduces global market confidence by 2.","hexLeverCode":"0xCD42D8","sovereigntyChange":null}
-        """
-    }
-
-    // MARK: - D1: Compact context for free models
-
-    /// Compact recent context for free models — strips canon and strategy database.
-    private func compactRecentContext(for state: NativeCampaignState) -> String {
-        let recent = state.timeline
-            .prefix(2)
-            .map { "- \(safeTitle($0.title)): \(safeTitle($0.description).prefix(80))" }
-            .joined(separator: "\n")
-        let objectives = NativeGameEngine.campaignObjectives(for: state)
-            .prefix(2)
-            .map { "- \($0.title): \($0.currentValue)/\($0.targetValue)" }
-            .joined(separator: "\n")
-        return """
-        Round: \(state.round) | Date: \(state.gameDate)
-        Stability: \(state.stability)/100 | Tension: \(state.worldTension)/100
-        Capacity: \(state.administrativeCapacity)/120
-        Objectives:
-        \(objectives.isEmpty ? "None." : objectives)
-        Recent events:
-        \(recent.isEmpty ? "None." : recent)
-        """
-    }
-
-    private func safeTitle(_ text: String) -> String {
-        String(text.prefix(100)).trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    // MARK: - D3: Split prompts (consequences + world events)
-
-    private func makeConsequenceOnlyPrompt(
-        for state: NativeCampaignState,
-        months: Int,
-        repairInstruction: String?
-    ) -> String {
-        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        let plannedActions = Array(state.plannedActions.filter { $0.status == .planned }.prefix(NativeDecisionMatrixContract.maximumOrdersPerTurn))
-        let actionLines = openRouterOrderLines(plannedActions)
-        let recentEvents = state.timeline.prefix(3).map { "- \($0.date): \($0.title)" }.joined(separator: "\n")
-        let repairBlock = repairInstruction.map {
-            "\nRepair instruction from validator:\n\($0)"
-        } ?? ""
-
-        return """
-        Resolve player action consequences for one SwiftHistoria turn.
-        Country: \(state.country.name) (\(state.country.code)) | Round: \(state.round) | Date: \(state.gameDate) → \(targetDate)
-        \(openRouterMechanicsContext(for: state))
-        Player orders to resolve:
-        \(actionLines)
-        Recent events: \(recentEvents.isEmpty ? "None." : recentEvents)
-        \(repairBlock)
-        Return one strict JSON object only. No markdown fences or prose.
-        Required JSON schema:
-        {
-          "summary": "One concrete sentence.",
-          "stabilityDelta": 0,
-          "worldTensionDelta": 0,
-          "events": [
-            {
-              "title": "Short news headline.",
-              "description": "Concrete 1-2 sentence description.",
-              "kind": "action, diplomacy, or economy",
-              "importance": "minor, major, or severe",
-              "notable": true,
-              "playerRelated": true,
-              "linkedActionID": "action-id-from-orders-above-or-null",
-              "effectTarget": "\(state.country.code)",
-              "effectTrack": "⟦ECO⟧|⟦MKT⟧|⟦STB⟧|⟦SEC⟧|⟦DIP⟧|⟦MIL⟧|⟦TNS⟧",
-              "effectMagnitude": -3,
-              "effectSummary": "Concise game mechanics effect.",
-              "hexLeverCode": null,
-              "sovereigntyChange": null
-            }
-          ]
-        }
-        Produce 1 event per queued player order. If no orders, produce 1 domestic planning event.
-        If an order includes structured sovereignty metadata, copy it exactly into that order's event sovereigntyChange. Do not create sovereigntyChange for any other order.
-        \(NativeStrategicTrack.mechanicCodebookPrompt)
-        Valid "kind" values: action, diplomacy, economy. Valid "importance" values: minor, major, severe.
-        Each event's effectTrack code must correspond to one of its linked order's mechanicTracks. Preserve exact linkedActionID, target, and structured sovereignty metadata from that order.
-        """
-    }
-
-    private func makeWorldEventOnlyPrompt(
-        for state: NativeCampaignState,
-        months: Int
-    ) -> String {
-        let targetDate = NativeGameEngine.advance(date: state.gameDate, months: months)
-        let recentEvents = state.timeline.prefix(3).map { "- \($0.date): \($0.title)" }.joined(separator: "\n")
-
-        return """
-        Generate world events for one SwiftHistoria turn.
-        Country: \(state.country.name) (\(state.country.code)) | Round: \(state.round) | Period: \(state.gameDate) → \(targetDate)
-        \(openRouterMechanicsContext(for: state))
-        Recent events: \(recentEvents.isEmpty ? "None." : recentEvents)
-        Already-used event titles: \(state.timeline.prefix(4).map(\.title).joined(separator: "; "))
-        Return one strict JSON object only. No markdown fences or prose.
-        Required JSON schema:
-        {
-          "summary": "One concrete sentence.",
-          "stabilityDelta": 0,
-          "worldTensionDelta": 0,
-          "events": [
-            {
-              "title": "Short world news headline.",
-              "description": "Concrete 1-2 sentence description.",
-              "kind": "world or economy",
-              "importance": "minor, major, or severe",
-              "notable": true,
-              "playerRelated": false,
-              "linkedActionID": null,
-              "effectTarget": "GLOBAL or country code",
-              "effectTrack": "⟦ECO⟧|⟦MKT⟧|⟦STB⟧|⟦SEC⟧|⟦DIP⟧|⟦MIL⟧|⟦TNS⟧",
-              "effectMagnitude": -2,
-              "effectSummary": "Concise game mechanics effect.",
-              "hexLeverCode": null,
-              "sovereigntyChange": null
-            }
-          ]
-        }
-        Produce 1-2 world events unrelated to the player.
-        \(NativeStrategicTrack.mechanicCodebookPrompt)
-        Valid "kind" values: economy, world. Valid "importance" values: minor, major, severe.
-        World events must have linkedActionID=null, playerRelated=false, and sovereigntyChange=null. effectTarget must be GLOBAL or an existing country code from the mechanics context.
         """
     }
 

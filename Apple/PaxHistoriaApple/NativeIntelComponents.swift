@@ -1096,7 +1096,7 @@ struct FullScreenOrderEditor: View {
                                 .font(NativeWarRoomTheme.labelFont(.caption))
                                 .foregroundStyle(exceeds ? Color.softRed : Color.neonTeal)
                             Spacer()
-                            Text("Available: \(state.administrativeCapacity)/100")
+                            Text("Available: \(state.administrativeCapacity)/\(NativeCampaignStore.maximumAdministrativeCapacity)")
                                 .font(NativeWarRoomTheme.labelFont(.caption))
                                 .foregroundStyle(nativeCapacityColor(for: state.administrativeCapacity))
                         }

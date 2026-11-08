@@ -19,10 +19,10 @@ extension NativePromptHarness {
         return "Repair note: \(sanitizeFoundationModelText(repairInstruction))"
     }
 
-    static func clampedFoundationPrompt(_ value: String) -> String {
+    static func clampedFoundationPrompt(_ value: String, characterLimit: Int = foundationCharacterLimit) -> String {
         let text = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard text.count > foundationCharacterLimit else { return text }
-        return clamped(text, characterLimit: foundationCharacterLimit)
+        guard text.count > characterLimit else { return text }
+        return clamped(text, characterLimit: characterLimit)
     }
 
     private static func hexLeverCodeInstruction() -> String {
@@ -481,7 +481,7 @@ extension NativePromptHarness {
         \(mechanicsReminder())
         Focus area \(index): \(focus).
         The proposal must be accept-ready: a player should be able to add it to the order queue without rewriting it.
-        Respect current administrative capacity \(state.administrativeCapacity)/100; avoid plans that imply more capacity than remains.
+        Respect current administrative capacity \(state.administrativeCapacity)/120; avoid plans that imply more capacity than remains.
         The detail must include instrument, target agency or sector, timing, and expected game effect.
         The detail must name a bounded policy instrument, not a vague national goal.
         The rationale must explicitly name the primary affected mechanic, one connected secondary mechanic, and why this fits the current campaign objectives.
@@ -507,7 +507,7 @@ extension NativePromptHarness {
         Use these focus areas, one proposal per focus:
         \(focusList)
         Each proposal must be accept-ready: a player should be able to add it to the order queue without rewriting it.
-        Respect current administrative capacity \(state.administrativeCapacity)/100; avoid plans that imply more capacity than remains.
+        Respect current administrative capacity \(state.administrativeCapacity)/120; avoid plans that imply more capacity than remains.
         Each detail must include instrument, target agency or sector, timing, expected game effect, primary affected mechanic, and secondary mechanic.
         Each detail must name a bounded policy instrument, not a vague national goal.
         Each rationale must explain why the proposal fits the current campaign objectives and ledger/map/diplomacy context.

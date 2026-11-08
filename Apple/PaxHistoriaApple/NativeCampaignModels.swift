@@ -711,6 +711,7 @@ struct NativeCampaignState: Codable, Hashable {
     // Alternative History event chains and interactive player decisions
     var pendingEventDecision: NativeCampaignEvent?
     var eventFlags: [String: String]
+    var marketState: LWMarket
 
     init(
         actionMemory: [NativeActionMemory] = [],
@@ -756,7 +757,8 @@ struct NativeCampaignState: Codable, Hashable {
         budgetResearchSlider: Double = 0.15,
         militaryUnits: [String: Int]? = nil,
         pendingEventDecision: NativeCampaignEvent? = nil,
-        eventFlags: [String: String] = [:]
+        eventFlags: [String: String] = [:],
+        marketState: LWMarket? = nil
     ) {
         self.actionMemory = actionMemory
         self.advisorMessages = advisorMessages
@@ -816,6 +818,7 @@ struct NativeCampaignState: Codable, Hashable {
         self.militaryUnits = militaryUnits ?? Self.defaultMilitaryUnits(forCode: country.code)
         self.pendingEventDecision = pendingEventDecision
         self.eventFlags = eventFlags
+        self.marketState = marketState ?? LWMarket.seeded(goods: LivingWorldFactory.defaultGoods())
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -863,6 +866,7 @@ struct NativeCampaignState: Codable, Hashable {
         case militaryUnits
         case pendingEventDecision
         case eventFlags
+        case marketState
     }
 
     /// **Schema Normalization Mechanic**:
@@ -943,6 +947,7 @@ struct NativeCampaignState: Codable, Hashable {
         } else {
             eventFlags = [:]
         }
+        marketState = (try? container.decodeIfPresent(LWMarket.self, forKey: .marketState)) ?? LWMarket.seeded(goods: LivingWorldFactory.defaultGoods())
     }
 
     private static func decodeLossyArray<Element: Decodable>(
@@ -1596,12 +1601,18 @@ struct NativeSuggestedAction: Codable, Hashable, Identifiable {
     }
 }
 
+struct NativeDecisionEffect: Codable, Hashable {
+    var track: NativeStrategicTrack
+    var magnitude: Int
+}
+
 struct NativeEventDecisionOption: Codable, Hashable, Identifiable {
     var id: String
     var label: String
     var detail: String
     var effectTrack: NativeStrategicTrack
     var effectMagnitude: Int
+    var secondaryEffects: [NativeDecisionEffect]
     var nextChainedEventID: String?
     var setFlag: String?
 
@@ -1623,6 +1634,7 @@ struct NativeEventDecisionOption: Codable, Hashable, Identifiable {
         detail: String,
         effectTrack: NativeStrategicTrack,
         effectMagnitude: Int,
+        secondaryEffects: [NativeDecisionEffect]? = nil,
         nextChainedEventID: String? = nil,
         setFlag: String? = nil
     ) {
@@ -1631,8 +1643,52 @@ struct NativeEventDecisionOption: Codable, Hashable, Identifiable {
         self.detail = detail
         self.effectTrack = effectTrack
         self.effectMagnitude = effectMagnitude
+        self.secondaryEffects = secondaryEffects ?? Self.parseSecondaryEffects(from: detail, primaryTrack: effectTrack)
         self.nextChainedEventID = nextChainedEventID
         self.setFlag = setFlag
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case label
+        case detail
+        case effectTrack
+        case effectMagnitude
+        case secondaryEffects
+        case nextChainedEventID
+        case setFlag
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        label = try container.decode(String.self, forKey: .label)
+        detail = try container.decode(String.self, forKey: .detail)
+        effectTrack = try container.decode(NativeStrategicTrack.self, forKey: .effectTrack)
+        effectMagnitude = try container.decode(Int.self, forKey: .effectMagnitude)
+        let decodedSecondary = try? container.decodeIfPresent([NativeDecisionEffect].self, forKey: .secondaryEffects)
+        secondaryEffects = (decodedSecondary?.isEmpty == false)
+            ? (decodedSecondary ?? [])
+            : Self.parseSecondaryEffects(from: detail, primaryTrack: effectTrack)
+        nextChainedEventID = try container.decodeIfPresent(String.self, forKey: .nextChainedEventID)
+        setFlag = try container.decodeIfPresent(String.self, forKey: .setFlag)
+    }
+
+    static func parseSecondaryEffects(
+        from detail: String,
+        primaryTrack: NativeStrategicTrack
+    ) -> [NativeDecisionEffect] {
+        var results: [NativeDecisionEffect] = []
+        for track in NativeStrategicTrack.allCases where track != primaryTrack {
+            let code = track.mechanicCode
+            guard let range = detail.range(of: code) else { continue }
+            let tail = detail[range.upperBound...].trimmingCharacters(in: .whitespaces)
+            let prefix = tail.prefix { $0 == "+" || $0 == "-" || $0.isNumber }
+            if let value = Int(prefix), value != 0 {
+                results.append(NativeDecisionEffect(track: track, magnitude: value))
+            }
+        }
+        return results
     }
 }
 

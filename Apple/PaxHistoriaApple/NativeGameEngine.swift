@@ -1246,6 +1246,19 @@ enum NativeGameEngine {
             finalLedgers[code] = ledger
         }
 
+        let playerHomeRegionID = GeopoliticalMapData.regions(forCountryCode: state.country.code).first { $0.countryCode != "WATER" }?.id ?? state.country.code
+        let synchronizedMapArmies = NativeArmySnapshot.synchronizingArmies(
+            state.mapArmies,
+            with: nextMilitaryUnits,
+            countryCode: state.country.code,
+            homeRegionID: playerHomeRegionID
+        )
+        let nextMarketState = NativeStrategyContextDatabase.updatedMarketState(
+            from: state.marketState,
+            state: state,
+            months: months
+        )
+
         var finalState = NativeCampaignState(
             actionMemory: actionMemory,
             advisorMessages: state.advisorMessages,
@@ -1276,7 +1289,7 @@ enum NativeGameEngine {
             regionOccupations: nextRegionOccupations,
             nuclearFalloutRegions: nextNuclearRegions,
             regionConflicts: nextRegionConflicts,
-            mapArmies: state.mapArmies,
+            mapArmies: synchronizedMapArmies,
             mapBuildings: state.mapBuildings,
             // New strategy fields
             administrativeCapacity: nextCapacity,
@@ -1291,13 +1304,13 @@ enum NativeGameEngine {
             budgetResearchSlider: state.budgetResearchSlider,
             militaryUnits: nextMilitaryUnits,
             pendingEventDecision: state.pendingEventDecision,
-            eventFlags: state.eventFlags
+            eventFlags: state.eventFlags,
+            marketState: nextMarketState
         )
 
         NativeStrategyContextDatabase.simulateAIDrift(state: &finalState, months: months)
-        finalState = BackgroundSimulationService.shared.simulatedTurn(finalState)
 
-        // Budget effects, elections, coups, AI agendas, and the background
+        // Budget effects, elections, coups, AI agendas, and map presence
         // simulation all belong to this turn. Resolve victory only after those
         // deterministic mutations so the terminal status matches the state the
         // player actually receives.
