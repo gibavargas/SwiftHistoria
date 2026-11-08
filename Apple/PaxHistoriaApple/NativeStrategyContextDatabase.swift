@@ -385,17 +385,17 @@ enum NativeStrategyContextDatabase {
             let samplePoints: [CGPoint]
         }
         let envelopes = landRegions.compactMap { region -> RegionEnvelope? in
-            let points = region.rings.flatMap(\.self)
+            let points = region.paths.flatMap(\.self)
             guard !points.isEmpty else { return nil }
             var minX = CGFloat.greatestFiniteMagnitude
             var maxX = -CGFloat.greatestFiniteMagnitude
             var minY = CGFloat.greatestFiniteMagnitude
             var maxY = -CGFloat.greatestFiniteMagnitude
             for pt in points {
-                if pt.x < minX { minX = pt.x }
-                if pt.x > maxX { maxX = pt.x }
-                if pt.y < minY { minY = pt.y }
-                if pt.y > maxY { maxY = pt.y }
+                minX = min(minX, pt.x)
+                maxX = max(maxX, pt.x)
+                minY = min(minY, pt.y)
+                maxY = max(maxY, pt.y)
             }
             let step = max(1, points.count / 24)
             let sampled = stride(from: 0, to: points.count, by: step).map { points[$0] }
@@ -409,7 +409,7 @@ enum NativeStrategyContextDatabase {
             )
         }
 
-        let borderThreshold: CGFloat = 0.016
+        let borderThreshold: CGFloat = 18.0
         let borderThresholdSq = borderThreshold * borderThreshold
         var neighborsByCountry: [String: Set<String>] = [
             "USA": ["CHN", "RUS", "GBR", "FRA", "CAN", "MEX"],
@@ -438,8 +438,8 @@ enum NativeStrategyContextDatabase {
             let a = envelopes[i]
             for j in (i + 1) ..< envelopes.count {
                 let b = envelopes[j]
-                guard a.countryCode != b.countryCode else { continue }
-                guard a.maxX + borderThreshold >= b.minX,
+                guard a.countryCode != b.countryCode,
+                      a.maxX + borderThreshold >= b.minX,
                       b.maxX + borderThreshold >= a.minX,
                       a.maxY + borderThreshold >= b.minY,
                       b.maxY + borderThreshold >= a.minY
@@ -531,7 +531,7 @@ enum NativeStrategyContextDatabase {
         for code: String,
         scenario: NativeScenario = NativeScenarioCatalog.defaultScenario
     ) -> ElectionProfile {
-        let base: ElectionProfile = switch code {
+        let base = switch code {
         case "BRA":
             ElectionProfile(startingRound: 10, cycleLength: 48) // October 2010 (4 years)
         case "USA":

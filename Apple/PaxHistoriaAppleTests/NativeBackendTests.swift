@@ -211,7 +211,7 @@ final class NativeBackendTests: XCTestCase {
         XCTAssertEqual(applied.worldTension, 40)
     }
 
-    func testStrategicDatabaseBatchesAndFetchesRegionalMapState() throws {
+    func testStrategicDatabaseBatchesAndFetchesRegionalMapState() {
         let armies = (0 ..< 5000).map { index in
             NativeArmySnapshot(
                 countryCode: index.isMultiple(of: 2) ? "USA" : "BRA",
@@ -5346,7 +5346,7 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
 
         // A3/A5: Unified administrative capacity cap (120) and provider-aware prompt budgets
         XCTAssertEqual(NativeCampaignStore.maximumAdministrativeCapacity, 120)
-        XCTAssertEqual(NativePromptHarness.cloudCharacterLimit, 32_000)
+        XCTAssertEqual(NativePromptHarness.cloudCharacterLimit, 32000)
         XCTAssertGreaterThan(NativePromptHarness.cloudCharacterLimit, NativePromptHarness.foundationCharacterLimit)
 
         // A5: Typed secondaryEffects on NativeEventDecisionOption and clean nil hexLeverCode on resolution event

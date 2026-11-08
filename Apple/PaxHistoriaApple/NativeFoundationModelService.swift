@@ -7,7 +7,7 @@ import OSLog
 
 enum NativePromptHarness {
     static let foundationCharacterLimit = 8500
-    static let cloudCharacterLimit = 32_000
+    static let cloudCharacterLimit = 32000
     static let trimMarker = "\n\n[Middle context trimmed for the local Apple Foundation Models window. Keep the opening task and closing output constraints authoritative.]\n\n"
 
     static let sharedSystemPrompt = """
