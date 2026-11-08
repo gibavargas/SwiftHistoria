@@ -818,7 +818,7 @@ struct NativeCampaignState: Codable, Hashable {
         self.militaryUnits = militaryUnits ?? Self.defaultMilitaryUnits(forCode: country.code)
         self.pendingEventDecision = pendingEventDecision
         self.eventFlags = eventFlags
-        self.marketState = marketState ?? LWMarket.seeded(goods: LivingWorldFactory.defaultGoods)
+        self.marketState = marketState ?? LWMarket.seeded(goods: LivingWorldFactory.defaultGoods())
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -947,7 +947,7 @@ struct NativeCampaignState: Codable, Hashable {
         } else {
             eventFlags = [:]
         }
-        marketState = (try? container.decodeIfPresent(LWMarket.self, forKey: .marketState)) ?? LWMarket.seeded(goods: LivingWorldFactory.defaultGoods)
+        marketState = (try? container.decodeIfPresent(LWMarket.self, forKey: .marketState)) ?? LWMarket.seeded(goods: LivingWorldFactory.defaultGoods())
     }
 
     private static func decodeLossyArray<Element: Decodable>(

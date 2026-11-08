@@ -789,7 +789,7 @@ enum NativeStrategyContextDatabase {
         state: NativeCampaignState,
         months: Int
     ) -> LWMarket {
-        let goods = LivingWorldFactory.defaultGoods
+        let goods = LivingWorldFactory.defaultGoods()
         var nextMarket = market
         nextMarket.resetOrders()
 
@@ -844,7 +844,7 @@ enum NativeStrategyContextDatabase {
     ) -> [String: NativeEconomicLedger] {
         var nextLedgers = ledgers
         let resolvedMarket = updatedMarketState(from: state.marketState, state: state, months: months)
-        let goods = LivingWorldFactory.defaultGoods
+        let goods = LivingWorldFactory.defaultGoods()
         let avgPriceRatio: Double = {
             guard !goods.isEmpty else { return 1.0 }
             let sum = goods.reduce(0.0) { acc, good in
@@ -2844,7 +2844,10 @@ enum NativeStrategyContextDatabase {
         var buildings = state.mapBuildings
         var generatedMoves = 0
 
-        let activeCountries = Set(state.aiCountryStates.keys)
+        let aiStates = state.aiCountryStates.isEmpty
+            ? initialAICountryStates(for: state.scenarioID)
+            : state.aiCountryStates
+        let activeCountries = Set(aiStates.keys)
             .union(state.economicLedgers.keys)
             .subtracting([state.country.code, "GLOBAL"])
             .sorted()
@@ -2856,10 +2859,10 @@ enum NativeStrategyContextDatabase {
             let countryRegions = GeopoliticalMapData.regions(forCountryCode: code).filter { $0.countryCode != "WATER" }
             guard let homeRegion = countryRegions.first ?? GeopoliticalMapData.regionByID[code] else { continue }
 
-            let aiState = state.aiCountryStates[code] ?? NativeAICountryState(
+            let aiState = aiStates[code] ?? NativeAICountryState(
                 countryCode: code,
-                doctrine: .neutral,
-                budgetPriority: .economy,
+                doctrine: .mercantile,
+                budgetPriority: .growth,
                 relationshipScores: [:],
                 multiTurnAgenda: "Stabilize regional capacity.",
                 agendaProgress: 20
