@@ -5352,22 +5352,25 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         // A5: Typed secondaryEffects on NativeEventDecisionOption and clean nil hexLeverCode on resolution event
         let option = NativeEventDecisionOption(
             id: "test-opt",
-            label: "Authorize grid modernization [⟦ECO⟧ +5, ⟦SEC⟧ +10]",
-            consequenceSummary: "Boosts infrastructure and security.",
+            label: "Authorize grid modernization",
+            detail: "Boosts infrastructure and security. [⟦ECO⟧ +5, ⟦SEC⟧ +10]",
             effectTrack: .internalStability,
-            effectDelta: 5
+            effectMagnitude: 5
         )
         XCTAssertEqual(option.secondaryEffects.count, 2)
         let store = try makeStore()
         var campaignState = makeState()
-        campaignState.pendingEventDecision = CampaignTimelineEvent(
-            id: "pending-test",
-            round: 1,
+        campaignState.pendingEventDecision = NativeCampaignEvent(
             date: "2010-01-01",
+            description: "Test summary",
+            id: "pending-test",
+            importance: .major,
+            kind: .economy,
+            linkedActionIDs: [],
+            notable: true,
+            playerRelated: true,
+            strategicEffects: [],
             title: "Grid Test",
-            summary: "Test summary",
-            actionTaken: "Test",
-            category: .economic,
             decisionOptions: [option]
         )
         store.state = campaignState
