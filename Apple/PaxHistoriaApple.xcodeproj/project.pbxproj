@@ -76,6 +76,10 @@
 		A10000000000000000000029 /* CountrySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000A /* CountrySelectionView.swift */; };
 		A1000000000000000000002A /* NativeCampaignModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000B /* NativeCampaignModels.swift */; };
 		A1000000000000000000002B /* NativeCampaignModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000B /* NativeCampaignModels.swift */; };
+		A100000000000000000000D1 /* NativeAlternativeHistoryCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D0 /* NativeAlternativeHistoryCatalog.swift */; };
+		A100000000000000000000D2 /* NativeAlternativeHistoryCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D0 /* NativeAlternativeHistoryCatalog.swift */; };
+		A100000000000000000000D4 /* NativeCountryEventsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D3 /* NativeCountryEventsCatalog.swift */; };
+		A100000000000000000000D5 /* NativeCountryEventsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D3 /* NativeCountryEventsCatalog.swift */; };
 		A1000000000000000000002C /* NativeGameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000C /* NativeGameEngine.swift */; };
 		A1000000000000000000002D /* NativeGameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000C /* NativeGameEngine.swift */; };
 		A1000000000000000000002E /* NativeFoundationModelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000D /* NativeFoundationModelService.swift */; };
@@ -207,6 +211,8 @@
 		A10000000000000000000009 /* NativeCampaignStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCampaignStore.swift; sourceTree = "<group>"; };
 		A1000000000000000000000A /* CountrySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountrySelectionView.swift; sourceTree = "<group>"; };
 		A1000000000000000000000B /* NativeCampaignModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCampaignModels.swift; sourceTree = "<group>"; };
+		A100000000000000000000D0 /* NativeAlternativeHistoryCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAlternativeHistoryCatalog.swift; sourceTree = "<group>"; };
+		A100000000000000000000D3 /* NativeCountryEventsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCountryEventsCatalog.swift; sourceTree = "<group>"; };
 		A1000000000000000000000C /* NativeGameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeGameEngine.swift; sourceTree = "<group>"; };
 		A1000000000000000000000D /* NativeFoundationModelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFoundationModelService.swift; sourceTree = "<group>"; };
 		A1000000000000000000000E /* NativeGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeGameView.swift; sourceTree = "<group>"; };
@@ -311,6 +317,8 @@
 				A10000000000000000000009 /* NativeCampaignStore.swift */,
 				A1000000000000000000000A /* CountrySelectionView.swift */,
 				A1000000000000000000000B /* NativeCampaignModels.swift */,
+				A100000000000000000000D0 /* NativeAlternativeHistoryCatalog.swift */,
+				A100000000000000000000D3 /* NativeCountryEventsCatalog.swift */,
 				A1000000000000000000000C /* NativeGameEngine.swift */,
 				A1000000000000000000000D /* NativeFoundationModelService.swift */,
 				A1000000000000000000000E /* NativeGameView.swift */,
@@ -587,6 +595,8 @@
 				A10000000000000000000018 /* NativeCampaignStore.swift in Sources */,
 				A10000000000000000000019 /* CountrySelectionView.swift in Sources */,
 				A1000000000000000000002A /* NativeCampaignModels.swift in Sources */,
+				A100000000000000000000D1 /* NativeAlternativeHistoryCatalog.swift in Sources */,
+				A100000000000000000000D4 /* NativeCountryEventsCatalog.swift in Sources */,
 				A1000000000000000000002C /* NativeGameEngine.swift in Sources */,
 				A1000000000000000000002E /* NativeFoundationModelService.swift in Sources */,
 				A1000000000000000000003A /* NativeGameView.swift in Sources */,
@@ -652,6 +662,8 @@
 				A10000000000000000000028 /* NativeCampaignStore.swift in Sources */,
 				A10000000000000000000029 /* CountrySelectionView.swift in Sources */,
 				A1000000000000000000002B /* NativeCampaignModels.swift in Sources */,
+				A100000000000000000000D2 /* NativeAlternativeHistoryCatalog.swift in Sources */,
+				A100000000000000000000D5 /* NativeCountryEventsCatalog.swift in Sources */,
 				A1000000000000000000002D /* NativeGameEngine.swift in Sources */,
 				A1000000000000000000002F /* NativeFoundationModelService.swift in Sources */,
 				A1000000000000000000003B /* NativeGameView.swift in Sources */,

@@ -35,24 +35,52 @@ extension NativeGameEngine {
         let withdrawWords: Set = ["withdraw", "retirar", "retirarse", "recuar"]
         let rebuildWords: Set = ["rebuild", "reconstruir", "reconstrução"]
 
-        if invadeWords.contains(firstWord) { return .invade }
-        if stabilizeWords.contains(firstWord) { return .stabilize }
-        if fortifyWords.contains(firstWord) { return .fortify }
-        if withdrawWords.contains(firstWord) { return .withdraw }
-        if rebuildWords.contains(firstWord) { return .rebuild }
+        if invadeWords.contains(firstWord) {
+            return .invade
+        }
+        if stabilizeWords.contains(firstWord) {
+            return .stabilize
+        }
+        if fortifyWords.contains(firstWord) {
+            return .fortify
+        }
+        if withdrawWords.contains(firstWord) {
+            return .withdraw
+        }
+        if rebuildWords.contains(firstWord) {
+            return .rebuild
+        }
 
         // Multi-word prefixes for autonomy and trade corridor
-        if lower.hasPrefix("negotiate autonomy") || lower.hasPrefix("negociar autonomia") { return .autonomy }
-        if lower.hasPrefix("open trade corridor") || lower.hasPrefix("abrir corredor") { return .tradeCorridor }
+        if lower.hasPrefix("negotiate autonomy") || lower.hasPrefix("negociar autonomia") {
+            return .autonomy
+        }
+        if lower.hasPrefix("open trade corridor") || lower.hasPrefix("abrir corredor") {
+            return .tradeCorridor
+        }
 
         // Fallback: check original English prefixes for backward compatibility
-        if lower.hasPrefix("invade ") { return .invade }
-        if lower.hasPrefix("stabilize ") { return .stabilize }
-        if lower.hasPrefix("fortify ") { return .fortify }
-        if lower.hasPrefix("withdraw from ") { return .withdraw }
-        if lower.hasPrefix("negotiate autonomy for ") { return .autonomy }
-        if lower.hasPrefix("rebuild ") { return .rebuild }
-        if lower.hasPrefix("open trade corridor through ") { return .tradeCorridor }
+        if lower.hasPrefix("invade ") {
+            return .invade
+        }
+        if lower.hasPrefix("stabilize ") {
+            return .stabilize
+        }
+        if lower.hasPrefix("fortify ") {
+            return .fortify
+        }
+        if lower.hasPrefix("withdraw from ") {
+            return .withdraw
+        }
+        if lower.hasPrefix("negotiate autonomy for ") {
+            return .autonomy
+        }
+        if lower.hasPrefix("rebuild ") {
+            return .rebuild
+        }
+        if lower.hasPrefix("open trade corridor through ") {
+            return .tradeCorridor
+        }
         return nil
     }
 

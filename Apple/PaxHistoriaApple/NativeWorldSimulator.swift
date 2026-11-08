@@ -341,7 +341,9 @@ enum NativeDecisionMatrixContract {
             guard let change = suggestion.sovereigntyChange else {
                 return "sovereignty action requires structured sovereigntyChange"
             }
-            if let failure = sovereigntyFailure(change, state: state) { return failure }
+            if let failure = sovereigntyFailure(change, state: state) {
+                return failure
+            }
         default:
             break
         }
@@ -350,7 +352,9 @@ enum NativeDecisionMatrixContract {
     }
 
     static func effectiveCost(of suggestion: NativeSuggestedAction) -> Int {
-        if suggestion.administrativeCost > 0 { return suggestion.administrativeCost }
+        if suggestion.administrativeCost > 0 {
+            return suggestion.administrativeCost
+        }
         return NativeGameEngine.estimateDirectiveCost(for: suggestion.detail)
     }
 
@@ -800,7 +804,9 @@ enum NativeWorldSimulator {
         }
 
         let ranked = results.sorted {
-            if $0.3 == $1.3 { return $0.0 < $1.0 }
+            if $0.3 == $1.3 {
+                return $0.0 < $1.0
+            }
             return $0.3 > $1.3
         }
         let visible = Array(ranked.prefix(visibleDecisionLimit))
@@ -871,7 +877,9 @@ enum NativeWorldSimulator {
         let total = max(1, scores.reduce(0, +))
         var roll = Int(generator.next() % UInt64(total))
         for (index, score) in scores.enumerated() {
-            if roll < score { return candidates[index].decision }
+            if roll < score {
+                return candidates[index].decision
+            }
             roll -= score
         }
         return candidates[0].decision
@@ -959,32 +967,58 @@ enum NativeWorldSimulator {
 
         switch row {
         case .economy:
-            if aiState.budgetPriority == .growth { score += 18 }
-            if (ledger?.realGrowthPercent ?? 0) < 1 { score += 16 }
+            if aiState.budgetPriority == .growth {
+                score += 18
+            }
+            if (ledger?.realGrowthPercent ?? 0) < 1 {
+                score += 16
+            }
             score += profile.patience * 3
         case .society:
-            if aiState.budgetPriority == .stability { score += 18 }
-            if (ledger?.securityIndex ?? 50) < 50 { score += 18 }
-            if (ledger?.rebelControlPercent ?? 0) > 10 { score += 14 }
+            if aiState.budgetPriority == .stability {
+                score += 18
+            }
+            if (ledger?.securityIndex ?? 50) < 50 {
+                score += 18
+            }
+            if (ledger?.rebelControlPercent ?? 0) > 10 {
+                score += 14
+            }
             score += profile.welfare * 4
         case .diplomacy:
-            if aiState.budgetPriority == .diplomacy || aiState.doctrine == .collaborative { score += 18 }
+            if aiState.budgetPriority == .diplomacy || aiState.doctrine == .collaborative {
+                score += 18
+            }
             score += profile.cooperation * 5
-            if state.worldTension > 65, column.rawValue <= 2 { score += 10 }
+            if state.worldTension > 65, column.rawValue <= 2 {
+                score += 10
+            }
         case .security:
-            if aiState.budgetPriority == .military || aiState.doctrine == .expansionist { score += 18 }
-            if state.worldTension > 55 { score += 14 }
-            if (aiState.relationshipScores.values.min() ?? 0) < -35 { score += 12 }
+            if aiState.budgetPriority == .military || aiState.doctrine == .expansionist {
+                score += 18
+            }
+            if state.worldTension > 55 {
+                score += 14
+            }
+            if (aiState.relationshipScores.values.min() ?? 0) < -35 {
+                score += 12
+            }
             score += profile.force * 5
         case .sovereignty:
-            if (ledger?.rebelControlPercent ?? 0) > 20 || decision.sovereigntyChange != nil { score += 24 }
+            if (ledger?.rebelControlPercent ?? 0) > 20 || decision.sovereigntyChange != nil {
+                score += 24
+            }
             score += profile.sovereignty * 5
         }
 
         let riskDistance = abs(column.rawValue - profile.risk)
         score += max(0, 12 - riskDistance * 4)
-        if aiState.agendaProgress >= 70, column == .transform { score += 18 }
-        if aiState.turnsSinceAIAction >= 3 { score += min(12, aiState.turnsSinceAIAction * 2) }
+        if aiState.agendaProgress >= 70, column == .transform {
+            score += 18
+        }
+        if aiState.turnsSinceAIAction >= 3 {
+            score += min(12, aiState.turnsSinceAIAction * 2)
+        }
         let interactionNoise = Int(stableSeed("\(countryCode)|\(decision.effectTarget)|\(state.round)|\(decision.matrixRow)|\(decision.matrixColumn)") % 9)
         return score + interactionNoise
     }
@@ -995,7 +1029,9 @@ enum NativeWorldSimulator {
         excluding code: String
     ) -> String? {
         aiState.relationshipScores.filter { $0.key != code }.min {
-            if $0.value == $1.value { return $0.key < $1.key }
+            if $0.value == $1.value {
+                return $0.key < $1.key
+            }
             return preferFriendly ? $0.value > $1.value : $0.value < $1.value
         }?.key
     }
@@ -1090,9 +1126,15 @@ enum NativeWorldSimulator {
 
     private static func decisionSalience(_ decision: NativeAICountryDecision, state: NativeCampaignState) -> Int {
         var score = abs(decision.effectMagnitude) * 10 + decision.matrixColumn * 4
-        if decision.effectTarget == state.country.code { score += 80 }
-        if decision.sovereigntyChange != nil { score += 100 }
-        if NativeStrategyContextDatabase.adjacentCountryCodes(for: state.country.code).contains(decision.countryCode) { score += 30 }
+        if decision.effectTarget == state.country.code {
+            score += 80
+        }
+        if decision.sovereigntyChange != nil {
+            score += 100
+        }
+        if NativeStrategyContextDatabase.adjacentCountryCodes(for: state.country.code).contains(decision.countryCode) {
+            score += 30
+        }
         score += Int((state.economicLedgers[decision.countryCode]?.nominalGDPTrillions ?? 0) * 2)
         return score
     }

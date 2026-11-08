@@ -338,9 +338,157 @@ struct LWWar: Codable, Hashable {
 // MARK: Events
 
 enum LWEventRarity: String, Codable {
+    case common
     case daily
     case weekly
     case rare
+    case legendary
+}
+
+struct LWDecisionOption: Codable, Hashable, Identifiable {
+    var id: String
+    var label: String
+    var detail: String
+    var treasuryDelta: Double // in millions £
+    var radicalsDelta: Double // -1.0 .. +1.0
+    var stabilityDelta: Double // -1.0 .. +1.0
+    var worldTensionDelta: Double
+    var nextChainedEventID: String?
+    var flagSet: String?
+    var mechanicCode: String? // "⟦ECO⟧", "⟦SEC⟧", etc.
+
+    var text: String {
+        label
+    }
+
+    var consequenceSummary: String {
+        detail
+    }
+
+    var radicalDelta: Double {
+        radicalsDelta
+    }
+
+    var setFlag: String? {
+        flagSet
+    }
+
+    init(
+        id: String,
+        label: String,
+        detail: String,
+        treasuryDelta: Double = 0,
+        radicalsDelta: Double = 0,
+        stabilityDelta: Double = 0,
+        worldTensionDelta: Double = 0,
+        nextChainedEventID: String? = nil,
+        flagSet: String? = nil,
+        mechanicCode: String? = nil
+    ) {
+        self.id = id
+        self.label = label
+        self.detail = detail
+        self.treasuryDelta = treasuryDelta
+        self.radicalsDelta = radicalsDelta
+        self.stabilityDelta = stabilityDelta
+        self.worldTensionDelta = worldTensionDelta
+        self.nextChainedEventID = nextChainedEventID
+        self.flagSet = flagSet
+        self.mechanicCode = mechanicCode
+    }
+
+    init(
+        id: String,
+        text: String,
+        consequenceSummary: String,
+        radicalDelta: Double = 0,
+        treasuryDelta: Double = 0,
+        stabilityDelta: Double = 0,
+        worldTensionDelta: Double = 0,
+        nextChainedEventID: String? = nil,
+        setFlag: String? = nil,
+        mechanicCode: String? = nil
+    ) {
+        self.init(
+            id: id,
+            label: text,
+            detail: consequenceSummary,
+            treasuryDelta: treasuryDelta,
+            radicalsDelta: radicalDelta,
+            stabilityDelta: stabilityDelta,
+            worldTensionDelta: worldTensionDelta,
+            nextChainedEventID: nextChainedEventID,
+            flagSet: setFlag,
+            mechanicCode: mechanicCode
+        )
+    }
+}
+
+struct LWDecisionEvent: Codable, Hashable, Identifiable {
+    var id: String
+    var day: Int
+    var title: String
+    var summary: String
+    var countryCode: String
+    var rarity: LWEventRarity
+    var severity: Double
+    var imageAssetName: String?
+    var chainID: String?
+    var options: [LWDecisionOption]
+
+    var targetCountryCode: String {
+        countryCode
+    }
+
+    init(
+        id: String,
+        day: Int,
+        title: String,
+        summary: String,
+        countryCode: String,
+        rarity: LWEventRarity = .rare,
+        severity: Double = 0.8,
+        imageAssetName: String? = nil,
+        chainID: String? = nil,
+        options: [LWDecisionOption]
+    ) {
+        self.id = id
+        self.day = day
+        self.title = title
+        self.summary = summary
+        self.countryCode = countryCode
+        self.rarity = rarity
+        self.severity = severity
+        self.imageAssetName = imageAssetName
+        self.chainID = chainID
+        self.options = options
+    }
+
+    init(
+        id: String,
+        title: String,
+        summary: String,
+        day: Int,
+        targetCountryCode: String,
+        rarity: LWEventRarity = .rare,
+        severity: Double = 0.8,
+        imageAssetName: String? = nil,
+        chainID: String? = nil,
+        options: [LWDecisionOption]
+    ) {
+        self.init(
+            id: id,
+            day: day,
+            title: title,
+            summary: summary,
+            countryCode: targetCountryCode,
+            rarity: rarity,
+            severity: severity,
+            imageAssetName: imageAssetName,
+            chainID: chainID,
+            options: options
+        )
+    }
 }
 
 struct LWEventRecord: Codable, Hashable {
@@ -351,6 +499,30 @@ struct LWEventRecord: Codable, Hashable {
     var countryCode: String
     var rarity: LWEventRarity
     var severity: Double // 0..1
+    var imageAssetName: String?
+    var decisionChosen: String?
+
+    init(
+        id: String,
+        day: Int,
+        title: String,
+        summary: String,
+        countryCode: String,
+        rarity: LWEventRarity,
+        severity: Double,
+        imageAssetName: String? = nil,
+        decisionChosen: String? = nil
+    ) {
+        self.id = id
+        self.day = day
+        self.title = title
+        self.summary = summary
+        self.countryCode = countryCode
+        self.rarity = rarity
+        self.severity = severity
+        self.imageAssetName = imageAssetName
+        self.decisionChosen = decisionChosen
+    }
 }
 
 // MARK: World state
@@ -371,9 +543,12 @@ struct LivingWorldState: Codable {
     /// Save language: generated prose (events, status lines) follows it.
     /// Persisted so a save renders identically on any device.
     var language: NativeGameLanguage = .english
+    var pendingDecision: LWDecisionEvent?
+    var eventFlags: [String] = []
+    var completedChainEvents: [String] = []
 
     private enum CodingKeys: String, CodingKey {
-        case worldSeed, dayIndex, goods, market, countries, relations, pacts, wars, history, playerCountryCode, pendingWorldHash, language
+        case worldSeed, dayIndex, goods, market, countries, relations, pacts, wars, history, playerCountryCode, pendingWorldHash, language, pendingDecision, eventFlags, completedChainEvents
     }
 
     init(
@@ -388,7 +563,10 @@ struct LivingWorldState: Codable {
         history: [LWEventRecord],
         playerCountryCode: String?,
         pendingWorldHash: String?,
-        language: NativeGameLanguage = .english
+        language: NativeGameLanguage = .english,
+        pendingDecision: LWDecisionEvent? = nil,
+        eventFlags: [String] = [],
+        completedChainEvents: [String] = []
     ) {
         self.worldSeed = worldSeed
         self.dayIndex = dayIndex
@@ -402,9 +580,12 @@ struct LivingWorldState: Codable {
         self.playerCountryCode = playerCountryCode
         self.pendingWorldHash = pendingWorldHash
         self.language = language
+        self.pendingDecision = pendingDecision
+        self.eventFlags = eventFlags
+        self.completedChainEvents = completedChainEvents
     }
 
-    /// Tolerant decode: older saves without `language` default to English.
+    /// Tolerant decode: older saves without new fields default safely.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         worldSeed = try container.decodeIfPresent(UInt64.self, forKey: .worldSeed) ?? 0
@@ -419,6 +600,9 @@ struct LivingWorldState: Codable {
         playerCountryCode = try container.decodeIfPresent(String.self, forKey: .playerCountryCode)
         pendingWorldHash = try container.decodeIfPresent(String.self, forKey: .pendingWorldHash)
         language = try (container.decodeIfPresent(String.self, forKey: .language)).flatMap(NativeGameLanguage.init(rawValue:)) ?? .english
+        pendingDecision = try container.decodeIfPresent(LWDecisionEvent.self, forKey: .pendingDecision)
+        eventFlags = try container.decodeIfPresent([String].self, forKey: .eventFlags) ?? []
+        completedChainEvents = try container.decodeIfPresent([String].self, forKey: .completedChainEvents) ?? []
     }
 
     var today: LWDate {
@@ -487,7 +671,9 @@ enum LivingWorldFactory {
         ("ITA", "Italy", 0.55, 44),
         ("BRA", "Brazil", 0.3, 38),
         ("IND", "British India", 0.25, 340),
-        ("CHI", "China", 0.2, 480)
+        ("CHI", "China", 0.2, 480),
+        ("ZAF", "South Africa", 0.4, 48),
+        ("AUS", "Australia", 0.65, 22)
     ]
 
     static let minorNamePartsA = ["New", "Upper", "Lower", "Coastal", "Highland", "Northern", "Southern", "Eastern", "Western", "Free"]
@@ -521,6 +707,22 @@ enum LivingWorldFactory {
                 pop: core.pop,
                 rng: rng,
                 stream: "gen-\(core.code)"
+            )
+        }
+
+        // Ensure the player's chosen country always exists in the world simulation
+        if let player = playerCode, countries[player] == nil {
+            let name = CountryCatalog.all.first { $0.code == player }?.name ?? player
+            let profile = Native2010WorldModel.profile(for: PlayerCountry(code: player, name: name))
+            let industrial = max(0.15, min(0.95, Double(profile.techLevel) / 5.0))
+            let pop = max(5.0, min(300.0, Double(profile.nominalGDPTrillions * 30.0) + 12.0))
+            countries[player] = makeCountry(
+                code: player,
+                name: name,
+                industrial: industrial,
+                pop: pop,
+                rng: rng,
+                stream: "gen-\(player)"
             )
         }
 

@@ -548,9 +548,7 @@ final class NativeCampaignStore: ObservableObject {
 
     @discardableResult
     func switchCountry(to newCountry: PlayerCountry) -> Bool {
-        guard var currentState = state else { return false }
-        guard currentState.gameMode != .ironman else { return false }
-        guard newCountry.code != currentState.country.code else { return false }
+        guard var currentState = state, currentState.gameMode != .ironman, newCountry.code != currentState.country.code else { return false }
 
         let allowedCodes = Set(CountryCatalog.all.map(\.code)).union(currentState.dynamicCountries.keys)
         guard allowedCodes.contains(newCountry.code) else { return false }
@@ -572,6 +570,8 @@ final class NativeCampaignStore: ObservableObject {
 
         selectedDiplomaticPartnerCode = Self.defaultDiplomaticPartnerCode(for: currentState)
         currentState.lastSummary = "\(newCountry.name) leadership assumed. Turn intent into concrete plans."
+        currentState.pendingEventDecision = nil
+        currentState.eventFlags.removeValue(forKey: "next_chain")
 
         draftAction = ""
         draftAdvisorQuestion = ""
@@ -933,8 +933,7 @@ final class NativeCampaignStore: ObservableObject {
 
         do {
             let answer = try await aiService.generateAdvisorBrief(for: currentState, question: question)
-            guard isCurrentStateVersion(requestVersion) else { return }
-            guard var nextState = state else { return }
+            guard isCurrentStateVersion(requestVersion), var nextState = state else { return }
             nextState.advisorMessages.insert(
                 NativeAdvisorMessage(
                     date: nextState.gameDate,
@@ -950,8 +949,7 @@ final class NativeCampaignStore: ObservableObject {
             persistState()
             logger.info("Native advisor response stored round=\(nextState.round, privacy: .public)")
         } catch {
-            guard isCurrentStateVersion(requestVersion) else { return }
-            guard var nextState = state else { return }
+            guard isCurrentStateVersion(requestVersion), var nextState = state else { return }
             nextState.aiReadiness = .failure(error)
             invalidateInFlightWork()
             state = nextState
@@ -992,8 +990,7 @@ final class NativeCampaignStore: ObservableObject {
                 thread: thread,
                 message: message
             )
-            guard isCurrentStateVersion(requestVersion) else { return }
-            guard var nextState = state else { return }
+            guard isCurrentStateVersion(requestVersion), var nextState = state else { return }
             var nextThread = nextState.thread(for: partner)
             nextThread.messages.append(
                 NativeDiplomaticMessage(
@@ -1012,8 +1009,7 @@ final class NativeCampaignStore: ObservableObject {
             persistState()
             logger.info("Native diplomatic response stored partner=\(partner.code, privacy: .public)")
         } catch {
-            guard isCurrentStateVersion(requestVersion) else { return }
-            guard var nextState = state else { return }
+            guard isCurrentStateVersion(requestVersion), var nextState = state else { return }
             nextState.aiReadiness = .failure(error)
             invalidateInFlightWork()
             state = nextState
@@ -1043,10 +1039,150 @@ final class NativeCampaignStore: ObservableObject {
         invalidateInFlightWork()
     }
 
+    // MARK: - Executive Event Decision Resolution
+
+    private static func applyDecisionTrackDelta(
+        track: NativeStrategicTrack,
+        magnitude: Int,
+        to currentState: inout NativeCampaignState
+    ) {
+        switch track {
+        case .internalStability:
+            currentState.stability = max(0, min(100, currentState.stability + magnitude))
+        case .worldTension:
+            currentState.worldTension = max(0, min(100, currentState.worldTension + magnitude))
+        case .economicResilience:
+            if var playerLedger = currentState.economicLedgers[currentState.country.code] {
+                playerLedger.nominalGDPTrillions = max(0.01, playerLedger.nominalGDPTrillions + Double(magnitude) * 0.05)
+                playerLedger.realGrowthPercent = max(-12.0, min(16.0, playerLedger.realGrowthPercent + Double(magnitude) * 0.2))
+                currentState.economicLedgers[currentState.country.code] = playerLedger
+                currentState.economicLedger = playerLedger
+            }
+        case .securityAnxiety, .militaryReadiness:
+            if var playerLedger = currentState.economicLedgers[currentState.country.code] {
+                playerLedger.securityIndex = max(0.0, min(100.0, playerLedger.securityIndex + Double(magnitude)))
+                currentState.economicLedgers[currentState.country.code] = playerLedger
+                currentState.economicLedger = playerLedger
+            }
+        case .diplomaticLeverage:
+            for (code, var aiState) in currentState.aiCountryStates {
+                let currentScore = aiState.relationshipScores[currentState.country.code] ?? 0
+                if currentScore >= 0 {
+                    aiState.relationshipScores[currentState.country.code] = max(-100, min(100, currentScore + magnitude * 2))
+                    currentState.aiCountryStates[code] = aiState
+                }
+            }
+        case .marketConfidence:
+            if var playerLedger = currentState.economicLedgers[currentState.country.code] {
+                playerLedger.tradeBalancePercentGDP = max(-20.0, min(20.0, playerLedger.tradeBalancePercentGDP + Double(magnitude) * 0.1))
+                currentState.economicLedgers[currentState.country.code] = playerLedger
+                currentState.economicLedger = playerLedger
+            }
+        }
+    }
+
+    private static func parseSecondaryEffects(
+        from detail: String,
+        primaryTrack: NativeStrategicTrack
+    ) -> [(NativeStrategicTrack, Int)] {
+        var results: [(NativeStrategicTrack, Int)] = []
+        for track in NativeStrategicTrack.allCases where track != primaryTrack {
+            let code = track.mechanicCode
+            guard let range = detail.range(of: code) else { continue }
+            let tail = detail[range.upperBound...].trimmingCharacters(in: .whitespaces)
+            let prefix = tail.prefix { $0 == "+" || $0 == "-" || $0.isNumber }
+            if let value = Int(prefix), value != 0 {
+                results.append((track, value))
+            }
+        }
+        return results
+    }
+
+    func resolvePendingEventDecision(option: NativeEventDecisionOption) {
+        guard var currentState = state, let pending = currentState.pendingEventDecision else { return }
+
+        // Apply primary track delta
+        Self.applyDecisionTrackDelta(
+            track: option.effectTrack,
+            magnitude: option.effectMagnitude,
+            to: &currentState
+        )
+
+        var appliedEffects: [NativeStrategicEffect] = [
+            NativeStrategicEffect(
+                date: currentState.gameDate,
+                eventId: "resolution-\(pending.id)-\(option.id)",
+                id: "eff-res-\(pending.id)",
+                magnitude: option.effectMagnitude,
+                summary: option.detail,
+                target: currentState.country.code,
+                track: option.effectTrack
+            )
+        ]
+
+        // Apply secondary bracketed effects promised in the directive detail
+        let secondary = Self.parseSecondaryEffects(from: option.detail, primaryTrack: option.effectTrack)
+        for (secTrack, secMag) in secondary {
+            Self.applyDecisionTrackDelta(track: secTrack, magnitude: secMag, to: &currentState)
+            appliedEffects.append(
+                NativeStrategicEffect(
+                    date: currentState.gameDate,
+                    eventId: "resolution-\(pending.id)-\(option.id)",
+                    id: "eff-res-\(pending.id)-\(secTrack.rawValue)",
+                    magnitude: secMag,
+                    summary: "\(option.label) (\(secTrack.displayName))",
+                    target: currentState.country.code,
+                    track: secTrack
+                )
+            )
+        }
+
+        // Record completion flags
+        currentState.eventFlags[pending.id] = option.id
+        if let flag = option.setFlag {
+            currentState.eventFlags[flag] = option.id
+        }
+
+        // Advance or clear active chain pointer so completed chains never deadlock future events
+        if let nextChain = option.nextChainedEventID, !nextChain.isEmpty {
+            currentState.eventFlags["next_chain"] = nextChain
+        } else {
+            currentState.eventFlags.removeValue(forKey: "next_chain")
+        }
+
+        let resolutionEvent = NativeCampaignEvent(
+            date: currentState.gameDate,
+            description: "Executive Resolution: In response to '\(pending.title)', the administration enacted directive '\(option.label)'. \(option.detail)",
+            id: "resolution-\(pending.id)-\(option.id)",
+            importance: .major,
+            kind: .action,
+            linkedActionIDs: [],
+            notable: true,
+            playerRelated: true,
+            strategicEffects: appliedEffects,
+            title: "Decision Enacted: \(option.label)",
+            hexLeverCode: option.effectTrack.mechanicCode,
+            imageAssetName: pending.imageAssetName
+        )
+        currentState.timeline.insert(resolutionEvent, at: 0)
+        currentState.worldEffects.insert(contentsOf: appliedEffects, at: 0)
+        currentState.lastSummary = resolutionEvent.description
+        currentState.pendingEventDecision = nil
+
+        invalidateInFlightWork()
+        self.state = currentState
+        persistState()
+        logger.info("Executive event decision resolved: \(option.id, privacy: .public)")
+    }
+
     func performAdvance() async {
         guard var currentState = state, !isAdvancing else { return }
         guard currentState.victoryStatus == .ongoing else {
             lastError = "This campaign has already ended. Start or import a new campaign to continue playing."
+            return
+        }
+        guard currentState.pendingEventDecision == nil else {
+            lastError = "A critical executive decision is pending. You must formulate a policy directive before advancing the quarter."
             return
         }
         let months = Self.monthsPerTurn
@@ -1147,8 +1283,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func refreshSuggestedActionsIfNeeded() async {
-        guard !isAdvancing else { return }
-        guard let state, state.suggestedActions.isEmpty else { return }
+        guard !isAdvancing, let state, state.suggestedActions.isEmpty else { return }
         await refreshSuggestedActions(force: false)
     }
 
@@ -1654,7 +1789,9 @@ final class NativeCampaignStore: ObservableObject {
         let explicit = [primary, secondary].compactMap(NativeStrategicTrack.decodeMechanicToken)
         if !explicit.isEmpty {
             return explicit.reduce(into: []) { tracks, track in
-                if !tracks.contains(track) { tracks.append(track) }
+                if !tracks.contains(track) {
+                    tracks.append(track)
+                }
             }
         }
 
@@ -1721,8 +1858,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func acceptDiplomaticOffer(id: String) {
-        guard var state else { return }
-        guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        guard var state, let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
         invalidateInFlightWork()
         var offer = state.activeOffers[idx]
         offer.status = .accepted
@@ -1790,8 +1926,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func rejectDiplomaticOffer(id: String) {
-        guard var state else { return }
-        guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        guard var state, let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
         invalidateInFlightWork()
         var offer = state.activeOffers[idx]
         offer.status = .rejected
@@ -1821,8 +1956,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     func counterDiplomaticOffer(id: String) {
-        guard var state else { return }
-        guard let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
+        guard var state, let idx = state.activeOffers.firstIndex(where: { $0.id == id && $0.status == .pending }) else { return }
         invalidateInFlightWork()
         var offer = state.activeOffers[idx]
 

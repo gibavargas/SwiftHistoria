@@ -107,20 +107,32 @@ struct ExpansionEconomicCard: View {
     }
 
     private var themeColor: Color {
-        if isPlayer { return Color.glowingCyan }
-        if isGlobal { return NativeWarRoomTheme.signalCyan }
+        if isPlayer {
+            return Color.glowingCyan
+        }
+        if isGlobal {
+            return NativeWarRoomTheme.signalCyan
+        }
         return Color.iceBlue
     }
 
     private var tagBackground: Color {
-        if isPlayer { return Color.glowingCyan.opacity(0.15) }
-        if isGlobal { return NativeWarRoomTheme.signalCyan.opacity(0.15) }
+        if isPlayer {
+            return Color.glowingCyan.opacity(0.15)
+        }
+        if isGlobal {
+            return NativeWarRoomTheme.signalCyan.opacity(0.15)
+        }
         return Color.white.opacity(0.06)
     }
 
     private var tagStroke: Color {
-        if isPlayer { return Color.glowingCyan.opacity(0.4) }
-        if isGlobal { return NativeWarRoomTheme.signalCyan.opacity(0.4) }
+        if isPlayer {
+            return Color.glowingCyan.opacity(0.4)
+        }
+        if isGlobal {
+            return NativeWarRoomTheme.signalCyan.opacity(0.4)
+        }
         return Color.white.opacity(0.1)
     }
 

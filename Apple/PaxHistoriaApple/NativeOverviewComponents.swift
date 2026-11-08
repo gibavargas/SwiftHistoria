@@ -1033,22 +1033,38 @@ private struct NativeDecisionMatrixCell: View {
     }
 
     private var cellStatus: String {
-        if isQueued { return "QUEUED" }
-        if queueIsFull { return "QUEUE FULL" }
-        if !isAffordable { return "NEED \(suggestion.administrativeCost - remainingPower)" }
+        if isQueued {
+            return "QUEUED"
+        }
+        if queueIsFull {
+            return "QUEUE FULL"
+        }
+        if !isAffordable {
+            return "NEED \(suggestion.administrativeCost - remainingPower)"
+        }
         return suggestion.actionKind.uppercased()
     }
 
     private var statusColor: Color {
-        if isQueued { return Color.neonTeal }
-        if isDisabled { return Color.softRed }
+        if isQueued {
+            return Color.neonTeal
+        }
+        if isDisabled {
+            return Color.softRed
+        }
         return Color.glowingCyan
     }
 
     private var accessibilityHint: String {
-        if isQueued { return "Removes this decision from the next turn" }
-        if queueIsFull { return "The next-turn queue is full" }
-        if !isAffordable { return "Not enough power remains for this decision" }
+        if isQueued {
+            return "Removes this decision from the next turn"
+        }
+        if queueIsFull {
+            return "The next-turn queue is full"
+        }
+        if !isAffordable {
+            return "Not enough power remains for this decision"
+        }
         return "Adds this legal decision to the next turn"
     }
 }

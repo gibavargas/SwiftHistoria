@@ -476,8 +476,12 @@ enum NativeGameEngine {
                         // Dice count is determined by military budget sliders.
                         // Attacker parameters: Military budget > 0.6 yields 3 dice. > 0.3 yields 2.
                         let attackerDiceCount: Int = {
-                            if state.budgetMilitarySlider > 0.6 { return 3 }
-                            if state.budgetMilitarySlider > 0.3 { return 2 }
+                            if state.budgetMilitarySlider > 0.6 {
+                                return 3
+                            }
+                            if state.budgetMilitarySlider > 0.3 {
+                                return 2
+                            }
                             return 1
                         }()
                         let baseAttackerModifier = state.budgetMilitarySlider > 0.8 ? 1 : 0
@@ -496,7 +500,9 @@ enum NativeGameEngine {
                             if defenderCode == state.country.code {
                                 return state.budgetMilitarySlider > 0.4 ? 2 : 1
                             } else {
-                                if state.aiCountryStates[defenderCode]?.budgetPriority == .military { return 2 }
+                                if state.aiCountryStates[defenderCode]?.budgetPriority == .military {
+                                    return 2
+                                }
                                 return 1
                             }
                         }()
@@ -646,7 +652,9 @@ enum NativeGameEngine {
         var aiInvasionEvents: [NativeCampaignEvent] = []
 
         for code in strategicCodes {
-            if code == state.country.code { continue }
+            if code == state.country.code {
+                continue
+            }
             guard var aiState = nextAICountryStates[code] else { continue }
 
             if aiState.agendaProgress >= 100, aiState.doctrine == .expansionist {
@@ -697,7 +705,9 @@ enum NativeGameEngine {
 
                     return (otherCode, score)
                 }.sorted(by: { lhs, rhs in
-                    if lhs.score != rhs.score { return lhs.score > rhs.score }
+                    if lhs.score != rhs.score {
+                        return lhs.score > rhs.score
+                    }
                     return lhs.code < rhs.code
                 })
 
@@ -714,7 +724,9 @@ enum NativeGameEngine {
                             if rivalCode == state.country.code {
                                 return state.budgetMilitarySlider > 0.4 ? 2 : 1
                             } else {
-                                if nextAICountryStates[rivalCode]?.budgetPriority == .military { return 2 }
+                                if nextAICountryStates[rivalCode]?.budgetPriority == .military {
+                                    return 2
+                                }
                                 return 1
                             }
                         }()
@@ -1277,7 +1289,9 @@ enum NativeGameEngine {
             techEra: state.techEra,
             researchPoints: state.researchPoints,
             budgetResearchSlider: state.budgetResearchSlider,
-            militaryUnits: nextMilitaryUnits
+            militaryUnits: nextMilitaryUnits,
+            pendingEventDecision: state.pendingEventDecision,
+            eventFlags: state.eventFlags
         )
 
         NativeStrategyContextDatabase.simulateAIDrift(state: &finalState, months: months)
@@ -1374,7 +1388,9 @@ enum NativeGameEngine {
         targetCode _: String
     ) -> [MapRegion] {
         let explicit = change.regionIDs.compactMap { GeopoliticalMapData.regionByID[$0] }
-        if !explicit.isEmpty { return explicit }
+        if !explicit.isEmpty {
+            return explicit
+        }
         for source in change.sourceCodes {
             let sourceRegions = GeopoliticalMapData.regions(forCountryCode: source)
             if let first = sourceRegions.first {
@@ -1818,10 +1834,16 @@ enum NativeGameEngine {
 
     /// Determines intelligence visibility for a country based on relationship with the player.
     static func intelVisibility(forCountryCode code: String, in state: NativeCampaignState) -> NativeIntelVisibility {
-        if code == state.country.code { return .full }
+        if code == state.country.code {
+            return .full
+        }
         let relation = state.aiCountryStates[code]?.relationshipScores[state.country.code] ?? 0
-        if relation > 50 { return .full }
-        if relation > 0 { return .partial }
+        if relation > 50 {
+            return .full
+        }
+        if relation > 0 {
+            return .partial
+        }
         return .hidden
     }
 

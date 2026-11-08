@@ -1495,7 +1495,9 @@ final class NativeBackendTests: XCTestCase {
                 decoder: JSONDecoder(),
                 persistenceDirectory: persistenceDirectory
             ).state
-            if slot1State != nil { break }
+            if slot1State != nil {
+                break
+            }
             try await Task.sleep(nanoseconds: 50_000_000)
         }
         let slot2 = NativeCampaignStore.loadCampaignState(
@@ -2097,14 +2099,12 @@ final class NativeBackendTests: XCTestCase {
         var restructuringHappened = false
         for i in 1 ... 50 {
             let targetDate = "2010-04-\(String(format: "%02d", i))"
-            if let result = NativeStrategyContextDatabase.rollStochasticEvent(for: crisisLedger, code: "CHN", targetDate: targetDate) {
-                if result.summary.contains("Debt Restructuring") {
-                    restructuringHappened = true
-                    XCTAssertEqual(result.deltas.debtDelta, -40.0)
-                    XCTAssertEqual(result.deltas.fiscalSpaceDelta, 25)
-                    XCTAssertEqual(result.deltas.growthDelta, -4.5)
-                    break
-                }
+            if let result = NativeStrategyContextDatabase.rollStochasticEvent(for: crisisLedger, code: "CHN", targetDate: targetDate), result.summary.contains("Debt Restructuring") {
+                restructuringHappened = true
+                XCTAssertEqual(result.deltas.debtDelta, -40.0)
+                XCTAssertEqual(result.deltas.fiscalSpaceDelta, 25)
+                XCTAssertEqual(result.deltas.growthDelta, -4.5)
+                break
             }
         }
         XCTAssertTrue(restructuringHappened, "Expected a debt restructuring event to trigger under high debt and zero fiscal space.")
@@ -4816,6 +4816,495 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
         }
         XCTAssertEqual(postConsState.economicLedgers["RUS"]?.governmentType, "autocracy")
     }
+
+    // MARK: - Alternative History Event Chains & Executive Decisions Tests
+
+    func testClassicModeAlternativeHistoryEventsTriggerForPlayer() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.round = 1
+
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+
+        XCTAssertNotNil(state.pendingEventDecision, "Executive decision must be pending when player is the targeted nation")
+        XCTAssertEqual(state.pendingEventDecision?.imageAssetName, "EventSovietCoup")
+        XCTAssertEqual(state.pendingEventDecision?.title, "GKChP State Emergency Committee Resolution")
+        XCTAssertEqual(state.eventFlags["soviet_gkchp"], "pending")
+    }
+
+    func testClassicModeTurnAdvanceBlockedOnPendingDecision() async throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.round = 1
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        store.state = state
+
+        XCTAssertNotNil(store.state?.pendingEventDecision)
+
+        await store.performAdvance()
+
+        XCTAssertNotNil(store.lastError, "Turn advance must be blocked with an error when a decision is pending")
+        XCTAssertTrue(store.lastError?.contains("decision is pending") == true)
+        XCTAssertEqual(store.state?.round, 1, "Round must not advance while decision is unresolved")
+    }
+
+    func testClassicModeResolvePendingEventDecisionAppliesDeltas() throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.round = 1
+        state.stability = 50
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        store.state = state
+
+        let pending = try XCTUnwrap(store.state?.pendingEventDecision)
+        let option = try XCTUnwrap(pending.decisionOptions?.first)
+
+        store.resolvePendingEventDecision(option: option)
+
+        XCTAssertNil(store.state?.pendingEventDecision, "Pending decision must be cleared upon store resolution")
+        XCTAssertEqual(store.state?.eventFlags["soviet_gkchp"], option.id)
+        XCTAssertEqual(store.state?.eventFlags["next_chain"], "soviet-ogas-launch")
+        XCTAssertGreaterThan(try XCTUnwrap(store.state?.stability), 50, "Stability must increase from hardline resolution")
+
+        // Timeline must record resolution event
+        let resolutionEvent = try XCTUnwrap(store.state?.timeline.first)
+        XCTAssertTrue(resolutionEvent.title.contains("Decision Enacted"))
+        XCTAssertEqual(resolutionEvent.imageAssetName, "EventSovietCoup")
+    }
+
+    func testClassicModeAINationResolvesEventWithoutBlocking() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "BRA", name: "Brazil")
+        state.round = 1
+
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+
+        XCTAssertNil(state.pendingEventDecision, "Pending decision must remain nil when player is not the target")
+        XCTAssertEqual(state.eventFlags["soviet_gkchp"], "gkchp-hardline", "AI Russia must have autonomously resolved the event")
+        XCTAssertEqual(state.eventFlags["next_chain"], "soviet-ogas-launch")
+        let coupEvent = state.timeline.first { $0.id == "event-soviet-coup-1991" }
+        XCTAssertNotNil(coupEvent, "Autonomous world event must be added to timeline")
+    }
+
+    func testNativeAlternativeHistoryCatalogContainsExactly500Events() {
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.events.count, 500, "Catalog must contain exactly 500 events")
+        let uniqueIDs = Set(NativeAlternativeHistoryCatalog.events.map(\.id))
+        XCTAssertEqual(uniqueIDs.count, 500, "All 500 event IDs must be strictly unique")
+    }
+
+    func testNativeAlternativeHistoryCatalogScenarioArcCounts() {
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.sovietTriumphEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.dividedSovereigntyEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.doomsday1983Events.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.resourceCrucibleEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.paxCyberneticaEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.solarpunkDawnEvents.count, 75)
+        XCTAssertEqual(NativeAlternativeHistoryCatalog.victoria3SystemicEvents.count, 50)
+        XCTAssertEqual(
+            NativeAlternativeHistoryCatalog.sovietTriumphEvents.count +
+                NativeAlternativeHistoryCatalog.dividedSovereigntyEvents.count +
+                NativeAlternativeHistoryCatalog.doomsday1983Events.count +
+                NativeAlternativeHistoryCatalog.resourceCrucibleEvents.count +
+                NativeAlternativeHistoryCatalog.paxCyberneticaEvents.count +
+                NativeAlternativeHistoryCatalog.solarpunkDawnEvents.count +
+                NativeAlternativeHistoryCatalog.victoria3SystemicEvents.count,
+            500
+        )
+    }
+
+    func testCatalogEventIntegrityAndMechanicTokens() {
+        let validTokens: Set = ["⟦ECO⟧", "⟦STB⟧", "⟦SEC⟧", "⟦MIL⟧", "⟦DIP⟧", "⟦MKT⟧", "⟦TNS⟧"]
+        let validImages: Set = [
+            "EventSovietCoup",
+            "EventFashodaCrisis",
+            "EventBreadRiots",
+            "EventCyberBlackout",
+            "EventResourceCrisis",
+            "EventSolarpunkDawn"
+        ]
+
+        for event in NativeAlternativeHistoryCatalog.events {
+            XCTAssertFalse(event.id.isEmpty)
+            XCTAssertFalse(event.title.isEmpty)
+            XCTAssertFalse(event.description.isEmpty)
+            XCTAssertFalse(event.date.isEmpty)
+            XCTAssertNotNil(event.imageAssetName)
+            XCTAssertTrue(validImages.contains(event.imageAssetName ?? ""))
+
+            if let token = event.hexLeverCode {
+                XCTAssertTrue(validTokens.contains(token), "Token \(token) must be one of the 7 valid mechanic codes")
+            }
+
+            guard let options = event.decisionOptions else {
+                XCTFail("Event \(event.id) must contain decision options")
+                continue
+            }
+            XCTAssertGreaterThanOrEqual(options.count, 2, "Event \(event.id) must offer at least 2 executive options")
+            for option in options {
+                XCTAssertFalse(option.id.isEmpty)
+                XCTAssertFalse(option.label.isEmpty)
+                XCTAssertFalse(option.detail.isEmpty)
+            }
+        }
+    }
+
+    func testLivingWorldBridgeConversionFromCatalog() {
+        guard let firstSevere = NativeAlternativeHistoryCatalog.events.first(where: { $0.importance == .severe }) else {
+            XCTFail("Must find at least one severe event in catalog")
+            return
+        }
+
+        let lwEvent = NativeAlternativeHistoryCatalog.livingWorldDecision(from: firstSevere, day: 42, targetCountry: "RUS")
+        XCTAssertEqual(lwEvent.id, firstSevere.id)
+        XCTAssertEqual(lwEvent.day, 42)
+        XCTAssertEqual(lwEvent.countryCode, "RUS")
+        XCTAssertEqual(lwEvent.rarity, .legendary)
+        XCTAssertEqual(lwEvent.options.count, firstSevere.decisionOptions?.count ?? 0)
+        XCTAssertEqual(lwEvent.imageAssetName, firstSevere.imageAssetName)
+        XCTAssertGreaterThan(lwEvent.severity, 0.8)
+    }
+
+    func testCandidateDecisionsFilteringForPlayerCountry() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.round = 1
+
+        let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(candidates.isEmpty, "Candidate decisions must be returned for Russian player in Soviet scenario")
+        XCTAssertEqual(candidates.first?.id, "ah-sov-001")
+    }
+
+    func testNativeCountryEventsCatalogContainsExactly1200Events() {
+        XCTAssertEqual(NativeCountryEventsCatalog.allEvents.count, 1200, "Country catalog must contain exactly 1,200 events across 12 playable countries")
+        let uniqueIDs = Set(NativeCountryEventsCatalog.allEvents.map(\.id))
+        XCTAssertEqual(uniqueIDs.count, 1200, "All 1,200 country event IDs must be strictly unique")
+    }
+
+    func testNativeCountryEventsCatalogCountryDistribution() {
+        XCTAssertEqual(NativeCountryEventsCatalog.brazilEvents.count, 100, "Brazil must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.unitedStatesEvents.count, 100, "United States must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.unitedKingdomEvents.count, 100, "United Kingdom must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.franceEvents.count, 100, "France must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.germanyEvents.count, 100, "Germany must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.italyEvents.count, 100, "Italy must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.russiaEvents.count, 100, "Russia must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.chinaEvents.count, 100, "China must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.japanEvents.count, 100, "Japan must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.indiaEvents.count, 100, "India must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.southAfricaEvents.count, 100, "South Africa must have exactly 100 events")
+        XCTAssertEqual(NativeCountryEventsCatalog.australiaEvents.count, 100, "Australia must have exactly 100 events")
+
+        let sum = NativeCountryEventsCatalog.brazilEvents.count +
+            NativeCountryEventsCatalog.unitedStatesEvents.count +
+            NativeCountryEventsCatalog.unitedKingdomEvents.count +
+            NativeCountryEventsCatalog.franceEvents.count +
+            NativeCountryEventsCatalog.germanyEvents.count +
+            NativeCountryEventsCatalog.italyEvents.count +
+            NativeCountryEventsCatalog.russiaEvents.count +
+            NativeCountryEventsCatalog.chinaEvents.count +
+            NativeCountryEventsCatalog.japanEvents.count +
+            NativeCountryEventsCatalog.indiaEvents.count +
+            NativeCountryEventsCatalog.southAfricaEvents.count +
+            NativeCountryEventsCatalog.australiaEvents.count
+        XCTAssertEqual(sum, 1200, "Total sum of country events must be exactly 1,200")
+    }
+
+    func testNativeCountryEventsIntegrityAndMechanicTokens() {
+        let validImages: Set = [
+            "EventSovietCoup",
+            "EventFashodaCrisis",
+            "EventBreadRiots",
+            "EventCyberBlackout",
+            "EventResourceCrisis",
+            "EventSolarpunkDawn"
+        ]
+
+        let validMechanics: Set = [
+            "⟦ECO⟧",
+            "⟦STB⟧",
+            "⟦SEC⟧",
+            "⟦MIL⟧",
+            "⟦DIP⟧",
+            "⟦MKT⟧",
+            "⟦TNS⟧"
+        ]
+
+        for event in NativeCountryEventsCatalog.allEvents {
+            XCTAssertFalse(event.id.isEmpty)
+            XCTAssertFalse(event.title.isEmpty)
+            XCTAssertFalse(event.description.isEmpty)
+            XCTAssertFalse(event.date.isEmpty)
+            XCTAssertNotNil(event.imageAssetName)
+            if let asset = event.imageAssetName {
+                XCTAssertTrue(validImages.contains(asset), "Asset name '\(asset)' must be one of the canonical 6 event images")
+            }
+            XCTAssertFalse(event.strategicEffects.isEmpty, "Country event \(event.id) must specify strategic effects")
+
+            guard let options = event.decisionOptions, options.count >= 2 else {
+                XCTFail("Event \(event.id) must offer at least 2 executive options")
+                continue
+            }
+
+            for opt in options {
+                XCTAssertFalse(opt.id.isEmpty)
+                XCTAssertFalse(opt.title.isEmpty)
+                XCTAssertFalse(opt.description.isEmpty)
+                XCTAssertTrue(
+                    validMechanics.contains(opt.mechanicToken),
+                    "Mechanic token '\(opt.mechanicToken)' must be a recognized token"
+                )
+            }
+        }
+    }
+
+    func testCombinedEventCatalogTotals1700UniqueEvents() {
+        let totalScenario = NativeAlternativeHistoryCatalog.events.count
+        let totalCountry = NativeCountryEventsCatalog.allEvents.count
+        XCTAssertEqual(totalScenario, 500)
+        XCTAssertEqual(totalCountry, 1200)
+        XCTAssertEqual(totalScenario + totalCountry, 1700, "Combined total must equal 1,700 canonical events")
+
+        let combinedIDs = NativeAlternativeHistoryCatalog.events.map(\.id) + NativeCountryEventsCatalog.allEvents.map(\.id)
+        let uniqueCombined = Set(combinedIDs)
+        XCTAssertEqual(uniqueCombined.count, 1700, "All 1,700 events across scenario and country catalogs must be globally unique")
+    }
+
+    func testCountryEventsCatalogLookupsAndDecisions() {
+        // Fast ID lookup in NativeCountryEventsCatalog
+        XCTAssertNotNil(NativeCountryEventsCatalog.event(byId: "evt-bra-001"))
+        XCTAssertNotNil(NativeCountryEventsCatalog.event(byId: "evt-usa-050"))
+        XCTAssertNotNil(NativeCountryEventsCatalog.event(byId: "evt-aus-100"))
+
+        // Fast ID lookup routed through NativeAlternativeHistoryCatalog.event(byId:)
+        XCTAssertNotNil(NativeAlternativeHistoryCatalog.event(byId: "evt-bra-001"))
+        XCTAssertNotNil(NativeAlternativeHistoryCatalog.event(byId: "evt-jpn-042"))
+        XCTAssertNotNil(NativeAlternativeHistoryCatalog.event(byId: "ah-sov-001"))
+
+        // Filter by country code
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "BRA").count, 100)
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "USA").count, 100)
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "SOV").count, 100)
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "CHI").count, 100)
+        XCTAssertEqual(NativeCountryEventsCatalog.events(forCountryCode: "JAP").count, 100)
+
+        // NativeAlternativeHistoryCatalog.events(forCountry:) aggregates scenario + country
+        let braEvents = NativeAlternativeHistoryCatalog.events(forCountry: "BRA")
+        XCTAssertGreaterThanOrEqual(braEvents.count, 100)
+
+        // Candidate decisions for player country
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "BRA", name: "Brazil")
+        state.round = 1
+
+        let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(candidates.isEmpty, "Brazil should receive candidates combining global and Brazil country events")
+        XCTAssertTrue(candidates.contains { $0.id == "evt-bra-001" }, "Brazil events must appear in candidate decisions")
+
+        // Flag exclusion check
+        state.eventFlags["evt-bra-001"] = "completed"
+        let updatedCandidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(updatedCandidates.contains { $0.id == "evt-bra-001" }, "Triggered event must be filtered out")
+    }
+
+    func testAllCountriesPlayableAndCompleteWithEvents() {
+        let countries = CountryCatalog.all
+        XCTAssertGreaterThanOrEqual(countries.count, 190, "Must have comprehensive sovereign nation coverage")
+
+        // Spot-check diverse world nations across continents
+        let testCodes = ["CAN", "MEX", "ARG", "KOR", "ESP", "TUR", "SAU", "POL", "EGY", "NLD", "SWE", "CHL", "COL", "NGA", "KEN", "VNM"]
+        for code in testCodes {
+            guard let country = countries.first(where: { $0.code == code }) else {
+                XCTFail("Country \(code) must exist in CountryCatalog.all")
+                continue
+            }
+
+            // Verify complete profile
+            let profile = Native2010WorldModel.profile(for: country)
+            XCTAssertGreaterThan(profile.nominalGDPTrillions, 0, "\(code) must have positive GDP")
+            XCTAssertGreaterThan(profile.stability, 0, "\(code) must have positive stability")
+            XCTAssertFalse(profile.historicalBrief.isEmpty, "\(code) must have non-empty brief")
+
+            // Verify 100 events
+            let events = NativeCountryEventsCatalog.events(forCountryCode: code)
+            XCTAssertEqual(events.count, 100, "\(code) must have exactly 100 country-specific events")
+            let uniqueIDs = Set(events.map(\.id))
+            XCTAssertEqual(uniqueIDs.count, 100, "\(code) must have 100 unique event IDs")
+
+            // Verify first event has country name and valid structure
+            if let firstEvent = events.first {
+                XCTAssertTrue(firstEvent.id.hasPrefix("evt-\(code.lowercased())-001"))
+                XCTAssertTrue(firstEvent.title.contains(country.name) || firstEvent.title.contains(code))
+                XCTAssertNotNil(firstEvent.decisionOptions)
+                XCTAssertGreaterThanOrEqual(firstEvent.decisionOptions?.count ?? 0, 2)
+            }
+        }
+    }
+
+    func testFlagshipCountriesStatus() {
+        let flagshipCodes = ["BRA", "USA", "GBR", "FRA", "DEU", "ITA", "RUS", "CHN", "JPN", "IND", "ZAF", "AUS"]
+        for code in flagshipCodes {
+            XCTAssertTrue(NativeCountryEventsCatalog.isFlagshipCountry(code), "\(code) must be identified as a flagship nation")
+        }
+
+        XCTAssertFalse(NativeCountryEventsCatalog.isFlagshipCountry("CAN"), "CAN should be identified as sovereign dynamic nation")
+        XCTAssertFalse(NativeCountryEventsCatalog.isFlagshipCountry("MEX"), "MEX should be identified as sovereign dynamic nation")
+    }
+
+    func testDynamicCountryEventsIntegrityAndTokens() {
+        let validMechanics: Set = ["⟦ECO⟧", "⟦STB⟧", "⟦SEC⟧", "⟦MIL⟧", "⟦DIP⟧", "⟦MKT⟧", "⟦TNS⟧"]
+        let canEvents = NativeCountryEventsCatalog.events(forCountryCode: "CAN")
+        XCTAssertEqual(canEvents.count, 100)
+
+        for event in canEvents {
+            XCTAssertFalse(event.id.isEmpty)
+            XCTAssertFalse(event.title.isEmpty)
+            XCTAssertFalse(event.description.isEmpty)
+            XCTAssertFalse(event.date.isEmpty)
+            XCTAssertNotNil(event.imageAssetName)
+            XCTAssertFalse(event.strategicEffects.isEmpty)
+
+            guard let options = event.decisionOptions, options.count >= 2 else {
+                XCTFail("Event \(event.id) must offer at least 2 executive options")
+                continue
+            }
+
+            for opt in options {
+                XCTAssertFalse(opt.id.isEmpty)
+                XCTAssertFalse(opt.title.isEmpty)
+                XCTAssertFalse(opt.description.isEmpty)
+                XCTAssertTrue(validMechanics.contains(opt.mechanicToken), "Token \(opt.mechanicToken) must be recognized")
+            }
+        }
+    }
+
+    func testLivingWorldFactorySupportsAnyCountry() {
+        // Test Flagship countries
+        let zafWorld = LivingWorldFactory.makeWorld(seed: 42, playerCode: "ZAF")
+        XCTAssertNotNil(zafWorld.countries["ZAF"], "South Africa must exist in Living World")
+
+        let ausWorld = LivingWorldFactory.makeWorld(seed: 42, playerCode: "AUS")
+        XCTAssertNotNil(ausWorld.countries["AUS"], "Australia must exist in Living World")
+
+        // Test non-flagship sovereign country
+        let canWorld = LivingWorldFactory.makeWorld(seed: 42, playerCode: "CAN")
+        XCTAssertNotNil(canWorld.countries["CAN"], "Canada must be dynamically created in Living World")
+        XCTAssertEqual(canWorld.playerCountryCode, "CAN")
+        XCTAssertGreaterThan(canWorld.countries["CAN"]?.treasury ?? 0, 0)
+    }
+
+    func testCandidateDecisionsInterleavingForImmediateCountryPlay() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "BRA", name: "Brazil")
+        state.round = 1
+
+        let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(candidates.isEmpty)
+        // First candidate should be Brazil's country event due to interleaving
+        XCTAssertEqual(candidates.first?.id, "evt-bra-001", "Country events must be interleaved at the start of candidates for immediate engagement")
+    }
+
+    func testTerminalChainOptionClearsNextChainFlagAndNeverDeadlocks() throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.eventFlags["next_chain"] = "soviet-ogas-launch"
+        state.eventFlags["soviet_gkchp"] = "gkchp-hardline"
+        state.round = 2
+
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        store.state = state
+
+        let pending = try XCTUnwrap(store.state?.pendingEventDecision)
+        XCTAssertEqual(pending.id, "event-soviet-ogas-1992")
+        let terminalOption = try XCTUnwrap(pending.decisionOptions?.first)
+        XCTAssertNil(terminalOption.nextChainedEventID)
+
+        store.resolvePendingEventDecision(option: terminalOption)
+
+        XCTAssertNil(store.state?.eventFlags["next_chain"], "Resolving a terminal chain option must remove next_chain so subsequent events do not deadlock")
+
+        let nextCandidates = try NativeAlternativeHistoryCatalog.candidateDecisions(state: XCTUnwrap(store.state))
+        XCTAssertFalse(nextCandidates.isEmpty, "Candidate decisions must continue flowing after chain completion")
+    }
+
+    func testCrossCountryNextChainNeverDeadlocksPlayerCandidates() {
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        // Set next_chain to an event targeting UKR (AI country)
+        state.eventFlags["next_chain"] = "ah-sov-011"
+        state.eventFlags["soviet_gkchp"] = "done"
+
+        let candidates = NativeAlternativeHistoryCatalog.candidateDecisions(state: state)
+        XCTAssertFalse(candidates.isEmpty, "Cross-country chain IDs must never deadlock player candidate queue")
+
+        // Evaluating alternative history events must resolve the AI chain event onto timeline and still provide a pending decision for the player
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        XCTAssertEqual(state.eventFlags["ah-sov-011"], "ai_resolved")
+        XCTAssertNotNil(state.pendingEventDecision, "Player must still receive their next decision after AI chain step resolves")
+        XCTAssertEqual(state.pendingEventDecision?.date, state.gameDate, "Triggered catalog event must be stamped with current gameDate")
+    }
+
+    func testSecondaryBracketedEffectsAreAppliedOnDecisionResolution() throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        state.stability = 50
+        let initialGDP = try XCTUnwrap(state.economicLedgers["RUS"]?.nominalGDPTrillions)
+        let initialSec = try XCTUnwrap(state.economicLedgers["RUS"]?.securityIndex)
+
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        store.state = state
+
+        let pending = try XCTUnwrap(store.state?.pendingEventDecision)
+        // First option has primary .internalStability (+10) and bracketed [⟦ECO⟧ +5, ⟦SEC⟧ +10, ⟦MKT⟧ -10]
+        let option = try XCTUnwrap(pending.decisionOptions?.first)
+        store.resolvePendingEventDecision(option: option)
+
+        let updatedState = try XCTUnwrap(store.state)
+        XCTAssertEqual(updatedState.stability, 60)
+        XCTAssertGreaterThan(try XCTUnwrap(updatedState.economicLedgers["RUS"]?.nominalGDPTrillions), initialGDP, "Secondary ⟦ECO⟧ +5 effect must increase GDP")
+        XCTAssertGreaterThan(try XCTUnwrap(updatedState.economicLedgers["RUS"]?.securityIndex), initialSec, "Secondary ⟦SEC⟧ +10 effect must increase securityIndex")
+        XCTAssertGreaterThanOrEqual(updatedState.timeline.first?.strategicEffects.count ?? 0, 3, "Resolution event must record both primary and secondary strategic effects")
+    }
+
+    func testSwitchCountryClearsPendingDecisionAndActiveChain() throws {
+        let store = try makeStore()
+        var state = makeState()
+        state.scenarioID = "soviet-triumph"
+        state.country = PlayerCountry(code: "RUS", name: "Russia")
+        NativeStrategyContextDatabase.evaluateAlternativeHistoryEvents(state: &state)
+        state.eventFlags["next_chain"] = "soviet-ogas-launch"
+        store.state = state
+
+        XCTAssertNotNil(store.state?.pendingEventDecision)
+        let switched = store.switchCountry(to: PlayerCountry(code: "BRA", name: "Brazil"))
+        XCTAssertTrue(switched)
+        XCTAssertNil(store.state?.pendingEventDecision, "Switching countries must clear any pending decision from the previous country")
+        XCTAssertNil(store.state?.eventFlags["next_chain"], "Switching countries must clear active chain pointer from the previous country")
+    }
+
+    func testCatalogDecisionOptionsAreContextualAndNonRepetitive() {
+        let scenarioLabels = NativeAlternativeHistoryCatalog.events.flatMap { $0.decisionOptions ?? [] }.map(\.label)
+        XCTAssertEqual(Set(scenarioLabels).count, scenarioLabels.count, "All 500 scenario events must have unique, event-specific option labels")
+
+        let flagshipLabels = NativeCountryEventsCatalog.allEvents.flatMap { $0.decisionOptions ?? [] }.map(\.label)
+        XCTAssertEqual(Set(flagshipLabels).count, flagshipLabels.count, "All 1,200 flagship country events must have unique, event-specific option labels")
+
+        let dynamicLabels = NativeCountryEventsCatalog.events(forCountryCode: "CAN").flatMap { $0.decisionOptions ?? [] }.map(\.label)
+        XCTAssertEqual(Set(dynamicLabels).count, dynamicLabels.count, "Dynamically synthesized country events must have unique option labels per event")
+    }
 }
 
 @MainActor
@@ -4893,7 +5382,9 @@ private actor AsyncGate {
     }
 
     func waitUntilEntered() async {
-        if entered { return }
+        if entered {
+            return
+        }
         await withCheckedContinuation { continuation in
             enterContinuations.append(continuation)
         }

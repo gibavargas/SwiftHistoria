@@ -610,7 +610,9 @@ enum OpenRouterSuggestionParser {
             let suggestions = dictionaries.enumerated().compactMap { index, dictionary in
                 nativeSuggestion(from: dictionary, state: state, index: index)
             }
-            if !suggestions.isEmpty { return suggestions }
+            if !suggestions.isEmpty {
+                return suggestions
+            }
         }
         return []
     }
@@ -684,7 +686,9 @@ enum OpenRouterSuggestionParser {
 
     private static func firstString(_ dictionary: [String: Any], keys: [String]) -> String? {
         for key in keys {
-            if dictionary[key] is NSNull { continue }
+            if dictionary[key] is NSNull {
+                continue
+            }
             if let value = dictionary[key] as? String {
                 let sanitized = sanitizeFoundationModelText(value)
                 if !sanitized.isEmpty, !["null", "nil", "none"].contains(sanitized.lowercased()) {
@@ -702,9 +706,15 @@ enum OpenRouterSuggestionParser {
     }
 
     private static func intValue(_ value: Any?) -> Int? {
-        if let value = value as? Int { return value }
-        if let value = value as? Double { return Int(value.rounded()) }
-        if let value = value as? String { return Int(value.trimmingCharacters(in: .whitespacesAndNewlines)) }
+        if let value = value as? Int {
+            return value
+        }
+        if let value = value as? Double {
+            return Int(value.rounded())
+        }
+        if let value = value as? String {
+            return Int(value.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
         return nil
     }
 }
@@ -825,21 +835,31 @@ private enum OpenRouterTurnParser {
         for key in keys {
             if let value = dictionary[key] as? String {
                 let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimmed.isEmpty { return trimmed }
+                if !trimmed.isEmpty {
+                    return trimmed
+                }
             }
         }
         return nil
     }
 
     private static func intValue(_ value: Any?) -> Int? {
-        if let value = value as? Int { return value }
-        if let value = value as? Double { return Int(value.rounded()) }
-        if let value = value as? String { return Int(value.trimmingCharacters(in: .whitespacesAndNewlines)) }
+        if let value = value as? Int {
+            return value
+        }
+        if let value = value as? Double {
+            return Int(value.rounded())
+        }
+        if let value = value as? String {
+            return Int(value.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
         return nil
     }
 
     private static func boolValue(_ value: Any?) -> Bool? {
-        if let value = value as? Bool { return value }
+        if let value = value as? Bool {
+            return value
+        }
         if let value = value as? String {
             switch value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
             case "true", "yes", "1": return true

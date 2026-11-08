@@ -188,26 +188,48 @@ enum NativeQuickActionCatalog {
         let firstWord = trimmed.split(separator: " ").first.map(String.init) ?? ""
         // Multi-language invasion detection (EN/PT/ES)
         let invadeWords: Set = ["invade", "invadir", "atacar", "attack", "conquer", "conquistar"]
-        if invadeWords.contains(firstWord) { return 40 }
+        if invadeWords.contains(firstWord) {
+            return 40
+        }
         let stabilizeWords: Set = ["stabilize", "estabilizar", "pacificar", "pacify"]
-        if stabilizeWords.contains(firstWord) { return 25 }
+        if stabilizeWords.contains(firstWord) {
+            return 25
+        }
         let fortifyWords: Set = ["fortify", "fortificar", "reforzar", "reforçar", "defend", "defender"]
-        if fortifyWords.contains(firstWord) { return 35 }
+        if fortifyWords.contains(firstWord) {
+            return 35
+        }
         let withdrawWords: Set = ["withdraw", "retirar", "retirarse", "recuar"]
-        if withdrawWords.contains(firstWord) { return 10 }
-        if trimmed.hasPrefix("negotiate autonomy") || trimmed.hasPrefix("negociar autonomia") { return 30 }
+        if withdrawWords.contains(firstWord) {
+            return 10
+        }
+        if trimmed.hasPrefix("negotiate autonomy") || trimmed.hasPrefix("negociar autonomia") {
+            return 30
+        }
         let rebuildWords: Set = ["rebuild", "reconstruir", "reconstrução"]
-        if rebuildWords.contains(firstWord) { return 35 }
-        if trimmed.hasPrefix("open trade corridor") || trimmed.hasPrefix("abrir corredor") { return 25 }
+        if rebuildWords.contains(firstWord) {
+            return 35
+        }
+        if trimmed.hasPrefix("open trade corridor") || trimmed.hasPrefix("abrir corredor") {
+            return 25
+        }
         // Political reform keywords
         let liberalizeWords: Set = ["liberalize", "liberalizar", "democratize", "democratizar"]
-        if liberalizeWords.contains(firstWord) { return 50 }
+        if liberalizeWords.contains(firstWord) {
+            return 50
+        }
         let consolidateWords: Set = ["consolidate", "consolidar"]
-        if consolidateWords.contains(firstWord) { return 45 }
+        if consolidateWords.contains(firstWord) {
+            return 45
+        }
         let suspendWords: Set = ["suspend", "suspender"]
-        if suspendWords.contains(firstWord) { return 60 }
+        if suspendWords.contains(firstWord) {
+            return 60
+        }
         let reformWords: Set = ["reform", "reformar"]
-        if reformWords.contains(firstWord) { return 35 }
+        if reformWords.contains(firstWord) {
+            return 35
+        }
         return nil
     }
 

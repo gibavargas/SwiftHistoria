@@ -279,7 +279,9 @@ struct NativeWorldMap: View {
     }
 
     private func sectorRelation(code: String, playerCode: String, sectorsByCode: [String: Native2010MapSector]) -> SectorRelation {
-        if code == playerCode { return .player }
+        if code == playerCode {
+            return .player
+        }
 
         if let sector = sectorsByCode[code] {
             switch sector.relation {
@@ -573,9 +575,14 @@ struct NativeWorldMap: View {
         }
 
         var fillOpacity = 0.22
-        if isPlayerOccupier { fillOpacity = 0.38 }
-        else if isSelectedCountry { fillOpacity = 0.3 }
-        if reg.id == selectedRegionID { fillOpacity += 0.15 }
+        if isPlayerOccupier {
+            fillOpacity = 0.38
+        } else if isSelectedCountry {
+            fillOpacity = 0.3
+        }
+        if reg.id == selectedRegionID {
+            fillOpacity += 0.15
+        }
 
         let isFallout = state.nuclearFalloutRegions.contains(reg.id) || conflict?.mode == .nuclearFallout
         let isRebel = occupierCode == "REB" || conflict?.mode == .guerrillaControl
@@ -593,22 +600,20 @@ struct NativeWorldMap: View {
             let originalRelation = sectorRelation(code: reg.countryCode, playerCode: state.country.code, sectorsByCode: sectorsByCode)
             let originalColor = relationColor(originalRelation)
             drawDiagonalStripes(context: context, path: path, size: size, occupierColor: stanceColor, originalColor: originalColor)
-        } else {
-            if selectedLayer == .relations {
-                switch relation {
-                case .ally:
-                    context.fill(path, with: .color(Color.neonTeal.opacity(0.32)))
-                    drawDotGrid(context: context, path: path, color: NativeWarRoomTheme.graphite.opacity(0.22))
-                case .rival:
-                    drawRivalHashedLines(context: context, path: path, color: Color.softRed.opacity(0.42))
-                case .neutral:
-                    context.fill(path, with: .color(Color(hex: "#b9a97d").opacity(0.36)))
-                case .player:
-                    context.fill(path, with: .color(Color.glowingCyan.opacity(0.52)))
-                }
-            } else {
-                context.fill(path, with: .color(stanceColor.opacity(fillOpacity)))
+        } else if selectedLayer == .relations {
+            switch relation {
+            case .ally:
+                context.fill(path, with: .color(Color.neonTeal.opacity(0.32)))
+                drawDotGrid(context: context, path: path, color: NativeWarRoomTheme.graphite.opacity(0.22))
+            case .rival:
+                drawRivalHashedLines(context: context, path: path, color: Color.softRed.opacity(0.42))
+            case .neutral:
+                context.fill(path, with: .color(Color(hex: "#b9a97d").opacity(0.36)))
+            case .player:
+                context.fill(path, with: .color(Color.glowingCyan.opacity(0.52)))
             }
+        } else {
+            context.fill(path, with: .color(stanceColor.opacity(fillOpacity)))
         }
 
         // Draw economic growth highlight
@@ -787,7 +792,9 @@ struct NativeWorldMap: View {
         for lm in GeopoliticalMapData.landmasses {
             let bounds = lm.path.boundingRect
             let center = CGPoint(x: bounds.midX, y: bounds.midY)
-            if !visibleRect.contains(center) { continue }
+            if !visibleRect.contains(center) {
+                continue
+            }
             let path = lm.path.applying(transform)
             context.fill(path, with: .color(Color(hex: "#c9bc92")))
             context.stroke(path, with: .color(NativeWarRoomTheme.graphite.opacity(0.28)), lineWidth: 1.0 / zoomScale)
@@ -798,7 +805,9 @@ struct NativeWorldMap: View {
 
         // Draw countries / partitions
         for reg in GeopoliticalMapData.regions {
-            if !visibleRect.contains(reg.center) { continue }
+            if !visibleRect.contains(reg.center) {
+                continue
+            }
             drawRegion(
                 context: context,
                 reg: reg,
@@ -814,7 +823,9 @@ struct NativeWorldMap: View {
         // Draw region / state name labels under appropriate zoom levels (LOD)
         if zoomScale >= 1.5 {
             for reg in GeopoliticalMapData.nonWaterRegions {
-                if !visibleRect.contains(reg.center) { continue }
+                if !visibleRect.contains(reg.center) {
+                    continue
+                }
                 let isState = reg.id.contains("_") || reg.id.count > 3
                 let shouldShow: Bool = if zoomScale >= 3.0 {
                     true
@@ -854,7 +865,9 @@ struct NativeWorldMap: View {
         if zoomScale >= 1.5 {
             let stateTransform = CGAffineTransform(scaleX: scaleX, y: scaleY)
             for stateReg in GeopoliticalMapData.states {
-                if !visibleRect.contains(stateReg.center) { continue }
+                if !visibleRect.contains(stateReg.center) {
+                    continue
+                }
                 let path = stateReg.path.applying(stateTransform)
                 context.stroke(path, with: .color(NativeWarRoomTheme.graphite.opacity(0.22)), lineWidth: 0.8 / zoomScale)
             }
@@ -874,7 +887,9 @@ struct NativeWorldMap: View {
         }
 
         for city in GeopoliticalMapData.cities {
-            if !visibleRect.contains(city.coordinate) { continue }
+            if !visibleRect.contains(city.coordinate) {
+                continue
+            }
             let isPlayerCapital = city.isCapital &&
                 GeopoliticalMapData.canonicalCountryCode(city.countryCode) == GeopoliticalMapData.canonicalCountryCode(state.country.code)
             let isVisibleAtWorldScale = isPlayerCapital || city.population >= cityPopulationThreshold
@@ -905,7 +920,9 @@ struct NativeWorldMap: View {
         // Dynamic Level of Detail (LOD) terrain icons
         if zoomScale >= 1.5 {
             for reg in GeopoliticalMapData.nonWaterRegions {
-                if !visibleRect.contains(reg.center) { continue }
+                if !visibleRect.contains(reg.center) {
+                    continue
+                }
                 drawTerrainIcon(context: context, terrain: reg.terrain, center: reg.center, scaleX: scaleX, scaleY: scaleY)
             }
         }
@@ -954,7 +971,9 @@ struct NativeWorldMap: View {
             }
         }
         for reg in GeopoliticalMapData.nonWaterRegions {
-            if !visibleRect.contains(reg.center) { continue }
+            if !visibleRect.contains(reg.center) {
+                continue
+            }
             let occupierCode = state.regionOccupations[reg.id] ?? reg.countryCode
             let ledger = state.economicLedgers[occupierCode]
             let conflict = state.regionConflicts[reg.id]
@@ -965,7 +984,9 @@ struct NativeWorldMap: View {
             let shouldDrawPolice = selectedLayer == .strategy &&
                 zoomScale >= 2.5 &&
                 (reg.countryCode == state.country.code || securityIndex < 50.0 || conflict != nil)
-            if !militaryRegionIDs.contains(reg.id) && !shouldDrawPolice { continue }
+            if !militaryRegionIDs.contains(reg.id) && !shouldDrawPolice {
+                continue
+            }
 
             let isOccupied = occupierCode != reg.countryCode
             let isMilitaryConflict = conflict?.mode == .contestedBorder || conflict?.mode == .conventionalOccupation

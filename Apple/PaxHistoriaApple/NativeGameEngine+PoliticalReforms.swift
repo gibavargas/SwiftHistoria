@@ -30,11 +30,21 @@ extension NativeGameEngine {
     /// Maps a directive text to a `NativePoliticalReformKind`, or nil if it is not a reform action.
     static func politicalReformKind(from text: String) -> NativePoliticalReformKind? {
         let lower = sanitizeFoundationModelText(text).lowercased()
-        if lower.hasPrefix("call snap elections") || lower.hasPrefix("call snap election") { return .snapElection }
-        if lower.hasPrefix("liberalize the political") || lower.hasPrefix("liberalize") { return .liberalize }
-        if lower.hasPrefix("consolidate executive") || lower.hasPrefix("consolidate") { return .consolidate }
-        if lower.hasPrefix("suspend constitutional") || lower.hasPrefix("suspend") { return .suspendConstitution }
-        if lower.hasPrefix("reform the electoral") || lower.hasPrefix("reform electoral") { return .electoralReform }
+        if lower.hasPrefix("call snap elections") || lower.hasPrefix("call snap election") {
+            return .snapElection
+        }
+        if lower.hasPrefix("liberalize the political") || lower.hasPrefix("liberalize") {
+            return .liberalize
+        }
+        if lower.hasPrefix("consolidate executive") || lower.hasPrefix("consolidate") {
+            return .consolidate
+        }
+        if lower.hasPrefix("suspend constitutional") || lower.hasPrefix("suspend") {
+            return .suspendConstitution
+        }
+        if lower.hasPrefix("reform the electoral") || lower.hasPrefix("reform electoral") {
+            return .electoralReform
+        }
         return nil
     }
 
@@ -176,9 +186,7 @@ extension NativeGameEngine {
             guard action.status == .resolved, action.outcome == nil else { continue }
 
             let text = action.detail.isEmpty ? action.title : action.detail
-            guard let reformKind = politicalReformKind(from: text) else { continue }
-
-            guard var playerLedger = economicLedgers[state.country.code] else { continue }
+            guard let reformKind = politicalReformKind(from: text), var playerLedger = economicLedgers[state.country.code] else { continue }
             let currentGov = playerLedger.governmentType
 
             // Base success chance from catalog; fallback to kind-specific default
