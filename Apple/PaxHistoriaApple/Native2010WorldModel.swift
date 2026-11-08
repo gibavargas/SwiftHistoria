@@ -428,6 +428,10 @@ enum Native2010WorldModel {
         }
     }
 
+    static func canonNotice(for startDate: String) -> String {
+        "Real public history is authoritative through \(startDate); every later turn is an alternate-history simulation."
+    }
+
     static func promptContext(for state: NativeCampaignState) -> String {
         let profile = profile(for: state.country)
         let alignments = alignments(for: state)
@@ -439,14 +443,21 @@ enum Native2010WorldModel {
             .prefix(6)
             .map { "\($0.regionID): \($0.mode.displayName), controller \($0.controllerCode), intensity \($0.intensity)/5" }
             .joined(separator: "; ")
+        let is2010 = state.startDate == historicalStartDate
+        let canonHeader = is2010
+            ? "2010 historical canon: \(canonNotice)"
+            : "Scenario historical canon (\(state.scenarioName)): \(canonNotice(for: state.startDate))"
+        let closingRule = is2010
+            ? "Do not invent future blocs, fictional wars, or post-2010 countries as starting facts."
+            : "Do not invent future blocs, anachronistic wars, or countries outside the \(state.startDate) scenario baseline as starting facts."
         return """
-        2010 historical canon: \(canonNotice)
+        \(canonHeader)
         Selected country: \(state.country.name) (\(state.country.code)).
-        2010 baseline: nominal GDP \(String(format: "$%.2fT", profile.nominalGDPTrillions)), GDP growth \(formatPercent(profile.gdpGrowthPercent)), inflation \(formatPercent(profile.inflationPercent)), energy security \(profile.energySecurity)%, food security \(profile.foodSecurity)%, nuclear status \(profile.nuclearStatus).
+        Opening baseline: nominal GDP \(String(format: "$%.2fT", state.economicLedger.nominalGDPTrillions)), GDP growth \(formatPercent(state.economicLedger.realGrowthPercent)), inflation \(formatPercent(state.economicLedger.inflationPercent)), energy security \(profile.energySecurity)%, food security \(profile.foodSecurity)%, nuclear status \(profile.nuclearStatus).
         Current alternate-history ledger: nominal GDP \(String(format: "$%.2fT", state.economicLedger.nominalGDPTrillions)), growth \(formatPercent(state.economicLedger.realGrowthPercent)), inflation \(formatUnsignedPercent(state.economicLedger.inflationPercent)), budget balance \(formatPercent(state.economicLedger.budgetBalancePercentGDP)) of GDP, public debt \(formatUnsignedPercent(state.economicLedger.publicDebtPercentGDP)) of GDP, trade balance \(formatPercent(state.economicLedger.tradeBalancePercentGDP)) of GDP, public security \(String(format: "%.1f", state.economicLedger.securityIndex))/100, insurgency pressure \(String(format: "%.1f%%", state.economicLedger.rebelControlPercent)).
         Current map conflict states: \(conflictSummary.isEmpty ? "No contested, occupied, insurgent-held, or nuclear fallout regions are recorded." : conflictSummary).
-        2010 diplomatic alignment: \(alignments).
-        Do not invent future blocs, fictional wars, or post-2010 countries as starting facts.
+        Diplomatic alignment: \(alignments).
+        \(closingRule)
         """
     }
 

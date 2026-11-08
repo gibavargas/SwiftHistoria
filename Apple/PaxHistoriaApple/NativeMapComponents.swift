@@ -503,7 +503,7 @@ struct NativeMapHUD: View {
             // Economic Vitals — scrollable row
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    NativeStatusChip(text: "Capacity \(state.administrativeCapacity)/100", systemImage: "sparkles", tintColor: nativeCapacityColor(for: state.administrativeCapacity))
+                    NativeStatusChip(text: "Capacity \(state.administrativeCapacity)/\(NativeCampaignStore.maximumAdministrativeCapacity)", systemImage: "sparkles", tintColor: nativeCapacityColor(for: state.administrativeCapacity))
                     NativeStatusChip(text: "GDP \(gdp.value) (\(gdp.delta))", systemImage: "dollarsign.circle", tintColor: Color.neonTeal)
                     NativeStatusChip(text: "Budget \(nativeFormatSignedPercent(ledger.budgetBalancePercentGDP))", systemImage: "banknote", tintColor: budgetTint)
                     NativeStatusChip(text: "Debt \(nativeFormatPercent(ledger.publicDebtPercentGDP))", systemImage: "creditcard", tintColor: debtTint)

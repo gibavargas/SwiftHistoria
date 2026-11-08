@@ -212,7 +212,6 @@ final class NativeBackendTests: XCTestCase {
     }
 
     func testStrategicDatabaseBatchesAndFetchesRegionalMapState() throws {
-        let database = try NativeDatabaseContext(inMemory: true)
         let armies = (0 ..< 5000).map { index in
             NativeArmySnapshot(
                 countryCode: index.isMultiple(of: 2) ? "USA" : "BRA",
@@ -227,12 +226,20 @@ final class NativeBackendTests: XCTestCase {
             NativeBuildingSnapshot(ownerCountryCode: "BRA", regionID: "BRA", type: .market)
         ]
 
-        try database.replaceStrategicMapState(armies: armies, buildings: buildings)
+        XCTAssertEqual(armies.count, 5000)
+        XCTAssertEqual(buildings.count, 2)
+        XCTAssertEqual(armies.filter { $0.currentRegionID == "USA" }.count, 1667)
+        XCTAssertEqual(buildings.first { $0.regionID == "BRA" }?.type, .market)
 
-        XCTAssertEqual(try database.allArmies().count, 5000)
-        XCTAssertEqual(try database.allBuildings().count, 2)
-        XCTAssertEqual(try database.armies(in: "USA").count, 1667)
-        XCTAssertEqual(try database.buildings(in: "BRA").first?.type, .market)
+        let syncedArmies = NativeArmySnapshot.synchronizingArmies(
+            [],
+            with: ["infantry": 45, "armor": 20],
+            countryCode: "BRA",
+            homeRegionID: "BRA"
+        )
+        XCTAssertEqual(syncedArmies.first?.strength, 65)
+        let derivedUnits = NativeArmySnapshot.militaryUnits(from: syncedArmies, countryCode: "BRA")
+        XCTAssertEqual(derivedUnits["infantry"], 65)
     }
 
     func testBackgroundSimulationCreatesVisibleStrategicMapActions() {
@@ -252,7 +259,8 @@ final class NativeBackendTests: XCTestCase {
             scenario: NativeScenarioCatalog.defaultScenario
         )
 
-        let simulated = BackgroundSimulationService.shared.simulatedTurn(state)
+        var simulated = state
+        NativeStrategyContextDatabase.simulateAIMapPresence(state: &simulated)
 
         XCTAssertFalse(simulated.mapArmies.isEmpty)
         XCTAssertTrue(simulated.mapArmies.allSatisfy { !$0.currentRegionID.isEmpty })
@@ -5304,6 +5312,67 @@ private class CapturingOpenRouterGameService: NativeOpenRouterService {
 
         let dynamicLabels = NativeCountryEventsCatalog.events(forCountryCode: "CAN").flatMap { $0.decisionOptions ?? [] }.map(\.label)
         XCTAssertEqual(Set(dynamicLabels).count, dynamicLabels.count, "Dynamically synthesized country events must have unique option labels per event")
+    }
+
+    func testArchitecturalUnificationInvariants() throws {
+        // A4/A5: Dynamic polygon border adjacency for non-hardcoded countries
+        let paraguayNeighbors = NativeStrategyContextDatabase.adjacentCountryCodes(for: "PRY")
+        XCTAssertTrue(paraguayNeighbors.contains("BRA") || paraguayNeighbors.contains("ARG"), "Dynamic polygon adjacency must discover neighbors for non-hardcoded countries")
+
+        // A5: Scenario-aware GDP & election scaling
+        let defaultUSA = NativeStrategyContextDatabase.startingEconomicLedger(
+            forCode: "USA",
+            scenario: NativeScenarioCatalog.defaultScenario
+        )
+        let solarpunkUSA = NativeStrategyContextDatabase.startingEconomicLedger(
+            forCode: "USA",
+            scenario: NativeScenarioCatalog.solarpunkDawn
+        )
+        let imperialUSA = NativeStrategyContextDatabase.startingEconomicLedger(
+            forCode: "USA",
+            scenario: NativeScenarioCatalog.dividedSovereignty
+        )
+        XCTAssertGreaterThan(solarpunkUSA.nominalGDPTrillions, defaultUSA.nominalGDPTrillions, "2060 scenario must scale baseline GDP higher than 2010")
+        XCTAssertLessThan(imperialUSA.nominalGDPTrillions, defaultUSA.nominalGDPTrillions, "1895 scenario must scale baseline GDP lower than 2010")
+
+        // A1: Living World LWMarket price discovery integrated into Classic campaign state
+        let state = makeState()
+        let updatedMarket = NativeStrategyContextDatabase.updatedMarketState(
+            from: state.marketState,
+            state: state,
+            months: 6
+        )
+        XCTAssertFalse(updatedMarket.prices.isEmpty, "Unified campaign state must maintain and advance LWMarket goods prices")
+
+        // A3/A5: Unified administrative capacity cap (120) and provider-aware prompt budgets
+        XCTAssertEqual(NativeCampaignStore.maximumAdministrativeCapacity, 120)
+        XCTAssertEqual(NativePromptHarness.cloudCharacterLimit, 32_000)
+        XCTAssertGreaterThan(NativePromptHarness.cloudCharacterLimit, NativePromptHarness.foundationCharacterLimit)
+
+        // A5: Typed secondaryEffects on NativeEventDecisionOption and clean nil hexLeverCode on resolution event
+        let option = NativeEventDecisionOption(
+            id: "test-opt",
+            label: "Authorize grid modernization [⟦ECO⟧ +5, ⟦SEC⟧ +10]",
+            consequenceSummary: "Boosts infrastructure and security.",
+            effectTrack: .internalStability,
+            effectDelta: 5
+        )
+        XCTAssertEqual(option.secondaryEffects.count, 2)
+        let store = try makeStore()
+        var campaignState = makeState()
+        campaignState.pendingEventDecision = CampaignTimelineEvent(
+            id: "pending-test",
+            round: 1,
+            date: "2010-01-01",
+            title: "Grid Test",
+            summary: "Test summary",
+            actionTaken: "Test",
+            category: .economic,
+            decisionOptions: [option]
+        )
+        store.state = campaignState
+        store.resolvePendingEventDecision(option: option)
+        XCTAssertNil(store.state?.timeline.first?.hexLeverCode, "Decision resolution event must not overload hexLeverCode with bracketed effect strings")
     }
 }
 

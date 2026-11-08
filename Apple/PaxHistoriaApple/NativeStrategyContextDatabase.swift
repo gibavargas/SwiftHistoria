@@ -374,30 +374,127 @@ enum NativeStrategyContextDatabase {
         Array(Set(defaultStrategicCountryCodes + Array(state.dynamicCountries.keys) + Array(state.economicLedgers.keys) + [state.country.code])).sorted()
     }
 
-    static func adjacentCountryCodes(for countryCode: String) -> [String] {
-        switch countryCode {
-        case "USA": ["CHN", "RUS", "GBR", "FRA", "CAN", "MEX"]
-        case "CHN": ["RUS", "IND", "JPN", "KOR"]
-        case "BRA": ["USA", "ZAF", "ARG"]
-        case "DEU": ["FRA", "GBR", "RUS", "ITA", "POL"]
-        case "JPN": ["CHN", "RUS", "AUS", "KOR", "USA"]
-        case "GBR": ["FRA", "DEU", "USA", "CAN"]
-        case "FRA": ["DEU", "GBR", "ZAF", "ITA", "ESP"]
-        case "IND": ["CHN", "RUS", "ZAF", "GBR"]
-        case "RUS": ["CHN", "DEU", "JPN", "USA", "POL"]
-        case "ZAF": ["BRA", "IND", "FRA", "GBR"]
-        case "AUS": ["JPN", "IND", "USA", "GBR"]
-        case "ITA": ["FRA", "DEU", "GBR", "ESP"]
-        case "CAN": ["USA", "GBR", "FRA"]
-        case "MEX": ["USA", "BRA", "ESP"]
-        case "KOR": ["JPN", "USA", "CHN"]
-        case "ESP": ["FRA", "GBR", "ITA", "DEU"]
-        case "TUR": ["RUS", "DEU", "FRA", "SAU"]
-        case "SAU": ["USA", "TUR", "FRA", "GBR"]
-        case "ARG": ["BRA", "USA", "ESP"]
-        case "POL": ["DEU", "RUS", "FRA", "GBR"]
-        default: ["USA", "GBR", "DEU", "CHN"]
+    private static let computedAdjacencyTable: [String: [String]] = {
+        let landRegions = GeopoliticalMapData.regions.filter { $0.countryCode != "WATER" && !$0.countryCode.isEmpty }
+        struct RegionEnvelope {
+            let countryCode: String
+            let minX: CGFloat
+            let maxX: CGFloat
+            let minY: CGFloat
+            let maxY: CGFloat
+            let samplePoints: [CGPoint]
         }
+        let envelopes = landRegions.compactMap { region -> RegionEnvelope? in
+            let points = region.rings.flatMap(\.self)
+            guard !points.isEmpty else { return nil }
+            var minX = CGFloat.greatestFiniteMagnitude
+            var maxX = -CGFloat.greatestFiniteMagnitude
+            var minY = CGFloat.greatestFiniteMagnitude
+            var maxY = -CGFloat.greatestFiniteMagnitude
+            for pt in points {
+                if pt.x < minX { minX = pt.x }
+                if pt.x > maxX { maxX = pt.x }
+                if pt.y < minY { minY = pt.y }
+                if pt.y > maxY { maxY = pt.y }
+            }
+            let step = max(1, points.count / 24)
+            let sampled = stride(from: 0, to: points.count, by: step).map { points[$0] }
+            return RegionEnvelope(
+                countryCode: GeopoliticalMapData.canonicalCountryCode(region.countryCode),
+                minX: minX,
+                maxX: maxX,
+                minY: minY,
+                maxY: maxY,
+                samplePoints: sampled
+            )
+        }
+
+        let borderThreshold: CGFloat = 0.016
+        let borderThresholdSq = borderThreshold * borderThreshold
+        var neighborsByCountry: [String: Set<String>] = [
+            "USA": ["CHN", "RUS", "GBR", "FRA", "CAN", "MEX"],
+            "CHN": ["RUS", "IND", "JPN", "KOR"],
+            "BRA": ["USA", "ZAF", "ARG"],
+            "DEU": ["FRA", "GBR", "RUS", "ITA", "POL"],
+            "JPN": ["CHN", "RUS", "AUS", "KOR", "USA"],
+            "GBR": ["FRA", "DEU", "USA", "CAN"],
+            "FRA": ["DEU", "GBR", "ZAF", "ITA", "ESP"],
+            "IND": ["CHN", "RUS", "ZAF", "GBR"],
+            "RUS": ["CHN", "DEU", "JPN", "USA", "POL"],
+            "ZAF": ["BRA", "IND", "FRA", "GBR"],
+            "AUS": ["JPN", "IND", "USA", "GBR"],
+            "ITA": ["FRA", "DEU", "GBR", "ESP"],
+            "CAN": ["USA", "GBR", "FRA"],
+            "MEX": ["USA", "BRA", "ESP"],
+            "KOR": ["JPN", "USA", "CHN"],
+            "ESP": ["FRA", "GBR", "ITA", "DEU"],
+            "TUR": ["RUS", "DEU", "FRA", "SAU"],
+            "SAU": ["USA", "TUR", "FRA", "GBR"],
+            "ARG": ["BRA", "USA", "ESP"],
+            "POL": ["DEU", "RUS", "FRA", "GBR"]
+        ]
+
+        for i in 0 ..< envelopes.count {
+            let a = envelopes[i]
+            for j in (i + 1) ..< envelopes.count {
+                let b = envelopes[j]
+                guard a.countryCode != b.countryCode else { continue }
+                guard a.maxX + borderThreshold >= b.minX,
+                      b.maxX + borderThreshold >= a.minX,
+                      a.maxY + borderThreshold >= b.minY,
+                      b.maxY + borderThreshold >= a.minY
+                else { continue }
+
+                var touches = false
+                outer: for pa in a.samplePoints {
+                    for pb in b.samplePoints {
+                        let dx = pa.x - pb.x
+                        let dy = pa.y - pb.y
+                        if dx * dx + dy * dy <= borderThresholdSq {
+                            touches = true
+                            break outer
+                        }
+                    }
+                }
+                if touches {
+                    neighborsByCountry[a.countryCode, default: []].insert(b.countryCode)
+                    neighborsByCountry[b.countryCode, default: []].insert(a.countryCode)
+                }
+            }
+        }
+
+        var result: [String: [String]] = [:]
+        for (code, set) in neighborsByCountry {
+            result[code] = set.sorted()
+        }
+        return result
+    }()
+
+    static func adjacentCountryCodes(for countryCode: String) -> [String] {
+        let canonical = GeopoliticalMapData.canonicalCountryCode(countryCode)
+        if let neighbors = computedAdjacencyTable[canonical], !neighbors.isEmpty {
+            return neighbors
+        }
+        // Fallback for island nations without close polygon vertices: nearest 4 countries by centroid
+        let allRegions = GeopoliticalMapData.regions.filter { $0.countryCode != "WATER" }
+        guard let origin = allRegions.first(where: { GeopoliticalMapData.canonicalCountryCode($0.countryCode) == canonical })?.center else {
+            return ["USA", "GBR", "DEU", "CHN"]
+        }
+        var bestByCountry: [String: CGFloat] = [:]
+        for region in allRegions {
+            let other = GeopoliticalMapData.canonicalCountryCode(region.countryCode)
+            guard other != canonical, other != "WATER" else { continue }
+            let dx = region.center.x - origin.x
+            let dy = region.center.y - origin.y
+            let distSq = dx * dx + dy * dy
+            if let existing = bestByCountry[other] {
+                bestByCountry[other] = min(existing, distSq)
+            } else {
+                bestByCountry[other] = distSq
+            }
+        }
+        let nearest = bestByCountry.sorted { $0.value < $1.value }.prefix(4).map(\.key)
+        return nearest.isEmpty ? ["USA", "GBR", "DEU", "CHN"] : nearest
     }
 
     static func startingGovernmentType(for code: String) -> String {
@@ -430,8 +527,11 @@ enum NativeStrategyContextDatabase {
         let cycleLength: Int
     }
 
-    static func startingElectionProfile(for code: String) -> ElectionProfile {
-        switch code {
+    static func startingElectionProfile(
+        for code: String,
+        scenario: NativeScenario = NativeScenarioCatalog.defaultScenario
+    ) -> ElectionProfile {
+        let base: ElectionProfile = switch code {
         case "BRA":
             ElectionProfile(startingRound: 10, cycleLength: 48) // October 2010 (4 years)
         case "USA":
@@ -465,11 +565,40 @@ enum NativeStrategyContextDatabase {
         default:
             ElectionProfile(startingRound: 48, cycleLength: 48)
         }
+        guard !Native2010WorldModel.isReal2010Scenario(scenario) else {
+            return base
+        }
+        let yearPrefix = Int(scenario.startDate.prefix(4)) ?? 2010
+        let yearOffsetMonths = abs(yearPrefix - 2010) * 12
+        let shiftedStart = ((base.startingRound + yearOffsetMonths - 1) % max(12, base.cycleLength)) + 1
+        return ElectionProfile(startingRound: max(3, shiftedStart), cycleLength: base.cycleLength)
     }
 
-    static func startingEconomicLedger(for country: PlayerCountry, scenario _: NativeScenario) -> NativeEconomicLedger {
+    static func scenarioEconomicMultipliers(for scenario: NativeScenario) -> (gdpScale: Double, growthDelta: Double, inflationDelta: Double) {
+        switch scenario.id {
+        case "divided-sovereignty":
+            (0.18, -1.2, -0.8)
+        case "soviet-triumph":
+            (0.55, -0.8, 1.4)
+        case "fragmented-markets":
+            (1.35, -0.9, 1.8)
+        case "resource-crucible":
+            (1.42, -0.6, 2.2)
+        case "resilience-decade":
+            (1.55, 0.4, 0.6)
+        case "pax-cybernetica":
+            (2.10, 1.1, -0.5)
+        case "solarpunk-dawn":
+            (2.35, 1.4, -0.9)
+        default:
+            (1.0, 0.0, 0.0)
+        }
+    }
+
+    static func startingEconomicLedger(for country: PlayerCountry, scenario: NativeScenario) -> NativeEconomicLedger {
         let profile = Native2010WorldModel.profile(for: country)
         let supplement = economicSupplement(for: country.code, profile: profile)
+        let eraMod = scenarioEconomicMultipliers(for: scenario)
         let openingSecurity = clampDouble(Double(profile.stability) + 18.0 - Double(profile.sanctionsExposurePercent) * 0.35, 35, 92)
         let openingRebelPressure = clampDouble(
             Double(100 - profile.stability) * 0.16 + Double(supplement.unemployment) * 0.22 - Double(supplement.fiscalSpace) * 0.04,
@@ -477,15 +606,18 @@ enum NativeStrategyContextDatabase {
             28
         )
         let govType = startingGovernmentType(for: country.code)
-        let electProfile = startingElectionProfile(for: country.code)
+        let electProfile = startingElectionProfile(for: country.code, scenario: scenario)
+        let scaledGDP = max(0.01, Double(round(profile.nominalGDPTrillions * eraMod.gdpScale * 100) / 100))
+        let scaledGrowth = clampDouble(profile.gdpGrowthPercent + eraMod.growthDelta, -12, 16)
+        let scaledInflation = clampDouble(profile.inflationPercent + eraMod.inflationDelta, -4, 35)
         return NativeEconomicLedger(
             budgetBalancePercentGDP: supplement.budgetBalance,
             entries: [],
             fiscalSpaceIndex: supplement.fiscalSpace,
-            inflationPercent: profile.inflationPercent,
-            nominalGDPTrillions: profile.nominalGDPTrillions,
+            inflationPercent: scaledInflation,
+            nominalGDPTrillions: scaledGDP,
             publicDebtPercentGDP: supplement.publicDebt,
-            realGrowthPercent: profile.gdpGrowthPercent,
+            realGrowthPercent: scaledGrowth,
             tradeBalancePercentGDP: profile.tradeBalancePercent,
             unemploymentPercent: supplement.unemployment,
             securityIndex: openingSecurity,
@@ -652,10 +784,57 @@ enum NativeStrategyContextDatabase {
             .map(\.memory)
     }
 
+    static func updatedMarketState(
+        from market: LWMarket,
+        state: NativeCampaignState,
+        months: Int
+    ) -> LWMarket {
+        let goods = LivingWorldFactory.defaultGoods
+        var nextMarket = market
+        nextMarket.resetOrders()
+
+        let totalMarkets = Double(state.mapBuildings.filter { $0.type == .market }.reduce(0) { $0 + $1.level })
+        let totalPorts = Double(state.mapBuildings.filter { $0.type == .port }.reduce(0) { $0 + $1.level })
+        let totalBarracks = Double(state.mapBuildings.filter { $0.type == .barracks }.reduce(0) { $0 + $1.level })
+        let totalFortresses = Double(state.mapBuildings.filter { $0.type == .fortress }.reduce(0) { $0 + $1.level })
+
+        let globalGDP = max(1.0, state.economicLedgers.values.reduce(0.0) { $0 + $1.nominalGDPTrillions })
+        let playerForces = Double(state.militaryUnits.values.reduce(0, +))
+        let tensionFactor = 1.0 + Double(state.worldTension) / 100.0
+
+        for good in goods {
+            let baseSupply = globalGDP * 0.8 + totalMarkets * 2.5 + totalPorts * 2.0
+            let baseDemand = globalGDP * 0.78
+            switch good.category {
+            case .stapleFood, .luxuryFood:
+                nextMarket.addSupply(baseSupply * 1.05, goodID: good.id)
+                nextMarket.addDemand(baseDemand * (1.0 + Double(100 - state.stability) * 0.003), goodID: good.id)
+            case .minerals, .lumber, .steel:
+                nextMarket.addSupply(baseSupply + totalPorts * 1.5, goodID: good.id)
+                nextMarket.addDemand(baseDemand * (1.0 + state.budgetResearchSlider * 0.25), goodID: good.id)
+            case .machinery, .consumerGoods, .textiles:
+                nextMarket.addSupply(baseSupply + totalMarkets * 2.0, goodID: good.id)
+                nextMarket.addDemand(baseDemand * (1.0 + state.budgetServicesSlider * 0.3), goodID: good.id)
+            case .militaryMateriel:
+                nextMarket.addSupply(baseSupply * 0.7 + totalBarracks * 2.5 + totalFortresses * 1.5, goodID: good.id)
+                nextMarket.addDemand(
+                    (baseDemand * 0.65 + playerForces * 0.08) * tensionFactor * (0.8 + state.budgetMilitarySlider),
+                    goodID: good.id
+                )
+            }
+        }
+
+        let ticks = max(1, min(12, months * 3))
+        for _ in 0 ..< ticks {
+            nextMarket.resolveDay(goods: goods)
+        }
+        return nextMarket
+    }
+
     /// **Ledger Update Mechanic**:
     /// Processes the economic impact of events across all country ledgers.
     /// Handles AI generated rules, Hex Lever map nudges, deterministic market drift,
-    /// and stability-based feedback loops that increase rebel control and drain security.
+    /// Living World commodity market price discovery, and stability-based feedback loops.
     static func updatedEconomicLedgers(
         from ledgers: [String: NativeEconomicLedger],
         state: NativeCampaignState,
@@ -664,6 +843,16 @@ enum NativeStrategyContextDatabase {
         targetDate: String
     ) -> [String: NativeEconomicLedger] {
         var nextLedgers = ledgers
+        let resolvedMarket = updatedMarketState(from: state.marketState, state: state, months: months)
+        let goods = LivingWorldFactory.defaultGoods
+        let avgPriceRatio: Double = {
+            guard !goods.isEmpty else { return 1.0 }
+            let sum = goods.reduce(0.0) { acc, good in
+                acc + (resolvedMarket.price(for: good.id) / max(0.01, good.basePrice))
+            }
+            return sum / Double(goods.count)
+        }()
+        let marketInflationNudge = clampDouble((avgPriceRatio - 1.0) * 0.35 * Double(months), -0.25, 0.35)
 
         let countryCodes = strategicCountryCodes(for: state)
         let scenario = NativeScenarioCatalog.scenario(for: state.scenarioID)
@@ -842,7 +1031,7 @@ enum NativeStrategyContextDatabase {
                 }
                 nextLedger.rebelControlPercent = clampDouble(nextLedger.rebelControlPercent + neighborRebelSpillover * Double(months), 0, 100)
 
-                // **Market & Port Buildings Integration**:
+                // **Market & Port Buildings Integration + LWMarket Price Discovery**:
                 let controlledRegionIDs = regionIDsByController[code, default: []]
                 let countryBuildings = controlledRegionIDs.flatMap { buildingsByRegion[$0, default: []] }
                 let marketLevels = countryBuildings.filter { $0.type == .market }.reduce(0) { $0 + $1.level }
@@ -850,6 +1039,9 @@ enum NativeStrategyContextDatabase {
 
                 nextLedger.realGrowthPercent = clampDouble(nextLedger.realGrowthPercent + Double(marketLevels) * 0.05 * Double(months), -12, 16)
                 nextLedger.tradeBalancePercentGDP = clampDouble(nextLedger.tradeBalancePercentGDP + Double(portLevels) * 0.10 * Double(months), -20, 20)
+                if marketLevels + portLevels > 0 {
+                    nextLedger.inflationPercent = clampDouble(nextLedger.inflationPercent + marketInflationNudge, -4, 35)
+                }
 
                 // **Tech Diffusion & Catch-Up**:
                 let era = state.techEraTyped
@@ -1546,6 +1738,18 @@ enum NativeStrategyContextDatabase {
                 dipTradeDelta = 0.3 * Double(months)
             }
 
+            let resBudgetDelta = state.budgetResearchSlider > 0.25
+                ? -(state.budgetResearchSlider - 0.25) * 0.4 * Double(months)
+                : 0.0
+
+            let playerHomeRegionID = GeopoliticalMapData.regions(forCountryCode: state.country.code).first { $0.countryCode != "WATER" }?.id ?? state.country.code
+            state.mapArmies = NativeArmySnapshot.synchronizingArmies(
+                state.mapArmies,
+                with: state.militaryUnits,
+                countryCode: state.country.code,
+                homeRegionID: playerHomeRegionID
+            )
+
             pLedger.securityIndex = clampDouble(pLedger.securityIndex + milSecurityDelta, 0, 100)
             pLedger.rebelControlPercent = clampDouble(pLedger.rebelControlPercent + milRebelDelta, 0, 100)
             pLedger.publicDebtPercentGDP = clampDouble(pLedger.publicDebtPercentGDP + milDebtDelta, 1, 260)
@@ -1565,12 +1769,12 @@ enum NativeStrategyContextDatabase {
             pLedger.realGrowthPercent = clampDouble(pLedger.realGrowthPercent + milGrowthDelta + serGrowthDelta + techGrowthDelta + maintenanceGrowthDelta, -12, 16)
 
             pLedger.unemploymentPercent = clampDouble(pLedger.unemploymentPercent + serUnemploymentDelta, 1, 35)
-            pLedger.budgetBalancePercentGDP = clampDouble(pLedger.budgetBalancePercentGDP + serBudgetDelta, -12, 12)
+            pLedger.budgetBalancePercentGDP = clampDouble(pLedger.budgetBalancePercentGDP + serBudgetDelta + resBudgetDelta, -12, 12)
             pLedger.tradeBalancePercentGDP = clampDouble(pLedger.tradeBalancePercentGDP + dipTradeDelta, -20, 20)
 
-            if milGrowthDelta != 0 || serGrowthDelta != 0 || serBudgetDelta != 0 || dipTradeDelta != 0 || techGrowthDelta != 0 || maintenanceGrowthDelta != 0 {
+            if milGrowthDelta != 0 || serGrowthDelta != 0 || serBudgetDelta != 0 || resBudgetDelta != 0 || dipTradeDelta != 0 || techGrowthDelta != 0 || maintenanceGrowthDelta != 0 {
                 let sliderEntry = NativeEconomicLedgerEntry(
-                    budgetBalanceDelta: serBudgetDelta,
+                    budgetBalanceDelta: serBudgetDelta + resBudgetDelta,
                     debtDelta: milDebtDelta,
                     eventID: "budget-slider-\(state.round)",
                     fiscalSpaceDelta: 0,
@@ -2618,6 +2822,9 @@ enum NativeStrategyContextDatabase {
         // cascade into chaos.
         simulateRivalGeopolitics(state: &state, months: months)
 
+        // Update deterministic AI map armies and regional buildings in the unified AI pipeline
+        simulateAIMapPresence(state: &state)
+
         // Evaluate alternative history scenario event chains when active
         if !state.eventFlags.isEmpty {
             evaluateAlternativeHistoryEvents(state: &state)
@@ -2626,6 +2833,98 @@ enum NativeStrategyContextDatabase {
         // Sync player's main ledger
         if let playerLedger = state.economicLedgers[state.country.code] {
             state.economicLedger = playerLedger
+        }
+    }
+
+    /// **Unified AI Map Presence**:
+    /// Updates visible AI armies and regional buildings (`fortress`, `market`, border repositioning)
+    /// deterministically within the single per-turn AI pipeline (replacing `BackgroundSimulationService`).
+    static func simulateAIMapPresence(state: inout NativeCampaignState) {
+        var armiesByCountry = Dictionary(grouping: state.mapArmies, by: \.countryCode)
+        var buildings = state.mapBuildings
+        var generatedMoves = 0
+
+        let activeCountries = Set(state.aiCountryStates.keys)
+            .union(state.economicLedgers.keys)
+            .subtracting([state.country.code, "GLOBAL"])
+            .sorted()
+
+        let playerRegions = GeopoliticalMapData.regions(forCountryCode: state.country.code).filter { $0.countryCode != "WATER" }
+        let playerCenter = playerRegions.first?.center
+
+        for code in activeCountries {
+            let countryRegions = GeopoliticalMapData.regions(forCountryCode: code).filter { $0.countryCode != "WATER" }
+            guard let homeRegion = countryRegions.first ?? GeopoliticalMapData.regionByID[code] else { continue }
+
+            let aiState = state.aiCountryStates[code] ?? NativeAICountryState(
+                countryCode: code,
+                doctrine: .neutral,
+                budgetPriority: .economy,
+                relationshipScores: [:],
+                multiTurnAgenda: "Stabilize regional capacity.",
+                agendaProgress: 20
+            )
+            let ledger = state.economicLedgers[code]
+
+            if armiesByCountry[code, default: []].isEmpty {
+                let gdp = ledger?.nominalGDPTrillions ?? 0.5
+                let profile = Native2010WorldModel.profile(for: PlayerCountry(code: code, name: code))
+                let mpi = gdp * (profile.militarySpendingPercent / 2.0) * (1.0 - (Double(profile.corruptionIndex) / 100.0) * 0.6)
+                let strength = min(100, max(12, Int((mpi * 8.0).rounded()) + 20))
+                let type: NativeArmyKind = aiState.budgetPriority == .military ? .armor : .infantry
+                armiesByCountry[code] = [
+                    NativeArmySnapshot(
+                        countryCode: code,
+                        currentRegionID: homeRegion.id,
+                        id: "army-\(code)-\(homeRegion.id)",
+                        strength: strength,
+                        type: type
+                    )
+                ]
+            }
+
+            let security = ledger?.securityIndex ?? 50.0
+            let tension = Double(state.worldTension) / 100.0
+            let relation = Double(aiState.relationshipScores[state.country.code] ?? 0) / 100.0
+            let roll = Int(NativeGameEngine.fnv1aHash("\(code)|\(state.gameDate)|\(state.round)") % 100)
+
+            if aiState.budgetPriority == .military || relation < -0.35 || tension > 0.68 {
+                if roll > 20 {
+                    let targetRegion = playerCenter.flatMap { pCenter in
+                        countryRegions.min { left, right in
+                            let ldx = left.center.x - pCenter.x
+                            let ldy = left.center.y - pCenter.y
+                            let rdx = right.center.x - pCenter.x
+                            let rdy = right.center.y - pCenter.y
+                            return (ldx * ldx + ldy * ldy) < (rdx * rdx + rdy * rdy)
+                        }
+                    } ?? countryRegions.first
+                    if let targetRegion, var armies = armiesByCountry[code], var firstArmy = armies.first {
+                        firstArmy.targetRegionID = targetRegion.id
+                        firstArmy.currentRegionID = targetRegion.id
+                        armies[0] = firstArmy
+                        armiesByCountry[code] = armies
+                        generatedMoves += 1
+                    }
+                } else if !buildings.contains(where: { $0.regionID == homeRegion.id && $0.ownerCountryCode == code && $0.type == .fortress }) {
+                    buildings.append(NativeBuildingSnapshot(ownerCountryCode: code, regionID: homeRegion.id, type: .fortress))
+                    generatedMoves += 1
+                }
+            } else if security < 45 || aiState.doctrine == .defensive {
+                if !buildings.contains(where: { $0.regionID == homeRegion.id && $0.ownerCountryCode == code && $0.type == .fortress }) {
+                    buildings.append(NativeBuildingSnapshot(ownerCountryCode: code, regionID: homeRegion.id, type: .fortress))
+                    generatedMoves += 1
+                }
+            } else if !buildings.contains(where: { $0.regionID == homeRegion.id && $0.ownerCountryCode == code && $0.type == .market }) {
+                buildings.append(NativeBuildingSnapshot(ownerCountryCode: code, regionID: homeRegion.id, type: .market))
+                generatedMoves += 1
+            }
+        }
+
+        state.mapArmies = armiesByCountry.values.flatMap(\.self).sorted { $0.id < $1.id }
+        state.mapBuildings = buildings.sorted { $0.id < $1.id }
+        if generatedMoves > 0, !state.lastSummary.contains("Background simulation added") {
+            state.lastSummary = "\(state.lastSummary) Background simulation added \(generatedMoves) visible strategic movement\(generatedMoves == 1 ? "" : "s")."
         }
     }
 

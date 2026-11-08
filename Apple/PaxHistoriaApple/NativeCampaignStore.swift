@@ -264,7 +264,7 @@ final class NativeCampaignStore: ObservableObject {
     }
 
     static var suggestionRefreshTimeoutNanoseconds: UInt64 = 150_000_000_000
-    private static let maximumAdministrativeCapacity = 120
+    nonisolated static let maximumAdministrativeCapacity = 120
 
     static var uiTestResetRequested: Bool {
         #if DEBUG
@@ -1084,18 +1084,8 @@ final class NativeCampaignStore: ObservableObject {
     private static func parseSecondaryEffects(
         from detail: String,
         primaryTrack: NativeStrategicTrack
-    ) -> [(NativeStrategicTrack, Int)] {
-        var results: [(NativeStrategicTrack, Int)] = []
-        for track in NativeStrategicTrack.allCases where track != primaryTrack {
-            let code = track.mechanicCode
-            guard let range = detail.range(of: code) else { continue }
-            let tail = detail[range.upperBound...].trimmingCharacters(in: .whitespaces)
-            let prefix = tail.prefix { $0 == "+" || $0 == "-" || $0.isNumber }
-            if let value = Int(prefix), value != 0 {
-                results.append((track, value))
-            }
-        }
-        return results
+    ) -> [NativeDecisionEffect] {
+        NativeEventDecisionOption.parseSecondaryEffects(from: detail, primaryTrack: primaryTrack)
     }
 
     func resolvePendingEventDecision(option: NativeEventDecisionOption) {
@@ -1120,19 +1110,21 @@ final class NativeCampaignStore: ObservableObject {
             )
         ]
 
-        // Apply secondary bracketed effects promised in the directive detail
-        let secondary = Self.parseSecondaryEffects(from: option.detail, primaryTrack: option.effectTrack)
-        for (secTrack, secMag) in secondary {
-            Self.applyDecisionTrackDelta(track: secTrack, magnitude: secMag, to: &currentState)
+        // Apply typed secondary effects (falling back to parsed bracketed tokens for legacy options)
+        let secondary = option.secondaryEffects.isEmpty
+            ? Self.parseSecondaryEffects(from: option.detail, primaryTrack: option.effectTrack)
+            : option.secondaryEffects
+        for effect in secondary {
+            Self.applyDecisionTrackDelta(track: effect.track, magnitude: effect.magnitude, to: &currentState)
             appliedEffects.append(
                 NativeStrategicEffect(
                     date: currentState.gameDate,
                     eventId: "resolution-\(pending.id)-\(option.id)",
-                    id: "eff-res-\(pending.id)-\(secTrack.rawValue)",
-                    magnitude: secMag,
-                    summary: "\(option.label) (\(secTrack.displayName))",
+                    id: "eff-res-\(pending.id)-\(effect.track.rawValue)",
+                    magnitude: effect.magnitude,
+                    summary: "\(option.label) (\(effect.track.displayName))",
                     target: currentState.country.code,
-                    track: secTrack
+                    track: effect.track
                 )
             )
         }
@@ -1161,7 +1153,7 @@ final class NativeCampaignStore: ObservableObject {
             playerRelated: true,
             strategicEffects: appliedEffects,
             title: "Decision Enacted: \(option.label)",
-            hexLeverCode: option.effectTrack.mechanicCode,
+            hexLeverCode: nil,
             imageAssetName: pending.imageAssetName
         )
         currentState.timeline.insert(resolutionEvent, at: 0)

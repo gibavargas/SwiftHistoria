@@ -60,8 +60,15 @@ struct NativeGeopoliticalMap: View {
 
     /// Relation-based fill color for a region.
     private func fillColor(for region: MapRegion) -> Color {
-        if GeopoliticalMapData.canonicalCountryCode(region.countryCode) == GeopoliticalMapData.canonicalCountryCode(playerCountryCode) {
+        let controllerCode = state.regionOccupations[region.id] ?? region.countryCode
+        let canonicalController = GeopoliticalMapData.canonicalCountryCode(controllerCode)
+        let canonicalOwner = GeopoliticalMapData.canonicalCountryCode(region.countryCode)
+        let canonicalPlayer = GeopoliticalMapData.canonicalCountryCode(playerCountryCode)
+        if canonicalController == canonicalPlayer {
             return Color.glowingCyan.opacity(0.35)
+        }
+        if canonicalOwner == canonicalPlayer, canonicalController != canonicalPlayer {
+            return Color.softRed.opacity(0.35)
         }
         if let conflict = state.regionConflicts[region.id] {
             switch conflict.mode {
