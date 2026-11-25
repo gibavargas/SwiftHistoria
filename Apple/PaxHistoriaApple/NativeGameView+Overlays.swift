@@ -51,51 +51,74 @@ struct VictoryDefeatOverlay: View {
         rivalName ?? "A rival power"
     }
 
+    private var statusAccent: Color {
+        status == .won ? NativeWarRoomTheme.fieldGreen : NativeWarRoomTheme.threatRed
+    }
+
     var body: some View {
         ZStack {
-            Color.black.opacity(0.85)
+            NativeWarRoomTheme.blackboard.opacity(0.88)
                 .ignoresSafeArea()
 
             VStack(spacing: 16) {
                 Image(status == .won ? "VictoryTriumph" : "DefeatCollapse")
                     .resizable()
                     .aspectRatio(16 / 9, contentMode: .fill)
-                    .frame(height: 160)
+                    .frame(height: 168)
+                    .overlay {
+                        LinearGradient(
+                            colors: [
+                                NativeWarRoomTheme.blackboard.opacity(0.14),
+                                NativeWarRoomTheme.brass.opacity(0.08),
+                                NativeWarRoomTheme.blackboard.opacity(0.72)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    }
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay {
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(status == .won ? Color.neonTeal.opacity(0.4) : Color.softRed.opacity(0.4), lineWidth: 1.5)
+                            .stroke(NativeWarRoomTheme.brass.opacity(0.42), lineWidth: 1.5)
                     }
-                    .shadow(color: status == .won ? Color.neonTeal.opacity(0.3) : Color.softRed.opacity(0.3), radius: 10)
+                    .shadow(color: statusAccent.opacity(0.28), radius: 10)
 
                 HStack(spacing: 8) {
                     Image(systemName: status == .won ? "trophy.fill" : "exclamationmark.octagon.fill")
                         .font(.headline)
-                        .foregroundStyle(status == .won ? Color.neonTeal : Color.softRed)
+                        .foregroundStyle(statusAccent)
                     Text(status == .won ? "STRATEGIC TRIUMPH" : "CRISIS CONCLUSION")
-                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(status == .won ? Color.neonTeal : Color.softRed)
+                        .font(NativeWarRoomTheme.labelFont(.caption, weight: .bold))
+                        .foregroundStyle(statusAccent)
                         .tracking(1.5)
                 }
                 .padding(.horizontal, 12)
-                .padding(.vertical, 4)
-                .background((status == .won ? Color.neonTeal : Color.softRed).opacity(0.12), in: Capsule())
+                .padding(.vertical, 5)
+                .background(statusAccent.opacity(0.14), in: Capsule())
+                .overlay {
+                    Capsule().stroke(statusAccent.opacity(0.32), lineWidth: 1)
+                }
 
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     Text(status == .won
                         ? "CAMPAIGN VICTORY ACHIEVED"
                         : (status == .lostCollapse
                             ? "NATION COLLAPSED"
                             : (status == .lostRival ? "RIVAL VICTORY: \(resolvedRivalName.uppercased())" : "CAMPAIGN DEFEAT")))
-                        .font(.system(.title2, design: .monospaced).weight(.bold))
-                        .foregroundStyle(.white)
+                        .font(NativeWarRoomTheme.displayFont(.title2, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.ink)
                         .multilineTextAlignment(.center)
                         .accessibilityIdentifier("native-terminal-title")
 
                     Text("Scenario: \(scenarioName)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(NativeWarRoomTheme.labelFont(.caption, weight: .semibold))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
                 }
+
+                Rectangle()
+                    .fill(NativeWarRoomTheme.brass.opacity(0.22))
+                    .frame(height: 1)
+                    .padding(.horizontal, 16)
 
                 Text(status == .won
                     ? "Congratulations, Leader! Your administration has successfully met all scenario conditions and navigated the complex geopolitical landscape to achieve total victory."
@@ -104,10 +127,10 @@ struct VictoryDefeatOverlay: View {
                         : (status == .lostRival
                             ? "Campaign Defeat: \(resolvedRivalName) completed the active scenario objectives before your administration secured its own victory."
                             : "Campaign Defeat: The timeline has expired before you could meet all strategic scenario criteria.")))
-                    .font(.body)
-                    .foregroundStyle(.primary.opacity(0.8))
+                    .font(NativeWarRoomTheme.bodyFont(.body))
+                    .foregroundStyle(NativeWarRoomTheme.parchment.opacity(0.9))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 18)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Button(action: onExit) {
@@ -115,7 +138,7 @@ struct VictoryDefeatOverlay: View {
                         Spacer()
                         Image(systemName: "arrow.left.circle.fill")
                         Text("EXIT TO MAIN MENU")
-                            .font(.system(.body, design: .monospaced).weight(.bold))
+                            .font(NativeWarRoomTheme.labelFont(.body, weight: .bold))
                         Spacer()
                     }
                     .frame(maxWidth: .infinity, minHeight: 44)
@@ -123,19 +146,19 @@ struct VictoryDefeatOverlay: View {
                 .buttonStyle(.plain)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(status == .won ? Color.neonTeal.opacity(0.2) : Color.softRed.opacity(0.2))
+                .background(statusAccent.opacity(0.2))
                 .overlay {
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(status == .won ? Color.neonTeal : Color.softRed, lineWidth: 1.5)
+                        .stroke(statusAccent, lineWidth: 1.5)
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(NativeWarRoomTheme.ink)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 28)
                 .accessibilityIdentifier("native-victory-exit")
             }
-            .padding(30)
-            .glassmorphicCard(borderColor: status == .won ? Color.neonTeal.opacity(0.3) : Color.softRed.opacity(0.3), cornerRadius: 20)
-            .frame(maxWidth: 450)
+            .padding(28)
+            .warRoomDossier(borderColor: statusAccent.opacity(0.4), cornerRadius: 18)
+            .frame(maxWidth: 460)
             .padding(16)
         }
     }

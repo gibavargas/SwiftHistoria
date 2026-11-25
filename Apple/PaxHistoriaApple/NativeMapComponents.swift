@@ -13,7 +13,7 @@ struct NativeMapScreen: View {
         Group {
             if let state = store.state {
                 ZStack(alignment: .top) {
-                    NativeGeopoliticalMap(state: state, store: store)
+                    NativeWorldMap(state: state, store: store, minHeight: 320)
                         .ignoresSafeArea(edges: [.horizontal, .bottom])
                         .id(state.country.code)
 
@@ -26,7 +26,7 @@ struct NativeMapScreen: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
                     // Living Atlas masthead: nation state first, urgent briefing second.
-                    VStack(spacing: 8) {
+                    VStack(spacing: 6) {
                         NativeCompactStatusBar(state: state, latestEvent: state.timeline.first)
                         NativeCrisisBanner(state: state, compact: true)
                         if let progress = store.turnProgress {
@@ -34,9 +34,9 @@ struct NativeMapScreen: View {
                         }
                         Spacer()
                     }
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 12)
                     #if os(iOS)
-                        .padding(.top, 52)
+                        .padding(.top, 8)
                     #else
                         .padding(.top, 12)
                     #endif
@@ -53,20 +53,33 @@ struct NativeMapScreen: View {
                     #endif
                 }
                 #if os(iOS)
-                .safeAreaInset(edge: .bottom, spacing: 8) {
-                    VStack(spacing: 8) {
+                .safeAreaInset(edge: .bottom, spacing: 6) {
+                    VStack(spacing: 0) {
+                        CommandConsoleDrawer(
+                            store: store,
+                            isExpanded: $isConsoleExpanded,
+                            integratedInDock: true
+                        )
+
+                        Rectangle()
+                            .fill(NativeWarRoomTheme.brass.opacity(0.22))
+                            .frame(height: 1)
+
                         NativeMapCommandBar(
                             store: store,
                             highContrast: contrast == .increased,
+                            integratedInDock: true,
                             onShowOrders: onShowOrders,
                             onShowAdvisor: onShowAdvisor,
                             onShowDiplomacy: onShowDiplomacy
                         )
-
-                        CommandConsoleDrawer(store: store, isExpanded: $isConsoleExpanded)
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, 8)
+                    .warRoomDossier(
+                        borderColor: NativeWarRoomTheme.brass.opacity(contrast == .increased ? 0.58 : 0.34),
+                        cornerRadius: 10
+                    )
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 6)
                 }
                 #endif
                 .task(id: "\(state.country.code)-\(state.round)") {
@@ -84,6 +97,7 @@ struct NativeMapScreen: View {
 struct CommandConsoleDrawer: View {
     @ObservedObject var store: NativeCampaignStore
     @Binding var isExpanded: Bool
+    var integratedInDock = false
     @State private var selectedConsoleTab: ConsoleTab = .orders
 
     var body: some View {
@@ -93,21 +107,22 @@ struct CommandConsoleDrawer: View {
                     isExpanded.toggle()
                 }
             } label: {
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     Image(systemName: "list.number")
-                        .font(.subheadline.weight(.semibold))
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(NativeWarRoomTheme.brass)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("ORDERS DECK")
-                            .font(NativeWarRoomTheme.labelFont(.caption2))
-                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
-                        if let state = store.state {
-                            let plannedCount = state.plannedActions.filter { $0.status == .planned }.count
-                            Text(plannedCount == 1 ? "1 ORDER READY" : "\(plannedCount) ORDERS READY")
-                                .font(NativeWarRoomTheme.displayFont(.subheadline, weight: .semibold))
-                                .foregroundStyle(plannedCount > 0 ? NativeWarRoomTheme.ink : NativeWarRoomTheme.mutedInk)
-                        }
+                    Text("ORDERS DECK")
+                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
+
+                    if let state = store.state {
+                        let plannedCount = state.plannedActions.filter { $0.status == .planned }.count
+                        Text("·")
+                            .foregroundStyle(NativeWarRoomTheme.brass.opacity(0.5))
+                        Text(plannedCount == 1 ? "1 ORDER READY" : "\(plannedCount) READY")
+                            .font(NativeWarRoomTheme.displayFont(.caption, weight: .semibold))
+                            .foregroundStyle(plannedCount > 0 ? NativeWarRoomTheme.ink : NativeWarRoomTheme.mutedInk)
                     }
 
                     Spacer()
@@ -116,12 +131,12 @@ struct CommandConsoleDrawer: View {
                         .font(NativeWarRoomTheme.labelFont(.caption2))
                         .foregroundStyle(NativeWarRoomTheme.brass)
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.up")
-                        .font(.caption.weight(.bold))
+                        .font(.caption2.weight(.bold))
                         .foregroundStyle(NativeWarRoomTheme.brass)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 11)
-                .background(NativeWarRoomTheme.graphite.opacity(0.98))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(NativeWarRoomTheme.graphite.opacity(0.95))
             }
             .buttonStyle(.plain)
             .accessibilityLabel(isExpanded ? "Collapse directives console" : "Expand directives console")
@@ -129,11 +144,11 @@ struct CommandConsoleDrawer: View {
 
             if isExpanded {
                 Divider()
-                    .background(Color.white.opacity(0.1))
+                    .background(NativeWarRoomTheme.brass.opacity(0.18))
 
                 // Tab Selection Strip
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: 6) {
                         ForEach(ConsoleTab.allCases) { tab in
                             Button {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
@@ -142,44 +157,44 @@ struct CommandConsoleDrawer: View {
                             } label: {
                                 HStack(spacing: 4) {
                                     Image(systemName: tab.systemImage)
-                                        .font(.caption)
+                                        .font(.caption2)
                                     Text(tab.title.uppercased())
                                         .font(.system(.caption2, design: .monospaced).weight(.bold))
                                 }
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 5)
                                 .background(
                                     selectedConsoleTab == tab
-                                        ? Color.glowingCyan.opacity(0.18)
-                                        : Color.white.opacity(0.04),
+                                        ? NativeWarRoomTheme.brass.opacity(0.18)
+                                        : NativeWarRoomTheme.olivePanel.opacity(0.35),
                                     in: Capsule()
                                 )
                                 .overlay {
                                     Capsule()
                                         .stroke(
                                             selectedConsoleTab == tab
-                                                ? Color.glowingCyan.opacity(0.4)
-                                                : Color.white.opacity(0.08),
+                                                ? NativeWarRoomTheme.brass.opacity(0.55)
+                                                : NativeWarRoomTheme.brass.opacity(0.14),
                                             lineWidth: 1
                                         )
                                 }
-                                .foregroundStyle(selectedConsoleTab == tab ? Color.glowingCyan : .secondary)
+                                .foregroundStyle(selectedConsoleTab == tab ? NativeWarRoomTheme.brass : NativeWarRoomTheme.mutedInk)
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel("Select \(tab.title) operations")
                             .accessibilityIdentifier("console-tab-\(tab.rawValue)")
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
                 }
                 .background(NativeWarRoomTheme.archiveShadow.opacity(0.98))
 
                 Divider()
-                    .background(Color.white.opacity(0.06))
+                    .background(NativeWarRoomTheme.brass.opacity(0.12))
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 12) {
                         switch selectedConsoleTab {
                         case .orders:
                             NativeOrdersEditorPanel(store: store)
@@ -193,20 +208,33 @@ struct CommandConsoleDrawer: View {
                             NativeEventsPanel(state: store.state)
                         }
                     }
-                    .padding(16)
+                    .padding(12)
                 }
                 .scrollDismissesKeyboard(.interactively)
-                .frame(maxHeight: 280)
+                .frame(maxHeight: 260)
                 .background(NativeWarRoomTheme.archiveShadow.opacity(0.98))
                 .accessibilityIdentifier("native-console-content")
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(NativeWarRoomTheme.brass.opacity(0.3), lineWidth: 1)
+        .modifier(ConsoleDrawerFrameModifier(integratedInDock: integratedInDock))
+    }
+}
+
+private struct ConsoleDrawerFrameModifier: ViewModifier {
+    let integratedInDock: Bool
+
+    func body(content: Content) -> some View {
+        if integratedInDock {
+            content
+        } else {
+            content
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(NativeWarRoomTheme.brass.opacity(0.3), lineWidth: 1)
+                }
+                .shadow(color: Color.black.opacity(0.5), radius: 10, x: 0, y: -3)
         }
-        .shadow(color: Color.black.opacity(0.5), radius: 10, x: 0, y: -3)
     }
 }
 
@@ -647,6 +675,7 @@ struct NativeFloatingAdvanceButton: View {
 struct NativeMapCommandBar: View {
     @ObservedObject var store: NativeCampaignStore
     let highContrast: Bool
+    var integratedInDock = false
     let onShowOrders: () -> Void
     let onShowAdvisor: () -> Void
     let onShowDiplomacy: () -> Void
@@ -654,22 +683,41 @@ struct NativeMapCommandBar: View {
     var body: some View {
         HStack(spacing: 6) {
             NativeCommandButton(title: "Orders", systemImage: "checklist", accessibilityIdentifier: "native-map-command-orders", action: onShowOrders)
+                .frame(maxWidth: .infinity)
             NativeCommandButton(title: "Intel", systemImage: "brain.head.profile", accessibilityIdentifier: "native-map-command-advisor", action: onShowAdvisor)
+                .frame(maxWidth: .infinity)
             NativeCommandButton(title: "Talk", systemImage: "bubble.left.and.bubble.right", accessibilityIdentifier: "native-map-command-diplomacy", action: onShowDiplomacy)
+                .frame(maxWidth: .infinity)
             NativeAdvanceMenu(store: store)
         }
-        .padding(8)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
-        .background(
-            highContrast ? NativeWarRoomTheme.blackboard : NativeWarRoomTheme.archiveShadow.opacity(0.96),
-            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(NativeWarRoomTheme.brass.opacity(highContrast ? 0.55 : 0.28), lineWidth: 1)
-        }
+        .modifier(CommandBarFrameModifier(integratedInDock: integratedInDock, highContrast: highContrast))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("native-mobile-command-bar")
+    }
+}
+
+private struct CommandBarFrameModifier: ViewModifier {
+    let integratedInDock: Bool
+    let highContrast: Bool
+
+    func body(content: Content) -> some View {
+        if integratedInDock {
+            content
+                .background(highContrast ? NativeWarRoomTheme.blackboard : NativeWarRoomTheme.archiveShadow.opacity(0.92))
+        } else {
+            content
+                .background(
+                    highContrast ? NativeWarRoomTheme.blackboard : NativeWarRoomTheme.archiveShadow.opacity(0.96),
+                    in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(NativeWarRoomTheme.brass.opacity(highContrast ? 0.55 : 0.28), lineWidth: 1)
+                }
+        }
     }
 }
 
@@ -681,7 +729,7 @@ struct NativeCommandButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 3) {
                 Image(systemName: systemImage)
                     .font(.system(size: 13, weight: .semibold))
                 Text(title.uppercased())
@@ -690,11 +738,11 @@ struct NativeCommandButton: View {
                     .minimumScaleFactor(0.75)
             }
             .foregroundStyle(NativeWarRoomTheme.ink)
-            .frame(minWidth: 52, minHeight: 42)
-            .background(NativeWarRoomTheme.olivePanel.opacity(0.52), in: RoundedRectangle(cornerRadius: 5))
+            .frame(maxWidth: .infinity, minHeight: 38)
+            .background(NativeWarRoomTheme.olivePanel.opacity(0.56), in: RoundedRectangle(cornerRadius: 5))
             .overlay {
                 RoundedRectangle(cornerRadius: 5)
-                    .stroke(NativeWarRoomTheme.brass.opacity(0.14), lineWidth: 1)
+                    .stroke(NativeWarRoomTheme.brass.opacity(0.18), lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -723,9 +771,9 @@ struct NativeAdvanceMenu: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                 }
-                .frame(minWidth: 82, minHeight: 42)
+                .frame(minWidth: 84, minHeight: 38)
             } else {
-                VStack(spacing: 3) {
+                VStack(spacing: 2) {
                     Image(systemName: "calendar.badge.clock")
                         .font(.system(size: 13, weight: .semibold))
                     Text("3 MONTHS")
@@ -733,14 +781,14 @@ struct NativeAdvanceMenu: View {
                         .lineLimit(1)
                 }
                 .foregroundStyle(NativeWarRoomTheme.ink)
-                .frame(minWidth: 82, minHeight: 42)
+                .frame(minWidth: 84, minHeight: 38)
             }
         }
         .buttonStyle(.plain)
-        .background(NativeWarRoomTheme.threatRed.opacity(0.82), in: RoundedRectangle(cornerRadius: 5))
+        .background(NativeWarRoomTheme.threatRed.opacity(0.84), in: RoundedRectangle(cornerRadius: 5))
         .overlay {
             RoundedRectangle(cornerRadius: 5)
-                .stroke(NativeWarRoomTheme.alertAmber.opacity(0.65), lineWidth: 1)
+                .stroke(NativeWarRoomTheme.alertAmber.opacity(0.68), lineWidth: 1)
                 .padding(1)
         }
         .disabled(store.isAdvancing)
@@ -751,6 +799,7 @@ struct NativeAdvanceMenu: View {
 
 struct TurnTransitionOverlay: View {
     @ObservedObject var store: NativeCampaignStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var consoleLogs: [String] = []
     @State private var currentTickerIndex = 0
     @State private var timer = Timer.publish(every: 2.8, on: .main, in: .common).autoconnect()
@@ -767,37 +816,37 @@ struct TurnTransitionOverlay: View {
         return store.selectedAIProviderPreference.providerName.uppercased()
     }
 
-    /// Dynamic accent color based on campaign tension — shifts from teal (calm) to red (crisis)
+    /// Dynamic accent color based on campaign tension — shifts from brass/signal to red (crisis)
     private var dynamicAccent: Color {
-        guard let state = store.state else { return Color.glowingCyan }
+        guard let state = store.state else { return NativeWarRoomTheme.brass }
         let tension = Double(state.worldTension) / 100.0
         let stability = Double(state.stability) / 100.0
         let crisis = tension * (1.0 - stability)
         if crisis > 0.6 {
-            return Color.softRed
+            return NativeWarRoomTheme.threatRed
         }
         if crisis > 0.4 {
-            return Color.alertGold
+            return NativeWarRoomTheme.alertAmber
         }
-        return Color.glowingCyan
+        return NativeWarRoomTheme.brass
     }
 
     var body: some View {
         ZStack {
-            // Animated gradient background that shifts hue every turn
+            // Living Atlas tactical backdrop
             LinearGradient(
                 colors: [
-                    Color.black.opacity(0.75),
-                    dynamicAccent.opacity(0.04 * backgroundHue),
-                    Color.black.opacity(0.85)
+                    NativeWarRoomTheme.blackboard.opacity(0.86),
+                    dynamicAccent.opacity(0.05 * backgroundHue),
+                    NativeWarRoomTheme.archiveShadow.opacity(0.92)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            .blur(radius: 20)
+            .blur(radius: 16)
 
-            // Rotating geometric pattern behind everything
+            // Cartographic orbital ring behind the dossier card
             Canvas { context, size in
                 let center = CGPoint(x: size.width / 2, y: size.height / 2)
                 let count = 12
@@ -807,73 +856,79 @@ struct TurnTransitionOverlay: View {
                     let pulseOffset = pulsePhase ? Double.pi : 0.0
                     let x = center.x + cos(angle + pulseOffset) * radius
                     let y = center.y + sin(angle) * radius
-                    let circleSize = 3.0 + (pulsePhase ? 2.0 : 0.0)
+                    let circleSize = 3.0 + (pulsePhase ? 1.5 : 0.0)
                     context.fill(
                         Path(ellipseIn: CGRect(x: x - circleSize, y: y - circleSize, width: circleSize * 2, height: circleSize * 2)),
-                        with: .color(dynamicAccent.opacity(0.12))
+                        with: .color(dynamicAccent.opacity(0.14))
                     )
                 }
             }
             .rotationEffect(.degrees(gridRotation))
-            .opacity(0.5)
+            .opacity(0.55)
             .ignoresSafeArea()
             .accessibilityHidden(true)
             .onAppear {
+                guard !reduceMotion else { return }
                 withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
                     pulsePhase = true
                     gridRotation += 30
                 }
             }
 
-            VStack(spacing: 24) {
+            VStack(spacing: 18) {
                 Spacer()
 
-                // Telemetry Card
+                // Living Atlas Briefing Dossier Card
                 VStack(spacing: 12) {
-                    HStack {
-                        Image(systemName: "cpu.fill")
+                    HStack(spacing: 8) {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
                             .foregroundStyle(dynamicAccent)
-                        Text("SIMULATION ACTIVE // \(engineName)")
-                            .font(.system(.caption, design: .monospaced).weight(.bold))
+                        Text("WAR ROOM DISPATCH // \(engineName)")
+                            .font(NativeWarRoomTheme.labelFont(.caption, weight: .bold))
                             .foregroundStyle(dynamicAccent)
                     }
 
+                    Rectangle()
+                        .fill(NativeWarRoomTheme.brass.opacity(0.2))
+                        .frame(height: 1)
+
                     if let progress = store.turnProgress {
                         HStack(spacing: 4) {
-                            Text(progress.phase.uppercased())
-                                .font(.system(.title3, design: .monospaced).weight(.black))
-                                .foregroundStyle(.white)
+                            Text(progress.phase)
+                                .font(NativeWarRoomTheme.displayFont(.title3, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.ink)
                             Text("...")
-                                .font(.system(.title3, design: .monospaced).weight(.black))
+                                .font(NativeWarRoomTheme.displayFont(.title3, weight: .bold))
                                 .foregroundStyle(dynamicAccent)
                         }
-                        .padding(.top, 4)
+                        .padding(.top, 2)
 
                         ProgressView(value: progress.fraction)
                             .tint(dynamicAccent)
                             .frame(maxWidth: 320)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 6)
 
                         Text("\(progress.completedLanes) / \(progress.totalLanes) COGNITIVE LANES RESOLVED")
-                            .font(.system(.caption, design: .monospaced).weight(.semibold))
-                            .foregroundStyle(Color.iceBlue)
+                            .font(NativeWarRoomTheme.labelFont(.caption, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.parchment)
 
-                        // Skeleton shimmer with dynamic count
                         VStack(alignment: .leading, spacing: 6) {
                             ForEach(0 ..< (2 + (progress.completedLanes % 3)), id: \.self) { i in
                                 RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.white.opacity(0.04 + Double(i) * 0.02))
-                                    .frame(height: 12 + CGFloat(i) * 3)
+                                    .fill(NativeWarRoomTheme.parchment.opacity(0.05 + Double(i) * 0.02))
+                                    .frame(height: 10 + CGFloat(i) * 2)
                                     .scaleEffect(x: pulsePhase ? 0.97 : 1.0, anchor: .leading)
                             }
                         }
-                        .padding(.top, 8)
+                        .padding(.top, 6)
                         .accessibilityHidden(true)
 
                         if !shuffledQuotes.isEmpty {
                             Text(shuffledQuotes[currentTickerIndex % shuffledQuotes.count])
-                                .font(.system(.caption2, design: .monospaced))
-                                .foregroundStyle(Color.alertGold.opacity(0.85))
+                                .font(NativeWarRoomTheme.bodyFont(.caption, weight: .medium))
+                                .italic()
+                                .foregroundStyle(NativeWarRoomTheme.alertAmber.opacity(0.9))
+                                .multilineTextAlignment(.center)
                                 .padding(.top, 6)
                                 .transition(.asymmetric(
                                     insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -888,31 +943,35 @@ struct TurnTransitionOverlay: View {
                                 }
                         }
                     } else {
-                        Text("CALCULATING GEOPOLITICAL SHIFTS...")
-                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
-                            .foregroundStyle(.white)
+                        Text("Calculating Geopolitical Shifts...")
+                            .font(NativeWarRoomTheme.displayFont(.headline, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.ink)
                         ProgressView()
                             .tint(dynamicAccent)
                             .padding(.vertical, 10)
                     }
                 }
                 .padding(20)
-                .background(Color.spaceBlack.opacity(0.88))
-                .cornerRadius(12)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(dynamicAccent.opacity(0.35), lineWidth: 1.5)
-                }
-                .shadow(color: dynamicAccent.opacity(0.18), radius: 12, x: 0, y: 0)
+                .frame(maxWidth: 480)
+                .warRoomDossier(borderColor: dynamicAccent.opacity(0.42), cornerRadius: 10)
+                .padding(.horizontal, 20)
                 .offset(y: appearOffset)
                 .opacity(appearOffset == 0 ? 1 : 0)
 
-                // Terminal Drawer
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("ACTIVE SIMULATION CHANNEL")
-                        .font(.system(.caption2, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.alertGold)
-                        .padding(.bottom, 4)
+                // Teleprinter Dispatch Channel
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "teletype")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
+                        Text("TELEPRINTER DISPATCH CHANNEL")
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
+                    }
+
+                    Rectangle()
+                        .fill(NativeWarRoomTheme.brass.opacity(0.18))
+                        .frame(height: 1)
 
                     ScrollViewReader { proxy in
                         ScrollView {
@@ -920,13 +979,17 @@ struct TurnTransitionOverlay: View {
                                 ForEach(Array(consoleLogs.enumerated()), id: \.offset) { idx, log in
                                     Text(log)
                                         .font(.system(size: 11, design: .monospaced))
-                                        .foregroundStyle(log.contains("lane completed") || log.contains("Resolved") || log.contains("won") ? Color.neonTeal : Color.white.opacity(0.75))
+                                        .foregroundStyle(
+                                            log.contains("lane completed") || log.contains("Resolved") || log.contains("won")
+                                                ? NativeWarRoomTheme.fieldGreen
+                                                : NativeWarRoomTheme.parchment.opacity(0.8)
+                                        )
                                         .id("\(idx)-\(log)")
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(height: 120)
+                        .frame(height: 116)
                         .onChange(of: consoleLogs) { _, _ in
                             if !consoleLogs.isEmpty {
                                 let lastIndex = consoleLogs.count - 1
@@ -938,13 +1001,8 @@ struct TurnTransitionOverlay: View {
                         }
                     }
                 }
-                .padding(16)
-                .background(Color.spaceBlack.opacity(0.9))
-                .cornerRadius(10)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                }
+                .padding(14)
+                .glassmorphicCard(borderColor: NativeWarRoomTheme.brass.opacity(0.24), cornerRadius: 10)
                 .frame(maxWidth: 480)
                 .padding(.horizontal, 20)
                 .accessibilityHidden(true)
@@ -963,18 +1021,22 @@ struct TurnTransitionOverlay: View {
             gridRotation = Double.random(in: -20 ... 20)
 
             consoleLogs = [
-                "SYS // Initializing \(engineName) simulation route...",
-                "SYS // Seed=\(store.state?.round ?? 0) tension=\(store.state?.worldTension ?? 0) stability=\(store.state?.stability ?? 0)"
+                "DISPATCH // Initializing \(engineName) simulation route...",
+                "DISPATCH // Turn=\(store.state?.round ?? 0) tension=\(store.state?.worldTension ?? 0) stability=\(store.state?.stability ?? 0)"
             ]
 
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            if reduceMotion {
                 appearOffset = 0
+            } else {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                    appearOffset = 0
+                }
             }
         }
         .onChange(of: engineName) { _, newEngineName in
             let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
             withAnimation {
-                consoleLogs.append("[\(timestamp)] SYS // Active AI route now \(newEngineName)")
+                consoleLogs.append("[\(timestamp)] DISPATCH // Active AI route now \(newEngineName)")
             }
         }
         .onChange(of: store.turnProgress?.detail) { _, newDetail in

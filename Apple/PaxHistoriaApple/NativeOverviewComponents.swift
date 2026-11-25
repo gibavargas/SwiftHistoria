@@ -6,6 +6,11 @@ struct NativeOverviewScreen: View {
     let onShowEvents: () -> Void
     let onShowOrders: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    #if os(macOS)
+        @State private var isSituationDossierOpen: Bool? = nil
+    #endif
+
     /// Cache the year regex to avoid recompiling on every body recomputation
     private static let yearRegex = try? NSRegularExpression(pattern: "\\b(19|20)\\d{2}\\b")
 
@@ -63,40 +68,216 @@ struct NativeOverviewScreen: View {
     }
 
     #if os(macOS)
-        private func atlasMapRoom(state: NativeCampaignState, size: CGSize) -> some View {
-            VStack(spacing: 0) {
-                NativeWorldMap(
-                    state: state,
-                    store: store,
-                    minHeight: max(420, size.height - 104)
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(12)
+        private func dossierIsVisible(for width: CGFloat) -> Bool {
+            isSituationDossierOpen ?? (width >= 1180)
+        }
 
-                atlasOrdersDeck(state: state)
+        private func atlasMapRoom(state: NativeCampaignState, size: CGSize) -> some View {
+            let showDossier = dossierIsVisible(for: size.width)
+
+            return VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    ZStack(alignment: .trailing) {
+                        NativeWorldMap(
+                            state: state,
+                            store: store,
+                            minHeight: max(420, size.height - 110)
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding(12)
+
+                        if !showDossier {
+                            Button {
+                                isSituationDossierOpen = true
+                            } label: {
+                                Label("DOSSIER", systemImage: "sidebar.right")
+                                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(NativeWarRoomTheme.graphite.opacity(0.92), in: Capsule())
+                                    .overlay {
+                                        Capsule()
+                                            .stroke(NativeWarRoomTheme.brass.opacity(0.38), lineWidth: 1)
+                                    }
+                                    .foregroundStyle(NativeWarRoomTheme.brass)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.trailing, 18)
+                            .help("Open Situation & Objectives Dossier")
+                            .accessibilityIdentifier("native-atlas-dossier-floating-toggle")
+                        }
+                    }
+
+                    if showDossier {
+                        Rectangle()
+                            .fill(NativeWarRoomTheme.brass.opacity(0.22))
+                            .frame(width: 1)
+
+                        atlasSituationDossier(state: state)
+                            .frame(width: min(352, max(300, size.width * 0.28)))
+                            .transition(reduceMotion ? .opacity : .move(edge: .trailing).combined(with: .opacity))
+                    }
+                }
+                .animation(
+                    reduceMotion ? nil : .spring(response: 0.28, dampingFraction: 0.86),
+                    value: showDossier
+                )
+
+                atlasOrdersDeck(state: state, isDossierOpen: showDossier)
             }
             .background(NativeWarRoomTheme.blackboard)
             .accessibilityIdentifier("native-atlas-map-room")
         }
 
-        private func atlasOrdersDeck(state: NativeCampaignState) -> some View {
+        private func atlasSituationDossier(state: NativeCampaignState) -> some View {
+            let alignments = Array(Native2010WorldModel.alignments(for: state).prefix(4))
+            let riskSignals = Array(Native2010WorldModel.riskSignals(for: state).prefix(3))
+            let opinion = Native2010WorldModel.publicOpinion(for: state)
+            let crises = NativeCrisisDetector.activeCrises(for: state)
+
+            return VStack(spacing: 0) {
+                HStack(spacing: 8) {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
+                    Text("SITUATION DOSSIER")
+                        .font(NativeWarRoomTheme.labelFont(.caption, weight: .bold))
+                        .tracking(0.8)
+                        .foregroundStyle(NativeWarRoomTheme.ink)
+                    Spacer()
+                    Button {
+                        isSituationDossierOpen = false
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                            .padding(5)
+                            .background(NativeWarRoomTheme.olivePanel.opacity(0.75), in: Circle())
+                            .overlay {
+                                Circle()
+                                    .stroke(NativeWarRoomTheme.brass.opacity(0.24), lineWidth: 1)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .help("Collapse Situation Dossier")
+                    .accessibilityLabel("Collapse situation dossier")
+                    .accessibilityIdentifier("native-atlas-dossier-close")
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(NativeWarRoomTheme.graphite.opacity(0.92))
+
+                Rectangle()
+                    .fill(NativeWarRoomTheme.brass.opacity(0.18))
+                    .frame(height: 1)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        if !crises.isEmpty {
+                            NativeCrisisBanner(state: state, compact: true)
+                        }
+
+                        if let progress = store.turnProgress {
+                            NativeTurnProgressPanel(progress: progress)
+                        }
+
+                        NativeCampaignObjectivesPanel(state: state, compactVertical: true)
+
+                        if let turn = store.lastTurnReport {
+                            NativeAfterActionReportPanel(report: NativeGameEngine.afterActionReport(for: turn, state: state))
+                        }
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            NativePublicOpinionSparkline(opinion: opinion, events: state.timeline)
+
+                            Rectangle()
+                                .fill(NativeWarRoomTheme.brass.opacity(0.14))
+                                .frame(height: 1)
+
+                            Label("DIPLOMATIC ALIGNMENTS", systemImage: "bubble.left.and.bubble.right")
+                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+
+                            VStack(spacing: 5) {
+                                ForEach(alignments) { item in
+                                    let color = native2010RelationColor(item.relation)
+                                    HStack(spacing: 6) {
+                                        Circle()
+                                            .fill(color)
+                                            .frame(width: 6, height: 6)
+                                        Text(item.name)
+                                            .font(NativeWarRoomTheme.bodyFont(.caption, weight: .semibold))
+                                            .foregroundStyle(NativeWarRoomTheme.ink)
+                                            .lineLimit(1)
+                                        Spacer()
+                                        Text(item.stance.uppercased())
+                                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                            .foregroundStyle(color)
+                                        Text("\(item.score)")
+                                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 6)
+                                    .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.14), cornerRadius: 6)
+                                }
+                            }
+
+                            if !riskSignals.isEmpty {
+                                Label("TENSION SIGNALS", systemImage: "flame")
+                                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                    .foregroundStyle(NativeWarRoomTheme.threatRed)
+                                    .padding(.top, 2)
+
+                                VStack(spacing: 5) {
+                                    ForEach(riskSignals) { signal in
+                                        let color = native2010SignalColor(signal.level)
+                                        HStack {
+                                            Text(signal.name)
+                                                .font(NativeWarRoomTheme.bodyFont(.caption))
+                                                .foregroundStyle(NativeWarRoomTheme.ink)
+                                                .lineLimit(1)
+                                            Spacer()
+                                            Text("\(signal.intensity)%")
+                                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                                .foregroundStyle(color)
+                                        }
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 5)
+                                        .warRoomDossier(borderColor: color.opacity(0.2), cornerRadius: 6)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(12)
+                        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.18), cornerRadius: 8)
+                    }
+                    .padding(12)
+                }
+            }
+            .background(NativeWarRoomTheme.archiveShadow.opacity(0.96))
+            .accessibilityIdentifier("native-atlas-situation-dossier")
+        }
+
+        private func atlasOrdersDeck(state: NativeCampaignState, isDossierOpen: Bool) -> some View {
             let pending = state.plannedActions.filter { $0.status == .planned }
 
             return HStack(spacing: 12) {
                 Button(action: onShowOrders) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(pending.count == 1 ? "1 ORDER READY" : "\(pending.count) ORDERS READY")
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(pending.count == 1 ? "1 ORDER READY" : "\(pending.count)/\(NativeDecisionMatrixContract.maximumOrdersPerTurn) ORDERS READY")
                             .font(NativeWarRoomTheme.displayFont(.headline, weight: .semibold))
                             .foregroundStyle(NativeWarRoomTheme.ink)
-                        Text(pending.isEmpty ? "Build your next move in the decision matrix." : "Review the queue before advancing the calendar.")
+                        Text(pending.isEmpty ? "Build your turn in the 5×5 decision matrix." : "Click a slot or review orders before advancing.")
                             .font(NativeWarRoomTheme.bodyFont(.caption))
                             .foregroundStyle(NativeWarRoomTheme.mutedInk)
                             .lineLimit(1)
                     }
-                    .frame(minWidth: 210, alignment: .leading)
+                    .frame(minWidth: 170, alignment: .leading)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .fixedSize(horizontal: true, vertical: false)
                 .accessibilityLabel("Open decision matrix, \(pending.count) orders ready")
                 .accessibilityIdentifier("native-atlas-open-orders")
 
@@ -104,46 +285,53 @@ struct NativeOverviewScreen: View {
                     .fill(NativeWarRoomTheme.brass.opacity(0.18))
                     .frame(width: 1, height: 44)
 
-                ForEach(Array(pending.prefix(2))) { action in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(action.title)
-                            .font(NativeWarRoomTheme.bodyFont(.caption, weight: .semibold))
-                            .foregroundStyle(NativeWarRoomTheme.ink)
-                            .lineLimit(1)
-                        Text("COST \(action.administrativeCost)")
-                            .font(NativeWarRoomTheme.labelFont(.caption2))
-                            .foregroundStyle(NativeWarRoomTheme.brass)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(0 ..< NativeDecisionMatrixContract.maximumOrdersPerTurn, id: \.self) { slotIndex in
+                            let action = pending.indices.contains(slotIndex) ? pending[slotIndex] : nil
+                            atlasOrderSlot(slotNumber: slotIndex + 1, action: action)
+                        }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 9)
-                    .frame(minWidth: 150, maxWidth: 220, alignment: .leading)
-                    .background(NativeWarRoomTheme.olivePanel.opacity(0.7), in: RoundedRectangle(cornerRadius: 5))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 5)
-                            .stroke(NativeWarRoomTheme.brass.opacity(0.18), lineWidth: 1)
-                    }
+                    .padding(.vertical, 1)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                if pending.count > 2 {
-                    Text("+\(pending.count - 2)")
-                        .font(NativeWarRoomTheme.labelFont(.caption))
-                        .foregroundStyle(NativeWarRoomTheme.brass)
+                Button {
+                    isSituationDossierOpen = !isDossierOpen
+                } label: {
+                    Label("DOSSIER", systemImage: isDossierOpen ? "sidebar.right" : "doc.text.magnifyingglass")
+                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            isDossierOpen ? NativeWarRoomTheme.brass.opacity(0.2) : NativeWarRoomTheme.olivePanel.opacity(0.65),
+                            in: Capsule()
+                        )
+                        .overlay {
+                            Capsule()
+                                .stroke(NativeWarRoomTheme.brass.opacity(isDossierOpen ? 0.5 : 0.22), lineWidth: 1)
+                        }
+                        .foregroundStyle(isDossierOpen ? NativeWarRoomTheme.ink : NativeWarRoomTheme.brass)
                 }
-
-                Spacer(minLength: 8)
+                .buttonStyle(.plain)
+                .fixedSize()
+                .help(isDossierOpen ? "Hide Situation & Objectives Dossier" : "Show Situation & Objectives Dossier")
+                .accessibilityIdentifier("native-atlas-dossier-toggle")
 
                 Button(action: onShowEvents) {
                     Label("Timeline", systemImage: "clock")
                         .font(NativeWarRoomTheme.labelFont(.caption))
                 }
                 .buttonStyle(.plain)
+                .fixedSize()
                 .foregroundStyle(NativeWarRoomTheme.mutedInk)
                 .accessibilityIdentifier("native-atlas-open-events")
 
                 NativeFloatingAdvanceButton(store: store)
+                    .fixedSize()
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, 11)
             .background(
                 LinearGradient(
                     colors: [NativeWarRoomTheme.graphite, NativeWarRoomTheme.archiveShadow],
@@ -156,6 +344,57 @@ struct NativeOverviewScreen: View {
                     .fill(NativeWarRoomTheme.brass.opacity(0.24))
                     .frame(height: 1)
             }
+        }
+
+        private func atlasOrderSlot(slotNumber: Int, action: NativePlannedAction?) -> some View {
+            Button(action: onShowOrders) {
+                HStack(spacing: 8) {
+                    Text("\(slotNumber)")
+                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                        .frame(width: 20, height: 20)
+                        .background(
+                            (action != nil ? NativeWarRoomTheme.brass : NativeWarRoomTheme.olivePanel).opacity(action != nil ? 0.9 : 0.8),
+                            in: RoundedRectangle(cornerRadius: 4)
+                        )
+                        .foregroundStyle(action != nil ? NativeWarRoomTheme.blackboard : NativeWarRoomTheme.mutedInk)
+
+                    if let action {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(action.title)
+                                .font(NativeWarRoomTheme.bodyFont(.caption, weight: .semibold))
+                                .foregroundStyle(NativeWarRoomTheme.ink)
+                                .lineLimit(1)
+                            Text("COST \(action.administrativeCost)")
+                                .font(NativeWarRoomTheme.labelFont(.caption2))
+                                .foregroundStyle(NativeWarRoomTheme.brass)
+                        }
+                    } else {
+                        HStack(spacing: 4) {
+                            Text("Add Order")
+                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                            Image(systemName: "plus")
+                                .font(.caption2.weight(.bold))
+                        }
+                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .frame(minWidth: 136, maxWidth: 200, minHeight: 44, alignment: .leading)
+                .background(
+                    action != nil ? NativeWarRoomTheme.olivePanel.opacity(0.85) : NativeWarRoomTheme.archiveShadow.opacity(0.5),
+                    in: RoundedRectangle(cornerRadius: 6)
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(
+                            action != nil ? NativeWarRoomTheme.brass.opacity(0.42) : NativeWarRoomTheme.brass.opacity(0.22),
+                            style: action != nil ? StrokeStyle(lineWidth: 1) : StrokeStyle(lineWidth: 1, dash: [4, 3])
+                        )
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(action.map { "Order slot \(slotNumber): \($0.title)" } ?? "Order slot \(slotNumber): empty, add order")
         }
 
         private func commandDesk(state: NativeCampaignState) -> some View {
@@ -605,6 +844,7 @@ struct NativeMetricsGrid: View {
 
 struct NativeCampaignObjectivesPanel: View {
     let state: NativeCampaignState
+    var compactVertical = false
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-campaign-objectives-panel") {
@@ -620,21 +860,29 @@ struct NativeCampaignObjectivesPanel: View {
                         : (state.victoryStatus == .won ? Color.neonTeal : Color.softRed))
             }
 
-            #if os(macOS)
-                HStack(alignment: .top, spacing: 10) {
-                    ForEach(NativeGameEngine.campaignObjectives(for: state)) { objective in
-                        NativeObjectiveRow(objective: objective)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 116, alignment: .topLeading)
-                    }
-                }
-            #else
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
+            if compactVertical {
+                VStack(spacing: 8) {
                     ForEach(NativeGameEngine.campaignObjectives(for: state)) { objective in
                         NativeObjectiveRow(objective: objective)
                     }
                 }
-            #endif
+            } else {
+                #if os(macOS)
+                    HStack(alignment: .top, spacing: 10) {
+                        ForEach(NativeGameEngine.campaignObjectives(for: state)) { objective in
+                            NativeObjectiveRow(objective: objective)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 116, alignment: .topLeading)
+                        }
+                    }
+                #else
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
+                        ForEach(NativeGameEngine.campaignObjectives(for: state)) { objective in
+                            NativeObjectiveRow(objective: objective)
+                        }
+                    }
+                #endif
+            }
         }
         .transaction { transaction in
             transaction.animation = nil
@@ -854,58 +1102,160 @@ private struct NativeDecisionMatrixBoard: View {
     @ObservedObject var store: NativeCampaignStore
     let suggestions: [NativeSuggestedAction]
 
+    @State private var selectedDomain: NativeDecisionMatrixRow? = nil
+    @State private var measuredWidth: CGFloat = 0
+
     private let labelWidth: CGFloat = 104
     private let cellWidth: CGFloat = 176
     private let spacing: CGFloat = 8
 
+    private var useFullGridLayout: Bool {
+        selectedDomain == nil && measuredWidth >= 920
+    }
+
+    private var visibleRows: [NativeDecisionMatrixRow] {
+        if let selectedDomain {
+            return [selectedDomain]
+        }
+        return NativeDecisionMatrixRow.allCases
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             turnBudgetStrip
+            domainFilterBar
 
-            ScrollView(.horizontal, showsIndicators: true) {
-                LazyVGrid(columns: gridColumns, alignment: .leading, spacing: spacing) {
-                    Color.clear
-                        .frame(width: labelWidth, height: 28)
-                    ForEach(NativeDecisionMatrixColumn.allCases) { column in
-                        Text(column.title.uppercased())
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .foregroundStyle(Color.alertGold)
-                            .frame(width: cellWidth, alignment: .leading)
-                    }
-
-                    ForEach(NativeDecisionMatrixRow.allCases) { row in
-                        Label(row.title, systemImage: row.systemImage)
-                            .font(.system(size: 11, weight: .bold, design: .monospaced))
-                            .foregroundStyle(Color.iceBlue)
-                            .frame(width: labelWidth, alignment: .leading)
-
+            if useFullGridLayout {
+                ScrollView(.horizontal, showsIndicators: true) {
+                    LazyVGrid(columns: gridColumns, alignment: .leading, spacing: spacing) {
+                        Color.clear
+                            .frame(width: labelWidth, height: 28)
                         ForEach(NativeDecisionMatrixColumn.allCases) { column in
-                            if let suggestion = suggestion(row: row, column: column) {
-                                NativeDecisionMatrixCell(
-                                    suggestion: suggestion,
-                                    isQueued: isQueued(suggestion),
-                                    remainingPower: remainingPower,
-                                    queueIsFull: queueIsFull
-                                ) {
-                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
-                                        store.toggleSuggestedAction(suggestion)
+                            Text(column.title.uppercased())
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundStyle(Color.alertGold)
+                                .frame(width: cellWidth, alignment: .leading)
+                        }
+
+                        ForEach(NativeDecisionMatrixRow.allCases) { row in
+                            Label(row.title, systemImage: row.systemImage)
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundStyle(Color.iceBlue)
+                                .frame(width: labelWidth, alignment: .leading)
+
+                            ForEach(NativeDecisionMatrixColumn.allCases) { column in
+                                if let suggestion = suggestion(row: row, column: column) {
+                                    NativeDecisionMatrixCell(
+                                        suggestion: suggestion,
+                                        isQueued: isQueued(suggestion),
+                                        remainingPower: remainingPower,
+                                        queueIsFull: queueIsFull
+                                    ) {
+                                        withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                                            store.toggleSuggestedAction(suggestion)
+                                        }
+                                    }
+                                    .frame(width: cellWidth)
+                                    .frame(minHeight: 164)
+                                } else {
+                                    ContentUnavailableView("Missing", systemImage: "exclamationmark.triangle")
+                                        .frame(width: cellWidth)
+                                        .frame(minHeight: 164)
+                                }
+                            }
+                        }
+                    }
+                    .frame(width: labelWidth + cellWidth * 5 + spacing * 5)
+                    .padding(.vertical, 4)
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(visibleRows) { row in
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 8) {
+                                Label(row.title.uppercased(), systemImage: row.systemImage)
+                                    .font(NativeWarRoomTheme.labelFont(.caption, weight: .bold))
+                                    .foregroundStyle(NativeWarRoomTheme.brass)
+                                Rectangle()
+                                    .fill(NativeWarRoomTheme.brass.opacity(0.2))
+                                    .frame(height: 1)
+                            }
+
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: 10)], spacing: 10) {
+                                ForEach(NativeDecisionMatrixColumn.allCases) { column in
+                                    if let suggestion = suggestion(row: row, column: column) {
+                                        NativeDecisionMatrixCell(
+                                            suggestion: suggestion,
+                                            isQueued: isQueued(suggestion),
+                                            remainingPower: remainingPower,
+                                            queueIsFull: queueIsFull
+                                        ) {
+                                            withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                                                store.toggleSuggestedAction(suggestion)
+                                            }
+                                        }
+                                        .frame(minHeight: 158)
                                     }
                                 }
-                                .frame(width: cellWidth)
-                                .frame(minHeight: 154)
-                            } else {
-                                ContentUnavailableView("Missing", systemImage: "exclamationmark.triangle")
-                                    .frame(width: cellWidth)
-                                    .frame(minHeight: 154)
                             }
                         }
                     }
                 }
-                .frame(width: labelWidth + cellWidth * 5 + spacing * 5)
-                .padding(.vertical, 4)
+            }
+        }
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear {
+                        measuredWidth = proxy.size.width
+                    }
+                    .onChange(of: proxy.size.width) { _, newWidth in
+                        measuredWidth = newWidth
+                    }
             }
         }
         .accessibilityIdentifier("native-decision-matrix")
+    }
+
+    private var domainFilterBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 7) {
+                domainFilterPill(title: "All Domains (5×5)", systemImage: "square.grid.3x3", row: nil)
+                ForEach(NativeDecisionMatrixRow.allCases) { row in
+                    domainFilterPill(title: row.title, systemImage: row.systemImage, row: row)
+                }
+            }
+            .padding(.vertical, 2)
+        }
+        .accessibilityIdentifier("native-decision-domain-filter")
+    }
+
+    private func domainFilterPill(title: String, systemImage: String, row: NativeDecisionMatrixRow?) -> some View {
+        let isSelected = selectedDomain == row
+        return Button {
+            withAnimation(.easeInOut(duration: 0.18)) {
+                selectedDomain = row
+            }
+        } label: {
+            Label(title, systemImage: systemImage)
+                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    isSelected ? NativeWarRoomTheme.brass.opacity(0.22) : NativeWarRoomTheme.olivePanel.opacity(0.55),
+                    in: Capsule()
+                )
+                .overlay {
+                    Capsule()
+                        .stroke(
+                            isSelected ? NativeWarRoomTheme.brass.opacity(0.65) : NativeWarRoomTheme.brass.opacity(0.18),
+                            lineWidth: 1
+                        )
+                }
+                .foregroundStyle(isSelected ? NativeWarRoomTheme.ink : NativeWarRoomTheme.mutedInk)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("native-decision-filter-\(row?.rawValue.description ?? "all")")
     }
 
     private var turnBudgetStrip: some View {
@@ -981,28 +1331,121 @@ private struct NativeDecisionMatrixCell: View {
         !isQueued && (!isAffordable || queueIsFull)
     }
 
+    private var postureTitle: String {
+        NativeDecisionMatrixColumn(rawValue: suggestion.matrixColumn)?.title.uppercased() ?? "DIRECTIVE"
+    }
+
+    private var urgencyLabel: String {
+        suggestion.urgency.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+    }
+
+    private var urgencyTint: Color {
+        switch suggestion.urgency.lowercased() {
+        case "immediate":
+            NativeWarRoomTheme.threatRed
+        case "opportunistic":
+            NativeWarRoomTheme.fieldGreen
+        default:
+            NativeWarRoomTheme.alertAmber
+        }
+    }
+
+    private var targetBadgeText: String? {
+        if let code = suggestion.targetCountryCode, !code.isEmpty {
+            return code.uppercased()
+        }
+        if let region = suggestion.targetRegionID, !region.isEmpty {
+            return region.uppercased()
+        }
+        return nil
+    }
+
+    private func mechanicBadge(_ code: String, isPrimary: Bool) -> some View {
+        let tint: Color = switch NativeStrategicTrack.decodeMechanicToken(code) {
+        case .economicResilience, .marketConfidence:
+            NativeWarRoomTheme.alertAmber
+        case .internalStability:
+            NativeWarRoomTheme.fieldGreen
+        case .diplomaticLeverage:
+            NativeWarRoomTheme.signalCyan
+        case .militaryReadiness, .securityAnxiety, .worldTension:
+            NativeWarRoomTheme.threatRed
+        case nil:
+            NativeWarRoomTheme.brass
+        }
+
+        return Text(code)
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .padding(.horizontal, 5)
+            .padding(.vertical, 2)
+            .background(tint.opacity(isPrimary ? 0.18 : 0.1), in: RoundedRectangle(cornerRadius: 4))
+            .overlay {
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(tint.opacity(isPrimary ? 0.42 : 0.22), lineWidth: 0.75)
+            }
+            .foregroundStyle(tint)
+    }
+
     var body: some View {
         Button(action: onSelect) {
             VStack(alignment: .leading, spacing: 7) {
-                HStack(alignment: .top) {
+                HStack(spacing: 5) {
+                    Text(postureTitle)
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
+
+                    if let targetBadgeText {
+                        Text(targetBadgeText)
+                            .font(.system(size: 8.5, weight: .bold, design: .monospaced))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .background(NativeWarRoomTheme.olivePanel.opacity(0.9), in: RoundedRectangle(cornerRadius: 3))
+                            .foregroundStyle(NativeWarRoomTheme.parchment)
+                            .lineLimit(1)
+                    }
+
+                    Spacer(minLength: 4)
+
+                    if !urgencyLabel.isEmpty {
+                        Text(urgencyLabel)
+                            .font(.system(size: 8.5, weight: .bold, design: .monospaced))
+                            .foregroundStyle(urgencyTint)
+                    }
+                }
+
+                HStack(alignment: .top, spacing: 4) {
                     Text(suggestion.title)
-                        .font(.system(size: 12, weight: .semibold, design: .serif))
-                        .foregroundStyle(.primary)
-                        .lineLimit(3)
+                        .font(NativeWarRoomTheme.displayFont(.caption, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.ink)
+                        .lineLimit(2)
                     Spacer(minLength: 4)
                     if isQueued {
-                        Image(systemName: "minus.circle.fill")
-                            .foregroundStyle(Color.neonTeal)
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.caption)
+                            .foregroundStyle(NativeWarRoomTheme.fieldGreen)
                     } else if isDisabled {
                         Image(systemName: queueIsFull ? "tray.full.fill" : "bolt.slash.fill")
-                            .foregroundStyle(Color.softRed)
+                            .font(.caption)
+                            .foregroundStyle(NativeWarRoomTheme.threatRed)
                     }
                 }
 
                 Text(suggestion.detail)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(4)
+                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                    .lineLimit(3)
+
+                if !suggestion.primaryMechanic.isEmpty || !suggestion.secondaryMechanic.isEmpty {
+                    HStack(spacing: 4) {
+                        if !suggestion.primaryMechanic.isEmpty {
+                            mechanicBadge(suggestion.primaryMechanic, isPrimary: true)
+                        }
+                        if !suggestion.secondaryMechanic.isEmpty {
+                            mechanicBadge(suggestion.secondaryMechanic, isPrimary: false)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                }
 
                 Spacer(minLength: 0)
 
@@ -1016,10 +1459,16 @@ private struct NativeDecisionMatrixCell: View {
             }
             .padding(10)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(Color.iceBlue.opacity(isQueued ? 0.12 : 0.055), in: RoundedRectangle(cornerRadius: 10))
+            .background(
+                isQueued ? NativeWarRoomTheme.fieldGreen.opacity(0.14) : NativeWarRoomTheme.olivePanel.opacity(0.62),
+                in: RoundedRectangle(cornerRadius: 8)
+            )
             .overlay {
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(isQueued ? Color.neonTeal.opacity(0.7) : Color.iceBlue.opacity(0.18), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(
+                        isQueued ? NativeWarRoomTheme.fieldGreen.opacity(0.75) : NativeWarRoomTheme.brass.opacity(0.22),
+                        lineWidth: isQueued ? 1.5 : 1
+                    )
             }
             .contentShape(Rectangle())
         }
@@ -1047,12 +1496,12 @@ private struct NativeDecisionMatrixCell: View {
 
     private var statusColor: Color {
         if isQueued {
-            return Color.neonTeal
+            return NativeWarRoomTheme.fieldGreen
         }
         if isDisabled {
-            return Color.softRed
+            return NativeWarRoomTheme.threatRed
         }
-        return Color.glowingCyan
+        return NativeWarRoomTheme.brass
     }
 
     private var accessibilityHint: String {

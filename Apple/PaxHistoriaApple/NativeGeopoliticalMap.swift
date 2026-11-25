@@ -208,29 +208,26 @@ struct NativeGeopoliticalMap: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 6) {
-                                Circle().fill(Color.glowingCyan).frame(width: 7, height: 7)
-                                Text("Player").font(.system(size: 11, weight: .semibold, design: .rounded)).foregroundStyle(.white)
+                                Circle().fill(NativeWarRoomTheme.brass).frame(width: 7, height: 7)
+                                Text("PLAYER").font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold)).foregroundStyle(NativeWarRoomTheme.ink)
                             }
                             HStack(spacing: 6) {
-                                Circle().fill(Color.softRed.opacity(0.7)).frame(width: 7, height: 7)
-                                Text("Conflict").font(.system(size: 11, weight: .semibold, design: .rounded)).foregroundStyle(.white)
+                                Circle().fill(NativeWarRoomTheme.threatRed).frame(width: 7, height: 7)
+                                Text("CONFLICT").font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold)).foregroundStyle(NativeWarRoomTheme.ink)
                             }
                             HStack(spacing: 6) {
-                                Circle().fill(Color.alertGold.opacity(0.7)).frame(width: 7, height: 7)
-                                Text("Tension").font(.system(size: 11, weight: .semibold, design: .rounded)).foregroundStyle(.white)
+                                Circle().fill(NativeWarRoomTheme.alertAmber).frame(width: 7, height: 7)
+                                Text("TENSION").font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold)).foregroundStyle(NativeWarRoomTheme.ink)
                             }
                             HStack(spacing: 6) {
-                                Circle().fill(Color.gray.opacity(0.5)).frame(width: 7, height: 7)
-                                Text("Neutral").font(.system(size: 11, weight: .semibold, design: .rounded)).foregroundStyle(.white)
+                                Circle().fill(NativeWarRoomTheme.mutedInk.opacity(0.6)).frame(width: 7, height: 7)
+                                Text("NEUTRAL").font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold)).foregroundStyle(NativeWarRoomTheme.ink)
                             }
                         }
                         Spacer()
                     }
                     .padding(10)
-                    .background(Color.black.opacity(0.65), in: RoundedRectangle(cornerRadius: 8))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 8).stroke(.white.opacity(0.12), lineWidth: 1)
-                    }
+                    .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.28), cornerRadius: 8)
                     .padding(.horizontal, 12)
                     .padding(.top, overlayTopPadding)
                     .allowsHitTesting(false)
@@ -242,18 +239,15 @@ struct NativeGeopoliticalMap: View {
                     HStack {
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text(state.scenarioName)
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
-                            Text("\(state.gameDate) · \(state.worldTension)/100")
-                                .font(.system(size: 11, design: .rounded))
-                                .foregroundStyle(.secondary)
+                            Text(state.scenarioName.uppercased())
+                                .font(NativeWarRoomTheme.labelFont(.caption, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.ink)
+                            Text("\(state.gameDate) · \(state.worldTension)/100 TENSION")
+                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                                .foregroundStyle(NativeWarRoomTheme.mutedInk)
                         }
                         .padding(10)
-                        .background(Color.black.opacity(0.65), in: RoundedRectangle(cornerRadius: 8))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 8).stroke(.white.opacity(0.12), lineWidth: 1)
-                        }
+                        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.28), cornerRadius: 8)
                         .padding(.horizontal, 12)
                         .padding(.top, overlayTopPadding)
                         .allowsHitTesting(false)

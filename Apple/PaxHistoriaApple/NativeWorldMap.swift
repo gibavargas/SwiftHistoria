@@ -80,11 +80,14 @@ struct NativeWorldMap: View {
     private let sectorsByCode: [String: Native2010MapSector]
 
     @State private var selectedRegionID: String? = nil
+    @State private var hoveredRegionID: String? = nil
+    @State private var hoverLocation: CGPoint = .zero
     @State private var selectedLayer: NativeWarRoomMapLayer = .relations
     @State private var zoomScale: CGFloat = 1.0
     @State private var lastZoomScale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
+    @State private var isMinimapVisible = true
 
     init(
         state: NativeCampaignState,
@@ -101,6 +104,38 @@ struct NativeWorldMap: View {
     /// static so the full Canvas is redrawn only when campaign or viewport state
     /// changes, eliminating idle animation invalidations and presentation flicker.
     private let animationPhase: CGFloat = 0
+
+    private static let majorPowerCodes: Set<String> = [
+        "USA", "CAN", "BRA", "ARG", "GBR", "FRA", "DEU", "ITA", "ESP", "POL",
+        "UKR", "RUS", "TUR", "EGY", "NGA", "ZAF", "SAU", "IRN", "IND", "CHN",
+        "JPN", "IDN", "AUS", "MEX"
+    ]
+
+    private static let oceanInscriptions: [(name: String, point: CGPoint)] = [
+        ("NORTH ATLANTIC OCEAN", CGPoint(x: 389, y: 244)),
+        ("SOUTH ATLANTIC OCEAN", CGPoint(x: 450, y: 345)),
+        ("NORTH PACIFIC OCEAN", CGPoint(x: 84, y: 255)),
+        ("SOUTH PACIFIC OCEAN", CGPoint(x: 132, y: 342)),
+        ("INDIAN OCEAN", CGPoint(x: 717, y: 338)),
+        ("ARCTIC OCEAN", CGPoint(x: 528, y: 92))
+    ]
+
+    /// Pre-computed world-space label anchor (largest region by bounding-box area)
+    /// for each non-water country so subdivided nations like USA/RUS/BRA/CHN label cleanly at 1.0x.
+    private static let countryLabelAnchors: [String: CGPoint] = {
+        var anchors: [String: CGPoint] = [:]
+        for (code, regions) in GeopoliticalMapData.regionsByCountry where code != "WATER" && !regions.isEmpty {
+            let bestRegion = regions.max { lhs, rhs in
+                let lb = lhs.path.boundingRect
+                let rb = rhs.path.boundingRect
+                return (lb.width * lb.height) < (rb.width * rb.height)
+            }
+            if let bestRegion {
+                anchors[code] = bestRegion.center
+            }
+        }
+        return anchors
+    }()
 
     private func clampOffset(_ offset: CGSize, size: CGSize, zoom: CGFloat) -> CGSize {
         guard zoom > 1.0 else { return .zero }
@@ -182,6 +217,66 @@ struct NativeWorldMap: View {
                 style: StrokeStyle(lineWidth: 1.2 / zoomScale, lineCap: .round)
             )
         }
+    }
+
+    private func drawOceanLabels(context: GraphicsContext, visibleRect: CGRect, scaleX: CGFloat, scaleY: CGFloat) {
+        guard zoomScale < 3.0 else { return }
+        let opacity = zoomScale < 2.0 ? 0.26 : max(0.0, 0.26 * (3.0 - zoomScale))
+        for ocean in Self.oceanInscriptions where visibleRect.contains(ocean.point) {
+            let pt = CGPoint(x: ocean.point.x * scaleX, y: ocean.point.y * scaleY)
+            let tracked = ocean.name.map(String.init).joined(separator: " ")
+            let label = Text(tracked)
+                .font(.system(size: 7.5 / zoomScale, weight: .semibold, design: .serif))
+                .italic()
+                .foregroundColor(NativeWarRoomTheme.graphite.opacity(opacity))
+            context.draw(label, at: pt, anchor: .center)
+        }
+    }
+
+    private func drawCompassRose(context: GraphicsContext, visibleRect: CGRect, scaleX: CGFloat, scaleY: CGFloat) {
+        let worldCenter = CGPoint(x: 88, y: 372)
+        guard visibleRect.contains(worldCenter) else { return }
+        let cx = worldCenter.x * scaleX
+        let cy = worldCenter.y * scaleY
+        let outerR = 24.0 / zoomScale
+        let innerR = 6.5 / zoomScale
+        let midR = 14.5 / zoomScale
+
+        let ringColor = NativeWarRoomTheme.graphite.opacity(0.28)
+        let brassColor = NativeWarRoomTheme.oxidizedBrass.opacity(0.45)
+
+        // Concentric cartographic rings
+        let outerRect = CGRect(x: cx - outerR * 0.85, y: cy - outerR * 0.85, width: outerR * 1.7, height: outerR * 1.7)
+        let innerRect = CGRect(x: cx - innerR, y: cy - innerR, width: innerR * 2, height: innerR * 2)
+        context.stroke(Path(ellipseIn: outerRect), with: .color(ringColor), lineWidth: 0.9 / zoomScale)
+        context.stroke(Path(ellipseIn: innerRect), with: .color(brassColor), lineWidth: 0.8 / zoomScale)
+
+        // 8-point star geometry
+        var starPath = Path()
+        for i in 0 ..< 8 {
+            let angle = Double(i) * (.pi / 4.0) - (.pi / 2.0)
+            let tipRadius = i.isMultiple(of: 2) ? outerR : midR
+            let tip = CGPoint(x: cx + cos(angle) * tipRadius, y: cy + sin(angle) * tipRadius)
+            let leftAngle = angle - (.pi / 8.0)
+            let rightAngle = angle + (.pi / 8.0)
+            let leftPt = CGPoint(x: cx + cos(leftAngle) * innerR, y: cy + sin(leftAngle) * innerR)
+            let rightPt = CGPoint(x: cx + cos(rightAngle) * innerR, y: cy + sin(rightAngle) * innerR)
+
+            starPath.move(to: CGPoint(x: cx, y: cy))
+            starPath.addLine(to: leftPt)
+            starPath.addLine(to: tip)
+            starPath.addLine(to: rightPt)
+            starPath.closeSubpath()
+        }
+
+        context.fill(starPath, with: .color(NativeWarRoomTheme.oxidizedBrass.opacity(0.16)))
+        context.stroke(starPath, with: .color(ringColor), lineWidth: 0.85 / zoomScale)
+
+        // North cardinal mark
+        let northLabel = Text("N")
+            .font(.system(size: 7.5 / zoomScale, weight: .bold, design: .serif))
+            .foregroundColor(NativeWarRoomTheme.graphite.opacity(0.48))
+        context.draw(northLabel, at: CGPoint(x: cx, y: cy - outerR - 4.5 / zoomScale), anchor: .bottom)
     }
 
     private func drawTerrainIcon(context: GraphicsContext, terrain: NativeTerrainType, center: CGPoint, scaleX: CGFloat, scaleY: CGFloat) {
@@ -307,7 +402,7 @@ struct NativeWorldMap: View {
 
     private func economyColor(for ledger: NativeEconomicLedger?) -> Color {
         guard let ledger else { return NativeWarRoomTheme.mutedInk.opacity(0.45) }
-        if ledger.realGrowthPercent >= 3.0 && ledger.fiscalSpaceIndex >= 55 {
+        if ledger.realGrowthPercent >= 3.0, ledger.fiscalSpaceIndex >= 55 {
             return NativeWarRoomTheme.fieldGreen
         }
         if ledger.realGrowthPercent <= -1.0 || ledger.publicDebtPercentGDP >= 110 {
@@ -462,6 +557,7 @@ struct NativeWorldMap: View {
         let isPlayerCountry = reg.countryCode == state.country.code
         let isPlayerOccupier = occupierCode == state.country.code
         let isSelectedCountry = selectedCountryCode != nil && selectedCountryCode == reg.countryCode
+        let isHovered = reg.id == hoveredRegionID && reg.countryCode != "WATER"
         let isOccupied = occupierCode != reg.countryCode
         let isContested = conflict?.mode == .contestedBorder
 
@@ -582,6 +678,8 @@ struct NativeWorldMap: View {
         }
         if reg.id == selectedRegionID {
             fillOpacity += 0.15
+        } else if isHovered {
+            fillOpacity += 0.10
         }
 
         let isFallout = state.nuclearFalloutRegions.contains(reg.id) || conflict?.mode == .nuclearFallout
@@ -634,6 +732,11 @@ struct NativeWorldMap: View {
             context.stroke(path, with: .color(strokeColor), style: dashStyle)
         } else {
             context.stroke(path, with: .color(NativeWarRoomTheme.graphite.opacity(0.38)), lineWidth: 1.0 / zoomScale)
+        }
+
+        if isHovered {
+            context.fill(path, with: .color(NativeWarRoomTheme.brass.opacity(0.14)))
+            context.stroke(path, with: .color(NativeWarRoomTheme.brass.opacity(0.85)), lineWidth: 2.0 / zoomScale)
         }
 
         if let conflict {
@@ -787,6 +890,9 @@ struct NativeWorldMap: View {
         let maxY = maxLocalY / scaleY + 150.0
         let visibleRect = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
 
+        drawOceanLabels(context: context, visibleRect: visibleRect, scaleX: scaleX, scaleY: scaleY)
+        drawCompassRose(context: context, visibleRect: visibleRect, scaleX: scaleX, scaleY: scaleY)
+
         // Draw continents (skip off-screen landmasses)
         let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
         for lm in GeopoliticalMapData.landmasses {
@@ -820,42 +926,8 @@ struct NativeWorldMap: View {
             )
         }
 
-        // Draw region / state name labels under appropriate zoom levels (LOD)
-        if zoomScale >= 1.5 {
-            for reg in GeopoliticalMapData.nonWaterRegions {
-                if !visibleRect.contains(reg.center) {
-                    continue
-                }
-                let isState = reg.id.contains("_") || reg.id.count > 3
-                let shouldShow: Bool = if zoomScale >= 3.0 {
-                    true
-                } else {
-                    !isState // Only show country names when zoomed out slightly
-                }
-
-                if shouldShow {
-                    let scaledCenter = CGPoint(x: reg.center.x * scaleX, y: reg.center.y * scaleY)
-                    // Draw name
-                    let fontSize = (isState ? 5.5 : 7.0) / zoomScale
-                    let nameText = Text(reg.name.uppercased())
-                        .font(.system(size: fontSize, weight: isState ? .semibold : .black, design: .monospaced))
-                        .foregroundColor(
-                            isState
-                                ? NativeWarRoomTheme.graphite.opacity(0.72)
-                                : NativeWarRoomTheme.archiveShadow.opacity(0.88)
-                        )
-
-                    // Simple drop-shadow effect by drawing a dark background text first
-                    let shadowText = Text(reg.name.uppercased())
-                        .font(.system(size: fontSize, weight: isState ? .semibold : .black, design: .monospaced))
-                        .foregroundColor(NativeWarRoomTheme.parchment.opacity(0.72))
-
-                    let shadowOffset = 0.6 / zoomScale
-                    context.draw(shadowText, at: CGPoint(x: scaledCenter.x + shadowOffset, y: scaledCenter.y + shadowOffset), anchor: .center)
-                    context.draw(nameText, at: scaledCenter, anchor: .center)
-                }
-            }
-        }
+        // Draw country & sub-national labels across world and regional LODs
+        drawMapLabels(context: context, visibleRect: visibleRect, scaleX: scaleX, scaleY: scaleY)
 
         if selectedLayer == .strategy || zoomScale >= 1.75 {
             drawStrategicMarkers(context: context, visibleRect: visibleRect, scaleX: scaleX, scaleY: scaleY)
@@ -929,6 +1001,97 @@ struct NativeWorldMap: View {
 
         drawConflictRoutes(context: context, scaleX: scaleX, scaleY: scaleY)
         drawArmiesAndPolice(context: context, scaleX: scaleX, scaleY: scaleY, visibleRect: visibleRect)
+    }
+
+    private func drawMapLabels(context: GraphicsContext, visibleRect: CGRect, scaleX: CGFloat, scaleY: CGFloat) {
+        let playerCanonical = GeopoliticalMapData.canonicalCountryCode(state.country.code)
+
+        if zoomScale < 1.5 {
+            // 1.0x world-scale major powers + player nation
+            var featuredCodes = Self.majorPowerCodes
+            featuredCodes.insert(playerCanonical)
+            featuredCodes.insert(state.country.code.uppercased())
+
+            for code in featuredCodes.sorted() {
+                guard let anchor = Self.countryLabelAnchors[code],
+                      visibleRect.contains(anchor)
+                else { continue }
+                let resolved = CountryNameResolver.name(forCode: code, in: state).uppercased()
+                guard !resolved.isEmpty else { continue }
+                let isPlayer = GeopoliticalMapData.canonicalCountryCode(code) == playerCanonical
+                drawAtlasLabel(
+                    context: context,
+                    text: resolved,
+                    at: CGPoint(x: anchor.x * scaleX, y: anchor.y * scaleY),
+                    fontSize: (isPlayer ? 9.5 : 8.5) / zoomScale,
+                    design: .serif,
+                    weight: isPlayer ? .black : .bold,
+                    foreground: isPlayer ? NativeWarRoomTheme.blackboard : NativeWarRoomTheme.archiveShadow.opacity(0.88),
+                    haloOpacity: isPlayer ? 0.85 : 0.75
+                )
+            }
+            return
+        }
+
+        // >= 1.5x: all country anchors, plus sub-national state labels when zoomed in >= 2.8x
+        if zoomScale < 2.8 {
+            for (code, anchor) in Self.countryLabelAnchors where visibleRect.contains(anchor) {
+                let resolved = CountryNameResolver.name(forCode: code, in: state).uppercased()
+                guard !resolved.isEmpty else { continue }
+                let isPlayer = GeopoliticalMapData.canonicalCountryCode(code) == playerCanonical
+                drawAtlasLabel(
+                    context: context,
+                    text: resolved,
+                    at: CGPoint(x: anchor.x * scaleX, y: anchor.y * scaleY),
+                    fontSize: (isPlayer ? 8.5 : 7.2) / zoomScale,
+                    design: .serif,
+                    weight: .bold,
+                    foreground: NativeWarRoomTheme.archiveShadow.opacity(0.90),
+                    haloOpacity: 0.78
+                )
+            }
+            return
+        }
+
+        // >= 2.8x: full regional and sub-national state labels
+        for reg in GeopoliticalMapData.nonWaterRegions where visibleRect.contains(reg.center) {
+            let isState = reg.id.contains("_") || reg.id.count > 3
+            let scaledCenter = CGPoint(x: reg.center.x * scaleX, y: reg.center.y * scaleY)
+            drawAtlasLabel(
+                context: context,
+                text: reg.name.uppercased(),
+                at: scaledCenter,
+                fontSize: (isState ? 5.8 : 7.0) / zoomScale,
+                design: isState ? .monospaced : .serif,
+                weight: isState ? .semibold : .black,
+                foreground: isState
+                    ? NativeWarRoomTheme.graphite.opacity(0.76)
+                    : NativeWarRoomTheme.archiveShadow.opacity(0.90),
+                haloOpacity: 0.72
+            )
+        }
+    }
+
+    private func drawAtlasLabel(
+        context: GraphicsContext,
+        text: String,
+        at point: CGPoint,
+        fontSize: CGFloat,
+        design: Font.Design,
+        weight: Font.Weight,
+        foreground: Color,
+        haloOpacity: Double
+    ) {
+        let shadowOffset = 0.65 / zoomScale
+        let haloText = Text(text)
+            .font(.system(size: fontSize, weight: weight, design: design))
+            .foregroundColor(NativeWarRoomTheme.parchment.opacity(haloOpacity))
+        let mainText = Text(text)
+            .font(.system(size: fontSize, weight: weight, design: design))
+            .foregroundColor(foreground)
+
+        context.draw(haloText, at: CGPoint(x: point.x + shadowOffset, y: point.y + shadowOffset), anchor: .center)
+        context.draw(mainText, at: point, anchor: .center)
     }
 
     private func drawDevastationCrosses(context: GraphicsContext, path: Path) {
@@ -1044,15 +1207,27 @@ struct NativeWorldMap: View {
         .labelsHidden()
         .pickerStyle(.segmented)
         .controlSize(.small)
-        .padding(8)
-        .background(NativeWarRoomTheme.archiveShadow.opacity(0.86), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(NativeWarRoomTheme.brass.opacity(0.18), lineWidth: 1)
-        }
-        .frame(maxWidth: 360)
-        .padding(12)
-        .accessibilityIdentifier("native-map-layer-picker")
+        #if os(iOS)
+            .padding(5)
+            .background(NativeWarRoomTheme.archiveShadow.opacity(0.92), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .stroke(NativeWarRoomTheme.brass.opacity(0.26), lineWidth: 1)
+            }
+            .frame(maxWidth: 286)
+            .padding(.leading, 10)
+            .padding(.bottom, 16)
+        #else
+            .padding(8)
+            .background(NativeWarRoomTheme.archiveShadow.opacity(0.86), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .stroke(NativeWarRoomTheme.brass.opacity(0.18), lineWidth: 1)
+            }
+            .frame(maxWidth: 360)
+            .padding(12)
+        #endif
+            .accessibilityIdentifier("native-map-layer-picker")
     }
 
     @ViewBuilder
@@ -1114,6 +1289,200 @@ struct NativeWorldMap: View {
                 .stroke(Color.white.opacity(0.12), lineWidth: 1)
         }
         .padding(12)
+    }
+
+    #if os(macOS)
+        @ViewBuilder
+        private func hoverTooltipOverlay(in size: CGSize) -> some View {
+            if selectedRegionID == nil,
+               let hoveredID = hoveredRegionID,
+               let region = GeopoliticalMapData.regionByID[hoveredID],
+               region.countryCode != "WATER"
+            {
+                let occupierCode = state.regionOccupations[region.id] ?? region.countryCode
+                let relation = sectorRelation(code: occupierCode, playerCode: state.country.code, sectorsByCode: sectorsByCode)
+                let badgeColor = relationColor(relation)
+                let relationTitle = switch relation {
+                case .player: "PLAYER"
+                case .ally: "ALLY"
+                case .neutral: "NEUTRAL"
+                case .rival: "RIVAL"
+                }
+                let flag = CountryCatalog.flagEmoji(forAlpha3: region.countryCode) ?? "🌐"
+                let sovereignName = CountryNameResolver.name(forCode: region.countryCode, in: state)
+                let occupierName = occupierCode == "REB"
+                    ? "Insurgents"
+                    : CountryNameResolver.name(forCode: occupierCode, in: state)
+                let ledger = state.economicLedgers[occupierCode == "REB" ? region.countryCode : occupierCode]
+                let cardWidth: CGFloat = 246
+                let cardHeight: CGFloat = 104
+                let x = max(cardWidth / 2 + 12, min(size.width - cardWidth / 2 - 12, hoverLocation.x + 14 + cardWidth / 2))
+                let y = max(cardHeight / 2 + 68, min(size.height - cardHeight / 2 - 16, hoverLocation.y - 14 - cardHeight / 2))
+
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text(flag)
+                            .font(.subheadline)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(region.name)
+                                .font(NativeWarRoomTheme.displayFont(.caption, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.ink)
+                                .lineLimit(1)
+                            Text(sovereignName.uppercased())
+                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                                .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                                .lineLimit(1)
+                        }
+                        Spacer(minLength: 4)
+                        Text(relationTitle)
+                            .font(.system(size: 9, weight: .black, design: .monospaced))
+                            .foregroundStyle(badgeColor)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(badgeColor.opacity(0.14), in: Capsule())
+                            .overlay {
+                                Capsule().stroke(badgeColor.opacity(0.42), lineWidth: 0.8)
+                            }
+                    }
+
+                    if occupierCode != region.countryCode {
+                        Text("CONTROLLER: \(occupierName.uppercased())")
+                            .font(.system(size: 9.5, weight: .bold, design: .monospaced))
+                            .foregroundStyle(NativeWarRoomTheme.threatRed)
+                            .lineLimit(1)
+                    }
+
+                    Rectangle()
+                        .fill(NativeWarRoomTheme.brass.opacity(0.2))
+                        .frame(height: 1)
+
+                    HStack(spacing: 8) {
+                        if let ledger {
+                            Text(String(format: "GDP $%.1fT (%+.1f%%)", ledger.nominalGDPTrillions, ledger.realGrowthPercent))
+                                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                                .foregroundStyle(NativeWarRoomTheme.parchment)
+                            Text("SEC \(Int(ledger.securityIndex.rounded()))")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundStyle(NativeWarRoomTheme.statusColor(for: Int(ledger.securityIndex.rounded())))
+                        }
+                        Spacer(minLength: 2)
+                        Text("\(region.terrain.displayName.uppercased()) \(shortCombatModifier(for: region.terrain))")
+                            .font(.system(size: 9.5, weight: .bold, design: .monospaced))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
+                    }
+                }
+                .padding(10)
+                .frame(width: cardWidth, alignment: .leading)
+                .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.45), cornerRadius: 8)
+                .position(x: x, y: y)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            }
+        }
+    #endif
+
+    private func minimapNavigatorOverlay(mapSize: CGSize) -> some View {
+        VStack(alignment: .trailing, spacing: 6) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isMinimapVisible.toggle()
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: isMinimapVisible ? "map.fill" : "map")
+                        .font(.system(size: 10, weight: .bold))
+                    Text(isMinimapVisible ? "ATLAS" : "MINIMAP")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                }
+                .foregroundStyle(NativeWarRoomTheme.brass)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(NativeWarRoomTheme.archiveShadow.opacity(0.92), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(NativeWarRoomTheme.brass.opacity(0.32), lineWidth: 1)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isMinimapVisible ? "Hide world minimap" : "Show world minimap")
+
+            if isMinimapVisible {
+                let miniSize = CGSize(width: 132, height: 78)
+                let playerCode = GeopoliticalMapData.canonicalCountryCode(state.country.code)
+                let playerRegions = GeopoliticalMapData.regions(forCountryCode: playerCode)
+
+                Canvas { ctx, canvasSize in
+                    let sx = canvasSize.width / 1000.0
+                    let sy = canvasSize.height / 600.0
+                    let tf = CGAffineTransform(scaleX: sx, y: sy)
+
+                    ctx.fill(Path(CGRect(origin: .zero, size: canvasSize)), with: .color(NativeWarRoomTheme.archiveShadow))
+                    for lm in GeopoliticalMapData.landmasses {
+                        ctx.fill(lm.path.applying(tf), with: .color(NativeWarRoomTheme.mapPaper.opacity(0.55)))
+                    }
+                    for reg in playerRegions {
+                        ctx.fill(reg.path.applying(tf), with: .color(NativeWarRoomTheme.brass))
+                    }
+
+                    // Viewport indicator rectangle mapped from current zoomScale & offset
+                    if mapSize.width > 0, mapSize.height > 0 {
+                        let minLocalX = (-mapSize.width / 2.0 - offset.width) / zoomScale + mapSize.width / 2.0
+                        let maxLocalX = (mapSize.width / 2.0 - offset.width) / zoomScale + mapSize.width / 2.0
+                        let minLocalY = (-mapSize.height / 2.0 - offset.height) / zoomScale + mapSize.height / 2.0
+                        let maxLocalY = (mapSize.height / 2.0 - offset.height) / zoomScale + mapSize.height / 2.0
+
+                        let vx = max(0, min(canvasSize.width, (minLocalX / mapSize.width) * canvasSize.width))
+                        let vy = max(0, min(canvasSize.height, (minLocalY / mapSize.height) * canvasSize.height))
+                        let vMaxX = max(0, min(canvasSize.width, (maxLocalX / mapSize.width) * canvasSize.width))
+                        let vMaxY = max(0, min(canvasSize.height, (maxLocalY / mapSize.height) * canvasSize.height))
+                        let viewportRect = CGRect(
+                            x: vx,
+                            y: vy,
+                            width: max(6, vMaxX - vx),
+                            height: max(6, vMaxY - vy)
+                        )
+                        ctx.fill(Path(viewportRect), with: .color(NativeWarRoomTheme.brass.opacity(0.14)))
+                        ctx.stroke(Path(viewportRect), with: .color(NativeWarRoomTheme.brass), lineWidth: 1.2)
+                    }
+                }
+                .frame(width: miniSize.width, height: miniSize.height)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(NativeWarRoomTheme.brass.opacity(0.42), lineWidth: 1)
+                }
+                .shadow(color: Color.black.opacity(0.4), radius: 6, x: 0, y: 2)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            guard zoomScale > 1.0, mapSize.width > 0, mapSize.height > 0 else { return }
+                            let normX = max(0, min(1, value.location.x / miniSize.width))
+                            let normY = max(0, min(1, value.location.y / miniSize.height))
+                            let targetOffset = CGSize(
+                                width: (0.5 - normX) * mapSize.width * zoomScale,
+                                height: (0.5 - normY) * mapSize.height * zoomScale
+                            )
+                            offset = clampOffset(targetOffset, size: mapSize, zoom: zoomScale)
+                            lastOffset = offset
+                        }
+                )
+            }
+        }
+        .padding(.top, 64)
+        .padding(.trailing, 12)
+    }
+
+    private func shortCombatModifier(for terrain: NativeTerrainType) -> String {
+        switch terrain {
+        case .mountain: "-30%"
+        case .strait: "-25%"
+        case .swamp: "-20%"
+        case .forest, .city: "-15%"
+        case .cerrado: "-10%"
+        case .ocean, .sea: "-40%"
+        case .plains: "+10%"
+        }
     }
 
     var body: some View {
@@ -1199,6 +1568,27 @@ struct NativeWorldMap: View {
                             doubleTapGesture
                         )
                     )
+                    #if os(macOS)
+                    .onContinuousHover { phase in
+                        switch phase {
+                        case let .active(location):
+                            hoverLocation = location
+                            let worldPt = reverseTransform(location, size: size, scaleX: scaleX, scaleY: scaleY)
+                            let hit = GeopoliticalMapData.nonWaterRegions.first { $0.path.contains(worldPt) }
+                            if hoveredRegionID != hit?.id {
+                                hoveredRegionID = hit?.id
+                            }
+                        case .ended:
+                            hoveredRegionID = nil
+                        }
+                    }
+                    #endif
+
+                    #if os(macOS)
+                        hoverTooltipOverlay(in: size)
+                        minimapNavigatorOverlay(mapSize: size)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    #endif
 
                     // Floating Glassmorphic Zoom Controls
                     VStack(spacing: 8) {
@@ -1308,7 +1698,13 @@ struct NativeWorldMap: View {
             #endif
         }
         .overlay(alignment: .bottomLeading) {
-            legendOverlay
+            #if os(macOS)
+                legendOverlay
+            #else
+                if selectedRegionID == nil {
+                    layerSelectorOverlay
+                }
+            #endif
         }
         .overlay {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -1415,25 +1811,36 @@ struct RegionDetailsCard: View {
     let state: NativeCampaignState
     let store: NativeCampaignStore
     @Binding var selectedRegionID: String?
+    @State private var selectedDiplomaticTarget = false
 
     private func terrainModifiersText(for terrain: NativeTerrainType) -> String {
         switch terrain {
-        case .mountain: "Defense +30% (Invasion -30%)"
-        case .strait: "Amphibious barrier (Invasion -25%)"
-        case .swamp: "Attrition +20% (Invasion -20%)"
-        case .forest: "Concealment +15% (Invasion -15%)"
-        case .city: "Urban fortification (Invasion -15%)"
-        case .cerrado: "Maneuver penalty (Invasion -10%)"
-        case .ocean, .sea: "Deep water penalty (Invasion -40%)"
-        case .plains: "Open maneuver (Invasion +10%)"
+        case .mountain: "Defense +30%"
+        case .strait: "Amphibious -25%"
+        case .swamp: "Attrition +20%"
+        case .forest: "Concealment +15%"
+        case .city: "Urban Fort +15%"
+        case .cerrado: "Maneuver -10%"
+        case .ocean, .sea: "Naval -40%"
+        case .plains: "Open +10%"
         }
     }
 
     var body: some View {
         let occupierCode = state.regionOccupations[region.id] ?? region.countryCode
         let conflict = state.regionConflicts[region.id]
-        let originalCountryName = region.countryCode == "WATER" ? "International Waters" : (region.countryCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : CountryNameResolver.name(forCode: region.countryCode, in: state))
-        let occupierCountryName = occupierCode == "WATER" ? "Uncontrolled" : (occupierCode == "RUS" && state.scenarioID == "soviet-triumph" ? "Soviet Union" : (occupierCode == "REB" ? "Insurgents" : CountryNameResolver.name(forCode: occupierCode, in: state)))
+        let originalCountryName = region.countryCode == "WATER"
+            ? "International Waters"
+            : (region.countryCode == "RUS" && state.scenarioID == "soviet-triumph"
+                ? "Soviet Union"
+                : CountryNameResolver.name(forCode: region.countryCode, in: state))
+        let occupierCountryName = occupierCode == "WATER"
+            ? "Uncontrolled"
+            : (occupierCode == "RUS" && state.scenarioID == "soviet-triumph"
+                ? "Soviet Union"
+                : (occupierCode == "REB"
+                    ? "Insurgents"
+                    : CountryNameResolver.name(forCode: occupierCode, in: state)))
 
         let isOccupied = occupierCode != region.countryCode
         let isRebel = occupierCode == "REB" || conflict?.mode == .guerrillaControl
@@ -1441,80 +1848,185 @@ struct RegionDetailsCard: View {
         let isContested = conflict?.mode == .contestedBorder
         let isStabilizing = conflict?.mode == .stabilization
         let ledger = state.economicLedgers[isRebel ? region.countryCode : occupierCode]
-        let statusLine = isFallout
-            ? "NUCLEAR EXCLUSION ZONE"
-            : (isRebel
-                ? "GUERRILLA CONTROL"
-                : (isContested
-                    ? "CONTESTED BORDER"
-                    : (isStabilizing
-                        ? "STABILIZATION CORRIDOR"
-                        : (isOccupied ? "OCCUPIED TERRITORY" : "SOVEREIGN TERRITORY"))))
+        let statusBadge: (label: String, tint: Color) = if isFallout {
+            ("FALLOUT", NativeWarRoomTheme.alertAmber)
+        } else if isRebel {
+            ("GUERRILLA", .orange)
+        } else if isContested {
+            ("CONTESTED", NativeWarRoomTheme.alertAmber)
+        } else if isStabilizing {
+            ("STABILIZING", NativeWarRoomTheme.signalCyan)
+        } else if isOccupied {
+            ("OCCUPIED", NativeWarRoomTheme.threatRed)
+        } else {
+            ("SOVEREIGN", NativeWarRoomTheme.fieldGreen)
+        }
+        let standardCode = occupierCode == "WATER" || occupierCode == "REB" ? region.countryCode : occupierCode
+        let canSelectDiplomacy = occupierCode != state.country.code && occupierCode != "WATER" && occupierCode != "REB"
 
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                NativeCountryStandard(countryCode: standardCode, size: 30)
+
+                VStack(alignment: .leading, spacing: 3) {
                     Text(region.name.uppercased())
-                        .font(NativeWarRoomTheme.labelFont(.subheadline))
-                        .foregroundStyle(NativeWarRoomTheme.mapPaper)
-                    Text(statusLine)
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(isFallout ? NativeWarRoomTheme.alertAmber : (isRebel ? Color.orange : (isContested ? NativeWarRoomTheme.alertAmber : (isOccupied ? NativeWarRoomTheme.threatRed : NativeWarRoomTheme.fieldGreen))))
-                }
-                Spacer()
-                Button {
-                    selectedRegionID = nil
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
-                        .font(.title3)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Divider()
-                .background(Color.white.opacity(0.1))
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Terrain: \(region.terrain.displayName) (\(terrainModifiersText(for: region.terrain)))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Text("Original Sovereign: \(originalCountryName) (\(region.countryCode))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Text("Current Occupier: \(occupierCountryName) (\(occupierCode))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                if let conflict {
-                    Text("Conflict Mode: \(conflict.mode.displayName) · Intensity \(conflict.intensity)/5")
-                        .font(.caption)
-                        .foregroundStyle(.primary)
-                    if !conflict.summary.isEmpty {
-                        Text(conflict.summary)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        .font(NativeWarRoomTheme.displayFont(.subheadline, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.ink)
+                        .lineLimit(1)
+                    HStack(spacing: 6) {
+                        Text(statusBadge.label)
+                            .font(.system(size: 9.5, weight: .black, design: .monospaced))
+                            .foregroundStyle(statusBadge.tint)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(statusBadge.tint.opacity(0.14), in: Capsule())
+                            .overlay {
+                                Capsule().stroke(statusBadge.tint.opacity(0.45), lineWidth: 0.8)
+                            }
+                        Text(occupierCountryName)
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                            .lineLimit(1)
                     }
                 }
 
+                Spacer(minLength: 6)
+
+                Button {
+                    selectedRegionID = nil
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                        .frame(width: 24, height: 24)
+                        .background(NativeWarRoomTheme.archiveShadow.opacity(0.8), in: Circle())
+                        .overlay {
+                            Circle().stroke(NativeWarRoomTheme.brass.opacity(0.24), lineWidth: 1)
+                        }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Close region dossier")
+            }
+
+            Rectangle()
+                .fill(NativeWarRoomTheme.brass.opacity(0.22))
+                .frame(height: 1)
+
+            // Tactical 2-column telemetry grid
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], alignment: .leading, spacing: 8) {
+                dossierStatCell(
+                    label: "TERRAIN",
+                    value: region.terrain.displayName,
+                    badge: terrainModifiersText(for: region.terrain),
+                    badgeTint: NativeWarRoomTheme.brass
+                )
+
+                dossierStatCell(
+                    label: isOccupied ? "OCCUPIER / SOVEREIGN" : "SOVEREIGNTY",
+                    value: isOccupied ? "\(occupierCountryName) (\(occupierCode))" : "\(originalCountryName) (\(region.countryCode))",
+                    badge: isOccupied ? "Origin: \(region.countryCode)" : "Core",
+                    badgeTint: isOccupied ? NativeWarRoomTheme.threatRed : NativeWarRoomTheme.fieldGreen
+                )
+
                 if let ledger {
-                    Text("GDP: \(String(format: "$%.2fT", ledger.nominalGDPTrillions)) · Growth: \(String(format: "%+.1f%%", ledger.realGrowthPercent))")
-                        .font(.caption)
-                        .foregroundStyle(.primary)
-                    Text("Public Security: \(String(format: "%.1f/100", ledger.securityIndex)) · Insurgency: \(String(format: "%.1f%%", ledger.rebelControlPercent))")
-                        .font(.caption)
-                        .foregroundStyle(.primary)
+                    dossierStatCell(
+                        label: "GDP & GROWTH",
+                        value: String(format: "$%.2fT", ledger.nominalGDPTrillions),
+                        badge: String(format: "%+.1f%%", ledger.realGrowthPercent),
+                        badgeTint: ledger.realGrowthPercent >= 0 ? NativeWarRoomTheme.fieldGreen : NativeWarRoomTheme.threatRed
+                    )
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("SECURITY")
+                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                            Spacer()
+                            Text("\(Int(ledger.securityIndex.rounded()))/100")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundStyle(NativeWarRoomTheme.statusColor(for: Int(ledger.securityIndex.rounded())))
+                        }
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(NativeWarRoomTheme.archiveShadow)
+                                Capsule()
+                                    .fill(NativeWarRoomTheme.statusColor(for: Int(ledger.securityIndex.rounded())))
+                                    .frame(width: geo.size.width * max(0, min(1, ledger.securityIndex / 100.0)))
+                            }
+                        }
+                        .frame(height: 4)
+                        Text(String(format: "Insurgency %.1f%%", ledger.rebelControlPercent))
+                            .font(.system(size: 9.5, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(ledger.rebelControlPercent >= 15 ? NativeWarRoomTheme.alertAmber : NativeWarRoomTheme.mutedInk)
+                    }
+                    .padding(7)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(NativeWarRoomTheme.archiveShadow.opacity(0.65), in: RoundedRectangle(cornerRadius: 6))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(NativeWarRoomTheme.brass.opacity(0.14), lineWidth: 1)
+                    }
+                }
+            }
+
+            if let conflict {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("CONFLICT // \(conflict.mode.displayName.uppercased()) · INTENSITY \(conflict.intensity)/5")
+                        .font(.system(size: 9.5, weight: .bold, design: .monospaced))
+                        .foregroundStyle(NativeWarRoomTheme.alertAmber)
+                    if !conflict.summary.isEmpty {
+                        Text(conflict.summary)
+                            .font(NativeWarRoomTheme.bodyFont(.caption2))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                            .lineLimit(2)
+                    }
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(NativeWarRoomTheme.threatRed.opacity(0.10), in: RoundedRectangle(cornerRadius: 6))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(NativeWarRoomTheme.threatRed.opacity(0.28), lineWidth: 1)
                 }
             }
 
             let regionalActions = NativeQuickActionCatalog.regionalActions(for: region, state: state)
-            if !regionalActions.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Regional orders")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(NativeWarRoomTheme.mapPaper)
+            if canSelectDiplomacy || !regionalActions.isEmpty {
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack {
+                        Text("REGIONAL ORDERS")
+                            .font(NativeWarRoomTheme.labelFont(.caption2))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
+                        Spacer()
+                        if canSelectDiplomacy {
+                            Button {
+                                store.selectedDiplomaticPartnerCode = occupierCode
+                                selectedDiplomaticTarget = true
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: selectedDiplomaticTarget ? "checkmark.circle.fill" : "bubble.left.and.bubble.right")
+                                        .font(.caption2)
+                                    Text(selectedDiplomaticTarget ? "Selected: \(occupierCode)" : "Select in Diplomacy")
+                                        .font(.system(size: 10.5, weight: .bold, design: .monospaced))
+                                }
+                                .foregroundStyle(selectedDiplomaticTarget ? NativeWarRoomTheme.fieldGreen : NativeWarRoomTheme.brass)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(
+                                    (selectedDiplomaticTarget ? NativeWarRoomTheme.fieldGreen : NativeWarRoomTheme.brass).opacity(0.14),
+                                    in: Capsule()
+                                )
+                                .overlay {
+                                    Capsule()
+                                        .stroke(
+                                            (selectedDiplomaticTarget ? NativeWarRoomTheme.fieldGreen : NativeWarRoomTheme.brass).opacity(0.42),
+                                            lineWidth: 1
+                                        )
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
 
                     ForEach(regionalActions) { action in
                         Button {
@@ -1545,15 +2057,37 @@ struct RegionDetailsCard: View {
                 }
             }
         }
+        .padding(13)
+        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.32), cornerRadius: 10)
         .padding(14)
-        .background(NativeWarRoomTheme.olivePanel.opacity(0.94))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay {
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(NativeWarRoomTheme.brass.opacity(0.22), lineWidth: 1)
+        .frame(maxWidth: 440)
+        .onChange(of: region.id) { _, _ in
+            selectedDiplomaticTarget = false
         }
-        .padding(16)
-        .frame(maxWidth: 420)
         .accessibilityIdentifier("native-region-dossier")
+    }
+
+    private func dossierStatCell(label: String, value: String, badge: String, badgeTint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label)
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                .lineLimit(1)
+            Text(value)
+                .font(NativeWarRoomTheme.bodyFont(.caption, weight: .semibold))
+                .foregroundStyle(NativeWarRoomTheme.ink)
+                .lineLimit(1)
+            Text(badge)
+                .font(.system(size: 9.5, weight: .bold, design: .monospaced))
+                .foregroundStyle(badgeTint)
+                .lineLimit(1)
+        }
+        .padding(7)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NativeWarRoomTheme.archiveShadow.opacity(0.65), in: RoundedRectangle(cornerRadius: 6))
+        .overlay {
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(NativeWarRoomTheme.brass.opacity(0.14), lineWidth: 1)
+        }
     }
 }
