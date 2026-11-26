@@ -284,6 +284,14 @@ struct ActionRow: View {
 struct EventCard: View {
     let event: NativeCampaignEvent
 
+    private var headerAccent: Color {
+        switch event.importance {
+        case .severe: NativeWarRoomTheme.threatRed
+        case .major: NativeWarRoomTheme.alertAmber
+        case .minor: NativeWarRoomTheme.brass
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // High security dossier header
@@ -291,84 +299,104 @@ struct EventCard: View {
                 HStack(spacing: 6) {
                     Image(systemName: "doc.text.fill")
                         .font(.caption)
-                        .foregroundStyle(Color.alertGold)
+                        .foregroundStyle(headerAccent)
                     Text("INTEL REPORT // CLASS-\(event.importance.rawValue.uppercased())")
-                        .font(.system(.caption2, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.alertGold)
+                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                        .foregroundStyle(headerAccent)
+                        .tracking(0.8)
                 }
                 Spacer()
                 Text(event.playerRelated ? "NATION" : "GLOBAL")
-                    .font(.system(.caption2, design: .monospaced).weight(.bold))
-                    .foregroundStyle(event.playerRelated ? Color.glowingCyan : Color.neonTeal)
+                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                    .foregroundStyle(event.playerRelated ? NativeWarRoomTheme.brass : NativeWarRoomTheme.fieldGreen)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(
-                        event.playerRelated ? Color.glowingCyan.opacity(0.12) : Color.neonTeal.opacity(0.12),
+                        event.playerRelated ? NativeWarRoomTheme.brass.opacity(0.14) : NativeWarRoomTheme.fieldGreen.opacity(0.14),
                         in: Capsule()
                     )
                     .overlay {
                         Capsule()
-                            .stroke(event.playerRelated ? Color.glowingCyan.opacity(0.24) : Color.neonTeal.opacity(0.24), lineWidth: 1)
+                            .stroke(event.playerRelated ? NativeWarRoomTheme.brass.opacity(0.32) : NativeWarRoomTheme.fieldGreen.opacity(0.32), lineWidth: 1)
                     }
             }
             .padding(.bottom, 2)
 
             if let img = event.imageAssetName {
-                EventImageView(imageName: img, fallbackIcon: "doc.text.image", height: 140)
+                EventImageView(imageName: img, fallbackIcon: "doc.text.image", height: 148)
+                    .overlay {
+                        LinearGradient(
+                            colors: [
+                                NativeWarRoomTheme.blackboard.opacity(0.15),
+                                NativeWarRoomTheme.brass.opacity(0.08),
+                                NativeWarRoomTheme.blackboard.opacity(0.62)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(NativeWarRoomTheme.brass.opacity(0.28), lineWidth: 1)
+                    }
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(event.title)
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(.primary)
+                    .font(NativeWarRoomTheme.displayFont(.headline, weight: .semibold))
+                    .foregroundStyle(NativeWarRoomTheme.ink)
                 Text("\(event.date) · \(event.kind.displayName.uppercased())")
-                    .font(.system(.caption2, design: .monospaced))
-                    .foregroundStyle(.secondary)
+                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
             }
 
             Text(event.description)
-                .font(.body)
-                .foregroundStyle(.primary.opacity(0.9))
+                .font(NativeWarRoomTheme.bodyFont(.body))
+                .foregroundStyle(NativeWarRoomTheme.parchment.opacity(0.94))
                 .fixedSize(horizontal: false, vertical: true)
 
             if !event.strategicEffects.isEmpty {
-                Divider()
-                    .background(Color.white.opacity(0.08))
-                    .padding(.vertical, 4)
+                Rectangle()
+                    .fill(NativeWarRoomTheme.brass.opacity(0.2))
+                    .frame(height: 1)
+                    .padding(.vertical, 3)
 
                 Text("TACTICAL DELTAS")
-                    .font(.system(.caption2, design: .monospaced).weight(.bold))
-                    .foregroundStyle(.secondary)
+                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                    .foregroundStyle(NativeWarRoomTheme.brass)
+                    .tracking(1.1)
 
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(event.strategicEffects) { effect in
                         HStack(alignment: .center, spacing: 10) {
                             let isPositive = effect.magnitude >= 0
+                            let deltaTint = isPositive ? NativeWarRoomTheme.fieldGreen : NativeWarRoomTheme.threatRed
                             Text(isPositive ? "+\(effect.magnitude)" : "\(effect.magnitude)")
-                                .font(.system(.caption, design: .monospaced).weight(.bold))
-                                .foregroundStyle(isPositive ? Color.neonTeal : Color.softRed)
+                                .font(NativeWarRoomTheme.labelFont(.caption, weight: .bold))
+                                .foregroundStyle(deltaTint)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .frame(minWidth: 36)
+                                .frame(minWidth: 38)
                                 .background(
-                                    isPositive ? Color.neonTeal.opacity(0.12) : Color.softRed.opacity(0.12),
+                                    deltaTint.opacity(0.14),
                                     in: RoundedRectangle(cornerRadius: 6, style: .continuous)
                                 )
                                 .overlay {
                                     RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                        .stroke(isPositive ? Color.neonTeal.opacity(0.3) : Color.softRed.opacity(0.3), lineWidth: 1)
+                                        .stroke(deltaTint.opacity(0.32), lineWidth: 1)
                                 }
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(effect.track.displayName.uppercased())
-                                    .font(.system(.caption2, design: .monospaced).weight(.semibold))
-                                    .foregroundStyle(.secondary)
+                                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
                                 let displayTarget = CountryNameResolver.name(forCode: effect.target)
                                 Text(effect.target.uppercased() == "GLOBAL" || displayTarget == effect.target
                                     ? effect.summary
                                     : "\(displayTarget): \(effect.summary)")
-                                    .font(.caption)
-                                    .foregroundStyle(.primary)
+                                    .font(NativeWarRoomTheme.bodyFont(.caption))
+                                    .foregroundStyle(NativeWarRoomTheme.ink)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                         }
@@ -377,39 +405,47 @@ struct EventCard: View {
             }
 
             if let options = event.decisionOptions, !options.isEmpty {
-                Divider()
-                    .background(Color.white.opacity(0.08))
-                    .padding(.vertical, 4)
+                Rectangle()
+                    .fill(NativeWarRoomTheme.brass.opacity(0.2))
+                    .frame(height: 1)
+                    .padding(.vertical, 3)
 
                 Text("STRATEGIC DECISION BRANCHES")
-                    .font(.system(.caption2, design: .monospaced).weight(.bold))
-                    .foregroundStyle(Color.neonTeal)
+                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                    .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+                    .tracking(1.1)
 
                 VStack(spacing: 8) {
                     ForEach(options) { opt in
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(opt.label)
-                                    .font(.caption.weight(.bold))
-                                    .foregroundStyle(.white)
+                                    .font(NativeWarRoomTheme.displayFont(.caption, weight: .semibold))
+                                    .foregroundStyle(NativeWarRoomTheme.ink)
                                 Text(opt.detail)
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
                             }
                             Spacer()
                             Text(opt.effectTrack.mechanicCode)
-                                .font(.system(.caption2, design: .monospaced).weight(.bold))
-                                .foregroundStyle(Color.glowingCyan)
+                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.brass)
                         }
                         .padding(8)
-                        .background(Color.white.opacity(0.04))
-                        .cornerRadius(6)
+                        .background(NativeWarRoomTheme.blackboard.opacity(0.45), in: RoundedRectangle(cornerRadius: 6))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(NativeWarRoomTheme.brass.opacity(0.16), lineWidth: 1)
+                        }
                     }
                 }
             }
         }
         .padding(14)
-        .glassmorphicCard(borderColor: .white.opacity(0.08), cornerRadius: 12)
+        .warRoomDossier(
+            borderColor: event.importance == .severe ? NativeWarRoomTheme.threatRed.opacity(0.38) : NativeWarRoomTheme.brass.opacity(0.22),
+            cornerRadius: 12
+        )
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("native-event-card-\(event.id)")
     }
@@ -421,7 +457,7 @@ struct NativeClassicDecisionView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.85)
+            NativeWarRoomTheme.blackboard.opacity(0.88)
                 .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
@@ -430,41 +466,60 @@ struct NativeClassicDecisionView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .font(.caption)
-                                .foregroundStyle(Color.alertGold)
+                                .foregroundStyle(NativeWarRoomTheme.alertAmber)
                             Text("CRITICAL EXECUTIVE DECISION // ADVANCE PAUSED")
-                                .font(.system(.caption2, design: .monospaced).weight(.bold))
-                                .foregroundStyle(Color.alertGold)
+                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.alertAmber)
+                                .tracking(0.8)
                         }
                         Spacer()
                         Text(decision.date)
-                            .font(.system(.caption2, design: .monospaced))
-                            .foregroundStyle(.secondary)
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
                     }
 
                     if let img = decision.imageAssetName {
-                        EventImageView(imageName: img, fallbackIcon: "shield.lefthalf.filled", height: 180)
+                        EventImageView(imageName: img, fallbackIcon: "shield.lefthalf.filled", height: 185)
+                            .overlay {
+                                LinearGradient(
+                                    colors: [
+                                        NativeWarRoomTheme.blackboard.opacity(0.12),
+                                        NativeWarRoomTheme.brass.opacity(0.1),
+                                        NativeWarRoomTheme.blackboard.opacity(0.68)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .stroke(NativeWarRoomTheme.brass.opacity(0.35), lineWidth: 1)
+                            }
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(decision.title)
-                            .font(.title2.weight(.bold))
-                            .foregroundStyle(.white)
+                            .font(NativeWarRoomTheme.displayFont(.title2, weight: .bold))
+                            .foregroundStyle(NativeWarRoomTheme.ink)
                         Text(decision.kind.displayName.uppercased())
-                            .font(.system(.caption2, design: .monospaced).weight(.semibold))
-                            .foregroundStyle(Color.glowingCyan)
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
                     }
 
                     Text(decision.description)
-                        .font(.body)
-                        .foregroundStyle(.white.opacity(0.9))
+                        .font(NativeWarRoomTheme.bodyFont(.body))
+                        .foregroundStyle(NativeWarRoomTheme.parchment.opacity(0.95))
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Divider()
-                        .background(Color.white.opacity(0.12))
+                    Rectangle()
+                        .fill(NativeWarRoomTheme.brass.opacity(0.24))
+                        .frame(height: 1)
 
                     Text("POLICY DIRECTIVES (CHOOSE ONE TO FORM RESOLUTION)")
-                        .font(.system(.caption2, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.neonTeal)
+                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+                        .tracking(0.9)
 
                     if let options = decision.decisionOptions {
                         VStack(spacing: 10) {
@@ -472,39 +527,39 @@ struct NativeClassicDecisionView: View {
                                 Button {
                                     onChoose(opt)
                                 } label: {
-                                    VStack(alignment: .leading, spacing: 5) {
+                                    VStack(alignment: .leading, spacing: 6) {
                                         HStack {
                                             Text(opt.label)
-                                                .font(.subheadline.weight(.bold))
-                                                .foregroundStyle(.white)
+                                                .font(NativeWarRoomTheme.displayFont(.subheadline, weight: .semibold))
+                                                .foregroundStyle(NativeWarRoomTheme.ink)
                                             Spacer()
                                             Text(opt.effectTrack.mechanicCode)
-                                                .font(.system(.caption2, design: .monospaced).weight(.bold))
-                                                .foregroundStyle(Color.glowingCyan)
+                                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                                .foregroundStyle(NativeWarRoomTheme.brass)
                                         }
                                         Text(opt.detail)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .font(NativeWarRoomTheme.bodyFont(.caption))
+                                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
                                             .multilineTextAlignment(.leading)
 
                                         HStack(spacing: 8) {
                                             let isPos = opt.effectMagnitude >= 0
                                             Text("\(isPos ? "+" : "")\(opt.effectMagnitude) \(opt.effectTrack.displayName)")
-                                                .font(.system(size: 9, design: .monospaced).weight(.bold))
-                                                .foregroundStyle(isPos ? Color.neonTeal : Color.softRed)
+                                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                .foregroundStyle(isPos ? NativeWarRoomTheme.fieldGreen : NativeWarRoomTheme.threatRed)
 
                                             if opt.nextChainedEventID != nil {
                                                 Text("⟦CHAIN CASSETTE⟧")
-                                                    .font(.system(size: 8, design: .monospaced).weight(.bold))
-                                                    .foregroundStyle(Color.alertGold)
+                                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                                    .foregroundStyle(NativeWarRoomTheme.alertAmber)
                                             }
                                         }
                                     }
                                     .padding(12)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(Color.spaceBlack)
-                                    .cornerRadius(8)
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.neonTeal.opacity(0.4), lineWidth: 1))
+                                    .background(NativeWarRoomTheme.blackboard.opacity(0.85))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(NativeWarRoomTheme.brass.opacity(0.36), lineWidth: 1))
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityIdentifier("classic-decision-\(opt.id)")
@@ -514,9 +569,7 @@ struct NativeClassicDecisionView: View {
                 }
                 .padding(20)
             }
-            .background(Color.deepSlate)
-            .cornerRadius(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.alertGold.opacity(0.6), lineWidth: 1.5))
+            .warRoomDossier(borderColor: NativeWarRoomTheme.alertAmber.opacity(0.55), cornerRadius: 12)
             .shadow(color: Color.black.opacity(0.85), radius: 24, x: 0, y: 12)
             .frame(maxWidth: 620, maxHeight: 680)
             .padding(20)
@@ -655,20 +708,23 @@ struct NativeTurnReportView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("GEOPOLITICAL PERIOD REPORT")
-                        .font(.system(.caption, design: .monospaced).weight(.bold))
-                        .foregroundStyle(Color.glowingCyan)
+                        .font(NativeWarRoomTheme.labelFont(.caption, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
                         .tracking(2.0)
                     Text("Turn Resolution")
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(.white)
+                        .font(NativeWarRoomTheme.displayFont(.title2, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.ink)
                 }
                 Spacer()
                 Button(action: onDismiss) {
                     Image(systemName: "xmark")
                         .font(.body.weight(.bold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
                         .padding(8)
-                        .background(Color.white.opacity(0.08), in: Circle())
+                        .background(NativeWarRoomTheme.olivePanel.opacity(0.7), in: Circle())
+                        .overlay {
+                            Circle().stroke(NativeWarRoomTheme.brass.opacity(0.25), lineWidth: 1)
+                        }
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close report")
@@ -677,27 +733,28 @@ struct NativeTurnReportView: View {
             .padding(.horizontal, 24)
             .padding(.top, 24)
             .padding(.bottom, 16)
-            .background(Color.spaceBlack)
+            .background(NativeWarRoomTheme.archiveShadow)
 
-            Divider()
-                .background(Color.white.opacity(0.12))
+            Rectangle()
+                .fill(NativeWarRoomTheme.brass.opacity(0.28))
+                .frame(height: 1)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     // Turn summary banner
                     VStack(alignment: .leading, spacing: 8) {
                         Text("SUMMARY ANALYSIS")
-                            .font(.system(.caption2, design: .monospaced).weight(.bold))
-                            .foregroundStyle(Color.alertGold)
-                            .tracking(1.2)
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                            .foregroundStyle(NativeWarRoomTheme.alertAmber)
+                            .tracking(1.3)
                         Text(report.summary)
-                            .font(.body)
-                            .foregroundStyle(.primary)
+                            .font(NativeWarRoomTheme.bodyFont(.body))
+                            .foregroundStyle(NativeWarRoomTheme.ink)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassmorphicCard(borderColor: Color.alertGold.opacity(0.25), cornerRadius: 12)
+                    .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.32), cornerRadius: 12)
 
                     // Key metrics deltas
                     HStack(spacing: 16) {
@@ -705,45 +762,45 @@ struct NativeTurnReportView: View {
                         HStack(spacing: 12) {
                             Image(systemName: "heart.text.square.fill")
                                 .font(.title2)
-                                .foregroundStyle(Color.neonTeal)
+                                .foregroundStyle(NativeWarRoomTheme.fieldGreen)
                                 .padding(8)
-                                .background(Color.neonTeal.opacity(0.12), in: Circle())
+                                .background(NativeWarRoomTheme.fieldGreen.opacity(0.14), in: Circle())
 
                             VStack(alignment: .leading, spacing: 2) {
                                 let sign = report.stabilityDelta >= 0 ? "+" : ""
                                 Text("\(sign)\(report.stabilityDelta)%")
-                                    .font(.title3.monospacedDigit().weight(.bold))
-                                    .foregroundStyle(report.stabilityDelta >= 0 ? Color.neonTeal : Color.softRed)
+                                    .font(NativeWarRoomTheme.labelFont(.title3, weight: .bold))
+                                    .foregroundStyle(report.stabilityDelta >= 0 ? NativeWarRoomTheme.fieldGreen : NativeWarRoomTheme.threatRed)
                                 Text("Stability")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
                             }
                             Spacer()
                         }
                         .padding(12)
-                        .glassmorphicCard(borderColor: Color.white.opacity(0.08), cornerRadius: 12)
+                        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.22), cornerRadius: 12)
 
                         // World Tension card
                         HStack(spacing: 12) {
                             Image(systemName: "globe.americas.fill")
                                 .font(.title2)
-                                .foregroundStyle(Color.softRed)
+                                .foregroundStyle(NativeWarRoomTheme.threatRed)
                                 .padding(8)
-                                .background(Color.softRed.opacity(0.12), in: Circle())
+                                .background(NativeWarRoomTheme.threatRed.opacity(0.14), in: Circle())
 
                             VStack(alignment: .leading, spacing: 2) {
                                 let sign = report.worldTensionDelta >= 0 ? "+" : ""
                                 Text("\(sign)\(report.worldTensionDelta)")
-                                    .font(.title3.monospacedDigit().weight(.bold))
-                                    .foregroundStyle(report.worldTensionDelta >= 0 ? Color.softRed : Color.neonTeal)
+                                    .font(NativeWarRoomTheme.labelFont(.title3, weight: .bold))
+                                    .foregroundStyle(report.worldTensionDelta >= 0 ? NativeWarRoomTheme.threatRed : NativeWarRoomTheme.fieldGreen)
                                 Text("World Tension")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
                             }
                             Spacer()
                         }
                         .padding(12)
-                        .glassmorphicCard(borderColor: Color.white.opacity(0.08), cornerRadius: 12)
+                        .warRoomDossier(borderColor: NativeWarRoomTheme.brass.opacity(0.22), cornerRadius: 12)
                     }
 
                     // A concise briefing comes first; the complete log remains
@@ -751,14 +808,14 @@ struct NativeTurnReportView: View {
                     // for the player's attention.
                     VStack(alignment: .leading, spacing: 14) {
                         Text("PRIORITY SIGNALS")
-                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
-                            .foregroundStyle(Color.iceBlue)
+                            .font(NativeWarRoomTheme.labelFont(.subheadline, weight: .bold))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
                             .tracking(1.5)
 
                         if report.events.isEmpty {
                             Text("No specific signals logged this period.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(NativeWarRoomTheme.bodyFont(.caption))
+                                .foregroundStyle(NativeWarRoomTheme.mutedInk)
                         } else {
                             NativeEventDigestStrip(
                                 briefing: briefing,
@@ -766,8 +823,8 @@ struct NativeTurnReportView: View {
                             )
 
                             Text("The most consequential and decision-relevant signals are expanded. The complete period log is preserved below.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(NativeWarRoomTheme.bodyFont(.caption))
+                                .foregroundStyle(NativeWarRoomTheme.mutedInk)
                                 .fixedSize(horizontal: false, vertical: true)
 
                             VStack(spacing: 14) {
@@ -789,14 +846,18 @@ struct NativeTurnReportView: View {
                                         "Additional signals (\(briefing.additionalEvents.count))",
                                         systemImage: "tray.full"
                                     )
-                                    .font(.system(.callout, design: .monospaced).weight(.bold))
-                                    .foregroundStyle(Color.alertGold)
+                                    .font(NativeWarRoomTheme.labelFont(.callout, weight: .bold))
+                                    .foregroundStyle(NativeWarRoomTheme.alertAmber)
                                 }
                                 .padding(12)
                                 .background(
-                                    Color.alertGold.opacity(0.055),
+                                    NativeWarRoomTheme.alertAmber.opacity(0.06),
                                     in: RoundedRectangle(cornerRadius: 10)
                                 )
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(NativeWarRoomTheme.alertAmber.opacity(0.22), lineWidth: 1)
+                                }
                                 .accessibilityIdentifier("native-report-additional-signals")
                             }
                         }
@@ -805,8 +866,9 @@ struct NativeTurnReportView: View {
                 .padding(24)
             }
 
-            Divider()
-                .background(Color.white.opacity(0.12))
+            Rectangle()
+                .fill(NativeWarRoomTheme.brass.opacity(0.28))
+                .frame(height: 1)
 
             // Action Button bar
             VStack {
@@ -814,23 +876,23 @@ struct NativeTurnReportView: View {
                     HStack {
                         Spacer()
                         Text("ACKNOWLEDGE & CLOSE DOSSIER")
-                            .font(.system(.subheadline, design: .monospaced).weight(.bold))
+                            .font(NativeWarRoomTheme.labelFont(.subheadline, weight: .bold))
                             .tracking(1.0)
                         Spacer()
                     }
                     .frame(minHeight: 44)
-                    .background(Color.glowingCyan, in: Capsule())
-                    .foregroundStyle(.black)
-                    .shadow(color: Color.glowingCyan.opacity(0.3), radius: 8)
+                    .background(NativeWarRoomTheme.brass, in: Capsule())
+                    .foregroundStyle(NativeWarRoomTheme.blackboard)
+                    .shadow(color: NativeWarRoomTheme.brass.opacity(0.32), radius: 8)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("native-report-dismiss")
             }
             .padding(16)
-            .background(Color.spaceBlack)
+            .background(NativeWarRoomTheme.archiveShadow)
         }
         .frame(minWidth: 500, minHeight: 600)
-        .background(Color.spaceBlack.ignoresSafeArea())
+        .background(NativeWarRoomTheme.blackboard.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .accessibilityIdentifier("native-turn-report")
     }

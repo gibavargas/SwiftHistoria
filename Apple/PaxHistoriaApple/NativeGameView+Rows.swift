@@ -82,52 +82,77 @@ struct AdvisorMessageRow: View {
 
     var body: some View {
         let isAdvisor = message.role == .advisor
+        let accent = isAdvisor ? NativeWarRoomTheme.brass : NativeWarRoomTheme.signalCyan
+
         HStack {
             if !isAdvisor {
-                Spacer(minLength: 40)
+                Spacer(minLength: 28)
             }
 
-            VStack(alignment: isAdvisor ? .leading : .trailing, spacing: 6) {
+            VStack(alignment: isAdvisor ? .leading : .trailing, spacing: 8) {
                 HStack(spacing: 6) {
                     if isAdvisor {
-                        Image(systemName: "brain.head.profile")
+                        Image(systemName: "shield.checkered")
                             .font(.caption)
-                            .foregroundStyle(Color.glowingCyan)
-                        Text("ADVISOR BRIEF")
-                            .font(.system(.caption2, design: .monospaced).weight(.bold))
-                            .foregroundStyle(Color.glowingCyan)
+                            .foregroundStyle(accent)
+                        Text("CABINET INTELLIGENCE BRIEF")
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                            .foregroundStyle(accent)
+                            .tracking(1.1)
+                        Spacer(minLength: 8)
+                        Text(message.date)
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .regular))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
                     } else {
-                        Text("SECURE TRANSMISSION")
-                            .font(.system(.caption2, design: .monospaced).weight(.bold))
-                            .foregroundStyle(Color.iceBlue)
+                        Text(message.date)
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .regular))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                        Spacer(minLength: 8)
+                        Text("EXECUTIVE INQUIRY // SECURE")
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                            .foregroundStyle(accent)
+                            .tracking(1.0)
                         Image(systemName: "lock.shield")
                             .font(.caption)
-                            .foregroundStyle(Color.iceBlue)
+                            .foregroundStyle(accent)
                     }
                 }
 
+                Rectangle()
+                    .fill(accent.opacity(0.22))
+                    .frame(height: 1)
+
                 Text(message.text)
-                    .font(.system(.body, design: .monospaced))
-                    .foregroundStyle(.primary)
+                    .font(NativeWarRoomTheme.bodyFont(.body))
+                    .foregroundStyle(NativeWarRoomTheme.ink)
                     .multilineTextAlignment(isAdvisor ? .leading : .trailing)
                     .fixedSize(horizontal: false, vertical: true)
-
-                Text(message.date)
-                    .font(.system(.caption2, design: .monospaced))
-                    .foregroundStyle(.secondary)
             }
-            .padding(12)
+            .padding(13)
             .background(
-                isAdvisor ? Color.iceBlue.opacity(0.12) : Color.deepSlate.opacity(0.6)
+                LinearGradient(
+                    colors: isAdvisor
+                        ? [NativeWarRoomTheme.olivePanel.opacity(0.92), NativeWarRoomTheme.archiveShadow.opacity(0.96)]
+                        : [NativeWarRoomTheme.graphite.opacity(0.94), NativeWarRoomTheme.blackboard.opacity(0.96)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
             )
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(isAdvisor ? Color.iceBlue.opacity(0.24) : Color.white.opacity(0.08), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(accent.opacity(isAdvisor ? 0.34 : 0.24), lineWidth: 1)
+            }
+            .overlay(alignment: isAdvisor ? .leading : .trailing) {
+                Rectangle()
+                    .fill(accent.opacity(0.65))
+                    .frame(width: 3)
+                    .clipShape(RoundedRectangle(cornerRadius: 2))
+                    .padding(.vertical, 8)
             }
 
             if isAdvisor {
-                Spacer(minLength: 40)
+                Spacer(minLength: 28)
             }
         }
         .accessibilityIdentifier("native-advisor-message-\(message.id)")
@@ -139,52 +164,78 @@ struct DiplomacyMessageRow: View {
     let isPlayer: Bool
 
     var body: some View {
+        let accent = isPlayer ? NativeWarRoomTheme.brass : NativeWarRoomTheme.fieldGreen
+
         HStack {
             if isPlayer {
-                Spacer(minLength: 40)
+                Spacer(minLength: 28)
             }
 
-            VStack(alignment: isPlayer ? .trailing : .leading, spacing: 6) {
+            VStack(alignment: isPlayer ? .trailing : .leading, spacing: 8) {
                 HStack(spacing: 6) {
                     if !isPlayer {
-                        Image(systemName: "globe.europe.africa")
+                        Image(systemName: "envelope.badge.shield.half.filled")
                             .font(.caption)
-                            .foregroundStyle(Color.neonTeal)
-                        Text(message.speaker.uppercased())
-                            .font(.system(.caption2, design: .monospaced).weight(.bold))
-                            .foregroundStyle(Color.neonTeal)
+                            .foregroundStyle(accent)
+                        Text("EMBASSY DISPATCH // \(message.speaker.uppercased())")
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                            .foregroundStyle(accent)
+                            .tracking(0.9)
+                            .lineLimit(1)
+                        Spacer(minLength: 8)
+                        Text(message.date)
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .regular))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
                     } else {
-                        Text("PLAYER TRANSMISSION")
-                            .font(.system(.caption2, design: .monospaced).weight(.bold))
-                            .foregroundStyle(Color.glowingCyan)
+                        Text(message.date)
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .regular))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                        Spacer(minLength: 8)
+                        Text("FOREIGN MINISTRY CABLE")
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                            .foregroundStyle(accent)
+                            .tracking(0.9)
                         Image(systemName: "flag.fill")
                             .font(.caption)
-                            .foregroundStyle(Color.glowingCyan)
+                            .foregroundStyle(accent)
                     }
                 }
 
+                Rectangle()
+                    .fill(accent.opacity(0.22))
+                    .frame(height: 1)
+
                 Text(message.text)
-                    .font(.body)
-                    .foregroundStyle(.primary)
+                    .font(NativeWarRoomTheme.bodyFont(.body))
+                    .foregroundStyle(NativeWarRoomTheme.ink)
                     .multilineTextAlignment(isPlayer ? .trailing : .leading)
                     .fixedSize(horizontal: false, vertical: true)
-
-                Text(message.date)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
             }
-            .padding(12)
+            .padding(13)
             .background(
-                isPlayer ? Color.glowingCyan.opacity(0.08) : Color.neonTeal.opacity(0.08)
+                LinearGradient(
+                    colors: isPlayer
+                        ? [NativeWarRoomTheme.graphite.opacity(0.94), NativeWarRoomTheme.archiveShadow.opacity(0.96)]
+                        : [NativeWarRoomTheme.olivePanel.opacity(0.9), NativeWarRoomTheme.archiveShadow.opacity(0.96)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
             )
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(isPlayer ? Color.glowingCyan.opacity(0.2) : Color.neonTeal.opacity(0.2), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(accent.opacity(0.3), lineWidth: 1)
+            }
+            .overlay(alignment: isPlayer ? .trailing : .leading) {
+                Rectangle()
+                    .fill(accent.opacity(0.6))
+                    .frame(width: 3)
+                    .clipShape(RoundedRectangle(cornerRadius: 2))
+                    .padding(.vertical, 8)
             }
 
             if !isPlayer {
-                Spacer(minLength: 40)
+                Spacer(minLength: 28)
             }
         }
         .accessibilityIdentifier("native-diplomacy-message-\(message.id)")

@@ -328,6 +328,38 @@ struct NativeOrdersEditorPanel: View {
                 SuggestionWarning(message: actionError)
                     .padding(.top, 4)
             }
+
+            if let state = store.state {
+                let queuedActions = state.plannedActions.filter { $0.status == .planned }
+                if !queuedActions.isEmpty {
+                    Rectangle()
+                        .fill(NativeWarRoomTheme.brass.opacity(0.2))
+                        .frame(height: 1)
+                        .padding(.top, 4)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Label("ACTIVE TURN QUEUE", systemImage: "tray.full.fill")
+                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.brass)
+                                .tracking(1.1)
+                            Spacer()
+                            Text("\(queuedActions.count) queued")
+                                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+                        }
+
+                        ForEach(queuedActions) { action in
+                            ActionRow(action: action) {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                    store.deleteAction(id: action.id)
+                                }
+                            }
+                        }
+                    }
+                    .accessibilityIdentifier("native-inline-turn-queue")
+                }
+            }
         }
     }
 }
@@ -337,20 +369,26 @@ struct NativeAdvisorPanel: View {
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-advisor-panel") {
-            HStack {
-                Label("Advisor", systemImage: "brain.head.profile")
-                    .font(NativeTypography.sectionTitle())
-                    .foregroundStyle(Color.glowingCyan)
-                    .help("Ask for an assessment of threats, stability, or opportunities.")
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("CABINET INTELLIGENCE DESK")
+                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
+                        .tracking(1.4)
+                    Label("Advisor", systemImage: "brain.head.profile")
+                        .font(NativeWarRoomTheme.displayFont(.title3, weight: .semibold))
+                        .foregroundStyle(NativeWarRoomTheme.ink)
+                        .help("Ask for an assessment of threats, stability, or opportunities.")
+                }
                 Spacer()
                 if store.isLoadingAdvisor {
                     ProgressView().controlSize(.small)
                 }
             }
 
-            Text("Request an assessment of the current geopolitical environment.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            Text("Request a classified cabinet assessment of the current geopolitical environment.")
+                .font(NativeWarRoomTheme.bodyFont(.subheadline))
+                .foregroundStyle(NativeWarRoomTheme.mutedInk)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 4) {
@@ -426,11 +464,17 @@ struct NativeDiplomacyPanel: View {
 
     var body: some View {
         NativePanel(accessibilityIdentifier: "native-diplomacy-panel") {
-            HStack {
-                Label("Diplomacy", systemImage: "bubble.left.and.bubble.right")
-                    .font(NativeTypography.sectionTitle())
-                    .foregroundStyle(Color.neonTeal)
-                    .help("Negotiate trade, alliances, and border agreements with other nations.")
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("FOREIGN CHANCELLERY")
+                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
+                        .tracking(1.4)
+                    Label("Diplomacy", systemImage: "bubble.left.and.bubble.right")
+                        .font(NativeWarRoomTheme.displayFont(.title3, weight: .semibold))
+                        .foregroundStyle(NativeWarRoomTheme.ink)
+                        .help("Negotiate trade, alliances, and border agreements with other nations.")
+                }
                 Spacer()
                 if store.isLoadingDiplomacy {
                     ProgressView().controlSize(.small)
@@ -439,11 +483,87 @@ struct NativeDiplomacyPanel: View {
 
             if let state = store.state {
                 let partners = CountryCatalog.all.filter { $0.code != state.country.code }
+                let priorityCodes = priorityChancelleryCodes(in: state)
+
+                if !priorityCodes.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("CHANCELLERY PRIORITY CHANNELS")
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
+                            .tracking(1.2)
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(priorityCodes, id: \.self) { code in
+                                    let isSelected = store.selectedDiplomaticPartnerCode == code
+                                    let relation = state.aiCountryStates[code]?.relationshipScores[state.country.code] ?? 0
+                                    let pendingOffers = state.activeOffers.filter {
+                                        $0.status == .pending && $0.proposerCode == code && $0.isPlayerFacing
+                                    }.count
+                                    let flag = CountryCatalog.flagEmoji(forAlpha3: code) ?? "🏳️"
+                                    let relationTint = relationColor(relation)
+
+                                    Button {
+                                        store.selectedDiplomaticPartnerCode = code
+                                    } label: {
+                                        HStack(spacing: 8) {
+                                            Text(flag)
+                                                .font(.title3)
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                HStack(spacing: 4) {
+                                                    Text(CountryNameResolver.name(forCode: code, in: state))
+                                                        .font(NativeWarRoomTheme.displayFont(.caption, weight: .semibold))
+                                                        .foregroundStyle(NativeWarRoomTheme.ink)
+                                                        .lineLimit(1)
+                                                    if pendingOffers > 0 {
+                                                        Image(systemName: "seal.fill")
+                                                            .font(.caption2)
+                                                            .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+                                                    }
+                                                }
+                                                HStack(spacing: 5) {
+                                                    Text(relation >= 0 ? "+\(relation)" : "\(relation)")
+                                                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                                                        .foregroundStyle(relationTint)
+                                                    if pendingOffers > 0 {
+                                                        Text("\(pendingOffers) OFFER\(pendingOffers > 1 ? "S" : "")")
+                                                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                                            .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            isSelected
+                                                ? NativeWarRoomTheme.brass.opacity(0.22)
+                                                : NativeWarRoomTheme.olivePanel.opacity(0.62),
+                                            in: RoundedRectangle(cornerRadius: 8)
+                                        )
+                                        .overlay {
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(
+                                                    isSelected
+                                                        ? NativeWarRoomTheme.brass.opacity(0.7)
+                                                        : (pendingOffers > 0 ? NativeWarRoomTheme.fieldGreen.opacity(0.45) : NativeWarRoomTheme.brass.opacity(0.16)),
+                                                    lineWidth: isSelected ? 1.5 : 1
+                                                )
+                                        }
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityIdentifier("native-diplomacy-channel-\(code.lowercased())")
+                                }
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Choose a nation")
-                        .font(.system(.caption2, design: .monospaced).weight(.bold))
-                        .foregroundStyle(.secondary)
+                    Text("CHOOSE A NATION")
+                        .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
 
                     Picker("Counterparty", selection: $store.selectedDiplomaticPartnerCode) {
                         ForEach(partners) { country in
@@ -461,11 +581,15 @@ struct NativeDiplomacyPanel: View {
                     .accessibilityIdentifier("native-diplomacy-partner")
                 }
 
+                if !store.selectedDiplomaticPartnerCode.isEmpty {
+                    selectedCounterpartyHeader(for: store.selectedDiplomaticPartnerCode, in: state)
+                }
+
                 NativeDiplomaticNetworkPanel(state: state)
                 NativeTreatyStackPanel(state: state)
 
                 TextEditor(text: $store.draftDiplomaticMessage)
-                    .font(.body)
+                    .font(NativeWarRoomTheme.bodyFont())
                     .standardTextEditorStyle(minHeight: 88)
                     .nativeKeyboardDismissButton()
                     .accessibilityLabel("Diplomatic message")
@@ -562,6 +686,126 @@ struct NativeDiplomacyPanel: View {
                 }
             }
         }
+    }
+
+    private func priorityChancelleryCodes(in state: NativeCampaignState) -> [String] {
+        let offerProposers = state.activeOffers
+            .filter { $0.status == .pending && $0.isPlayerFacing }
+            .map(\.proposerCode)
+        let aiCodes = state.aiCountryStates.values
+            .filter { $0.countryCode != state.country.code }
+            .sorted { lhs, rhs in
+                let lhsScore = abs(lhs.relationshipScores[state.country.code] ?? 0)
+                let rhsScore = abs(rhs.relationshipScores[state.country.code] ?? 0)
+                return lhsScore == rhsScore ? lhs.countryCode < rhs.countryCode : lhsScore > rhsScore
+            }
+            .map(\.countryCode)
+
+        var ordered: [String] = []
+        for code in offerProposers + aiCodes where !code.isEmpty && code != state.country.code && !ordered.contains(code) {
+            ordered.append(code)
+            if ordered.count >= 8 {
+                break
+            }
+        }
+        return ordered
+    }
+
+    private func relationColor(_ relation: Int) -> Color {
+        if relation >= 25 {
+            return NativeWarRoomTheme.fieldGreen
+        }
+        if relation <= -25 {
+            return NativeWarRoomTheme.threatRed
+        }
+        return NativeWarRoomTheme.alertAmber
+    }
+
+    private func selectedCounterpartyHeader(for code: String, in state: NativeCampaignState) -> some View {
+        let name = CountryNameResolver.name(forCode: code, in: state)
+        let flag = CountryCatalog.flagEmoji(forAlpha3: code) ?? "🏳️"
+        let aiState = state.aiCountryStates[code]
+        let relation = aiState?.relationshipScores[state.country.code] ?? 0
+        let relationFraction = Double(max(-100, min(100, relation)) + 100) / 200.0
+        let tint = relationColor(relation)
+        let visibility = NativeGameEngine.intelVisibility(forCountryCode: code, in: state)
+        let ledger = state.economicLedgers[code]
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Text(flag)
+                    .font(.title2)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(name)
+                            .font(NativeWarRoomTheme.displayFont(.headline, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.ink)
+                        Text(code)
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .bold))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(NativeWarRoomTheme.brass.opacity(0.14), in: Capsule())
+                    }
+                    if let aiState {
+                        Text("Doctrine: \(aiState.doctrine.displayName)")
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                    } else {
+                        Text("Sovereign Embassy Channel")
+                            .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                            .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                    }
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("RELATIONS")
+                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                    Text(relation >= 0 ? "+\(relation)" : "\(relation)")
+                        .font(NativeWarRoomTheme.labelFont(.subheadline, weight: .bold))
+                        .foregroundStyle(tint)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                ProgressView(value: relationFraction, total: 1.0)
+                    .tint(tint)
+                HStack {
+                    Text("-100 HOSTILE")
+                    Spacer()
+                    Text("0 NEUTRAL")
+                    Spacer()
+                    Text("+100 ALLIED")
+                }
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .foregroundStyle(NativeWarRoomTheme.mutedInk.opacity(0.8))
+            }
+
+            if let aiState, !aiState.multiTurnAgenda.isEmpty {
+                Text("Strategic Agenda: \(aiState.multiTurnAgenda)")
+                    .font(NativeWarRoomTheme.bodyFont(.caption))
+                    .foregroundStyle(NativeWarRoomTheme.parchment)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if visibility != .hidden, let ledger {
+                HStack(spacing: 12) {
+                    Label(String(format: "GDP $%.2fT", ledger.nominalGDPTrillions), systemImage: "chart.bar.fill")
+                    Label(String(format: "Sec %.0f/100", ledger.securityIndex), systemImage: "shield.fill")
+                    Label(visibility == .full ? "Full Intel" : "Partial Intel", systemImage: "eye.fill")
+                }
+                .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                .foregroundStyle(NativeWarRoomTheme.signalCyan)
+            } else {
+                Label("Economic & force telemetry redacted (improve relations > 0)", systemImage: "lock.fill")
+                    .font(NativeWarRoomTheme.labelFont(.caption2, weight: .semibold))
+                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
+            }
+        }
+        .padding(12)
+        .warRoomDossier(borderColor: tint.opacity(0.38), cornerRadius: 10)
+        .accessibilityIdentifier("native-diplomacy-counterparty-dossier")
     }
 }
 

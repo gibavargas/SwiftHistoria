@@ -13,7 +13,9 @@ struct CountrySelectionView: View {
     let onResumeCampaign: () -> Void
 
     @State private var query = ""
+    @State private var selectedTheater: StrategicTheaterFilter = .all
     @State private var setupStep = 0 // 0: Scenario/Language; 1: AI Provider; 2: Choose Country
+    @AppStorage(NativeSimulationMode.storageKey) private var simulationModeRaw: String = NativeSimulationMode.livingWorld.rawValue
     @AppStorage(NativeAIProviderPreference.storageKey) private var aiProviderRaw: String = NativeAIProviderPreference.nvidia.rawValue
     /// Keys are stored in the Keychain (NativeSecretStore), not UserDefaults.
     /// These draft fields keep the SecureField UX; every keystroke is mirrored
@@ -21,16 +23,27 @@ struct CountrySelectionView: View {
     @State private var nvidiaKey = ""
     @State private var openRouterKey = ""
 
+    private var simulationMode: NativeSimulationMode {
+        NativeSimulationMode(rawValue: simulationModeRaw) ?? .livingWorld
+    }
+
+    private var isLivingWorldMode: Bool {
+        simulationMode == .livingWorld
+    }
+
     private var selectedProvider: NativeAIProviderPreference {
         NativeAIProviderPreference(rawValue: aiProviderRaw) ?? .nvidia
     }
 
     private var canProceedFromProviderStep: Bool {
+        if isLivingWorldMode {
+            return true
+        }
         switch selectedProvider {
         case .nvidia:
-            !nvidiaKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            return !nvidiaKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case .openRouter:
-            !openRouterKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            return !openRouterKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
     }
 
@@ -41,12 +54,13 @@ struct CountrySelectionView: View {
             }
             return country
         }
+        let theaterFiltered = mapped.filter { selectedTheater.matches(country: $0) }
         let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedQuery.isEmpty else {
-            return mapped
+            return theaterFiltered
         }
 
-        return mapped.filter { country in
+        return theaterFiltered.filter { country in
             country.name.localizedCaseInsensitiveContains(normalizedQuery) ||
                 country.code.localizedCaseInsensitiveContains(normalizedQuery)
         }
@@ -72,12 +86,15 @@ struct CountrySelectionView: View {
             CountrySelectionBackground()
 
             #if os(macOS)
-                NavigationSplitView {
+                HStack(spacing: 0) {
                     setupPanel
-                        .navigationTitle("New Campaign")
-                } detail: {
+                        .frame(width: 460)
+                        .background(NativeWarRoomTheme.blackboard.opacity(0.32))
+                    Rectangle()
+                        .fill(NativeWarRoomTheme.brass.opacity(0.24))
+                        .frame(width: 1)
                     countryList
-                        .navigationTitle("Choose Country")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .frame(minWidth: 820, minHeight: 620)
             #else
@@ -87,6 +104,9 @@ struct CountrySelectionView: View {
                             ScrollView {
                                 VStack(alignment: .leading, spacing: 20) {
                                     header
+                                    if isLivingWorldMode {
+                                        LivingWorldMenuCommentary(slot: 1)
+                                    }
                                     scenarioDeck
                                     languageDeck
                                     simulationGuide
@@ -133,11 +153,20 @@ struct CountrySelectionView: View {
                                     }
 
                                     VStack(alignment: .leading, spacing: 8) {
-                                        Text("Configure AI Routing")
-                                            .font(.title2.weight(.bold))
-                                        Text("Choose NVIDIA API or OpenRouter Free. The game uses only the selected route and shows its failures instead of switching providers.")
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
+                                        Text(isLivingWorldMode ? "AI Routing (Optional)" : "Configure AI Routing")
+                                            .font(NativeTypography.mastheadTitle(.title2))
+                                            .foregroundStyle(NativeWarRoomTheme.ink)
+                                        Text(
+                                            isLivingWorldMode
+                                                ? "Living World operates fully offline. Optional keys below are saved for Classic AI turns."
+                                                : "Choose NVIDIA API or OpenRouter Free. The game uses only the selected route and shows its failures instead of switching providers."
+                                        )
+                                        .font(.subheadline)
+                                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                                    }
+
+                                    if isLivingWorldMode {
+                                        livingWorldOfflineBanner
                                     }
 
                                     VStack(spacing: 12) {
@@ -196,7 +225,11 @@ struct CountrySelectionView: View {
 
                                 searchField
                                     .padding(.horizontal, 20)
-                                    .padding(.bottom, 12)
+                                    .padding(.bottom, 10)
+
+                                theaterFilterBar
+                                    .padding(.horizontal, 20)
+                                    .padding(.bottom, 10)
 
                                 countryList
                             }
@@ -303,6 +336,9 @@ struct CountrySelectionView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 header
+                if isLivingWorldMode {
+                    LivingWorldMenuCommentary(slot: 1)
+                }
                 scenarioDeck
                 languageDeck
                 providerSetupDeck
@@ -311,82 +347,174 @@ struct CountrySelectionView: View {
             .padding(20)
             .frame(maxWidth: 520, alignment: .leading)
         }
-        .safeAreaInset(edge: .bottom) {
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             if filteredCountries.isEmpty {
                 EmptyView()
             } else {
-                Text("\(filteredCountries.count) countries available")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity)
-                    .background(.regularMaterial)
-                    .accessibilityIdentifier("native-country-count")
+                VStack(spacing: 0) {
+                    Rectangle()
+                        .fill(NativeWarRoomTheme.brass.opacity(0.24))
+                        .frame(height: 1)
+                    Text("\(filteredCountries.count) countries available")
+                        .font(NativeTypography.cartographicLabel(.caption, weight: .semibold))
+                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                        .background(NativeWarRoomTheme.archiveShadow.opacity(0.95))
+                        .accessibilityIdentifier("native-country-count")
+                }
             }
         }
         .accessibilityIdentifier("native-country-selection")
     }
 
-    private var countryList: some View {
-        List {
-            if filteredCountries.isEmpty {
-                Section {
-                    ContentUnavailableView(
-                        "No country matched that search.",
-                        systemImage: "magnifyingglass",
-                        description: Text("Try a country name or ISO code.")
-                    )
-                    .listRowBackground(Color.clear)
-                    .accessibilityIdentifier("native-country-empty")
-                }
-            } else if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Section {
-                    if !canProceedFromProviderStep, NativeSimulationMode.current() != .livingWorld {
-                        providerWarning
-                    }
-                    ForEach(filteredCountries) { country in
-                        countryButton(country)
-                    }
-                } header: {
-                    Text("Matching Nations (\(filteredCountries.count))")
-                }
-            } else {
-                Section {
-                    if !canProceedFromProviderStep, NativeSimulationMode.current() != .livingWorld {
-                        providerWarning
-                    }
-                    ForEach(flagshipCountries) { country in
-                        countryButton(country)
-                    }
-                } header: {
-                    HStack {
-                        Text("Flagship Complete Powers (12 Nations)")
-                        Spacer()
-                        Text("100 Bespoke Events Each")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(Color.alertGold)
-                    }
-                }
+    private var livingWorldOfflineBanner: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "checkmark.shield.fill")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+                .padding(.top, 2)
 
-                Section {
-                    ForEach(nonFlagshipCountries) { country in
-                        countryButton(country)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("OFFLINE ENGINE ACTIVE")
+                    .font(NativeTypography.cartographicLabel(.caption2, weight: .bold))
+                    .foregroundStyle(NativeWarRoomTheme.fieldGreen)
+                    .tracking(1.2)
+
+                Text("Living World runs 100% offline with deterministic country brains — API keys are optional (used only if you switch to Classic mode).")
+                    .font(.caption)
+                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NativeWarRoomTheme.fieldGreen.opacity(0.11), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .stroke(NativeWarRoomTheme.fieldGreen.opacity(0.35), lineWidth: 1)
+        }
+        .accessibilityIdentifier("native-living-world-offline-banner")
+    }
+
+    private var theaterFilterBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(StrategicTheaterFilter.allCases) { theater in
+                    let isSelected = selectedTheater == theater
+                    Button {
+                        selectedTheater = theater
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: theater.icon)
+                                .font(.caption2.weight(.bold))
+                            Text(theater.title)
+                                .font(NativeTypography.cartographicLabel(.caption2, weight: .bold))
+                        }
+                        .foregroundStyle(isSelected ? NativeWarRoomTheme.blackboard : NativeWarRoomTheme.ink)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(isSelected ? NativeWarRoomTheme.brass : NativeWarRoomTheme.graphite.opacity(0.82))
+                        )
+                        .overlay {
+                            Capsule()
+                                .stroke(
+                                    isSelected ? NativeWarRoomTheme.parchment.opacity(0.45) : NativeWarRoomTheme.brass.opacity(0.22),
+                                    lineWidth: 1
+                                )
+                        }
                     }
-                } header: {
-                    HStack {
-                        Text("All Sovereign Nations (\(nonFlagshipCountries.count) Nations)")
-                        Spacer()
-                        Text("100 Events Each")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(Color.glowingCyan)
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("native-theater-filter-\(theater.rawValue)")
+                }
+            }
+            .padding(.vertical, 2)
+        }
+    }
+
+    private var countryList: some View {
+        VStack(spacing: 0) {
+            #if os(macOS)
+                theaterFilterBar
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(NativeWarRoomTheme.archiveShadow.opacity(0.65))
+                Rectangle()
+                    .fill(NativeWarRoomTheme.brass.opacity(0.16))
+                    .frame(height: 1)
+            #endif
+
+            List {
+                if filteredCountries.isEmpty {
+                    Section {
+                        ContentUnavailableView(
+                            "No country matched that search.",
+                            systemImage: "magnifyingglass",
+                            description: Text("Try a country name, ISO code, or switch theater filter.")
+                        )
+                        .listRowBackground(Color.clear)
+                        .accessibilityIdentifier("native-country-empty")
+                    }
+                } else if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedTheater != .all {
+                    Section {
+                        if !canProceedFromProviderStep {
+                            providerWarning
+                        }
+                        ForEach(filteredCountries) { country in
+                            countryButton(country)
+                        }
+                    } header: {
+                        HStack {
+                            Text(selectedTheater == .all ? "Matching Nations (\(filteredCountries.count))" : "\(selectedTheater.title) (\(filteredCountries.count))")
+                                .font(NativeTypography.cartographicLabel(.caption2, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.brass)
+                            Spacer()
+                        }
+                    }
+                } else {
+                    Section {
+                        if !canProceedFromProviderStep {
+                            providerWarning
+                        }
+                        ForEach(flagshipCountries) { country in
+                            countryButton(country)
+                        }
+                    } header: {
+                        HStack {
+                            Text("Flagship Complete Powers (12 Nations)")
+                                .font(NativeTypography.cartographicLabel(.caption2, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.ink)
+                            Spacer()
+                            Text("100 Bespoke Events Each")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(Color.alertGold)
+                        }
+                    }
+
+                    Section {
+                        ForEach(nonFlagshipCountries) { country in
+                            countryButton(country)
+                        }
+                    } header: {
+                        HStack {
+                            Text("All Sovereign Nations (\(nonFlagshipCountries.count) Nations)")
+                                .font(NativeTypography.cartographicLabel(.caption2, weight: .bold))
+                                .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                            Spacer()
+                            Text("100 Events Each")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(Color.glowingCyan)
+                        }
                     }
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.black.opacity(0.25))
+            .accessibilityIdentifier("native-country-list")
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
-        .background(Color.black.opacity(0.25))
-        .accessibilityIdentifier("native-country-list")
     }
 
     private var providerWarning: some View {
@@ -406,10 +534,12 @@ struct CountrySelectionView: View {
             onSelect(country)
         } label: {
             CountryRow(country: country)
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
         }
         .buttonStyle(.plain)
-        .disabled(!canProceedFromProviderStep && NativeSimulationMode.current() != .livingWorld)
+        .disabled(!canProceedFromProviderStep)
+        .listRowBackground(Color.clear)
+        .listRowSeparatorTint(NativeWarRoomTheme.brass.opacity(0.12))
         .accessibilityLabel("\(country.name), ISO code \(country.code)")
         .accessibilityHint("Starts a campaign as \(country.name).")
         .accessibilityIdentifier("native-country-option-\(country.code)")
@@ -569,6 +699,10 @@ struct CountrySelectionView: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
+            if isLivingWorldMode {
+                livingWorldOfflineBanner
+            }
+
             VStack(spacing: 10) {
                 ForEach(NativeAIProviderPreference.allCases, id: \.rawValue) { provider in
                     providerCard(provider)
@@ -724,78 +858,170 @@ private struct CountrySelectionBackground: View {
     }
 }
 
+private enum StrategicTheaterFilter: String, CaseIterable, Identifiable {
+    case all
+    case greatPowers
+    case americas
+    case europe
+    case asiaPacific
+    case middleEastAfrica
+
+    var id: String {
+        rawValue
+    }
+
+    var title: String {
+        switch self {
+        case .all: "All Nations"
+        case .greatPowers: "Great Powers"
+        case .americas: "Americas"
+        case .europe: "Europe"
+        case .asiaPacific: "Asia-Pacific"
+        case .middleEastAfrica: "Middle East & Africa"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .all: "globe"
+        case .greatPowers: "crown.fill"
+        case .americas: "globe.americas.fill"
+        case .europe: "globe.europe.africa.fill"
+        case .asiaPacific: "globe.asia.australia.fill"
+        case .middleEastAfrica: "sun.max.fill"
+        }
+    }
+
+    func matches(country: PlayerCountry) -> Bool {
+        switch self {
+        case .all:
+            return true
+        case .greatPowers:
+            return NativeCountryEventsCatalog.isFlagshipCountry(country.code)
+        case .americas:
+            let coord = CountryCoordinate.center(for: country.code)
+            return coord.longitude < -25
+        case .europe:
+            let coord = CountryCoordinate.center(for: country.code)
+            return coord.latitude >= 34 && coord.longitude >= -25 && coord.longitude <= 46
+        case .asiaPacific:
+            let coord = CountryCoordinate.center(for: country.code)
+            return coord.longitude > 62
+        case .middleEastAfrica:
+            let coord = CountryCoordinate.center(for: country.code)
+            return coord.longitude >= -25 && coord.longitude <= 62 && coord.latitude < 36
+        }
+    }
+}
+
 private struct CountryRow: View {
     let country: PlayerCountry
     @State private var isHovered = false
 
     var body: some View {
         let profile = Native2010WorldModel.profile(for: country)
-        let flag = CountryCatalog.flagEmoji(forAlpha3: country.code) ?? "🌐"
+        let govType = NativeStrategyContextDatabase.startingGovernmentType(for: country.code).capitalized
         let isFlagship = NativeCountryEventsCatalog.isFlagshipCountry(country.code)
+        let techTier = max(1, min(5, Int(profile.techLevel.rounded())))
+        let stabilityColor = NativeWarRoomTheme.statusColor(for: profile.stability)
 
         HStack(spacing: 12) {
-            Text(flag)
-                .font(.title3)
+            NativeCountryStandard(countryCode: country.code, size: 32)
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 6) {
                     Text(country.name)
                         .font(NativeWarRoomTheme.bodyFont(.body, weight: .semibold))
-                        .foregroundStyle(isHovered ? Color.accentColor : Color.primary)
+                        .foregroundStyle(isHovered ? NativeWarRoomTheme.brass : NativeWarRoomTheme.ink)
+                        .lineLimit(1)
 
                     if isFlagship {
                         Text("FLAGSHIP")
                             .font(.system(size: 8, weight: .black, design: .monospaced))
-                            .foregroundStyle(Color.alertGold)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 1.5)
-                            .background(Color.alertGold.opacity(0.16), in: Capsule())
+                            .foregroundStyle(NativeWarRoomTheme.blackboard)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(NativeWarRoomTheme.brass, in: Capsule())
                     }
+
+                    Text(govType.uppercased())
+                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1.5)
+                        .background(NativeWarRoomTheme.olivePanel.opacity(0.9), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .stroke(NativeWarRoomTheme.brass.opacity(0.22), lineWidth: 0.75)
+                        }
                 }
 
-                HStack(spacing: 6) {
+                HStack(spacing: 10) {
                     Text(String(format: "$%.2fT GDP", profile.nominalGDPTrillions))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(NativeTypography.telemetryValue(.caption2, weight: .bold))
+                        .foregroundStyle(NativeWarRoomTheme.parchment)
 
-                    Text("•")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        Capsule()
+                            .fill(NativeWarRoomTheme.graphite)
+                            .frame(width: 28, height: 5)
+                            .overlay(alignment: .leading) {
+                                Capsule()
+                                    .fill(stabilityColor)
+                                    .frame(width: max(4, 28 * CGFloat(profile.stability) / 100.0), height: 5)
+                            }
+                        Text("\(profile.stability)% STB")
+                            .font(NativeTypography.telemetryValue(.caption2, weight: .bold))
+                            .foregroundStyle(stabilityColor)
+                    }
 
-                    Text("\(profile.stability)% STB")
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(profile.stability >= 65 ? Color.neonTeal : (profile.stability >= 50 ? Color.alertGold : Color.softRed))
+                    HStack(spacing: 2) {
+                        Text("T\(techTier)")
+                            .font(NativeTypography.telemetryValue(.caption2, weight: .bold))
+                            .foregroundStyle(NativeWarRoomTheme.signalCyan)
+                        ForEach(1 ... 5, id: \.self) { pip in
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(pip <= techTier ? NativeWarRoomTheme.signalCyan : NativeWarRoomTheme.mutedInk.opacity(0.25))
+                                .frame(width: 3, height: 7)
+                        }
+                    }
 
-                    Text("•")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-
-                    Text("100 Events")
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(Color.glowingCyan)
+                    if isFlagship {
+                        Text("100 Events")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(NativeWarRoomTheme.brass)
+                    }
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
             Text(country.code)
-                .font(.system(.caption2, design: .monospaced).weight(.bold))
-                .foregroundStyle(isHovered ? Color.accentColor : .secondary)
+                .font(NativeTypography.telemetryValue(.caption2, weight: .bold))
+                .foregroundStyle(isHovered ? NativeWarRoomTheme.brass : NativeWarRoomTheme.mutedInk)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.white.opacity(0.05), in: Capsule())
+                .background(NativeWarRoomTheme.archiveShadow.opacity(0.8), in: Capsule())
                 .overlay {
                     Capsule()
-                        .stroke(isHovered ? Color.accentColor.opacity(0.3) : Color.white.opacity(0.06), lineWidth: 1)
+                        .stroke(isHovered ? NativeWarRoomTheme.brass.opacity(0.5) : NativeWarRoomTheme.brass.opacity(0.18), lineWidth: 1)
                 }
 
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(isHovered ? Color.accentColor : Color.secondary.opacity(0.5))
+                .foregroundStyle(isHovered ? NativeWarRoomTheme.brass : NativeWarRoomTheme.mutedInk.opacity(0.6))
         }
         .contentShape(Rectangle())
-        .padding(.vertical, 6)
+        .padding(.vertical, 7)
         .padding(.horizontal, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .fill(isHovered ? NativeWarRoomTheme.olivePanel.opacity(0.7) : NativeWarRoomTheme.archiveShadow.opacity(0.45))
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .stroke(isHovered ? NativeWarRoomTheme.brass.opacity(0.45) : NativeWarRoomTheme.brass.opacity(0.14), lineWidth: 1)
+        }
         .accessibilityElement(children: .combine)
         .onHover { hovering in
             withAnimation(.easeOut(duration: 0.15)) {
@@ -809,6 +1035,10 @@ private struct ScenarioSelectionCard: View {
     let scenario: NativeScenario
     let selected: Bool
 
+    private var openingYear: String {
+        String(scenario.gameDate.prefix(4))
+    }
+
     var body: some View {
         let accent = Color(hex: scenario.accentColor)
         VStack(alignment: .leading, spacing: 0) {
@@ -816,24 +1046,49 @@ private struct ScenarioSelectionCard: View {
                 Image(scenario.assetImageName)
                     .resizable()
                     .aspectRatio(16 / 9, contentMode: .fill)
-                    .frame(height: 105)
+                    .frame(height: 108)
                     .clipped()
 
+                RadialGradient(
+                    colors: [Color.clear, NativeWarRoomTheme.blackboard.opacity(0.55)],
+                    center: .center,
+                    startRadius: 20,
+                    endRadius: 140
+                )
+
                 LinearGradient(
-                    colors: [Color.clear, Color.black.opacity(0.8)],
+                    colors: [Color.clear, NativeWarRoomTheme.blackboard.opacity(0.92)],
                     startPoint: .center,
                     endPoint: .bottom
                 )
 
+                VStack {
+                    HStack {
+                        Text(openingYear)
+                            .font(NativeTypography.telemetryValue(.caption2, weight: .bold))
+                            .foregroundStyle(NativeWarRoomTheme.parchment)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(NativeWarRoomTheme.blackboard.opacity(0.78), in: Capsule())
+                            .overlay {
+                                Capsule()
+                                    .stroke(NativeWarRoomTheme.brass.opacity(0.35), lineWidth: 0.8)
+                            }
+                        Spacer()
+                        Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                            .font(.subheadline)
+                            .foregroundStyle(selected ? accent : NativeWarRoomTheme.parchment.opacity(0.75))
+                    }
+                    Spacer()
+                }
+                .padding(8)
+
                 HStack(alignment: .firstTextBaseline) {
                     Text(scenario.name)
-                        .font(NativeWarRoomTheme.labelFont(.subheadline))
+                        .font(NativeWarRoomTheme.displayFont(.subheadline, weight: .bold))
                         .foregroundStyle(NativeWarRoomTheme.ink)
                         .lineLimit(1)
                     Spacer()
-                    Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                        .font(.subheadline)
-                        .foregroundStyle(selected ? accent : .white.opacity(0.7))
                 }
                 .padding(.horizontal, 10)
                 .padding(.bottom, 8)
@@ -842,20 +1097,32 @@ private struct ScenarioSelectionCard: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(scenario.subtitle)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(selected ? accent.opacity(0.9) : .secondary)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(selected ? accent : NativeWarRoomTheme.parchment)
                     .lineLimit(2)
                 Text(scenario.heroSubtitle)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(NativeWarRoomTheme.mutedInk)
                     .lineLimit(3)
+
+                Spacer(minLength: 2)
+
+                HStack(spacing: 8) {
+                    Label("3 OBJECTIVES", systemImage: "flag.checkered")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(NativeWarRoomTheme.brass)
+                    Spacer()
+                    Text("TENSION \(scenario.baseWorldTension)%")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(NativeWarRoomTheme.mutedInk)
+                }
             }
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .frame(maxWidth: .infinity, minHeight: 200, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 214, alignment: .topLeading)
         .warRoomDossier(
-            borderColor: selected ? accent.opacity(0.7) : NativeWarRoomTheme.brass.opacity(0.18),
+            borderColor: selected ? accent.opacity(0.75) : NativeWarRoomTheme.brass.opacity(0.22),
             cornerRadius: 10
         )
         .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))

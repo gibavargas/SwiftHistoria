@@ -452,10 +452,32 @@ struct EventImageView: View {
                 .aspectRatio(16 / 9, contentMode: .fill)
                 .frame(maxHeight: height)
                 .clipped()
+                .overlay {
+                    LinearGradient(
+                        colors: [
+                            NativeWarRoomTheme.archiveShadow.opacity(0.08),
+                            Color.clear,
+                            NativeWarRoomTheme.blackboard.opacity(0.42)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                }
+                .overlay {
+                    RadialGradient(
+                        colors: [
+                            Color.clear,
+                            NativeWarRoomTheme.blackboard.opacity(0.28)
+                        ],
+                        center: .center,
+                        startRadius: height * 0.25,
+                        endRadius: height * 1.15
+                    )
+                }
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .stroke(Color.neonTeal.opacity(0.3), lineWidth: 1)
+                        .stroke(NativeWarRoomTheme.brass.opacity(0.32), lineWidth: 1)
                 }
         } else {
             fallbackBadge
@@ -465,19 +487,19 @@ struct EventImageView: View {
     private var fallbackBadge: some View {
         ZStack {
             LinearGradient(
-                colors: [Color.spaceBlack, Color.deepSlate],
+                colors: [NativeWarRoomTheme.archiveShadow, NativeWarRoomTheme.graphite],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             Image(systemName: fallbackIcon)
                 .font(.system(size: 28, weight: .semibold))
-                .foregroundStyle(Color.neonTeal.opacity(0.6))
+                .foregroundStyle(NativeWarRoomTheme.brass.opacity(0.65))
         }
         .frame(height: 70)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(Color.neonTeal.opacity(0.18), lineWidth: 1)
+                .stroke(NativeWarRoomTheme.brass.opacity(0.24), lineWidth: 1)
         }
     }
 }
